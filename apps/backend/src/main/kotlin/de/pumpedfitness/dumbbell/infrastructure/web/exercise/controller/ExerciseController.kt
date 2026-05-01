@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/exercise")
+@RequestMapping("/exercise", version = "1")
 @Tag(name = "Exercise", description = "Browse and retrieve exercises")
 @SecurityRequirement(name = "bearerAuth")
 class ExerciseController(

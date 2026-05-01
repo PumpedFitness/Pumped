@@ -28,7 +28,7 @@ import java.time.Duration
 import java.util.*
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/user", version = "1")
 @Tag(name = "User", description = "User registration, authentication, and profile management")
 class UserController(
     @Autowired val userRegisterMapper: UserRegisterMapper,

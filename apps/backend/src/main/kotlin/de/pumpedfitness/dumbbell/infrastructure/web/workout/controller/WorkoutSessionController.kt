@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 import java.security.Principal
 
 @RestController
-@RequestMapping("/workout-session")
+@RequestMapping("/workout-session", version = "1")
 @Tag(name = "Workout Session", description = "Start, track and finish workout sessions")
 @SecurityRequirement(name = "bearerAuth")
 class WorkoutSessionController(

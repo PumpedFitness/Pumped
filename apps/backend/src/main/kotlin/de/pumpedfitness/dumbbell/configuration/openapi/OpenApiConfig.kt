@@ -31,7 +31,7 @@ class OpenApiConfig {
                             .type(SecurityScheme.Type.HTTP)
                             .scheme("bearer")
                             .bearerFormat("JWT")
-                            .description("Provide a JWT token obtained from POST /user/login")
+                            .description("Provide a JWT token obtained from POST /user/login with header X-API-Version: 1")
                     )
             )
     }

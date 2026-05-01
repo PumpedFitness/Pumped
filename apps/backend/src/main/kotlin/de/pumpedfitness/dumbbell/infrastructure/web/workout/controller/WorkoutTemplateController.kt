@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 import java.security.Principal
 
 @RestController
-@RequestMapping("/workout-template")
+@RequestMapping("/workout-template", version = "1")
 @Tag(name = "Workout Template", description = "Create and manage personal workout templates")
 @SecurityRequirement(name = "bearerAuth")
 class WorkoutTemplateController(
