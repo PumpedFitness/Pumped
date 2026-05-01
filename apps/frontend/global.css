@@ -1,0 +1,184 @@
+@import 'tailwindcss';
+@import 'uniwind';
+@import 'heroui-native/styles';
+@source './node_modules/heroui-native/lib';
+
+/* ── Pumped Design Tokens ─────────────────────────────── */
+
+@layer theme {
+  /* ── Dark (default) ── */
+  @variant dark {
+    --background: oklch(15% 0.005 240);
+    --foreground: oklch(96% 0.005 240);
+
+    --surface: oklch(19% 0.006 240);
+    --surface-foreground: oklch(96% 0.005 240);
+
+    --overlay: oklch(23% 0.007 240);
+    --overlay-foreground: oklch(96% 0.005 240);
+    --backdrop: oklch(0% 0 0 / 50%);
+
+    --muted: oklch(58% 0.006 240);
+    --default: oklch(19% 0.006 240);
+    --default-foreground: oklch(78% 0.005 240);
+
+    /* Accent — clay (default) */
+    --accent: oklch(75% 0.09 70);
+    --accent-foreground: oklch(20% 0.04 70);
+    --accent-soft: oklch(75% 0.09 70 / 14%);
+    --accent-soft-foreground: oklch(75% 0.09 70);
+
+    /* Form fields */
+    --field-background: oklch(17% 0.005 240);
+    --field-foreground: oklch(96% 0.005 240);
+    --field-placeholder: oklch(58% 0.006 240);
+    --field-border: oklch(26% 0.008 240);
+
+    /* Status */
+    --success: oklch(78% 0.16 162);
+    --success-foreground: oklch(20% 0.04 162);
+    --warning: oklch(82% 0.13 75);
+    --warning-foreground: oklch(20% 0.05 75);
+    --danger: oklch(70% 0.20 22);
+    --danger-foreground: oklch(98% 0.02 22);
+
+    /* Segments / tabs */
+    --segment: oklch(19% 0.006 240);
+    --segment-foreground: oklch(96% 0.005 240);
+
+    /* Misc */
+    --border: oklch(26% 0.008 240);
+    --separator: oklch(20% 0.006 240);
+    --focus: var(--accent);
+    --link: var(--accent);
+
+    /* Shadows */
+    --surface-shadow: none;
+    --overlay-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+    --field-shadow: none;
+  }
+
+  /* ── Light ── */
+  @variant light {
+    --background: oklch(98% 0.003 240);
+    --foreground: oklch(15% 0.005 240);
+
+    --surface: oklch(100% 0 0);
+    --surface-foreground: oklch(15% 0.005 240);
+
+    --overlay: oklch(100% 0 0);
+    --overlay-foreground: oklch(15% 0.005 240);
+    --backdrop: oklch(15% 0.01 240 / 32%);
+
+    --muted: oklch(55% 0.006 240);
+    --default: oklch(95% 0.004 240);
+    --default-foreground: oklch(35% 0.006 240);
+
+    /* Accent — clay */
+    --accent: oklch(75% 0.09 70);
+    --accent-foreground: oklch(20% 0.04 70);
+    --accent-soft: oklch(75% 0.09 70 / 10%);
+    --accent-soft-foreground: oklch(75% 0.09 70);
+
+    /* Form fields */
+    --field-background: oklch(100% 0 0);
+    --field-foreground: oklch(15% 0.005 240);
+    --field-placeholder: oklch(55% 0.006 240);
+    --field-border: oklch(88% 0.005 240);
+
+    /* Status */
+    --success: oklch(58% 0.14 162);
+    --success-foreground: oklch(98% 0.01 162);
+    --warning: oklch(60% 0.14 60);
+    --warning-foreground: oklch(98% 0.01 60);
+    --danger: oklch(58% 0.22 25);
+    --danger-foreground: oklch(98% 0.01 25);
+
+    /* Segments */
+    --segment: oklch(100% 0 0);
+    --segment-foreground: oklch(15% 0.005 240);
+
+    /* Misc */
+    --border: oklch(88% 0.005 240);
+    --separator: oklch(94% 0.004 240);
+    --focus: var(--accent);
+    --link: var(--accent);
+
+    /* Shadows */
+    --surface-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --overlay-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.15);
+    --field-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* ── Custom Pumped tokens for Tailwind ── */
+@theme inline {
+  --color-surface-raised: var(--overlay);
+  --color-surface-hover: oklch(28% 0.008 240);
+  --color-surface-press: oklch(34% 0.009 240);
+  --color-border-soft: var(--separator);
+  --color-border-strong: oklch(34% 0.009 240);
+  --color-text-muted: var(--muted);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-glow: oklch(75% 0.09 70 / 30%);
+  --color-foreground-secondary: oklch(78% 0.005 240);
+}
+
+/* ── Typography defaults ── */
+@utility eyebrow {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.66px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@utility mono-sm {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.44px;
+}
+
+@utility mono-value {
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.18px;
+}
+
+@utility mono-display {
+  font-family: monospace;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.6px;
+}
+
+@utility heading-lg {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.64px;
+  line-height: 34px;
+}
+
+@utility heading-md {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.2px;
+}
+
+@utility body-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+@utility body-sub {
+  font-size: 12px;
+  color: var(--muted);
+}

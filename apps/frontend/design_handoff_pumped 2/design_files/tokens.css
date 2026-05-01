@@ -1,0 +1,323 @@
+/* ────────────────────────────────────────────────────────────
+   PUMPED — Design Tokens (HeroUI-aligned, oklch)
+   Dark-first. Light tokens flip via [data-theme="light"].
+   Accent variants: mint (default), cyan, lime.
+   Naming: HeroUI semantic — --foreground, --background,
+           --content1..4, --default-N, --accent-foreground, etc.
+   ──────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ── Type ───────────────────────────────────────── */
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-display: 56px;
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-body: 16px;
+  --text-label: 14px;
+  --text-caption: 12px;
+  --text-micro: 11px;
+
+  --leading-tight: 1.05;
+  --leading-snug:  1.2;
+  --leading-body:  1.45;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-wide:   0.06em;
+
+  /* ── Spacing ────────────────────────────────────── */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-7: 32px; --space-8: 40px;
+  --space-9: 48px; --space-10: 64px;
+
+  /* ── Radius (HeroUI-aligned: softer overlays, sharper inputs) ── */
+  --radius-xs:    2px;   /* hairline chips, dots */
+  --radius-sm:    4px;   /* inputs, buttons, list rows */
+  --radius-md:    6px;   /* cards */
+  --radius-lg:    8px;   /* sheets, dialogs, popovers */
+  --radius-xl:   12px;   /* hero containers */
+  --radius-pill: 9999px; /* pills, switches */
+
+  /* ── Elevation (HeroUI shadows on overlays only) ── */
+  --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.18);
+  --shadow-sm: 0 2px 4px -1px rgba(0,0,0,0.20), 0 1px 2px -1px rgba(0,0,0,0.16);
+  --shadow-md: 0 6px 16px -4px rgba(0,0,0,0.30), 0 2px 4px -2px rgba(0,0,0,0.20);
+  --shadow-lg: 0 16px 32px -8px rgba(0,0,0,0.40), 0 4px 8px -4px rgba(0,0,0,0.24);
+  --shadow-xl: 0 24px 48px -12px rgba(0,0,0,0.50), 0 0 0 1px var(--divider);
+
+  /* ── Motion ─────────────────────────────────────── */
+  --dur-fast: 80ms;
+  --dur-base: 140ms;
+  --dur-slow: 200ms;
+  --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.4, 1);
+
+  /* ── ACCENT — mint (default), oklch ─────────────── */
+  --accent:             oklch(88% 0.16 168);
+  --accent-foreground:  oklch(22% 0.04 168);
+  --accent-hover:       oklch(91% 0.15 168);
+  --accent-pressed:     oklch(82% 0.17 168);
+  --accent-soft:        oklch(88% 0.16 168 / 0.12);
+  --accent-glow:        oklch(88% 0.16 168 / 0.35);
+  --accent-rgb:         110, 240, 200; /* legacy fallback for rgba() */
+}
+
+:root[data-accent="cyan"] {
+  --accent:             oklch(86% 0.13 220);
+  --accent-foreground:  oklch(22% 0.05 220);
+  --accent-hover:       oklch(89% 0.12 220);
+  --accent-pressed:     oklch(80% 0.14 220);
+  --accent-soft:        oklch(86% 0.13 220 / 0.12);
+  --accent-glow:        oklch(86% 0.13 220 / 0.35);
+  --accent-rgb:         94, 227, 255;
+}
+:root[data-accent="lime"] {
+  --accent:             oklch(91% 0.18 122);
+  --accent-foreground:  oklch(22% 0.06 122);
+  --accent-hover:       oklch(94% 0.16 122);
+  --accent-pressed:     oklch(86% 0.20 122);
+  --accent-soft:        oklch(91% 0.18 122 / 0.12);
+  --accent-glow:        oklch(91% 0.18 122 / 0.35);
+  --accent-rgb:         200, 243, 107;
+}
+
+/* ── Toned-down accents (less neon) ── */
+:root[data-accent="steel"] {
+  --accent:             oklch(72% 0.07 240);
+  --accent-foreground:  oklch(98% 0.01 240);
+  --accent-hover:       oklch(76% 0.07 240);
+  --accent-pressed:     oklch(66% 0.08 240);
+  --accent-soft:        oklch(72% 0.07 240 / 0.14);
+  --accent-glow:        oklch(72% 0.07 240 / 0.30);
+  --accent-rgb:         125, 169, 201;
+}
+:root[data-accent="sage"] {
+  --accent:             oklch(76% 0.06 158);
+  --accent-foreground:  oklch(20% 0.03 158);
+  --accent-hover:       oklch(80% 0.06 158);
+  --accent-pressed:     oklch(70% 0.07 158);
+  --accent-soft:        oklch(76% 0.06 158 / 0.14);
+  --accent-glow:        oklch(76% 0.06 158 / 0.30);
+  --accent-rgb:         155, 191, 168;
+}
+:root[data-accent="glacier"] {
+  --accent:             oklch(82% 0.04 230);
+  --accent-foreground:  oklch(20% 0.03 230);
+  --accent-hover:       oklch(85% 0.04 230);
+  --accent-pressed:     oklch(76% 0.05 230);
+  --accent-soft:        oklch(82% 0.04 230 / 0.14);
+  --accent-glow:        oklch(82% 0.04 230 / 0.30);
+  --accent-rgb:         168, 200, 216;
+}
+:root[data-accent="clay"] {
+  --accent:             oklch(75% 0.09 70);
+  --accent-foreground:  oklch(20% 0.04 70);
+  --accent-hover:       oklch(79% 0.09 70);
+  --accent-pressed:     oklch(69% 0.10 70);
+  --accent-soft:        oklch(75% 0.09 70 / 0.14);
+  --accent-glow:        oklch(75% 0.09 70 / 0.30);
+  --accent-rgb:         212, 165, 116;
+}
+:root[data-accent="rust"] {
+  --accent:             oklch(66% 0.12 45);
+  --accent-foreground:  oklch(98% 0.01 45);
+  --accent-hover:       oklch(70% 0.12 45);
+  --accent-pressed:     oklch(60% 0.13 45);
+  --accent-soft:        oklch(66% 0.12 45 / 0.14);
+  --accent-glow:        oklch(66% 0.12 45 / 0.30);
+  --accent-rgb:         201, 123, 92;
+}
+:root[data-accent="bone"] {
+  --accent:             oklch(86% 0.03 90);
+  --accent-foreground:  oklch(22% 0.02 90);
+  --accent-hover:       oklch(89% 0.03 90);
+  --accent-pressed:     oklch(80% 0.04 90);
+  --accent-soft:        oklch(86% 0.03 90 / 0.14);
+  --accent-glow:        oklch(86% 0.03 90 / 0.30);
+  --accent-rgb:         216, 207, 184;
+}
+:root[data-accent="graphite"] {
+  --accent:             oklch(70% 0.01 240);
+  --accent-foreground:  oklch(98% 0.005 240);
+  --accent-hover:       oklch(74% 0.01 240);
+  --accent-pressed:     oklch(64% 0.01 240);
+  --accent-soft:        oklch(70% 0.01 240 / 0.14);
+  --accent-glow:        oklch(70% 0.01 240 / 0.28);
+  --accent-rgb:         156, 163, 171;
+}
+
+/* ── DARK (default) ──────────────────────────────────────── */
+:root, :root[data-theme="dark"] {
+  /* Base layers — content1..4 climb in lightness, HeroUI-style */
+  --background:    oklch(15% 0.005 240);   /* page */
+  --foreground:    oklch(96% 0.005 240);   /* default text */
+
+  --content1:      oklch(19% 0.006 240);   /* cards */
+  --content2:      oklch(23% 0.007 240);   /* raised, popovers */
+  --content3:      oklch(28% 0.008 240);   /* hover */
+  --content4:      oklch(34% 0.009 240);   /* press / strong divider */
+
+  /* Foreground scale */
+  --foreground-secondary: oklch(78% 0.005 240);
+  --foreground-muted:     oklch(58% 0.006 240);
+  --foreground-disabled:  oklch(38% 0.005 240);
+
+  /* Default (neutral component) — HeroUI default-N ramp */
+  --default-50:   oklch(15% 0.005 240);
+  --default-100:  oklch(19% 0.006 240);
+  --default-200:  oklch(23% 0.007 240);
+  --default-300:  oklch(28% 0.008 240);
+  --default-400:  oklch(38% 0.009 240);
+  --default-500:  oklch(58% 0.006 240);
+  --default-600:  oklch(78% 0.005 240);
+  --default-700:  oklch(96% 0.005 240);
+
+  /* Surfaces & fields */
+  --field-background: oklch(17% 0.005 240);
+  --field-border:     oklch(28% 0.008 240);
+  --divider:          oklch(26% 0.008 240);
+  --divider-soft:     oklch(20% 0.006 240);
+  --divider-strong:   oklch(34% 0.009 240);
+
+  --focus: var(--accent);
+
+  /* Status — oklch */
+  --success:           oklch(78% 0.16 162);
+  --success-foreground: oklch(20% 0.04 162);
+  --success-soft:      oklch(78% 0.16 162 / 0.14);
+  --warning:           oklch(82% 0.13 75);
+  --warning-foreground: oklch(20% 0.05 75);
+  --warning-soft:      oklch(82% 0.13 75 / 0.14);
+  --danger:            oklch(70% 0.20 22);
+  --danger-foreground: oklch(98% 0.02 22);
+  --danger-soft:       oklch(70% 0.20 22 / 0.14);
+
+  --overlay-background: oklch(0% 0 0 / 0.6);
+  --overlay-scrim:      oklch(0% 0 0 / 0.4);
+
+  /* Data-viz */
+  --chart-line:      var(--accent);
+  --chart-line-prev: var(--foreground-muted);
+  --chart-grid:      var(--divider-soft);
+  --chart-axis:      var(--foreground-muted);
+  --chart-crosshair: var(--divider-strong);
+  --chart-pr:        var(--accent);
+  --chart-deload:    var(--foreground-muted);
+
+  --heat-0: var(--field-background);
+  --heat-1: rgba(var(--accent-rgb), 0.18);
+  --heat-2: rgba(var(--accent-rgb), 0.40);
+  --heat-3: rgba(var(--accent-rgb), 0.70);
+  --heat-4: var(--accent);
+
+  /* ── Legacy aliases (keep old components compiling) ── */
+  --bg:              var(--background);
+  --surface:         var(--content1);
+  --surface-raised:  var(--content2);
+  --surface-sunken:  var(--background);
+  --surface-input:   var(--field-background);
+  --surface-hover:   var(--content3);
+  --surface-press:   var(--content4);
+  --text-primary:    var(--foreground);
+  --text-secondary:  var(--foreground-secondary);
+  --text-muted:      var(--foreground-muted);
+  --text-disabled:   var(--foreground-disabled);
+  --text-on-accent:  var(--accent-foreground);
+  --border:          var(--divider);
+  --border-soft:     var(--divider-soft);
+  --border-strong:   var(--divider-strong);
+  --border-focus:    var(--focus);
+  --accent-ink:      var(--accent-foreground);
+  --accent-press:    var(--accent-pressed);
+  --success-soft:    oklch(78% 0.16 162 / 0.14);
+  --danger-soft:     oklch(70% 0.20 22 / 0.14);
+  --warning-soft:    oklch(82% 0.13 75 / 0.14);
+  --offline:         var(--warning);
+  --offline-soft:    var(--warning-soft);
+  --overlay:         var(--overlay-background);
+  --scrim:           var(--overlay-scrim);
+  --shadow-modal:    var(--shadow-xl);
+}
+
+/* ── LIGHT ───────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --background:    oklch(98% 0.003 240);
+  --foreground:    oklch(15% 0.005 240);
+
+  --content1:      oklch(100% 0 0);
+  --content2:      oklch(98% 0.003 240);
+  --content3:      oklch(95% 0.004 240);
+  --content4:      oklch(90% 0.005 240);
+
+  --foreground-secondary: oklch(35% 0.006 240);
+  --foreground-muted:     oklch(55% 0.006 240);
+  --foreground-disabled:  oklch(78% 0.005 240);
+
+  --default-50:   oklch(98% 0.003 240);
+  --default-100:  oklch(95% 0.004 240);
+  --default-200:  oklch(90% 0.005 240);
+  --default-300:  oklch(82% 0.006 240);
+  --default-400:  oklch(68% 0.006 240);
+  --default-500:  oklch(55% 0.006 240);
+  --default-600:  oklch(35% 0.006 240);
+  --default-700:  oklch(15% 0.005 240);
+
+  --field-background: oklch(100% 0 0);
+  --field-border:     oklch(85% 0.005 240);
+  --divider:          oklch(88% 0.005 240);
+  --divider-soft:     oklch(94% 0.004 240);
+  --divider-strong:   oklch(78% 0.006 240);
+
+  --success:           oklch(58% 0.14 162);
+  --success-foreground: oklch(98% 0.01 162);
+  --success-soft:      oklch(58% 0.14 162 / 0.10);
+  --warning:           oklch(60% 0.14 60);
+  --warning-foreground: oklch(98% 0.01 60);
+  --warning-soft:      oklch(60% 0.14 60 / 0.10);
+  --danger:            oklch(58% 0.22 25);
+  --danger-foreground: oklch(98% 0.01 25);
+  --danger-soft:       oklch(58% 0.22 25 / 0.08);
+
+  --overlay-background: oklch(15% 0.01 240 / 0.5);
+  --overlay-scrim:      oklch(15% 0.01 240 / 0.32);
+
+  --chart-line-prev: var(--default-400);
+  --chart-pr:        oklch(58% 0.14 162);
+  --heat-0:          var(--default-100);
+  --heat-1:          rgba(var(--accent-rgb), 0.25);
+  --heat-2:          rgba(var(--accent-rgb), 0.50);
+  --heat-3:          rgba(var(--accent-rgb), 0.78);
+}
+
+/* ── Base ────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
+  background: #000;
+  color: var(--foreground);
+}
+button { font-family: inherit; }
+
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+::selection { background: var(--accent); color: var(--accent-foreground); }
+
+:where(button, input, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll::-webkit-scrollbar-thumb {
+  background: var(--divider-strong); border-radius: 3px;
+}
+.scroll::-webkit-scrollbar-track { background: transparent; }
