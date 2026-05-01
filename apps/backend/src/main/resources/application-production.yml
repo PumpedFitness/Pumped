@@ -12,3 +12,7 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+
+swagger:
+  username: ${SWAGGER_USERNAME}
+  password: ${SWAGGER_PASSWORD}
