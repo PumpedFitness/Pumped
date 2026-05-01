@@ -1,14 +1,9 @@
-import cz.habarta.typescript.generator.JsonLibrary
-import cz.habarta.typescript.generator.TypeScriptFileType
-import cz.habarta.typescript.generator.TypeScriptOutputKind
-
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.21"
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.2.21"
-    id("cz.habarta.typescript-generator") version "4.0.0"
 }
 
 group = "de.pumpedfitness"
@@ -77,24 +72,4 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-tasks {
-    generateTypeScript {
-        val userContractRequestPattern = "de.pumpedfitness.dumbbell.infrastructure.web.user.dto.request.**"
-        val userContractResponsePattern = "de.pumpedfitness.dumbbell.infrastructure.web.user.dto.response.**"
-
-        val tsOutputDir = providers.gradleProperty("tsOutputDir")
-            .orElse("src/main/resources/typescript/")
-            .map { it.trimEnd('/') }
-
-        jsonLibrary = JsonLibrary.jackson3
-        outputKind = TypeScriptOutputKind.module
-        outputFileType = TypeScriptFileType.implementationFile
-        outputFile = tsOutputDir.map { "$it/user-contracts.ts" }.get()
-        classPatterns = listOf(userContractRequestPattern, userContractResponsePattern)
-
-        // needed else it tries to generate a type for the companion object of each data class which leads to namespace errors
-        excludeClassPatterns = listOf("**${'$'}Companion")
-    }
 }
