@@ -1,8 +1,8 @@
 import {useState, useEffect} from 'react';
 import {View, Text, ScrollView, Pressable} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {Button} from 'heroui-native';
+import {AppView} from '../components/AppView';
 import {AppBar} from '../components/AppBar';
 import {IconButton, Icons, SvgIcon} from '../components/IconButton';
 import {SyncStatus} from '../components/SyncStatus';
@@ -10,7 +10,14 @@ import {Stepper} from '../components/Stepper';
 import {Badge} from '../components/Badge';
 import {colors} from '../theme/tokens';
 
-function SetRow({index, weight, reps, state}: {index: number; weight: number; reps: number; state: 'done' | 'active' | 'pending'}) {
+type SetRowProps = {
+  index: number;
+  weight: number;
+  reps: number;
+  state: 'done' | 'active' | 'pending';
+};
+
+function SetRow({index, weight, reps, state}: SetRowProps) {
   return (
     <View className={`flex-row items-center gap-2 rounded-sm mt-1 p-2.5 px-3 ${state === 'active' ? 'bg-surface-hover border border-accent' : ''}`}>
       <Text className={`w-8 mono-sm ${state === 'active' ? 'text-accent' : 'text-muted'}`}>{index}</Text>
@@ -33,7 +40,11 @@ function SetRow({index, weight, reps, state}: {index: number; weight: number; re
   );
 }
 
-function NumChip({children}: {children: number}) {
+type NumChipProps = {
+  children: number;
+};
+
+function NumChip({children}: NumChipProps) {
   return (
     <View className="w-7 h-7 rounded-sm items-center justify-center border border-border">
       <Text className="mono-sm text-muted">{children}</Text>
@@ -42,7 +53,6 @@ function NumChip({children}: {children: number}) {
 }
 
 export function ActiveWorkoutScreen() {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [weight, setWeight] = useState(185);
   const [reps, setReps] = useState(8);
@@ -57,7 +67,7 @@ export function ActiveWorkoutScreen() {
   const restSec = String(rest % 60).padStart(2, '0');
 
   return (
-    <View className="flex-1 bg-background" style={{paddingTop: insets.top}}>
+    <AppView>
       <AppBar
         eyebrow="28:14"
         title="Push Day"
@@ -138,6 +148,6 @@ export function ActiveWorkoutScreen() {
           ))}
         </View>
       </ScrollView>
-    </View>
+    </AppView>
   );
 }

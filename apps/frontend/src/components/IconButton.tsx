@@ -2,13 +2,13 @@ import {Pressable} from 'react-native';
 import Svg, {Path} from 'react-native-svg';
 import {colors} from '../theme/tokens';
 
-interface IconButtonProps {
+type IconButtonProps = {
   icon: string;
   onPress?: () => void;
   label: string;
   bordered?: boolean;
   size?: number;
-}
+};
 
 export function IconButton({icon, onPress, label, bordered, size = 20}: IconButtonProps) {
   return (
@@ -23,7 +23,14 @@ export function IconButton({icon, onPress, label, bordered, size = 20}: IconButt
   );
 }
 
-export function SvgIcon({d, size = 20, color = 'currentColor', strokeWidth = 2}: {d: string; size?: number; color?: string; strokeWidth?: number}) {
+type SvgIconProps = {
+  d: string;
+  size?: number;
+  color?: string;
+  strokeWidth?: number;
+};
+
+export function SvgIcon({d, size = 20, color = 'currentColor', strokeWidth = 2}: SvgIconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
       <Path d={d} />

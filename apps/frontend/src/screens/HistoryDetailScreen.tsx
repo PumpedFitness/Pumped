@@ -1,13 +1,19 @@
 import {View, Text, ScrollView} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
+import {AppView} from '../components/AppView';
 import {AppBar} from '../components/AppBar';
 import {IconButton, Icons, SvgIcon} from '../components/IconButton';
 import {Stat} from '../components/Stat';
 import {Badge} from '../components/Badge';
 import {colors} from '../theme/tokens';
 
-function ExerciseSummary({name, order, sets}: {name: string; order: number; sets: {w: number; r: number; pr?: boolean}[]}) {
+type ExerciseSummaryProps = {
+  name: string;
+  order: number;
+  sets: {w: number; r: number; pr?: boolean}[];
+};
+
+function ExerciseSummary({name, order, sets}: ExerciseSummaryProps) {
   return (
     <View className="rounded-md overflow-hidden bg-surface-raised border border-border">
       <View className="p-3 px-3.5 flex-row items-center justify-between border-b border-border-soft">
@@ -44,11 +50,10 @@ function ExerciseSummary({name, order, sets}: {name: string; order: number; sets
 }
 
 export function HistoryDetailScreen() {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
   return (
-    <View className="flex-1 bg-background" style={{paddingTop: insets.top}}>
+    <AppView>
       <AppBar
         title="Push Day"
         eyebrow="WED · APR 22"
@@ -98,6 +103,6 @@ export function HistoryDetailScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </AppView>
   );
 }

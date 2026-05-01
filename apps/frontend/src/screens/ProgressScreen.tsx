@@ -1,13 +1,26 @@
 import {useMemo, useState} from 'react';
 import {View, Text, ScrollView, Pressable} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {AppView} from '../components/AppView';
 import {Sparkline} from '../components/Sparkline';
 import {YearHeatmap} from '../components/YearHeatmap';
 import {Icons, SvgIcon} from '../components/IconButton';
 import {colors} from '../theme/tokens';
-import {withUniwind} from "uniwind";
 
-const liftData = [
+type LiftDatum = {
+  label: string;
+  value: string;
+  delta: string;
+  data: number[];
+};
+
+type PREntry = {
+  name: string;
+  detail: string;
+  when: string;
+  highlight: boolean;
+};
+
+const liftData: LiftDatum[] = [
   {label: 'Bench', value: '235', delta: '+15', data: [195, 200, 197, 205, 210, 208, 215, 220, 195, 222, 228, 235]},
   {label: 'Squat', value: '315', delta: '+10', data: [270, 275, 280, 278, 285, 290, 288, 295, 300, 295, 308, 315]},
   {label: 'Dead.', value: '385', delta: '+5', data: [340, 345, 350, 355, 360, 358, 365, 370, 365, 375, 380, 385]},
@@ -15,7 +28,7 @@ const liftData = [
 
 const ranges = ['1M', '3M', '6M', '1Y', 'ALL'];
 
-const recentPRs = [
+const recentPRs: PREntry[] = [
   {name: 'Bench Press', detail: '235 lb x 1 · est. 1RM', when: '2D AGO', highlight: true},
   {name: 'Squat', detail: '315 lb x 3 · volume PR', when: '5D AGO', highlight: true},
   {name: 'Deadlift', detail: '385 lb x 1', when: '2W AGO', highlight: false},
@@ -24,8 +37,6 @@ const recentPRs = [
 export function ProgressScreen() {
   const [lift, setLift] = useState('Bench');
   const [range, setRange] = useState('3M');
-
-  const StyledSafeAreaView = withUniwind(SafeAreaView)
 
   const heatmap = useMemo(() => {
     const map = new Map<string, number>();
@@ -45,7 +56,7 @@ export function ProgressScreen() {
   }, []);
 
   return (
-    <StyledSafeAreaView className='flex-1 bg-background'>
+    <AppView>
       <ScrollView className="flex-1 px-4 pt-2">
         {/* Sparkline trio */}
         <View className="flex-row rounded-sm overflow-hidden mb-5 border border-border">
@@ -114,6 +125,6 @@ export function ProgressScreen() {
           ))}
         </View>
       </ScrollView>
-    </StyledSafeAreaView>
+    </AppView>
   );
 }

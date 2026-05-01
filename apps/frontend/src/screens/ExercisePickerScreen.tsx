@@ -3,11 +3,16 @@ import {View, Text, TextInput, ScrollView, Pressable} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {Button} from 'heroui-native';
+import {AppView} from '../components/AppView';
 import {AppBar} from '../components/AppBar';
 import {IconButton, Icons, SvgIcon} from '../components/IconButton';
 import {colors} from '../theme/tokens';
 
-interface ExerciseItem { name: string; meta: string; last?: string; }
+type ExerciseItem = {
+  name: string;
+  meta: string;
+  last?: string;
+};
 
 const exerciseGroups: {head: string; items: ExerciseItem[]}[] = [
   {head: 'Recent', items: [
@@ -44,7 +49,7 @@ export function ExercisePickerScreen() {
     query ? items.filter(i => i.name.toLowerCase().includes(query.toLowerCase())) : items;
 
   return (
-    <View className="flex-1 bg-background" style={{paddingTop: insets.top}}>
+    <AppView>
       <AppBar
         title="Add Exercises"
         leading={<IconButton icon={Icons.x} label="Cancel" onPress={() => navigation.goBack()} />}
@@ -104,6 +109,6 @@ export function ExercisePickerScreen() {
           <Button.Label>Add {selected.size > 0 ? `${selected.size} ` : ''}exercise{selected.size === 1 ? '' : 's'}</Button.Label>
         </Button>
       </View>
-    </View>
+    </AppView>
   );
 }
