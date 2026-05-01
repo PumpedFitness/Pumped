@@ -19,4 +19,6 @@ data class WorkoutTemplateExercise(
     val notes: String?,
     val createdAt: Long,
     val updatedAt: Long,
-)
+) {
+    companion object {}
+}

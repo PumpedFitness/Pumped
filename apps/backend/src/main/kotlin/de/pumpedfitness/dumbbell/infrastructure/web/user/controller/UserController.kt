@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -57,7 +58,7 @@ class UserController(
         ApiResponse(responseCode = "409", description = "Username already taken"),
     )
     @PostMapping()
-    fun registerUser(@RequestBody userRegisterRequest: UserRegisterRequest): ResponseEntity<UserRegisterResponse> {
+    fun registerUser(@Valid @RequestBody userRegisterRequest: UserRegisterRequest): ResponseEntity<UserRegisterResponse> {
         val userDto = userRegisterMapper.toDto(userRegisterRequest)
         val registeredUser = userServicePort.registerUser(userDto)
         val body = userRegisterMapper.toResponse(registeredUser)
@@ -70,7 +71,7 @@ class UserController(
         ApiResponse(responseCode = "401", description = "Invalid credentials"),
     )
     @PostMapping("/login")
-    fun loginUser(@RequestBody userLoginRequest: UserLoginRequest): ResponseEntity<UserLoginResponse> {
+    fun loginUser(@Valid @RequestBody userLoginRequest: UserLoginRequest): ResponseEntity<UserLoginResponse> {
         authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(
                 userLoginRequest.username,
@@ -157,7 +158,7 @@ class UserController(
     )
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/auth/me")
-    fun updateMe(@RequestBody updateMeRequest: UpdateMeRequest, principal: Principal): ResponseEntity<GetMeResponse> {
+    fun updateMe(@Valid @RequestBody updateMeRequest: UpdateMeRequest, principal: Principal): ResponseEntity<GetMeResponse> {
         val updatedUser = userServicePort.updateUser(
             userId = principal.name,
             updateMeRequest.username,

@@ -20,4 +20,6 @@ data class WorkoutTemplate(
 
     val createdAt: Long,
     val updatedAt: Long
-)
+) {
+    companion object {}
+}

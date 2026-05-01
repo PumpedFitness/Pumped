@@ -9,5 +9,5 @@ interface UserServicePort {
     fun findUserById(id: String): UserDto
     fun findUserIdByUsername(username: String): String
     fun loadUserDetailsById(id: String): UserDetails
-    fun updateUser(userId: String, username: String, description: String, profilePictureUrl: String): UserDto
+    fun updateUser(userId: String, username: String, description: String?, profilePictureUrl: String?): UserDto
 }

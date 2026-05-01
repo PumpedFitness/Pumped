@@ -14,4 +14,6 @@ data class WorkoutSession(
     val startedAt: Long,
     val endedAt: Long?,
     val notes: String?,
-)
+) {
+    companion object {}
+}

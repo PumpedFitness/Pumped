@@ -72,8 +72,8 @@ class UserServiceAdapter(
     override fun updateUser(
         userId: String,
         username: String,
-        description: String,
-        profilePictureUrl: String
+        description: String?,
+        profilePictureUrl: String?
     ): UserDto {
         val userId = UUID.fromString(userId)
         val user = userRepository.findById(userId).orElseThrow(
@@ -81,8 +81,8 @@ class UserServiceAdapter(
         )
         val updatedUser = user.copy(
             username = username,
-            description = description,
-            profilePicture = profilePictureUrl,
+            description = description ?: user.description,
+            profilePicture = profilePictureUrl ?: user.profilePicture,
             updated = System.currentTimeMillis()
         )
         val savedUser = userRepository.save(updatedUser)

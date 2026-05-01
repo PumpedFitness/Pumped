@@ -1,0 +1,9 @@
+package de.pumpedfitness.dumbbell.application.port.out
+
+import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutSession
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.UUID
+
+interface WorkoutSessionRepository : JpaRepository<WorkoutSession, UUID> {
+    fun findByUserIdOrderByStartedAtDesc(userId: UUID): List<WorkoutSession>
+}
