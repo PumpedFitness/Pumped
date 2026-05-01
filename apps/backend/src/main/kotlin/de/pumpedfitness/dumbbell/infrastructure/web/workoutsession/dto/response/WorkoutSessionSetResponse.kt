@@ -1,4 +1,4 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 

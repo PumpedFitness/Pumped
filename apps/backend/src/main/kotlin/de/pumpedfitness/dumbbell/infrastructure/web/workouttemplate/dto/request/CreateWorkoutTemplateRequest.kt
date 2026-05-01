@@ -1,4 +1,4 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request
+package de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.request
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid

@@ -1,4 +1,4 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response
+package de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.response
 
 import de.pumpedfitness.dumbbell.domain.model.workout.enum.WorkoutTemplateScheduleType
 import de.pumpedfitness.dumbbell.domain.model.workout.enum.WorkoutWeekday
