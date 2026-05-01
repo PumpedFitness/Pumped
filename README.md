@@ -144,3 +144,23 @@ bun run backend
 The `application.properties` file is used for local development with hardcoded defaults. On the server,
 `SPRING_PROFILES_ACTIVE=production` activates `application-production.yml` which reads all credentials from environment
 variables injected by the deploy action.
+
+### API Docs (Swagger UI)
+
+The backend requires an `X-API-Version` header on all requests. Swagger UI does not send this automatically, so you will
+get a `400 Bad Request` when trying out endpoints without it.
+
+Add the header globally before making requests:
+
+1. Open [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+2. Click **Authorize** (top right)
+3. Alternatively, use the **curl** examples below and pass the header manually:
+
+```bash
+curl http://localhost:8080/user/login \
+  -H "Content-Type: application/json" \
+  -H "X-API-Version: 1" \
+  -d '{"email":"you@example.com","password":"secret"}'
+```
+
+Swagger UI itself (`/swagger-ui/**`, `/v3/api-docs/**`) is accessible without the header.

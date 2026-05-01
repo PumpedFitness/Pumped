@@ -11,13 +11,13 @@
     "frontend:android": "bun run --cwd apps/frontend android",
     "frontend:lint": "bun run --cwd apps/frontend lint",
     "frontend:test": "bun run --cwd apps/frontend test",
-    "backend": "docker compose -f apps/backend/docker-compose.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
+    "backend": "docker compose -f apps/backend/docker-compose.dev.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
     "backend:build": "./apps/backend/gradlew -p apps/backend build",
     "backend:test": "./apps/backend/gradlew -p apps/backend test",
-    "backend:restart": "lsof -ti :8080 | xargs kill -9 2>/dev/null; docker compose -f apps/backend/docker-compose.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
-    "services:up": "docker compose -f apps/backend/docker-compose.yml up -d",
-    "services:down": "docker compose -f apps/backend/docker-compose.yml down",
-    "services:logs": "docker compose -f apps/backend/docker-compose.yml logs -f",
+    "backend:restart": "lsof -ti :8080 | xargs kill -9 2>/dev/null; docker compose -f apps/backend/docker-compose.dev.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
+    "services:up": "docker compose -f apps/backend/docker-compose.dev.yml up -d",
+    "services:down": "docker compose -f apps/backend/docker-compose.dev.yml down",
+    "services:logs": "docker compose -f apps/backend/docker-compose.dev.yml logs -f",
     "install:all": "bun install"
   }
 }
