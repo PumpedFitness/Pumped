@@ -38,8 +38,8 @@ bun run frontend:ios
 # Run on Android
 bun run frontend:android
 
-# Start backend services (MariaDB, Redis)
-bun run docker:up
+# Start services (MariaDB, Redis)
+bun run services:up
 
 # Run the backend
 bun run backend
@@ -57,6 +57,7 @@ bun run backend
 | `bun run backend`          | Run the Spring Boot backend        |
 | `bun run backend:build`    | Build the backend                  |
 | `bun run backend:test`     | Run backend tests                  |
-| `bun run docker:up`        | Start backend Docker services      |
-| `bun run docker:down`      | Stop backend Docker services       |
+| `bun run services:up`        | Start MariaDB & Redis              |
+| `bun run services:down`     | Stop MariaDB & Redis               |
+| `bun run services:logs`     | Tail service logs                  |
 | `bun run install:all`      | Install all workspace dependencies |
