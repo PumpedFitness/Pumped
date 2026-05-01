@@ -97,3 +97,5 @@ jobs:
           db-password: ${{ secrets.DB_PASSWORD }}
           redis-password: ${{ secrets.REDIS_PASSWORD }}
           jwt-secret: ${{ secrets.JWT_SECRET }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
