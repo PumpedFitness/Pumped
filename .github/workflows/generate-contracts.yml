@@ -1,0 +1,66 @@
+name: Generate TypeScript Contracts
+
+on:
+  push:
+    branches: ["**"]
+    paths: [apps/backend/**]
+  workflow_dispatch:
+    inputs:
+      ts_output_dir:
+        description: "Directory where generated contracts are written"
+        required: false
+        default: "src/main/resources/typescript/"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ts-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-and-amend:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    env:
+      TS_OUTPUT_DIR: ${{ github.event.inputs.ts_output_dir || vars.TS_OUTPUT_DIR || 'src/main/resources' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Generate TypeScript contracts
+        run: ./apps/backend/gradlew -p apps/backend --no-daemon --console=plain generateTypeScript -PtsOutputDir="${TS_OUTPUT_DIR}"
+
+      - name: Amend commit with generated changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          contract_file="${TS_OUTPUT_DIR%/}/user-contracts.ts"
+          author_name_email="$(git show -s --format='%an <%ae>' HEAD)"
+          author_date="$(git show -s --format='%aI' HEAD)"
+
+          git add "$contract_file"
+
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+
+          git commit --amend --no-edit --author "$author_name_email" --date "$author_date"
+          git push --force-with-lease origin "HEAD:${GITHUB_REF_NAME}"

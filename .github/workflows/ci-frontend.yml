@@ -1,0 +1,22 @@
+name: CI Frontend
+
+on:
+  push:
+    branches: [main]
+    paths: [apps/frontend/**]
+  pull_request:
+    branches: [main]
+    paths: [apps/frontend/**]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Frontend
+        uses: ./.github/actions/setup-frontend
+
+      - name: Lint
+        run: bun run frontend:lint
+
+      - name: Test
+        run: bun run frontend:test

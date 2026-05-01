@@ -1,0 +1,15 @@
+name: Setup Backend
+description: Checkout and set up JDK 21 with Gradle cache
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup JDK 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "21"
+        cache: gradle

@@ -1,0 +1,19 @@
+name: CI Backend
+
+on:
+  push:
+    branches: [main]
+    paths: [apps/backend/**]
+  pull_request:
+    branches: [main]
+    paths: [apps/backend/**]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Backend
+        uses: ./.github/actions/setup-backend
+
+      - name: Build & Test
+        run: ./apps/backend/gradlew -p apps/backend build --no-daemon --console=plain
