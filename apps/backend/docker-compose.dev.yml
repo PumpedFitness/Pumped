@@ -4,21 +4,21 @@ services:
     container_name: mariadb-dumbbell
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME:-dumbbell}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: dumbbell
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     command:
       [
         "--character-set-server=utf8mb4",
         "--collation-server=utf8mb4_unicode_ci",
       ]
+    ports:
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - dumbbell-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,20 +28,15 @@ services:
     image: redis:alpine
     container_name: redis-dumbbell
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
-    networks:
-      - dumbbell-net
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
-
-networks:
-  dumbbell-net:
-    name: dumbbell-net
 
 volumes:
   db_data:

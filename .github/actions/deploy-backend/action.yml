@@ -1,0 +1,133 @@
+name: Deploy Backend
+description: Blue/green deploy via SSH — pulls new image, starts inactive slot, health checks it, swaps nginx, stops old slot
+
+inputs:
+  ssh-host:
+    description: Server hostname or IP
+    required: true
+  ssh-user:
+    description: SSH user
+    required: true
+  ssh-private-key:
+    description: SSH private key
+    required: true
+  image-name:
+    description: Full image name including registry (e.g. ghcr.io/pumpedfitness/dumbbell-backend)
+    required: true
+  image-tag:
+    description: Image tag to deploy
+    required: false
+    default: latest
+  registry-username:
+    description: GHCR username
+    required: true
+  registry-password:
+    description: GHCR password (GITHUB_TOKEN)
+    required: true
+  db-user:
+    description: MariaDB application user
+    required: true
+  db-password:
+    description: MariaDB application user password
+    required: true
+  db-name:
+    description: MariaDB database name
+    required: false
+    default: dumbbell
+  redis-password:
+    description: Redis password
+    required: true
+  jwt-secret:
+    description: JWT signing secret
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Copy compose and nginx files to server
+      shell: bash
+      run: |
+        echo "${{ inputs.ssh-private-key }}" > /tmp/ssh_key
+        chmod 600 /tmp/ssh_key
+        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
+          "mkdir -p ~/dumbbell/nginx"
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          apps/backend/docker-compose.prod.yml \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/docker-compose.prod.yml
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          apps/backend/nginx/nginx.conf \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/nginx/nginx.conf
+
+    - name: Blue/green deploy
+      shell: bash
+      run: |
+        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} << 'ENDSSH'
+          set -euo pipefail
+
+          export IMAGE_OWNER="{{ inputs.image-name }}"
+          IMAGE_OWNER=$(echo "$IMAGE_OWNER" | cut -d'/' -f2)
+          export IMAGE_TAG="${{ inputs.image-tag }}"
+          export DB_USER="${{ inputs.db-user }}"
+          export DB_PASSWORD="${{ inputs.db-password }}"
+          export DB_NAME="${{ inputs.db-name }}"
+          export REDIS_PASSWORD="${{ inputs.redis-password }}"
+          export JWT_SECRET="${{ inputs.jwt-secret }}"
+
+          cd ~/dumbbell
+
+          # Log in to GHCR
+          echo "${{ inputs.registry-password }}" | docker login ghcr.io -u "${{ inputs.registry-username }}" --password-stdin
+
+          # Pull the new image
+          docker compose -f docker-compose.prod.yml pull backend-blue backend-green
+
+          # Determine which slot is currently active
+          UPSTREAM=$(cat nginx/upstream.conf)
+          if echo "$UPSTREAM" | grep -q "backend-blue"; then
+            ACTIVE=blue
+            INACTIVE=green
+          else
+            ACTIVE=green
+            INACTIVE=blue
+          fi
+
+          echo "Active slot: $ACTIVE — deploying to: $INACTIVE"
+
+          # Start the inactive slot
+          docker compose -f docker-compose.prod.yml up -d --no-deps "backend-${INACTIVE}"
+
+          # Wait for it to be healthy
+          echo "Waiting for backend-${INACTIVE} to be healthy..."
+          for i in $(seq 1 24); do
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "dumbbell-backend-${INACTIVE}" 2>/dev/null || echo "starting")
+            echo "  attempt $i: $STATUS"
+            if [ "$STATUS" = "healthy" ]; then
+              break
+            fi
+            if [ "$i" = "24" ]; then
+              echo "backend-${INACTIVE} failed to become healthy — aborting, keeping $ACTIVE live"
+              docker compose -f docker-compose.prod.yml stop "backend-${INACTIVE}"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          # Swap nginx upstream to the new slot
+          cat > nginx/upstream.conf << EOF
+          upstream dumbbell_backend {
+              server dumbbell-backend-${INACTIVE}:8080;
+          }
+          EOF
+
+          docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload
+
+          echo "Traffic switched to backend-${INACTIVE}"
+
+          # Stop the old slot
+          docker compose -f docker-compose.prod.yml stop "backend-${ACTIVE}"
+
+          echo "Deploy complete — active slot is now: $INACTIVE"
+        ENDSSH
+        rm -f /tmp/ssh_key

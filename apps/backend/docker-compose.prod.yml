@@ -1,0 +1,70 @@
+services:
+  backend-blue:
+    image: ghcr.io/${IMAGE_OWNER}/dumbbell-backend:${IMAGE_TAG:-latest}
+    container_name: dumbbell-backend-blue
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DB_HOST: mariadb-dumbbell
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-dumbbell}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis-dumbbell
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+    networks:
+      - dumbbell-net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  backend-green:
+    image: ghcr.io/${IMAGE_OWNER}/dumbbell-backend:${IMAGE_TAG:-latest}
+    container_name: dumbbell-backend-green
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DB_HOST: mariadb-dumbbell
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-dumbbell}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis-dumbbell
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+    networks:
+      - dumbbell-net
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  nginx:
+    image: nginx:alpine
+    container_name: dumbbell-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf
+    networks:
+      - dumbbell-net
+    depends_on:
+      - backend-blue
+      - backend-green
+
+networks:
+  dumbbell-net:
+    external: true
+    name: dumbbell-net
