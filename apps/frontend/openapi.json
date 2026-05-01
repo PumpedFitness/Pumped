@@ -1,0 +1,1758 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Dumbbell API",
+        "description": "REST API for the Dumbbell fitness tracking application",
+        "version": "0.0.1-SNAPSHOT"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Exercise",
+            "description": "Browse and retrieve exercises"
+        },
+        {
+            "name": "Workout Template",
+            "description": "Create and manage personal workout templates"
+        },
+        {
+            "name": "Workout Session Sets",
+            "description": "Log and retrieve sets within a workout session"
+        },
+        {
+            "name": "User",
+            "description": "User registration, authentication, and profile management"
+        },
+        {
+            "name": "Workout Session",
+            "description": "Start, track and finish workout sessions"
+        }
+    ],
+    "paths": {
+        "/workout-template/{templateId}": {
+            "get": {
+                "tags": [
+                    "Workout Template"
+                ],
+                "summary": "Get template by ID",
+                "description": "Returns a single workout template by its UUID.",
+                "operationId": "getTemplate",
+                "parameters": [
+                    {
+                        "name": "templateId",
+                        "in": "path",
+                        "description": "UUID of the workout template",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Workout template returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Template not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Workout Template"
+                ],
+                "summary": "Update template",
+                "description": "Updates the name and description of an existing workout template.",
+                "operationId": "updateTemplate",
+                "parameters": [
+                    {
+                        "name": "templateId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateWorkoutTemplateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Workout template updated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Template not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Workout Template"
+                ],
+                "summary": "Delete template",
+                "description": "Deletes a workout template owned by the authenticated user.",
+                "operationId": "deleteTemplate",
+                "parameters": [
+                    {
+                        "name": "templateId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Workout template deleted",
+                        "content": {}
+                    },
+                    "404": {
+                        "description": "Template not found",
+                        "content": {}
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {}
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/user/me": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get current user profile",
+                "description": "Returns the profile of the currently authenticated user.",
+                "operationId": "getMe",
+                "responses": {
+                    "200": {
+                        "description": "User profile returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMeResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update current user profile",
+                "description": "Updates the username, description, and/or profile picture of the currently authenticated user.",
+                "operationId": "updateMe",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateMeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated, returns updated profile",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetMeResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/workout-template": {
+            "get": {
+                "tags": [
+                    "Workout Template"
+                ],
+                "summary": "Get all templates",
+                "description": "Returns all workout templates owned by the authenticated user.",
+                "operationId": "getMyTemplates",
+                "responses": {
+                    "200": {
+                        "description": "List of workout templates returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Workout Template"
+                ],
+                "summary": "Create template",
+                "description": "Creates a new workout template for the authenticated user.",
+                "operationId": "createTemplate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateWorkoutTemplateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Workout template created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutTemplateResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/workout-session": {
+            "get": {
+                "tags": [
+                    "Workout Session"
+                ],
+                "summary": "Get all sessions",
+                "description": "Returns all workout sessions for the authenticated user, newest first.",
+                "operationId": "getMySessions",
+                "responses": {
+                    "200": {
+                        "description": "List of sessions returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Workout Session"
+                ],
+                "summary": "Start session",
+                "description": "Starts a new workout session for the authenticated user.",
+                "operationId": "startSession",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StartWorkoutSessionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Session started",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/workout-session/{sessionId}/sets": {
+            "get": {
+                "tags": [
+                    "Workout Session Sets"
+                ],
+                "summary": "Get all sets",
+                "description": "Returns all sets logged in a specific workout session, ordered by set index.",
+                "operationId": "getSetsForSession",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "description": "UUID of the workout session",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of sets returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Session belongs to another user",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Workout Session Sets"
+                ],
+                "summary": "Log a set",
+                "description": "Logs a new set for an exercise within a workout session.",
+                "operationId": "logSet",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LogSetRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Set logged",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Session belongs to another user",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionSetResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/user/register": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Register a new user",
+                "description": "Creates a new user account. Returns the created user's username and timestamps.",
+                "operationId": "registerUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRegisterRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "User successfully registered",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRegisterResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body (validation failure)",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRegisterResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Username already taken",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserRegisterResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/refresh": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Refresh JWT token",
+                "description": "Issues a new JWT token and invalidates the current one.",
+                "operationId": "refreshToken",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserSessionRefreshRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "New JWT token returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserLoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserLoginResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/user/logout": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Logout",
+                "description": "Invalidates the current JWT token by adding it to the denylist.",
+                "operationId": "logoutUser",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "content": {}
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {}
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/user/login": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Login",
+                "description": "Authenticates the user and returns a JWT bearer token.",
+                "operationId": "loginUser",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserLoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful, JWT token returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserLoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserLoginResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/workout-session/{sessionId}/finish": {
+            "patch": {
+                "tags": [
+                    "Workout Session"
+                ],
+                "summary": "Finish session",
+                "description": "Marks a workout session as finished by setting the end time.",
+                "operationId": "finishSession",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FinishWorkoutSessionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Session finished",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/workout-session/{sessionId}": {
+            "get": {
+                "tags": [
+                    "Workout Session"
+                ],
+                "summary": "Get session by ID",
+                "description": "Returns a single workout session by its UUID.",
+                "operationId": "getSession",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "description": "UUID of the workout session",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkoutSessionResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Workout Session"
+                ],
+                "summary": "Delete session",
+                "description": "Deletes a workout session owned by the authenticated user.",
+                "operationId": "deleteSession",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Session deleted",
+                        "content": {}
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "content": {}
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {}
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/exercise": {
+            "get": {
+                "tags": [
+                    "Exercise"
+                ],
+                "summary": "Get all exercises",
+                "description": "Returns a list of all available exercises.",
+                "operationId": "getAllExercises",
+                "responses": {
+                    "200": {
+                        "description": "List of exercises returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ExerciseDto"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No exercises found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ExerciseDto"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ExerciseDto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/exercise/{id}": {
+            "get": {
+                "tags": [
+                    "Exercise"
+                ],
+                "summary": "Get exercise by ID",
+                "description": "Returns the details of a single exercise by its UUID.",
+                "operationId": "getExerciseById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the exercise to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Exercise returned",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExerciseDto"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Exercise not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExerciseDto"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExerciseDto"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/workout-session/{sessionId}/sets/{setId}": {
+            "delete": {
+                "tags": [
+                    "Workout Session Sets"
+                ],
+                "summary": "Delete a set",
+                "description": "Deletes a specific logged set by its UUID.",
+                "operationId": "deleteSet",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "setId",
+                        "in": "path",
+                        "description": "UUID of the set to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Set deleted",
+                        "content": {}
+                    },
+                    "403": {
+                        "description": "Set belongs to another user's session",
+                        "content": {}
+                    },
+                    "404": {
+                        "description": "Set not found",
+                        "content": {}
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "content": {}
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UpdateWorkoutTemplateRequest": {
+                "type": "object",
+                "description": "Request to update an existing workout template",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "New name of the workout template",
+                        "example": "Push Day B",
+                        "maxLength": 100,
+                        "minLength": 1
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Updated description",
+                        "example": "Updated chest and shoulder focus",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "WorkoutTemplateExerciseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "workoutTemplateId": {
+                        "type": "string"
+                    },
+                    "exerciseId": {
+                        "type": "string"
+                    },
+                    "orderIndex": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sets": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "targetReps": {
+                        "type": "string"
+                    },
+                    "targetWeight": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "restSeconds": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "updatedAt": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "createdAt",
+                    "exerciseId",
+                    "id",
+                    "orderIndex",
+                    "sets",
+                    "targetReps",
+                    "updatedAt",
+                    "workoutTemplateId"
+                ]
+            },
+            "WorkoutTemplateResponse": {
+                "type": "object",
+                "description": "Response representing a workout template",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "UUID of the template",
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the template",
+                        "example": "Push Day A"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Optional description",
+                        "example": "Chest, shoulders and triceps"
+                    },
+                    "exercises": {
+                        "type": "array",
+                        "description": "Ordered exercises in this template",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkoutTemplateExerciseDto"
+                        }
+                    },
+                    "createdAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Creation timestamp (epoch ms)",
+                        "example": 1714500000000
+                    },
+                    "updatedAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Last update timestamp (epoch ms)",
+                        "example": 1714500000000
+                    }
+                },
+                "required": [
+                    "createdAt",
+                    "exercises",
+                    "id",
+                    "name",
+                    "updatedAt"
+                ]
+            },
+            "UpdateMeRequest": {
+                "type": "object",
+                "description": "Request body for updating the current user's profile",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "New username",
+                        "example": "john456",
+                        "maxLength": 100,
+                        "minLength": 3,
+                        "pattern": "^[a-zA-Z0-9]+$"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "User bio or description",
+                        "example": "Fitness enthusiast",
+                        "maxLength": 500,
+                        "minLength": 0
+                    },
+                    "profilePictureUrl": {
+                        "type": "string",
+                        "description": "URL of the user's profile picture",
+                        "example": "https://example.com/avatar.png",
+                        "maxLength": 2048,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "username"
+                ]
+            },
+            "GetMeResponse": {
+                "type": "object",
+                "description": "User profile information",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "The user's username",
+                        "example": "john123"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The user's bio or description",
+                        "example": "Fitness enthusiast"
+                    },
+                    "profilePicture": {
+                        "type": "string",
+                        "description": "URL of the user's profile picture",
+                        "example": "https://example.com/avatar.png"
+                    },
+                    "updatedAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Timestamp of the last profile update (epoch milliseconds)",
+                        "example": 1714216800000
+                    }
+                },
+                "required": [
+                    "description",
+                    "profilePicture",
+                    "updatedAt",
+                    "username"
+                ]
+            },
+            "CreateWorkoutTemplateRequest": {
+                "type": "object",
+                "description": "Request to create a new workout template",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the workout template",
+                        "example": "Push Day A",
+                        "maxLength": 100,
+                        "minLength": 1
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Optional description",
+                        "example": "Chest, shoulders and triceps",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "StartWorkoutSessionRequest": {
+                "type": "object",
+                "description": "Request to start a new workout session",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the session",
+                        "example": "Monday Push",
+                        "maxLength": 100,
+                        "minLength": 1
+                    },
+                    "workoutTemplateId": {
+                        "type": "string",
+                        "description": "Optional UUID of a workout template to base this session on",
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "description": "Optional notes",
+                        "example": "Feeling strong",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "WorkoutSessionResponse": {
+                "type": "object",
+                "description": "Response representing a workout session",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "UUID of the session",
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    },
+                    "workoutTemplateId": {
+                        "type": "string",
+                        "description": "Optional UUID of the source template",
+                        "example": "b1c2d3e4-0000-0000-0000-000000000002"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the session",
+                        "example": "Monday Push"
+                    },
+                    "startedAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Start time (epoch ms)",
+                        "example": 1714500000000
+                    },
+                    "endedAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "End time (epoch ms), null if still in progress",
+                        "example": 1714503600000
+                    },
+                    "notes": {
+                        "type": "string",
+                        "description": "Optional notes",
+                        "example": "Felt strong today"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "startedAt"
+                ]
+            },
+            "LogSetRequest": {
+                "type": "object",
+                "description": "Request to log a set within a workout session",
+                "properties": {
+                    "exerciseId": {
+                        "type": "string",
+                        "description": "UUID of the exercise performed",
+                        "example": "c1b2a3d4-0000-0000-0000-000000000002",
+                        "minLength": 1,
+                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                    },
+                    "setIndex": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Index of this set within the exercise (0-based)",
+                        "example": 0,
+                        "minimum": 0
+                    },
+                    "reps": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of reps completed",
+                        "example": 10,
+                        "minimum": 1
+                    },
+                    "weight": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Weight used in kg",
+                        "example": 80.0
+                    },
+                    "restSeconds": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Rest time in seconds after this set",
+                        "example": 90,
+                        "minimum": 0
+                    },
+                    "durationSeconds": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Duration of the set in seconds (for timed exercises)",
+                        "example": 30,
+                        "minimum": 1
+                    },
+                    "notes": {
+                        "type": "string",
+                        "description": "Optional notes",
+                        "example": "Felt heavy",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "exerciseId",
+                    "reps",
+                    "setIndex"
+                ]
+            },
+            "WorkoutSessionSetResponse": {
+                "type": "object",
+                "description": "Response representing a logged set",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "UUID of this set",
+                        "example": "f1e2d3c4-0000-0000-0000-000000000001"
+                    },
+                    "exerciseId": {
+                        "type": "string",
+                        "description": "UUID of the exercise performed",
+                        "example": "c1b2a3d4-0000-0000-0000-000000000002"
+                    },
+                    "setIndex": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Index of this set (0-based)",
+                        "example": 0
+                    },
+                    "reps": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Reps completed",
+                        "example": 10
+                    },
+                    "weight": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Weight in kg",
+                        "example": 80.0
+                    },
+                    "restSeconds": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Rest time in seconds",
+                        "example": 90
+                    },
+                    "durationSeconds": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Duration in seconds",
+                        "example": 30
+                    },
+                    "notes": {
+                        "type": "string",
+                        "description": "Optional notes",
+                        "example": "Felt heavy"
+                    },
+                    "performedAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Time performed (epoch ms)",
+                        "example": 1714500500000
+                    }
+                },
+                "required": [
+                    "exerciseId",
+                    "id",
+                    "performedAt",
+                    "reps",
+                    "setIndex"
+                ]
+            },
+            "UserRegisterRequest": {
+                "type": "object",
+                "description": "Request body for registering a new user account",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "Unique username (3\u2013100 alphanumeric characters)",
+                        "example": "john123",
+                        "maxLength": 100,
+                        "minLength": 3,
+                        "pattern": "^[a-zA-Z0-9]+$"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "Password (min 8 chars, must include uppercase, lowercase, digit, and special character)",
+                        "example": "Secret1!",
+                        "maxLength": 100,
+                        "minLength": 8,
+                        "pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[#?!@$%^&*\\-]).{8,}$"
+                    }
+                },
+                "required": [
+                    "password",
+                    "username"
+                ]
+            },
+            "UserRegisterResponse": {
+                "type": "object",
+                "description": "Response returned after successfully registering a new user",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "The registered username",
+                        "example": "john123"
+                    },
+                    "createdAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Account creation timestamp (epoch milliseconds)",
+                        "example": 1714216800000
+                    },
+                    "updatedAt": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Account last-updated timestamp (epoch milliseconds)",
+                        "example": 1714216800000
+                    }
+                },
+                "required": [
+                    "createdAt",
+                    "updatedAt",
+                    "username"
+                ]
+            },
+            "UserSessionRefreshRequest": {
+                "type": "object",
+                "description": "Request body for refreshing a JWT session token",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "Username of the authenticated user requesting a new token",
+                        "example": "john123"
+                    }
+                },
+                "required": [
+                    "username"
+                ]
+            },
+            "UserLoginResponse": {
+                "type": "object",
+                "description": "Response returned after a successful login or token refresh",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "JWT bearer token to use in the Authorization header",
+                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                },
+                "required": [
+                    "token"
+                ]
+            },
+            "UserLoginRequest": {
+                "type": "object",
+                "description": "Request body for user login",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "description": "The user's username",
+                        "example": "john123",
+                        "maxLength": 100,
+                        "minLength": 3
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "The user's password",
+                        "example": "Secret1!",
+                        "maxLength": 100,
+                        "minLength": 8
+                    }
+                },
+                "required": [
+                    "password",
+                    "username"
+                ]
+            },
+            "FinishWorkoutSessionRequest": {
+                "type": "object",
+                "description": "Request to finish an ongoing workout session",
+                "properties": {
+                    "notes": {
+                        "type": "string",
+                        "description": "Optional closing notes",
+                        "example": "Great pump, PBs on bench",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                }
+            },
+            "ExerciseDto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "muscleGroup": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "CHEST",
+                                "BACK",
+                                "LEGS",
+                                "SHOULDERS",
+                                "ARMS",
+                                "CORE"
+                            ]
+                        }
+                    },
+                    "exerciseCategory": {
+                        "type": "string",
+                        "enum": [
+                            "STRENGTH",
+                            "CARDIO",
+                            "FLEXIBILITY",
+                            "BALANCE",
+                            "OTHER"
+                        ]
+                    },
+                    "equipment": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "DUMBBELL",
+                                "BARBELL",
+                                "KETTLEBELL",
+                                "MACHINE",
+                                "BODYWEIGHT",
+                                "CABLE",
+                                "BAND",
+                                "OTHER"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "equipment",
+                    "exerciseCategory",
+                    "id",
+                    "muscleGroup",
+                    "name"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Provide a JWT token obtained from POST /user/login with header X-API-Version: 1",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

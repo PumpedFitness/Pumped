@@ -1,24 +1,10 @@
-const path = require('path');
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const {getDefaultConfig} = require('expo/metro-config');
 const {withUniwindConfig} = require('uniwind/metro');
 const {
   wrapWithReanimatedMetroConfig,
 } = require('react-native-reanimated/metro-config');
 
-const projectRoot = __dirname;
-const monorepoRoot = path.resolve(projectRoot, '../..');
-
-const defaultConfig = getDefaultConfig(projectRoot);
-
-const config = mergeConfig(defaultConfig, {
-  watchFolders: [monorepoRoot],
-  resolver: {
-    nodeModulesPaths: [
-      path.resolve(projectRoot, 'node_modules'),
-      path.resolve(monorepoRoot, 'node_modules'),
-    ],
-  },
-});
+const config = getDefaultConfig(__dirname);
 
 module.exports = withUniwindConfig(
   wrapWithReanimatedMetroConfig(config),

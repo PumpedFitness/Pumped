@@ -1,4 +1,24 @@
 {
   "name": "PumpedApp",
-  "displayName": "PumpedApp"
+  "displayName": "PumpedApp",
+  "expo": {
+    "name": "Pumped",
+    "slug": "pumped",
+    "version": "0.0.1",
+    "scheme": "pumped",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.pumpedapp",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.pumpedapp",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F1113"
+      }
+    },
+    "plugins": [
+      "expo-sqlite"
+    ]
+  }
 }
