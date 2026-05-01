@@ -36,9 +36,13 @@ jobs:
       - name: Setup Backend
         uses: ./.github/actions/setup-backend
 
+      - name: Compute lowercase image name
+        id: image
+        run: echo "name=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/dumbbell-backend" >> $GITHUB_OUTPUT
+
       - name: Publish image to GHCR
         uses: ./.github/actions/publish-backend
         with:
           registry-username: ${{ github.actor }}
           registry-password: ${{ secrets.GITHUB_TOKEN }}
-          image-name: ghcr.io/${{ github.repository }}/dumbbell-backend
+          image-name: ${{ steps.image.outputs.name }}

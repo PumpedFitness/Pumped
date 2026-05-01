@@ -80,8 +80,8 @@ jib {
         image = "eclipse-temurin:21-jre-alpine"
     }
     to {
-        val repo = System.getenv("GITHUB_REPOSITORY") ?: "pumpedfitness/pumpedmonorepo"
-        image = "ghcr.io/$repo/dumbbell-backend"
+        val repo = (System.getenv("GITHUB_REPOSITORY") ?: "PumpedFitness/Pumped").lowercase()
+        image = "ghcr.io/${repo.substringBefore("/")}/dumbbell-backend"
         tags = setOf("latest", System.getenv("IMAGE_TAG") ?: "dev")
         auth {
             username = System.getenv("REGISTRY_USERNAME") ?: ""
@@ -96,7 +96,7 @@ jib {
             "-XX:MaxRAMPercentage=75.0",
             "-Djava.security.egd=file:/dev/./urandom"
         )
-        val repo = System.getenv("GITHUB_REPOSITORY") ?: "pumpedfitness/pumpedmonorepo"
+        val repo = (System.getenv("GITHUB_REPOSITORY") ?: "pumpedfitness/pumpedmonorepo").lowercase()
         labels = mapOf(
             "org.opencontainers.image.source" to "https://github.com/$repo",
             "org.opencontainers.image.description" to "Dumbbell Spring Boot Backend"
