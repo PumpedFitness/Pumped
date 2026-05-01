@@ -1,0 +1,9 @@
+PUT http://localhost:8080/user/auth/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "username": "newUsername",
+  "description": "Updated profile description",
+  "profilePictureUrl": "https://example.com/profile.jpg"
+}

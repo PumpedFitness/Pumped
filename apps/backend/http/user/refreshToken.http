@@ -1,0 +1,13 @@
+POST http://localhost:8080/user/auth/refresh
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "username": "newUsername"
+}
+
+> {%
+    client.log("Old Token: " + client.global.get("authToken"));
+    client.log("New Token: " + response.body.token);
+    client.global.set("authToken", response.body.token);
+%}

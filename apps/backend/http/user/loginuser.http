@@ -1,0 +1,11 @@
+POST http://localhost:8080/user/login
+Content-Type: application/json
+
+{
+  "username": "testuser123",
+  "password": "Password123!"
+}
+
+> {%
+    client.global.set("authToken", response.body.token);
+%}
