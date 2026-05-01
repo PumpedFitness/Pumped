@@ -1,11 +1,15 @@
 package de.pumpedfitness.dumbbell.application.service
 
+import de.pumpedfitness.dumbbell.application.dto.WorkoutTemplateScheduleDto
+import de.pumpedfitness.dumbbell.application.exception.InvalidWorkoutTemplateScheduleException
 import de.pumpedfitness.dumbbell.application.exception.ResourceNotFoundException
 import de.pumpedfitness.dumbbell.application.exception.UnauthorizedException
 import de.pumpedfitness.dumbbell.application.mapper.WorkoutTemplateDtoMapper
 import de.pumpedfitness.dumbbell.application.port.out.WorkoutTemplateRepository
 import de.pumpedfitness.dumbbell.common.validTestData
 import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutTemplate
+import de.pumpedfitness.dumbbell.domain.model.workout.enum.WorkoutTemplateScheduleType
+import de.pumpedfitness.dumbbell.domain.model.workout.enum.WorkoutWeekday
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -29,6 +33,12 @@ class WorkoutTemplateServiceTest {
 
     private lateinit var workoutTemplateService: WorkoutTemplateServiceAdapter
 
+    private val weeklySchedule = WorkoutTemplateScheduleDto(
+        type = WorkoutTemplateScheduleType.WEEKS,
+        interval = 2,
+        weekdays = listOf(WorkoutWeekday.MONDAY, WorkoutWeekday.THURSDAY),
+    )
+
     @BeforeEach
     fun setUp() {
         workoutTemplateService = WorkoutTemplateServiceAdapter(workoutTemplateRepository, workoutTemplateDtoMapper)
@@ -47,7 +57,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedTemplateSlot)) } returns template
 
             // Act
-            val result = workoutTemplateService.createTemplate(userId.toString(), "Push Day A", "Chest day")
+            val result = workoutTemplateService.createTemplate(userId.toString(), "Push Day A", "Chest day", null)
 
             // Assert
             assertNotNull(result)
@@ -64,7 +74,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } returns template
 
             // Act
-            workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null)
+            workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null, null)
 
             // Assert
             assertEquals(userId, savedSlot.captured.userId)
@@ -80,7 +90,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } returns template
 
             // Act
-            workoutTemplateService.createTemplate(userId.toString(), "Leg Day", "Quads and hamstrings")
+            workoutTemplateService.createTemplate(userId.toString(), "Leg Day", "Quads and hamstrings", null)
 
             // Assert
             assertEquals("Leg Day", savedSlot.captured.name)
@@ -97,7 +107,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } returns template
 
             // Act
-            workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null)
+            workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null, null)
 
             // Assert
             assertNull(savedSlot.captured.description)
@@ -112,7 +122,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(any()) } returns template
 
             // Act
-            val result = workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null)
+            val result = workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null, null)
 
             // Assert
             assertEquals(template.id.toString(), result.id)
@@ -130,11 +140,54 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } returns template
 
             // Act
-            workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null)
+            workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null, null)
 
             // Assert
             assertNotNull(savedSlot.captured.id)
             assertDoesNotThrow { UUID.fromString(savedSlot.captured.id.toString()) }
+        }
+
+        @Test
+        fun `Should Persist Weekly Schedule When Creating Template`() {
+            // Arrange
+            val userId = UUID.randomUUID()
+            val savedSlot = slot<WorkoutTemplate>()
+            val template = WorkoutTemplate.validTestData(
+                userId = userId,
+                scheduleType = weeklySchedule.type,
+                scheduleInterval = weeklySchedule.interval,
+                scheduledWeekdays = weeklySchedule.weekdays.toMutableSet(),
+            )
+
+            every { workoutTemplateRepository.save(capture(savedSlot)) } returns template
+
+            // Act
+            val result = workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null, weeklySchedule)
+
+            // Assert
+            assertEquals(weeklySchedule.type, savedSlot.captured.scheduleType)
+            assertEquals(weeklySchedule.interval, savedSlot.captured.scheduleInterval)
+            assertEquals(weeklySchedule.weekdays.toSet(), savedSlot.captured.scheduledWeekdays)
+            assertEquals(weeklySchedule.type, result.schedule?.type)
+            assertEquals(weeklySchedule.interval, result.schedule?.interval)
+            assertEquals(weeklySchedule.weekdays, result.schedule?.weekdays)
+        }
+
+        @Test
+        fun `Should Throw InvalidWorkoutTemplateScheduleException When Daily Schedule Defines Weekdays`() {
+            // Arrange
+            val userId = UUID.randomUUID()
+            val invalidSchedule = WorkoutTemplateScheduleDto(
+                type = WorkoutTemplateScheduleType.DAYS,
+                interval = 3,
+                weekdays = listOf(WorkoutWeekday.MONDAY),
+            )
+
+            // Act & Assert
+            assertThrows<InvalidWorkoutTemplateScheduleException> {
+                workoutTemplateService.createTemplate(userId.toString(), "Push Day A", null, invalidSchedule)
+            }
+            verify(exactly = 0) { workoutTemplateRepository.save(any()) }
         }
     }
 
@@ -287,7 +340,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(any()) } returns updated
 
             // Act
-            val result = workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", "New desc")
+            val result = workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", "New desc", null)
 
             // Assert
             assertEquals("New Name", result.name)
@@ -305,7 +358,7 @@ class WorkoutTemplateServiceTest {
 
             // Act & Assert
             assertThrows<ResourceNotFoundException> {
-                workoutTemplateService.updateTemplate(templateId.toString(), userId.toString(), "New Name", null)
+                workoutTemplateService.updateTemplate(templateId.toString(), userId.toString(), "New Name", null, null)
             }
             verify(exactly = 0) { workoutTemplateRepository.save(any()) }
         }
@@ -321,7 +374,7 @@ class WorkoutTemplateServiceTest {
 
             // Act & Assert
             assertThrows<UnauthorizedException> {
-                workoutTemplateService.updateTemplate(existing.id.toString(), requestingUserId.toString(), "New Name", null)
+                workoutTemplateService.updateTemplate(existing.id.toString(), requestingUserId.toString(), "New Name", null, null)
             }
             verify(exactly = 0) { workoutTemplateRepository.save(any()) }
         }
@@ -337,7 +390,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } answers { firstArg() }
 
             // Act
-            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", "New desc")
+            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", "New desc", null)
 
             // Assert
             assertEquals("New Name", savedSlot.captured.name)
@@ -355,7 +408,7 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } answers { firstArg() }
 
             // Act
-            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", null)
+            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", null, null)
 
             // Assert
             assertEquals(existing.id, savedSlot.captured.id)
@@ -374,10 +427,53 @@ class WorkoutTemplateServiceTest {
             every { workoutTemplateRepository.save(capture(savedSlot)) } answers { firstArg() }
 
             // Act
-            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", null)
+            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", null, null)
 
             // Assert
             assertTrue(savedSlot.captured.updatedAt >= beforeUpdate)
+        }
+
+        @Test
+        fun `Should Replace Schedule When Updating Template`() {
+            // Arrange
+            val userId = UUID.randomUUID()
+            val existing = WorkoutTemplate.validTestData(userId = userId)
+            val savedSlot = slot<WorkoutTemplate>()
+
+            every { workoutTemplateRepository.findById(existing.id) } returns Optional.of(existing)
+            every { workoutTemplateRepository.save(capture(savedSlot)) } answers { firstArg() }
+
+            // Act
+            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", null, weeklySchedule)
+
+            // Assert
+            assertEquals(weeklySchedule.type, savedSlot.captured.scheduleType)
+            assertEquals(weeklySchedule.interval, savedSlot.captured.scheduleInterval)
+            assertEquals(weeklySchedule.weekdays.toSet(), savedSlot.captured.scheduledWeekdays)
+        }
+
+        @Test
+        fun `Should Remove Schedule When Updating Template With Null Schedule`() {
+            // Arrange
+            val userId = UUID.randomUUID()
+            val existing = WorkoutTemplate.validTestData(
+                userId = userId,
+                scheduleType = WorkoutTemplateScheduleType.WEEKS,
+                scheduleInterval = 1,
+                scheduledWeekdays = mutableSetOf(WorkoutWeekday.MONDAY, WorkoutWeekday.WEDNESDAY),
+            )
+            val savedSlot = slot<WorkoutTemplate>()
+
+            every { workoutTemplateRepository.findById(existing.id) } returns Optional.of(existing)
+            every { workoutTemplateRepository.save(capture(savedSlot)) } answers { firstArg() }
+
+            // Act
+            workoutTemplateService.updateTemplate(existing.id.toString(), userId.toString(), "New Name", null, null)
+
+            // Assert
+            assertNull(savedSlot.captured.scheduleType)
+            assertNull(savedSlot.captured.scheduleInterval)
+            assertTrue(savedSlot.captured.scheduledWeekdays.isEmpty())
         }
     }
 

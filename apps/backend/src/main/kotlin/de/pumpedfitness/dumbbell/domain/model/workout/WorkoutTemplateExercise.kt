@@ -6,6 +6,9 @@ import jakarta.persistence.Id
 import java.util.*
 
 @Entity
+/**
+ * A relation between a workout template and an exercise.
+ */
 data class WorkoutTemplateExercise(
     @Id val id: UUID,
     @Column(name = "workout_template_id", nullable = false)

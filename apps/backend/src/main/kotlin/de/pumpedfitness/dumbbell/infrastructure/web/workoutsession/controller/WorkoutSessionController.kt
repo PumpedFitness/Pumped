@@ -1,10 +1,10 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.controller
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.controller
 
 import de.pumpedfitness.dumbbell.application.port.`in`.WorkoutSessionServicePort
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request.FinishWorkoutSessionRequest
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request.StartWorkoutSessionRequest
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response.WorkoutSessionResponse
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.mapper.WorkoutSessionMapper
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.request.FinishWorkoutSessionRequest
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.request.StartWorkoutSessionRequest
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.response.WorkoutSessionResponse
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.mapper.WorkoutSessionMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse

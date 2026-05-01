@@ -1,6 +1,8 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.request
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
@@ -25,6 +27,11 @@ data class LogSetRequest(
 
     @Schema(description = "Weight used in kg", example = "80.0")
     val weight: Double?,
+
+    @field:DecimalMin(value = "1.0", message = "RPE must be at least 1")
+    @field:DecimalMax(value = "10.0", message = "RPE must be at most 10")
+    @Schema(description = "Rate of perceived exertion on a 1-10 scale", example = "8.5")
+    val rpe: Double?,
 
     @field:Min(value = 0, message = "Rest seconds must be 0 or greater")
     @Schema(description = "Rest time in seconds after this set", example = "90")

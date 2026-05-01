@@ -1,7 +1,7 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.mapper
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.mapper
 
 import de.pumpedfitness.dumbbell.application.dto.WorkoutSessionSetDto
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response.WorkoutSessionSetResponse
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.response.WorkoutSessionSetResponse
 import org.springframework.stereotype.Component
 
 @Component
@@ -14,6 +14,7 @@ class WorkoutSessionSetMapper {
             setIndex = dto.setIndex,
             reps = dto.reps,
             weight = dto.weight,
+            rpe = dto.rpe,
             restSeconds = dto.restSeconds,
             durationSeconds = dto.durationSeconds,
             notes = dto.notes,

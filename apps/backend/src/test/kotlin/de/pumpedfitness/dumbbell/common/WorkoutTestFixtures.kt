@@ -4,6 +4,8 @@ import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutTemplate
 import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutTemplateExercise
 import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutSession
 import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutSessionSet
+import de.pumpedfitness.dumbbell.domain.model.workout.enum.WorkoutTemplateScheduleType
+import de.pumpedfitness.dumbbell.domain.model.workout.enum.WorkoutWeekday
 import java.util.UUID
 
 fun WorkoutTemplate.Companion.validTestData(
@@ -11,6 +13,9 @@ fun WorkoutTemplate.Companion.validTestData(
     userId: UUID = UUID.randomUUID(),
     name: String = "Push Day A",
     description: String? = "Chest, shoulders and triceps",
+    scheduleType: WorkoutTemplateScheduleType? = null,
+    scheduleInterval: Int? = null,
+    scheduledWeekdays: MutableSet<WorkoutWeekday> = mutableSetOf(),
     exercises: MutableList<WorkoutTemplateExercise> = mutableListOf(),
 ): WorkoutTemplate {
     val now = System.currentTimeMillis()
@@ -19,6 +24,9 @@ fun WorkoutTemplate.Companion.validTestData(
         userId = userId,
         name = name,
         description = description,
+        scheduleType = scheduleType,
+        scheduleInterval = scheduleInterval,
+        scheduledWeekdays = scheduledWeekdays,
         exercises = exercises,
         createdAt = now,
         updatedAt = now,
@@ -79,6 +87,7 @@ fun WorkoutSessionSet.Companion.validTestData(
     setIndex: Int = 0,
     reps: Int = 10,
     weight: Double? = 80.0,
+    rpe: Double? = 8.0,
     restSeconds: Int? = 90,
     durationSeconds: Int? = null,
     notes: String? = null,
@@ -91,6 +100,7 @@ fun WorkoutSessionSet.Companion.validTestData(
         setIndex = setIndex,
         reps = reps,
         weight = weight,
+        rpe = rpe,
         restSeconds = restSeconds,
         durationSeconds = durationSeconds,
         notes = notes,

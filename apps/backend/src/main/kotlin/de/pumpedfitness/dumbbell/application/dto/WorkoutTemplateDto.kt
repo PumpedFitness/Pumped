@@ -5,6 +5,7 @@ data class WorkoutTemplateDto(
     val userId: String,
     val name: String,
     val description: String?,
+    val schedule: WorkoutTemplateScheduleDto?,
     val exercises: List<WorkoutTemplateExerciseDto>,
     val createdAt: Long,
     val updatedAt: Long,

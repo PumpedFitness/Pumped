@@ -8,9 +8,15 @@ on:
     branches: [main]
     paths: [apps/backend/**]
   workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: Bootstrap MariaDB and Redis on the server (run once)
+        type: boolean
+        default: false
 
 jobs:
   build-and-test:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,6 +35,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image-name: ${{ steps.image.outputs.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,3 +54,43 @@ jobs:
           registry-username: ${{ github.actor }}
           registry-password: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ steps.image.outputs.name }}
+
+  bootstrap:
+    if: github.event_name == 'workflow_dispatch' && inputs.bootstrap == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap server databases
+        uses: ./.github/actions/bootstrap-server
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          db-root-password: ${{ secrets.DB_ROOT_PASSWORD }}
+          db-user: ${{ secrets.DB_USER }}
+          db-password: ${{ secrets.DB_PASSWORD }}
+          redis-password: ${{ secrets.REDIS_PASSWORD }}
+
+  deploy:
+    needs: [ publish, bootstrap ]
+    if: github.event_name == 'workflow_dispatch' && inputs.bootstrap == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy backend to server
+        uses: ./.github/actions/deploy-backend
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          image-name: ${{ needs.publish.outputs.image-name }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          db-user: ${{ secrets.DB_USER }}
+          db-password: ${{ secrets.DB_PASSWORD }}
+          redis-password: ${{ secrets.REDIS_PASSWORD }}
+          jwt-secret: ${{ secrets.JWT_SECRET }}

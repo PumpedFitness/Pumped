@@ -1,4 +1,4 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -14,6 +14,8 @@ data class WorkoutSessionSetResponse(
     val reps: Int,
     @Schema(description = "Weight in kg", example = "80.0")
     val weight: Double?,
+    @Schema(description = "Rate of perceived exertion on a 1-10 scale", example = "8.5")
+    val rpe: Double?,
     @Schema(description = "Rest time in seconds", example = "90")
     val restSeconds: Int?,
     @Schema(description = "Duration in seconds", example = "30")

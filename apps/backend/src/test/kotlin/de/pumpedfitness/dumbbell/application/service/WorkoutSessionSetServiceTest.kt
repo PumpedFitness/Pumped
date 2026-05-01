@@ -58,7 +58,7 @@ class WorkoutSessionSetServiceTest {
             every { workoutSessionSetRepository.save(any()) } returns set
 
             // Act
-            val result = workoutSessionSetService.logSet(session.id.toString(), userId.toString(), exerciseId.toString(), 0, 10, 80.0, 90, null, null)
+            val result = workoutSessionSetService.logSet(session.id.toString(), userId.toString(), exerciseId.toString(), 0, 10, 80.0, 8.0, 90, null, null)
 
             // Assert
             assertNotNull(result)
@@ -75,7 +75,7 @@ class WorkoutSessionSetServiceTest {
 
             // Act & Assert
             assertThrows<ResourceNotFoundException> {
-                workoutSessionSetService.logSet(sessionId.toString(), userId.toString(), UUID.randomUUID().toString(), 0, 10, null, null, null, null)
+                workoutSessionSetService.logSet(sessionId.toString(), userId.toString(), UUID.randomUUID().toString(), 0, 10, null, null, null, null, null)
             }
             verify(exactly = 0) { workoutSessionSetRepository.save(any()) }
         }
@@ -91,7 +91,7 @@ class WorkoutSessionSetServiceTest {
 
             // Act & Assert
             assertThrows<UnauthorizedException> {
-                workoutSessionSetService.logSet(session.id.toString(), requestingUserId.toString(), UUID.randomUUID().toString(), 0, 10, null, null, null, null)
+                workoutSessionSetService.logSet(session.id.toString(), requestingUserId.toString(), UUID.randomUUID().toString(), 0, 10, null, null, null, null, null)
             }
             verify(exactly = 0) { workoutSessionSetRepository.save(any()) }
         }
@@ -109,7 +109,7 @@ class WorkoutSessionSetServiceTest {
             every { workoutSessionSetRepository.save(capture(savedSlot)) } returns set
 
             // Act
-            workoutSessionSetService.logSet(session.id.toString(), userId.toString(), exerciseId.toString(), 2, 12, 100.0, 120, 30, "Heavy set")
+            workoutSessionSetService.logSet(session.id.toString(), userId.toString(), exerciseId.toString(), 2, 12, 100.0, 9.0, 120, 30, "Heavy set")
 
             // Assert
             val captured = savedSlot.captured
@@ -118,6 +118,7 @@ class WorkoutSessionSetServiceTest {
             assertEquals(2, captured.setIndex)
             assertEquals(12, captured.reps)
             assertEquals(100.0, captured.weight)
+            assertEquals(9.0, captured.rpe)
             assertEquals(120, captured.restSeconds)
             assertEquals(30, captured.durationSeconds)
             assertEquals("Heavy set", captured.notes)
@@ -129,16 +130,17 @@ class WorkoutSessionSetServiceTest {
             val userId = UUID.randomUUID()
             val session = WorkoutSession.validTestData(userId = userId)
             val savedSlot = slot<WorkoutSessionSet>()
-            val set = WorkoutSessionSet.validTestData(workoutSessionId = session.id, weight = null, restSeconds = null, durationSeconds = null, notes = null)
+            val set = WorkoutSessionSet.validTestData(workoutSessionId = session.id, weight = null, rpe = null, restSeconds = null, durationSeconds = null, notes = null)
 
             every { workoutSessionRepository.findById(session.id) } returns Optional.of(session)
             every { workoutSessionSetRepository.save(capture(savedSlot)) } returns set
 
             // Act
-            workoutSessionSetService.logSet(session.id.toString(), userId.toString(), UUID.randomUUID().toString(), 0, 10, null, null, null, null)
+            workoutSessionSetService.logSet(session.id.toString(), userId.toString(), UUID.randomUUID().toString(), 0, 10, null, null, null, null, null)
 
             // Assert
             assertNull(savedSlot.captured.weight)
+            assertNull(savedSlot.captured.rpe)
             assertNull(savedSlot.captured.restSeconds)
             assertNull(savedSlot.captured.durationSeconds)
             assertNull(savedSlot.captured.notes)
@@ -150,19 +152,20 @@ class WorkoutSessionSetServiceTest {
             val userId = UUID.randomUUID()
             val session = WorkoutSession.validTestData(userId = userId)
             val exerciseId = UUID.randomUUID()
-            val set = WorkoutSessionSet.validTestData(workoutSessionId = session.id, exerciseId = exerciseId, reps = 8, weight = 60.0)
+            val set = WorkoutSessionSet.validTestData(workoutSessionId = session.id, exerciseId = exerciseId, reps = 8, weight = 60.0, rpe = 7.5)
 
             every { workoutSessionRepository.findById(session.id) } returns Optional.of(session)
             every { workoutSessionSetRepository.save(any()) } returns set
 
             // Act
-            val result = workoutSessionSetService.logSet(session.id.toString(), userId.toString(), exerciseId.toString(), 0, 8, 60.0, null, null, null)
+            val result = workoutSessionSetService.logSet(session.id.toString(), userId.toString(), exerciseId.toString(), 0, 8, 60.0, 7.5, null, null, null)
 
             // Assert
             assertEquals(set.id.toString(), result.id)
             assertEquals(exerciseId.toString(), result.exerciseId)
             assertEquals(8, result.reps)
             assertEquals(60.0, result.weight)
+            assertEquals(7.5, result.rpe)
         }
     }
 

@@ -1,7 +1,7 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.mapper
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.mapper
 
 import de.pumpedfitness.dumbbell.application.dto.WorkoutSessionDto
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response.WorkoutSessionResponse
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.response.WorkoutSessionResponse
 import org.springframework.stereotype.Component
 
 @Component
