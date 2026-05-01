@@ -17,3 +17,21 @@ jobs:
 
       - name: Build & Test
         run: ./apps/backend/gradlew -p apps/backend build --no-daemon --console=plain
+
+  publish:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Setup Backend
+        uses: ./.github/actions/setup-backend
+
+      - name: Publish image to GHCR
+        uses: ./.github/actions/publish-backend
+        with:
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ghcr.io/${{ github.repository }}/dumbbell-backend

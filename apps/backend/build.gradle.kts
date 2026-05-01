@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.3.0"
+    id("com.google.cloud.tools.jib") version "3.4.4"
 }
 
 group = "de.pumpedfitness"
@@ -72,4 +73,33 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:21-jre-alpine"
+    }
+    to {
+        val repo = System.getenv("GITHUB_REPOSITORY") ?: "pumpedfitness/pumpedmonorepo"
+        image = "ghcr.io/$repo/dumbbell-backend"
+        tags = setOf("latest", System.getenv("IMAGE_TAG") ?: "dev")
+        auth {
+            username = System.getenv("REGISTRY_USERNAME") ?: ""
+            password = System.getenv("REGISTRY_PASSWORD") ?: ""
+        }
+    }
+    container {
+        mainClass = "de.pumpedfitness.dumbbell.DumbbellApplicationKt"
+        ports = listOf("8080")
+        jvmFlags = listOf(
+            "-XX:+UseContainerSupport",
+            "-XX:MaxRAMPercentage=75.0",
+            "-Djava.security.egd=file:/dev/./urandom"
+        )
+        val repo = System.getenv("GITHUB_REPOSITORY") ?: "pumpedfitness/pumpedmonorepo"
+        labels = mapOf(
+            "org.opencontainers.image.source" to "https://github.com/$repo",
+            "org.opencontainers.image.description" to "Dumbbell Spring Boot Backend"
+        )
+    }
 }

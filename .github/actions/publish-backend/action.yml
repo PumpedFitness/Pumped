@@ -1,0 +1,48 @@
+name: Publish Backend Image
+description: Build and push the backend Docker image to GHCR via JIB
+
+inputs:
+  registry-username:
+    description: GitHub actor for GHCR login
+    required: true
+  registry-password:
+    description: GITHUB_TOKEN for GHCR login
+    required: true
+  image-name:
+    description: Full image name (e.g. ghcr.io/owner/repo/dumbbell-backend)
+    required: true
+  image-tags:
+    description: Comma-separated list of tags to apply
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ inputs.registry-username }}
+        password: ${{ inputs.registry-password }}
+
+    - name: Extract image metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ inputs.image-name }}
+        tags: |
+          type=sha,prefix=sha-
+          type=ref,event=branch
+          type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+    - name: Build and push image via JIB
+      shell: bash
+      run: |
+        ./apps/backend/gradlew -p apps/backend jib \
+          --no-daemon \
+          --console=plain \
+          -Djib.to.image=${{ inputs.image-name }} \
+          -Djib.to.tags=${{ steps.meta.outputs.version }} \
+          -Djib.to.auth.username=${{ inputs.registry-username }} \
+          -Djib.to.auth.password=${{ inputs.registry-password }}
