@@ -11,8 +11,11 @@
     "frontend:android": "bun run --cwd apps/frontend android",
     "frontend:lint": "bun run --cwd apps/frontend lint",
     "frontend:test": "bun run --cwd apps/frontend test",
-    "backend": "echo 'Backend not yet configured. Add the existing repo to apps/backend.'",
-    "backend:build": "echo 'Backend not yet configured.'",
+    "backend": "./apps/backend/gradlew -p apps/backend bootRun",
+    "backend:build": "./apps/backend/gradlew -p apps/backend build",
+    "backend:test": "./apps/backend/gradlew -p apps/backend test",
+    "docker:up": "docker compose -f apps/backend/docker-compose.yml up -d",
+    "docker:down": "docker compose -f apps/backend/docker-compose.yml down",
     "install:all": "bun install"
   }
 }
