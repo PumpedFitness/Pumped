@@ -12,6 +12,7 @@ data class WorkoutSessionSet(
     val setIndex: Int,
     val reps: Int,
     val weight: Double?,
+    val rpe: Double?,
     val restSeconds: Int?,
     val durationSeconds: Int?,
     val notes: String?,

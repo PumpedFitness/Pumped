@@ -1,6 +1,7 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request
+package de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.request
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
@@ -14,4 +15,8 @@ data class UpdateWorkoutTemplateRequest(
     @field:Size(max = 500, message = "Description must not exceed 500 characters")
     @Schema(description = "Updated description", example = "Updated chest and shoulder focus")
     val description: String?,
+
+    @field:Valid
+    @Schema(description = "Optional recurrence schedule for the template. Use null to remove the schedule.")
+    val schedule: WorkoutTemplateScheduleRequest?,
 )

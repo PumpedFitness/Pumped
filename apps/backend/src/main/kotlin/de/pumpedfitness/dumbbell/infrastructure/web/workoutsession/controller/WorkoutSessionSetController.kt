@@ -1,9 +1,9 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.controller
+package de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.controller
 
 import de.pumpedfitness.dumbbell.application.port.`in`.WorkoutSessionSetServicePort
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request.LogSetRequest
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response.WorkoutSessionSetResponse
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.mapper.WorkoutSessionSetMapper
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.request.LogSetRequest
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.dto.response.WorkoutSessionSetResponse
+import de.pumpedfitness.dumbbell.infrastructure.web.workoutsession.mapper.WorkoutSessionSetMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -62,6 +62,7 @@ class WorkoutSessionSetController(
             setIndex = request.setIndex,
             reps = request.reps,
             weight = request.weight,
+            rpe = request.rpe,
             restSeconds = request.restSeconds,
             durationSeconds = request.durationSeconds,
             notes = request.notes,

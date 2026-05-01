@@ -2,6 +2,7 @@ package de.pumpedfitness.dumbbell.application.mapper
 
 import de.pumpedfitness.dumbbell.application.dto.WorkoutTemplateDto
 import de.pumpedfitness.dumbbell.application.dto.WorkoutTemplateExerciseDto
+import de.pumpedfitness.dumbbell.application.dto.WorkoutTemplateScheduleDto
 import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutTemplate
 import de.pumpedfitness.dumbbell.domain.model.workout.WorkoutTemplateExercise
 import org.springframework.stereotype.Component
@@ -15,9 +16,21 @@ class WorkoutTemplateDtoMapper {
             userId = template.userId.toString(),
             name = template.name,
             description = template.description,
+            schedule = toScheduleDto(template),
             exercises = template.exercises.map { toExerciseDto(it) },
             createdAt = template.createdAt,
             updatedAt = template.updatedAt,
+        )
+    }
+
+    fun toScheduleDto(template: WorkoutTemplate): WorkoutTemplateScheduleDto? {
+        val scheduleType = template.scheduleType ?: return null
+        val scheduleInterval = template.scheduleInterval ?: return null
+
+        return WorkoutTemplateScheduleDto(
+            type = scheduleType,
+            interval = scheduleInterval,
+            weekdays = template.scheduledWeekdays.sortedBy { it.ordinal },
         )
     }
 
@@ -43,6 +56,9 @@ class WorkoutTemplateDtoMapper {
             userId = java.util.UUID.fromString(dto.userId),
             name = dto.name,
             description = dto.description,
+            scheduleType = dto.schedule?.type,
+            scheduleInterval = dto.schedule?.interval,
+            scheduledWeekdays = dto.schedule?.weekdays?.toMutableSet() ?: mutableSetOf(),
             exercises = dto.exercises.map { toExerciseModel(it) }.toMutableList(),
             createdAt = dto.createdAt,
             updatedAt = dto.updatedAt,

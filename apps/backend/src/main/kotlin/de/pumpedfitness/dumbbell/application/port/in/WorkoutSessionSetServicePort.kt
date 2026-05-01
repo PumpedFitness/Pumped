@@ -10,6 +10,7 @@ interface WorkoutSessionSetServicePort {
         setIndex: Int,
         reps: Int,
         weight: Double?,
+        rpe: Double?,
         restSeconds: Int?,
         durationSeconds: Int?,
         notes: String?,

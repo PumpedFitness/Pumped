@@ -1,10 +1,12 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.controller
+package de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.controller
 
+import de.pumpedfitness.dumbbell.application.dto.WorkoutTemplateScheduleDto
 import de.pumpedfitness.dumbbell.application.port.`in`.WorkoutTemplateServicePort
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request.CreateWorkoutTemplateRequest
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.request.UpdateWorkoutTemplateRequest
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response.WorkoutTemplateResponse
-import de.pumpedfitness.dumbbell.infrastructure.web.workout.mapper.WorkoutTemplateMapper
+import de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.request.CreateWorkoutTemplateRequest
+import de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.request.UpdateWorkoutTemplateRequest
+import de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.request.WorkoutTemplateScheduleRequest
+import de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.response.WorkoutTemplateResponse
+import de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.mapper.WorkoutTemplateMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -13,7 +15,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import java.security.Principal
 
 @RestController
@@ -67,6 +76,7 @@ class WorkoutTemplateController(
             userId = principal.name,
             name = request.name,
             description = request.description,
+            schedule = request.schedule?.toApplicationDto(),
         )
         return ResponseEntity.ok(workoutTemplateMapper.toResponse(template))
     }
@@ -89,6 +99,7 @@ class WorkoutTemplateController(
             userId = principal.name,
             name = request.name,
             description = request.description,
+            schedule = request.schedule?.toApplicationDto(),
         )
         return ResponseEntity.ok(workoutTemplateMapper.toResponse(updated))
     }
@@ -106,5 +117,13 @@ class WorkoutTemplateController(
     ): ResponseEntity<Unit> {
         workoutTemplateServicePort.deleteTemplate(templateId, principal.name)
         return ResponseEntity.noContent().build()
+    }
+
+    private fun WorkoutTemplateScheduleRequest.toApplicationDto(): WorkoutTemplateScheduleDto {
+        return WorkoutTemplateScheduleDto(
+            type = type,
+            interval = interval,
+            weekdays = weekdays?.sortedBy { it.ordinal } ?: emptyList(),
+        )
     }
 }

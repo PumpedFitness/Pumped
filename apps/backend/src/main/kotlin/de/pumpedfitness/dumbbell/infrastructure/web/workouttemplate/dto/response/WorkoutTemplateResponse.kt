@@ -1,4 +1,4 @@
-package de.pumpedfitness.dumbbell.infrastructure.web.workout.dto.response
+package de.pumpedfitness.dumbbell.infrastructure.web.workouttemplate.dto.response
 
 import de.pumpedfitness.dumbbell.application.dto.WorkoutTemplateExerciseDto
 import io.swagger.v3.oas.annotations.media.Schema
@@ -11,6 +11,8 @@ data class WorkoutTemplateResponse(
     val name: String,
     @Schema(description = "Optional description", example = "Chest, shoulders and triceps")
     val description: String?,
+    @Schema(description = "Optional recurrence schedule")
+    val schedule: WorkoutTemplateScheduleResponse?,
     @Schema(description = "Ordered exercises in this template")
     val exercises: List<WorkoutTemplateExerciseDto>,
     @Schema(description = "Creation timestamp (epoch ms)", example = "1714500000000")
