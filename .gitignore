@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# React Native
+apps/frontend/ios/Pods/
+apps/frontend/ios/build/
+apps/frontend/android/app/build/
+apps/frontend/android/.gradle/
+*.hbc
+
+# Metro
+.metro-health-check*
+
+# Bun
+bun.lock
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# Temporary
+*.tmp
+*.temp
