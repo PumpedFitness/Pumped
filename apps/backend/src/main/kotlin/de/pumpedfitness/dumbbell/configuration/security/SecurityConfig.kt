@@ -34,6 +34,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers("/user/register", "/user/login").permitAll()
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    .requestMatchers("/actuator/health").permitAll()
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

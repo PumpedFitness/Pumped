@@ -61,8 +61,10 @@ services:
     networks:
       - dumbbell-net
     depends_on:
-      - backend-blue
-      - backend-green
+      backend-blue:
+        condition: service_healthy
+      backend-green:
+        condition: service_healthy
 
 networks:
   dumbbell-net:

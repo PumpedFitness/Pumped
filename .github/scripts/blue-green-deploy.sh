@@ -12,6 +12,7 @@ docker compose -f docker-compose.prod.yml pull backend-blue backend-green
 # Initialise upstream.conf on first deploy
 if [[ ! -f nginx/upstream.conf ]]; then
   echo "No upstream.conf found — initialising to blue"
+  mkdir -p nginx
   cat > nginx/upstream.conf << 'EOF'
 upstream dumbbell_backend {
     server dumbbell-backend-blue:8080;
