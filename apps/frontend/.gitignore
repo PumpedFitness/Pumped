@@ -81,3 +81,5 @@ src/data/local/schema.enums.generated.ts
 src/data/api/generated.ts
 temp-introspect.db
 src/data/local/pulled/
+src/data/local/drizzle
+src/data/local/migrations.generated.ts
