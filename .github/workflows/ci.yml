@@ -9,10 +9,14 @@ on:
         description: Bootstrap MariaDB and Redis on the server (run once)
         type: boolean
         default: false
-      force_all:
-        description: Force full pipeline (ignore change detection)
+      force_backend:
+        description: Force backend deployment (ignore change detection)
         type: boolean
-        default: true
+        default: false
+      force_frontend:
+        description: Force frontend build (ignore change detection)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,34 +38,38 @@ jobs:
       - name: Detect changes since last deploy
         id: detect
         run: |
-          # Force all if manually triggered with force_all
-          if [ "${{ inputs.force_all }}" = "true" ]; then
-            echo "Forced full pipeline"
-            echo "backend=true" >> $GITHUB_OUTPUT
-            echo "frontend=true" >> $GITHUB_OUTPUT
-            exit 0
+          BACKEND=false
+          FRONTEND=false
+
+          # Apply force flags from manual dispatch
+          if [ "${{ inputs.force_backend }}" = "true" ]; then
+            BACKEND=true
+          fi
+          if [ "${{ inputs.force_frontend }}" = "true" ]; then
+            FRONTEND=true
           fi
 
-          # Find the last deployed tag, fall back to comparing with parent commit
-          LAST_TAG=$(git tag -l 'deploy-*' --sort=-version:refname | head -1)
-          if [ -n "$LAST_TAG" ]; then
-            BASE=$LAST_TAG
-          else
-            BASE=HEAD~1
-          fi
-          echo "Comparing against: $BASE"
+          # Auto-detect from git diff (unless already forced)
+          if [ "$BACKEND" = "false" ] || [ "$FRONTEND" = "false" ]; then
+            LAST_TAG=$(git tag -l 'deploy-*' --sort=-version:refname | head -1)
+            if [ -n "$LAST_TAG" ]; then
+              BASE=$LAST_TAG
+            else
+              BASE=HEAD~1
+            fi
+            echo "Comparing against: $BASE"
 
-          if git diff --name-only "$BASE" HEAD | grep -q '^apps/backend/'; then
-            echo "backend=true" >> $GITHUB_OUTPUT
-          else
-            echo "backend=false" >> $GITHUB_OUTPUT
+            if [ "$BACKEND" = "false" ] && git diff --name-only "$BASE" HEAD | grep -q '^apps/backend/'; then
+              BACKEND=true
+            fi
+            if [ "$FRONTEND" = "false" ] && git diff --name-only "$BASE" HEAD | grep -q '^apps/frontend/'; then
+              FRONTEND=true
+            fi
           fi
 
-          if git diff --name-only "$BASE" HEAD | grep -q '^apps/frontend/'; then
-            echo "frontend=true" >> $GITHUB_OUTPUT
-          else
-            echo "frontend=false" >> $GITHUB_OUTPUT
-          fi
+          echo "backend=$BACKEND" >> $GITHUB_OUTPUT
+          echo "frontend=$FRONTEND" >> $GITHUB_OUTPUT
+          echo "Backend: $BACKEND, Frontend: $FRONTEND"
 
   # ─── Lint & Format ────────────────────────────────────────────────────────────
   lint-backend:
@@ -97,8 +105,11 @@ jobs:
 
   # ─── Publish Backend Image ────────────────────────────────────────────────────
   publish:
-    needs: [lint-backend]
-    if: needs.lint-backend.result == 'success'
+    needs: [changes, lint-backend]
+    if: |
+      always() &&
+      needs.changes.outputs.backend == 'true' &&
+      needs.lint-backend.result == 'success'
     runs-on: ubuntu-latest
     outputs:
       image-name: ${{ steps.image.outputs.name }}
@@ -122,7 +133,11 @@ jobs:
 
   # ─── Deploy to Staging ────────────────────────────────────────────────────────
   deploy-staging:
-    needs: [publish]
+    needs: [changes, publish]
+    if: |
+      always() &&
+      needs.changes.outputs.backend == 'true' &&
+      needs.publish.result == 'success'
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -148,10 +163,11 @@ jobs:
 
   # ─── Build Frontend (against staging API) ─────────────────────────────────────
   build-frontend:
-    needs: [deploy-staging, lint-frontend]
+    needs: [changes, deploy-staging, lint-frontend]
     if: |
       always() &&
-      needs.deploy-staging.result == 'success' &&
+      (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true') &&
+      (needs.deploy-staging.result == 'success' || needs.deploy-staging.result == 'skipped') &&
       (needs.lint-frontend.result == 'success' || needs.lint-frontend.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
@@ -167,8 +183,13 @@ jobs:
 
   # ─── Deploy Production ────────────────────────────────────────────────────────
   deploy-production:
-    needs: [publish, build-frontend]
-    if: needs.build-frontend.result == 'success'
+    needs: [changes, publish, build-frontend, deploy-staging]
+    if: |
+      always() &&
+      needs.changes.outputs.backend == 'true' &&
+      needs.publish.result == 'success' &&
+      needs.deploy-staging.result == 'success' &&
+      (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

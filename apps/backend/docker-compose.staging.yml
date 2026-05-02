@@ -16,8 +16,6 @@ services:
       JWT_EXPIRATION: 86400000
       SWAGGER_USERNAME: ${SWAGGER_USERNAME}
       SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
-    ports:
-      - "8081:8080"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
