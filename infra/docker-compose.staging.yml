@@ -2,6 +2,14 @@ services:
   backend-staging:
     image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
     container_name: dumbbell-backend-staging
+    restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.backend-staging.rule: "Host(`${STAGING_DOMAIN}`)"
+      traefik.http.routers.backend-staging.entrypoints: "websecure"
+      traefik.http.routers.backend-staging.tls: "true"
+      traefik.http.routers.backend-staging.tls.certresolver: "letsencrypt"
+      traefik.http.services.backend-staging.loadbalancer.server.port: "8080"
     environment:
       SPRING_PROFILES_ACTIVE: production
       DB_HOST: mariadb-dumbbell
@@ -16,16 +24,16 @@ services:
       JWT_EXPIRATION: 86400000
       SWAGGER_USERNAME: ${SWAGGER_USERNAME}
       SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
-    restart: unless-stopped
+    networks:
+      - dumbbell-net
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 6
       start_period: 30s
-    networks:
-      - dumbbell-net
 
 networks:
   dumbbell-net:
     external: true
+    name: dumbbell-net

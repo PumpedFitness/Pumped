@@ -3,6 +3,13 @@ services:
     image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
     container_name: dumbbell-backend-blue
     restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.backend-blue.rule: "Host(`${DOMAIN}`)"
+      traefik.http.routers.backend-blue.entrypoints: "websecure"
+      traefik.http.routers.backend-blue.tls: "true"
+      traefik.http.routers.backend-blue.tls.certresolver: "letsencrypt"
+      traefik.http.services.backend-blue.loadbalancer.server.port: "8080"
     environment:
       SPRING_PROFILES_ACTIVE: production
       DB_HOST: mariadb-dumbbell
@@ -30,6 +37,13 @@ services:
     image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
     container_name: dumbbell-backend-green
     restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.backend-green.rule: "Host(`${DOMAIN}`)"
+      traefik.http.routers.backend-green.entrypoints: "websecure"
+      traefik.http.routers.backend-green.tls: "true"
+      traefik.http.routers.backend-green.tls.certresolver: "letsencrypt"
+      traefik.http.services.backend-green.loadbalancer.server.port: "8080"
     environment:
       SPRING_PROFILES_ACTIVE: production
       DB_HOST: mariadb-dumbbell

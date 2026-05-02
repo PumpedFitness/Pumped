@@ -1,5 +1,5 @@
 name: Deploy Backend
-description: Blue/green deploy via SSH — pulls new image, starts inactive slot, health checks it, swaps nginx, stops old slot
+description: Blue/green deploy via SSH — pulls new image, starts inactive slot, health checks, stops old slot. Traefik handles routing.
 
 inputs:
   ssh-host:
@@ -12,7 +12,7 @@ inputs:
     description: SSH private key
     required: true
   image-name:
-    description: Full image name including registry (e.g. ghcr.io/pumpedfitness/dumbbell-backend)
+    description: Full image name including registry
     required: true
   image-tag:
     description: Image tag to deploy
@@ -23,6 +23,9 @@ inputs:
     required: true
   registry-password:
     description: GHCR password (GITHUB_TOKEN)
+    required: true
+  domain:
+    description: Production domain (e.g. api.pumpedfitness.de)
     required: true
   db-user:
     description: MariaDB application user
@@ -57,15 +60,12 @@ runs:
         chmod 600 /tmp/ssh_key
         ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
-          "mkdir -p ~/dumbbell/nginx"
+          "mkdir -p ~/dumbbell"
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          apps/backend/docker-compose.prod.yml \
+          infra/docker-compose.prod.yml \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/docker-compose.prod.yml
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          apps/backend/nginx/nginx.conf \
-          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/nginx/nginx.conf
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          .github/scripts/blue-green-deploy.sh \
+          infra/blue-green-deploy.sh \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/blue-green-deploy.sh
 
     - name: Blue/green deploy
@@ -75,6 +75,7 @@ runs:
         IMAGE_TAG: ${{ inputs.image-tag }}
         REGISTRY_USERNAME: ${{ inputs.registry-username }}
         REGISTRY_PASSWORD: ${{ inputs.registry-password }}
+        DOMAIN: ${{ inputs.domain }}
         DB_USER: ${{ inputs.db-user }}
         DB_PASSWORD: ${{ inputs.db-password }}
         DB_NAME: ${{ inputs.db-name }}
@@ -83,7 +84,7 @@ runs:
         SWAGGER_USERNAME: ${{ inputs.swagger-username }}
         SWAGGER_PASSWORD: ${{ inputs.swagger-password }}
       run: |
-        printenv | grep -E '^(IMAGE_NAME|IMAGE_TAG|REGISTRY_USERNAME|REGISTRY_PASSWORD|DB_USER|DB_PASSWORD|DB_NAME|REDIS_PASSWORD|JWT_SECRET|SWAGGER_USERNAME|SWAGGER_PASSWORD)=' > /tmp/deploy.env
+        printenv | grep -E '^(IMAGE_NAME|IMAGE_TAG|REGISTRY_USERNAME|REGISTRY_PASSWORD|DOMAIN|DB_USER|DB_PASSWORD|DB_NAME|REDIS_PASSWORD|JWT_SECRET|SWAGGER_USERNAME|SWAGGER_PASSWORD)=' > /tmp/deploy.env
 
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
           /tmp/deploy.env \

@@ -17,6 +17,10 @@ on:
         description: Force frontend build (ignore change detection)
         type: boolean
         default: false
+      force_infra:
+        description: Force infrastructure update (ignore change detection)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -29,6 +33,7 @@ jobs:
     outputs:
       backend: ${{ steps.detect.outputs.backend }}
       frontend: ${{ steps.detect.outputs.frontend }}
+      infra: ${{ steps.detect.outputs.infra }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,36 +45,38 @@ jobs:
         run: |
           BACKEND=false
           FRONTEND=false
+          INFRA=false
 
           # Apply force flags from manual dispatch
-          if [ "${{ inputs.force_backend }}" = "true" ]; then
+          if [ "${{ inputs.force_backend }}" = "true" ]; then BACKEND=true; fi
+          if [ "${{ inputs.force_frontend }}" = "true" ]; then FRONTEND=true; fi
+          if [ "${{ inputs.force_infra }}" = "true" ]; then INFRA=true; fi
+
+          # Auto-detect from git diff
+          LAST_TAG=$(git tag -l 'deploy-*' --sort=-version:refname | head -1)
+          if [ -n "$LAST_TAG" ]; then
+            BASE=$LAST_TAG
+          else
+            BASE=HEAD~1
+          fi
+          echo "Comparing against: $BASE"
+
+          CHANGED=$(git diff --name-only "$BASE" HEAD)
+
+          if [ "$BACKEND" = "false" ] && echo "$CHANGED" | grep -q '^apps/backend/'; then
             BACKEND=true
           fi
-          if [ "${{ inputs.force_frontend }}" = "true" ]; then
+          if [ "$FRONTEND" = "false" ] && echo "$CHANGED" | grep -q '^apps/frontend/'; then
             FRONTEND=true
           fi
-
-          # Auto-detect from git diff (unless already forced)
-          if [ "$BACKEND" = "false" ] || [ "$FRONTEND" = "false" ]; then
-            LAST_TAG=$(git tag -l 'deploy-*' --sort=-version:refname | head -1)
-            if [ -n "$LAST_TAG" ]; then
-              BASE=$LAST_TAG
-            else
-              BASE=HEAD~1
-            fi
-            echo "Comparing against: $BASE"
-
-            if [ "$BACKEND" = "false" ] && git diff --name-only "$BASE" HEAD | grep -q '^apps/backend/'; then
-              BACKEND=true
-            fi
-            if [ "$FRONTEND" = "false" ] && git diff --name-only "$BASE" HEAD | grep -q '^apps/frontend/'; then
-              FRONTEND=true
-            fi
+          if [ "$INFRA" = "false" ] && echo "$CHANGED" | grep -q '^infra/'; then
+            INFRA=true
           fi
 
           echo "backend=$BACKEND" >> $GITHUB_OUTPUT
           echo "frontend=$FRONTEND" >> $GITHUB_OUTPUT
-          echo "Backend: $BACKEND, Frontend: $FRONTEND"
+          echo "infra=$INFRA" >> $GITHUB_OUTPUT
+          echo "Backend: $BACKEND, Frontend: $FRONTEND, Infra: $INFRA"
 
   # ─── Lint & Format ────────────────────────────────────────────────────────────
   lint-backend:
@@ -103,6 +110,38 @@ jobs:
       - name: Check formatting
         run: bun run --cwd apps/frontend format:check
 
+  # ─── Update Infrastructure ───────────────────────────────────────────────────
+  update-infra:
+    needs: [changes]
+    if: needs.changes.outputs.infra == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update infrastructure on server
+        shell: bash
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+
+          scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            infra/docker-compose.yml \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/dumbbell/docker-compose.yml
+
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd ~/dumbbell && \
+             export ACME_EMAIL='${{ secrets.ACME_EMAIL }}' && \
+             export DB_ROOT_PASSWORD='${{ secrets.DB_ROOT_PASSWORD }}' && \
+             export DB_USER='${{ secrets.DB_USER }}' && \
+             export DB_PASSWORD='${{ secrets.DB_PASSWORD }}' && \
+             export DB_NAME='dumbbell' && \
+             export REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' && \
+             docker compose up -d"
+
+          rm -f /tmp/ssh_key
+
   # ─── Publish Backend Image ────────────────────────────────────────────────────
   publish:
     needs: [changes, lint-backend]
@@ -133,11 +172,12 @@ jobs:
 
   # ─── Deploy to Staging ────────────────────────────────────────────────────────
   deploy-staging:
-    needs: [changes, publish]
+    needs: [changes, publish, update-infra]
     if: |
       always() &&
       needs.changes.outputs.backend == 'true' &&
-      needs.publish.result == 'success'
+      needs.publish.result == 'success' &&
+      (needs.update-infra.result == 'success' || needs.update-infra.result == 'skipped')
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -160,6 +200,7 @@ jobs:
           jwt-secret: ${{ secrets.JWT_SECRET }}
           swagger-username: ${{ secrets.SWAGGER_USERNAME }}
           swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+          staging-domain: ${{ secrets.DOMAIN }}
 
   # ─── Build Frontend (against staging API) ─────────────────────────────────────
   build-frontend:
@@ -177,19 +218,20 @@ jobs:
       - name: Build frontend against staging
         uses: ./.github/actions/build-frontend
         with:
-          staging-host: ${{ secrets.SSH_HOST }}
+          staging-url: https://${{ secrets.STAGING_DOMAIN }}
           swagger-username: ${{ secrets.SWAGGER_USERNAME }}
           swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
 
   # ─── Deploy Production ────────────────────────────────────────────────────────
   deploy-production:
-    needs: [changes, publish, build-frontend, deploy-staging]
+    needs: [changes, publish, build-frontend, deploy-staging, update-infra]
     if: |
       always() &&
       needs.changes.outputs.backend == 'true' &&
       needs.publish.result == 'success' &&
       needs.deploy-staging.result == 'success' &&
-      (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
+      (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped') &&
+      (needs.update-infra.result == 'success' || needs.update-infra.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -204,6 +246,7 @@ jobs:
           image-name: ${{ needs.publish.outputs.image-name }}
           registry-username: ${{ github.actor }}
           registry-password: ${{ secrets.GITHUB_TOKEN }}
+          domain: ${{ secrets.DOMAIN }}
           db-user: ${{ secrets.DB_USER }}
           db-password: ${{ secrets.DB_PASSWORD }}
           redis-password: ${{ secrets.REDIS_PASSWORD }}
@@ -224,7 +267,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Bootstrap server databases
+      - name: Bootstrap server
         uses: ./.github/actions/bootstrap-server
         with:
           ssh-host: ${{ secrets.SSH_HOST }}
@@ -234,3 +277,4 @@ jobs:
           db-user: ${{ secrets.DB_USER }}
           db-password: ${{ secrets.DB_PASSWORD }}
           redis-password: ${{ secrets.REDIS_PASSWORD }}
+          acme-email: ${{ secrets.ACME_EMAIL }}

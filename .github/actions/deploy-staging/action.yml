@@ -1,5 +1,5 @@
 name: Deploy Staging
-description: Deploys the backend to the staging environment (port 8081) with health check
+description: Deploys the backend to the staging environment with health check. Traefik auto-routes.
 
 inputs:
   ssh-host:
@@ -45,11 +45,14 @@ inputs:
   swagger-password:
     description: Swagger UI password
     required: true
+  staging-domain:
+    description: Staging domain (e.g. staging.pumpedfitness.de)
+    required: true
 
 runs:
   using: composite
   steps:
-    - name: Copy staging files to server
+    - name: Copy compose file to server
       shell: bash
       run: |
         echo "${{ inputs.ssh-private-key }}" > /tmp/ssh_key
@@ -60,14 +63,10 @@ runs:
           "mkdir -p ~/dumbbell"
 
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          apps/backend/docker-compose.staging.yml \
+          infra/docker-compose.staging.yml \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/docker-compose.staging.yml
 
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          .github/scripts/staging-deploy.sh \
-          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/staging-deploy.sh
-
-    - name: Run staging deployment
+    - name: Deploy staging
       shell: bash
       env:
         IMAGE_NAME: ${{ inputs.image-name }}
@@ -81,16 +80,40 @@ runs:
         JWT_SECRET: ${{ inputs.jwt-secret }}
         SWAGGER_USERNAME: ${{ inputs.swagger-username }}
         SWAGGER_PASSWORD: ${{ inputs.swagger-password }}
+        STAGING_DOMAIN: ${{ inputs.staging-domain }}
       run: |
-        # Write env file with proper quoting
-        printenv | grep -E '^(IMAGE_NAME|IMAGE_TAG|REGISTRY_USERNAME|REGISTRY_PASSWORD|DB_ROOT_PASSWORD|DB_USER|DB_PASSWORD|REDIS_PASSWORD|JWT_SECRET|SWAGGER_USERNAME|SWAGGER_PASSWORD)=' > /tmp/staging.env
+        printenv | grep -E '^(IMAGE_NAME|IMAGE_TAG|REGISTRY_USERNAME|REGISTRY_PASSWORD|DB_ROOT_PASSWORD|DB_USER|DB_PASSWORD|REDIS_PASSWORD|JWT_SECRET|SWAGGER_USERNAME|SWAGGER_PASSWORD|STAGING_DOMAIN)=' > /tmp/staging.env
 
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
           /tmp/staging.env \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/staging.env
 
         ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
-          'set -a && source ~/dumbbell/staging.env && set +a && bash ~/dumbbell/staging-deploy.sh; rm -f ~/dumbbell/staging.env'
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} << 'DEPLOY'
+          set -euo pipefail
+          cd ~/dumbbell
+          set -a && source staging.env && set +a
+
+          echo "${REGISTRY_PASSWORD}" | docker login ghcr.io -u "${REGISTRY_USERNAME}" --password-stdin
+          docker compose -f docker-compose.staging.yml pull backend-staging
+
+          # Create staging DB if needed
+          docker exec mariadb-dumbbell mariadb -u root -p"${DB_ROOT_PASSWORD}" \
+            -e "CREATE DATABASE IF NOT EXISTS dumbbell_staging;" \
+            -e "GRANT ALL ON dumbbell_staging.* TO '${DB_USER}'@'%';" 2>/dev/null || true
+
+          docker compose -f docker-compose.staging.yml up -d --force-recreate backend-staging
+
+          # Health check
+          echo "Waiting for staging to be healthy..."
+          for i in $(seq 1 18); do
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' dumbbell-backend-staging 2>/dev/null || echo "starting")
+            echo "  attempt $i/18: $STATUS"
+            if [ "$STATUS" = "healthy" ]; then echo "Staging deploy complete"; rm -f staging.env; exit 0; fi
+            if [ "$STATUS" = "unhealthy" ]; then echo "FAILED"; rm -f staging.env; exit 1; fi
+            sleep 5
+          done
+          echo "Timed out"; rm -f staging.env; exit 1
+        DEPLOY
 
         rm -f /tmp/ssh_key /tmp/staging.env
