@@ -92,6 +92,9 @@ jobs:
       - name: Lint
         run: cd apps/frontend && bunx eslint .
 
+      - name: Check formatting
+        run: cd apps/frontend && bunx prettier --check 'src/**/*.{ts,tsx}'
+
   # ─── Publish Backend Image ────────────────────────────────────────────────────
   publish:
     needs: [lint-backend]
