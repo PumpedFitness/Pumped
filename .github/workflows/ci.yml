@@ -9,6 +9,10 @@ on:
         description: Bootstrap MariaDB and Redis on the server (run once)
         type: boolean
         default: false
+      force_all:
+        description: Force full pipeline (ignore change detection)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -30,6 +34,14 @@ jobs:
       - name: Detect changes since last deploy
         id: detect
         run: |
+          # Force all if manually triggered with force_all
+          if [ "${{ inputs.force_all }}" = "true" ]; then
+            echo "Forced full pipeline"
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Find the last deployed tag, fall back to comparing with parent commit
           LAST_TAG=$(git tag -l 'deploy-*' --sort=-version:refname | head -1)
           if [ -n "$LAST_TAG" ]; then
