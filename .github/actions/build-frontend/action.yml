@@ -47,6 +47,19 @@ runs:
       shell: bash
       run: cd apps/frontend && bunx tsc --noEmit
 
+    - name: Build Android APK
+      shell: bash
+      run: |
+        cd apps/frontend/android
+        ./gradlew assembleRelease --no-daemon --console=plain
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-apk
+        path: apps/frontend/android/app/build/outputs/apk/release/*.apk
+        retention-days: 30
+
     - name: Upload generated files
       uses: actions/upload-artifact@v4
       with:

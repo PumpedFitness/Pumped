@@ -1,0 +1,200 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: Bootstrap MariaDB and Redis on the server (run once)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  # ─── Change Detection ─────────────────────────────────────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.detect.outputs.backend }}
+      frontend: ${{ steps.detect.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes since last deploy
+        id: detect
+        run: |
+          # Find the last deployed tag, fall back to comparing with parent commit
+          LAST_TAG=$(git tag -l 'deploy-*' --sort=-version:refname | head -1)
+          if [ -n "$LAST_TAG" ]; then
+            BASE=$LAST_TAG
+          else
+            BASE=HEAD~1
+          fi
+          echo "Comparing against: $BASE"
+
+          if git diff --name-only "$BASE" HEAD | grep -q '^apps/backend/'; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff --name-only "$BASE" HEAD | grep -q '^apps/frontend/'; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ─── Lint & Format ────────────────────────────────────────────────────────────
+  lint-backend:
+    needs: [changes]
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Backend
+        uses: ./.github/actions/setup-backend
+
+      - name: Build & Test
+        run: ./apps/backend/gradlew -p apps/backend build --no-daemon --console=plain
+
+  lint-frontend:
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Frontend
+        uses: ./.github/actions/setup-frontend
+
+      - name: Lint
+        run: bun run --cwd apps/frontend lint
+
+  # ─── Publish Backend Image ────────────────────────────────────────────────────
+  publish:
+    needs: [lint-backend]
+    if: needs.lint-backend.result == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      image-name: ${{ steps.image.outputs.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Backend
+        uses: ./.github/actions/setup-backend
+
+      - name: Compute image name
+        id: image
+        run: echo "name=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/dumbbell-backend" >> $GITHUB_OUTPUT
+
+      - name: Publish image to GHCR
+        uses: ./.github/actions/publish-backend
+        with:
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ steps.image.outputs.name }}
+
+  # ─── Deploy to Staging ────────────────────────────────────────────────────────
+  deploy-staging:
+    needs: [publish]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        uses: ./.github/actions/deploy-staging
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          image-name: ${{ needs.publish.outputs.image-name }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          db-root-password: ${{ secrets.DB_ROOT_PASSWORD }}
+          db-user: ${{ secrets.DB_USER }}
+          db-password: ${{ secrets.DB_PASSWORD }}
+          redis-password: ${{ secrets.REDIS_PASSWORD }}
+          jwt-secret: ${{ secrets.JWT_SECRET }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+
+  # ─── Build Frontend (against staging API) ─────────────────────────────────────
+  build-frontend:
+    needs: [deploy-staging, lint-frontend]
+    if: |
+      always() &&
+      needs.deploy-staging.result == 'success' &&
+      (needs.lint-frontend.result == 'success' || needs.lint-frontend.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build frontend against staging
+        uses: ./.github/actions/build-frontend
+        with:
+          staging-host: ${{ secrets.SSH_HOST }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+
+  # ─── Deploy Production ────────────────────────────────────────────────────────
+  deploy-production:
+    needs: [publish, build-frontend]
+    if: needs.build-frontend.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy backend to production
+        uses: ./.github/actions/deploy-backend
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          image-name: ${{ needs.publish.outputs.image-name }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          db-user: ${{ secrets.DB_USER }}
+          db-password: ${{ secrets.DB_PASSWORD }}
+          redis-password: ${{ secrets.REDIS_PASSWORD }}
+          jwt-secret: ${{ secrets.JWT_SECRET }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+
+      - name: Tag deployment
+        run: |
+          git tag "deploy-$(date +%Y%m%d-%H%M%S)"
+          git push origin --tags
+
+  # ─── Bootstrap (manual only) ──────────────────────────────────────────────────
+  bootstrap:
+    if: github.event_name == 'workflow_dispatch' && inputs.bootstrap == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap server databases
+        uses: ./.github/actions/bootstrap-server
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          db-root-password: ${{ secrets.DB_ROOT_PASSWORD }}
+          db-user: ${{ secrets.DB_USER }}
+          db-password: ${{ secrets.DB_PASSWORD }}
+          redis-password: ${{ secrets.REDIS_PASSWORD }}
