@@ -115,11 +115,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Update infrastructure on server
+      - name: Write infra .env
         shell: bash
+        env:
+          ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+          DB_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
+
+          printenv | grep -E '^(ACME_EMAIL|DB_ROOT_PASSWORD|DB_USER|DB_PASSWORD|REDIS_PASSWORD)=' > /tmp/infra.env
+          echo "DB_NAME=dumbbell" >> /tmp/infra.env
 
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
@@ -129,19 +138,25 @@ jobs:
             infra/docker-compose.yml \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/dumbbell/docker-compose.yml
 
+          scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            /tmp/infra.env \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/dumbbell/infra.env
+
+      - name: Start infrastructure
+        shell: bash
+        run: |
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ~/dumbbell && \
-             touch acme.json && chmod 600 acme.json && \
-             export ACME_EMAIL='${{ secrets.ACME_EMAIL }}' && \
-             export DB_ROOT_PASSWORD='${{ secrets.DB_ROOT_PASSWORD }}' && \
-             export DB_USER='${{ secrets.DB_USER }}' && \
-             export DB_PASSWORD='${{ secrets.DB_PASSWORD }}' && \
-             export DB_NAME='dumbbell' && \
-             export REDIS_PASSWORD='${{ secrets.REDIS_PASSWORD }}' && \
-             docker compose up -d"
+            "cd ~/dumbbell && touch acme.json && chmod 600 acme.json && docker compose --env-file infra.env up -d --wait"
 
-          rm -f /tmp/ssh_key
+      - name: Create staging database
+        shell: bash
+        run: |
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd ~/dumbbell && docker exec -i mariadb-dumbbell mariadb -u root --password=\$(grep DB_ROOT_PASSWORD infra.env | cut -d= -f2-) -e \"CREATE DATABASE IF NOT EXISTS dumbbell_staging; GRANT ALL PRIVILEGES ON dumbbell_staging.* TO '\$(grep DB_USER infra.env | cut -d= -f2-)'@'%'; FLUSH PRIVILEGES;\"" || true
+
+          rm -f /tmp/ssh_key /tmp/infra.env
 
   # ─── Publish Backend Image ────────────────────────────────────────────────────
   publish:
@@ -194,7 +209,6 @@ jobs:
           image-name: ${{ needs.publish.outputs.image-name }}
           registry-username: ${{ github.actor }}
           registry-password: ${{ secrets.GITHUB_TOKEN }}
-          db-root-password: ${{ secrets.DB_ROOT_PASSWORD }}
           db-user: ${{ secrets.DB_USER }}
           db-password: ${{ secrets.DB_PASSWORD }}
           redis-password: ${{ secrets.REDIS_PASSWORD }}

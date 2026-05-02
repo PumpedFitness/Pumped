@@ -24,9 +24,6 @@ inputs:
   registry-password:
     description: GHCR password
     required: true
-  db-root-password:
-    description: MariaDB root password (for creating staging DB)
-    required: true
   db-user:
     description: MariaDB application user
     required: true
@@ -90,24 +87,16 @@ runs:
       env:
         REGISTRY_USERNAME: ${{ inputs.registry-username }}
         REGISTRY_PASSWORD: ${{ inputs.registry-password }}
-        DB_ROOT_PASSWORD: ${{ inputs.db-root-password }}
-        DB_USER: ${{ inputs.db-user }}
         SSH_USER: ${{ inputs.ssh-user }}
         SSH_HOST: ${{ inputs.ssh-host }}
       run: |
-        # Write credentials to temp file (avoids shell expansion issues over SSH)
         echo "$REGISTRY_PASSWORD" > /tmp/registry_pass
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no /tmp/registry_pass "${SSH_USER}@${SSH_HOST}:~/dumbbell/.registry_pass"
 
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          /tmp/registry_pass \
-          "${SSH_USER}@${SSH_HOST}:~/dumbbell/.registry_pass"
-
-        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          "${SSH_USER}@${SSH_HOST}" \
+        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no "${SSH_USER}@${SSH_HOST}" \
           "cd ~/dumbbell && \
            cat .registry_pass | docker login ghcr.io -u '${REGISTRY_USERNAME}' --password-stdin && \
            docker compose --env-file staging.env -f docker-compose.staging.yml pull backend-staging && \
-           docker exec mariadb-dumbbell mariadb -u root -p'${DB_ROOT_PASSWORD}' -e \"CREATE DATABASE IF NOT EXISTS dumbbell_staging; GRANT ALL ON dumbbell_staging.* TO '${DB_USER}'@'%';\" 2>/dev/null || true && \
            docker compose --env-file staging.env -f docker-compose.staging.yml up -d --force-recreate backend-staging && \
            rm -f .registry_pass"
 
