@@ -65,13 +65,8 @@ upstream dumbbell_backend {
 }
 EOF
 
-# Reload nginx if running, otherwise start it
-if docker ps --filter "name=dumbbell-nginx" --filter "status=running" --format '{{.Names}}' | grep -q dumbbell-nginx; then
-  docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload
-else
-  echo "nginx not running — starting it"
-  docker compose -f docker-compose.prod.yml up -d --no-deps nginx
-fi
+# Reload nginx (running as infrastructure via docker-compose.yml)
+docker exec dumbbell-nginx nginx -s reload
 
 echo "Traffic switched to backend-${INACTIVE}"
 
