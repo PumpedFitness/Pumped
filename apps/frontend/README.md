@@ -19,8 +19,6 @@ Generated contracts are rebuilt automatically:
 - On `bun run start` / `ios` / `android` — generates before starting the dev server
 - In CI — generated fresh in every pipeline run, uploaded as artifacts
 
-Keep `src/data/local/drizzle/*` and `src/data/local/migrations.generated.ts` stable in version control. They are part of the app's migration history, not disposable pull artifacts like `schema.generated.ts`.
-
 **What's auto-generated:**
 
 | File | Source | Tool |
