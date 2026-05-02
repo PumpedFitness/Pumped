@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/setup-frontend
 
       - name: Lint
-        run: bun run --cwd apps/frontend lint
+        run: cd apps/frontend && bunx eslint .
 
   # ─── Publish Backend Image ────────────────────────────────────────────────────
   publish:
