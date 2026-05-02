@@ -12,13 +12,15 @@
     "api:fetch": "curl -sf -u admin:admin http://localhost:8080/v3/api-docs -o openapi.json",
     "api:generate": "orval",
     "schema:generate": "bun run scripts/generate-schema.ts",
-    "generate": "bun run api:fetch && bun run api:generate && bun run schema:generate"
+    "migrations:generate": "bun run scripts/generate-migrations.ts",
+    "generate": "bun run api:fetch && bun run api:generate && bun run schema:generate && bun run migrations:generate"
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.85.2",
     "@react-navigation/bottom-tabs": "^7.15.11",
     "@react-navigation/native": "^7.2.2",
     "@react-navigation/native-stack": "^7.14.12",
+    "all": "^0.0.0",
     "babel-preset-expo": "~55.0.8",
     "drizzle-orm": "^0.45.2",
     "expo": "^55.0.19",

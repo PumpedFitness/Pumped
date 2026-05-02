@@ -23,12 +23,24 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    try {
-      initDatabase();
-      setDbReady(true);
-    } catch (e) {
-      console.error('Failed to initialize database:', e);
+    let isActive = true;
+
+    async function initializeDatabase() {
+      try {
+        await initDatabase();
+        if (isActive) {
+          setDbReady(true);
+        }
+      } catch (e) {
+        console.error('Failed to initialize database:', e);
+      }
     }
+
+    void initializeDatabase();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {

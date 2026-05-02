@@ -21,5 +21,8 @@
     "frontend:api:fetch": "curl -sf -u admin:admin http://localhost:8080/v3/api-docs -o apps/frontend/openapi.json",
     "frontend:api:generate": "bun run --cwd apps/frontend api:generate",
     "install:all": "bun install"
+  },
+  "dependencies": {
+    "all": "^0.0.0"
   }
 }

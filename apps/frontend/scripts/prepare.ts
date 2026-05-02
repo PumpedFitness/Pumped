@@ -39,7 +39,7 @@ function checkBackend(): boolean {
 console.log('\nPreparing frontend...\n');
 
 // 1. Check backend
-console.log('[1/4] Checking backend...');
+console.log('[1/5] Checking backend...');
 if (!checkBackend()) {
   console.error('  ✗ Backend is not running on localhost:8080');
   console.error('    Start it with: bun run backend');
@@ -48,15 +48,19 @@ if (!checkBackend()) {
 console.log('  ✓ Backend is running');
 
 // 2. Fetch OpenAPI spec
-console.log('[2/4] Fetching OpenAPI spec...');
+console.log('[2/5] Fetching OpenAPI spec...');
 run('curl -sf -u admin:admin http://localhost:8080/v3/api-docs -o openapi.json', 'openapi.json');
 
 // 3. Generate API client
-console.log('[3/4] Generating API client...');
+console.log('[3/5] Generating API client...');
 run('bun run api:generate', 'src/data/api/generated.ts');
 
 // 4. Generate DB schema
-console.log('[4/4] Generating DB schema...');
+console.log('[4/5] Generating DB schema...');
 run('bun run schema:generate', 'src/data/local/schema.generated.ts');
+
+// 5. Generate local DB migrations
+console.log('[5/5] Generating DB migrations...');
+run('bun run migrations:generate', 'src/data/local/migrations.generated.ts');
 
 console.log('\nFrontend is ready!\n');

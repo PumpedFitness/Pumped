@@ -5,6 +5,7 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 ## Schema Generation
 
 The frontend's local SQLite schema (`src/data/local/schema.generated.ts`) is auto-generated from the backend's Flyway SQL migrations using `drizzle-kit pull`.
+Runtime SQLite migrations are then generated from the frontend Drizzle schema and applied in-app with `drizzle-orm/expo-sqlite/migrator`.
 
 **How it works:**
 
@@ -13,12 +14,14 @@ The frontend's local SQLite schema (`src/data/local/schema.generated.ts`) is aut
 3. `drizzle-kit pull` introspects that DB and generates Drizzle ORM table definitions
 4. Post-processing adds frontend-specific concerns (JSON array columns, indexes, excluded tables)
 
-**All generated files are gitignored** and rebuilt automatically:
+Generated contracts are rebuilt automatically:
 
 - On `bun run start` / `ios` / `android` — generates before starting the dev server
 - In CI — generated fresh in every pipeline run, uploaded as artifacts
 
-**What's auto-generated (not committed):**
+Keep `src/data/local/drizzle/*` and `src/data/local/migrations.generated.ts` stable in version control. They are part of the app's migration history, not disposable pull artifacts like `schema.generated.ts`.
+
+**What's auto-generated:**
 
 | File | Source | Tool |
 |------|--------|------|
@@ -26,6 +29,8 @@ The frontend's local SQLite schema (`src/data/local/schema.generated.ts`) is aut
 | `src/data/api/generated.ts` | `openapi.json` | Orval |
 | `src/data/local/schema.generated.ts` | Flyway SQL migrations | `node-sql-parser` + `drizzle-kit pull` |
 | `src/data/local/schema.enums.generated.ts` | `openapi.json` | Custom extraction |
+| `src/data/local/drizzle/*` | `src/data/local/schema.ts` | `drizzle-kit generate` |
+| `src/data/local/migrations.generated.ts` | `src/data/local/drizzle/*` | Custom bundling for Expo migrator |
 
 **Prerequisite:** Backend must be running for the full `generate` command (to fetch the OpenAPI spec).
 
@@ -40,6 +45,7 @@ bun run frontend:generate
 bun run frontend:api:fetch        # curl → openapi.json (needs backend running)
 bun run frontend:api:generate     # Orval → API client (needs openapi.json)
 bun run frontend:schema:generate  # Flyway SQL → drizzle-kit → Drizzle schema (no backend needed)
+bun run frontend:migrations:generate  # Drizzle schema → SQL migrations → Expo migration bundle
 ```
 
 ## CI/CD
@@ -49,8 +55,9 @@ The pipeline:
 1. Gradle `generateOpenApiDocs` (boots app with H2 profile, exports spec, stops)
 2. Orval generates API client
 3. `drizzle-kit pull` generates DB schema from Flyway migrations
-4. Typecheck validates everything
-5. Artifacts uploaded for downstream jobs
+4. `drizzle-kit generate` produces local SQLite migrations from `schema.ts`
+5. Typecheck validates everything
+6. Artifacts uploaded for downstream jobs
 
 # Getting Started
 
