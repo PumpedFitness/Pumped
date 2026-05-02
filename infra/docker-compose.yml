@@ -1,4 +1,29 @@
 services:
+  traefik:
+    image: traefik:v3.3
+    container_name: dumbbell-traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=dumbbell-net"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./acme.json:/acme.json"
+    networks:
+      - dumbbell-net
+
   mariadb:
     image: mariadb:11.1
     container_name: mariadb-dumbbell
@@ -38,19 +63,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  nginx:
-    image: nginx:alpine
-    container_name: dumbbell-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "8081:8081"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf
-    networks:
-      - dumbbell-net
 
 networks:
   dumbbell-net:

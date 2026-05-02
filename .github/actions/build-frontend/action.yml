@@ -2,13 +2,9 @@ name: Build Frontend
 description: Fetches OpenAPI spec from staging, generates contracts, and typechecks
 
 inputs:
-  staging-host:
-    description: Staging server hostname or IP
+  staging-url:
+    description: Staging backend URL (e.g. https://staging.pumpedfitness.de)
     required: true
-  staging-port:
-    description: Staging backend port
-    required: false
-    default: "8081"
   swagger-username:
     description: Swagger UI username for fetching spec
     required: true
@@ -32,7 +28,7 @@ runs:
       shell: bash
       run: |
         curl -sf -u ${{ inputs.swagger-username }}:${{ inputs.swagger-password }} \
-          http://${{ inputs.staging-host }}:${{ inputs.staging-port }}/v3/api-docs \
+          ${{ inputs.staging-url }}/v3/api-docs \
           -o apps/frontend/openapi.json
 
     - name: Generate API client

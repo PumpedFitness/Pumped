@@ -1,0 +1,29 @@
+name: CI Frontend
+
+on:
+  push:
+    branches: [main]
+    paths: [apps/frontend/**]
+  pull_request:
+    branches: [main]
+    paths: [apps/frontend/**]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build frontend against staging
+        uses: ./.github/actions/build-frontend
+        with:
+          staging-url: https://${{ secrets.STAGING_DOMAIN }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+
+      - name: Lint
+        run: bun run --cwd apps/frontend lint
+
+      - name: Test
+        run: bun run --cwd apps/frontend test

@@ -27,6 +27,9 @@ inputs:
   redis-password:
     description: Redis password
     required: true
+  acme-email:
+    description: Email for Let's Encrypt certificates
+    required: true
 
 runs:
   using: composite
@@ -38,13 +41,10 @@ runs:
         chmod 600 /tmp/ssh_key
         ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
-          "mkdir -p ~/dumbbell/nginx"
+          "mkdir -p ~/dumbbell"
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          apps/backend/docker-compose.yml \
+          infra/docker-compose.yml \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/docker-compose.yml
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          apps/backend/nginx/nginx.conf \
-          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/nginx/nginx.conf
 
     - name: Create network and start infrastructure
       shell: bash
@@ -54,9 +54,8 @@ runs:
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
           "docker network create dumbbell-net 2>/dev/null || true && \
            cd ~/dumbbell && \
-           if [ ! -f nginx/upstream.conf ]; then
-             echo 'upstream dumbbell_backend { server 127.0.0.1:9999; }' > nginx/upstream.conf
-           fi && \
+           touch acme.json && chmod 600 acme.json && \
+           export ACME_EMAIL='${{ inputs.acme-email }}' && \
            export DB_ROOT_PASSWORD='${{ inputs.db-root-password }}' && \
            export DB_USER='${{ inputs.db-user }}' && \
            export DB_PASSWORD='${{ inputs.db-password }}' && \
