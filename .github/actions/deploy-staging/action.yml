@@ -68,19 +68,18 @@ runs:
 
     - name: Write .env file for docker compose
       shell: bash
+      env:
+        IMAGE_NAME: ${{ inputs.image-name }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+        STAGING_DOMAIN: ${{ inputs.staging-domain }}
+        DB_USER: ${{ inputs.db-user }}
+        DB_PASSWORD: ${{ inputs.db-password }}
+        REDIS_PASSWORD: ${{ inputs.redis-password }}
+        JWT_SECRET: ${{ inputs.jwt-secret }}
+        SWAGGER_USERNAME: ${{ inputs.swagger-username }}
+        SWAGGER_PASSWORD: ${{ inputs.swagger-password }}
       run: |
-        # Write env file using printf (handles special chars safely)
-        {
-          printf 'IMAGE_NAME=%s\n' '${{ inputs.image-name }}'
-          printf 'IMAGE_TAG=%s\n' '${{ inputs.image-tag }}'
-          printf 'STAGING_DOMAIN=%s\n' '${{ inputs.staging-domain }}'
-          printf 'DB_USER=%s\n' '${{ inputs.db-user }}'
-          printf 'DB_PASSWORD=%s\n' '${{ inputs.db-password }}'
-          printf 'REDIS_PASSWORD=%s\n' '${{ inputs.redis-password }}'
-          printf 'JWT_SECRET=%s\n' '${{ inputs.jwt-secret }}'
-          printf 'SWAGGER_USERNAME=%s\n' '${{ inputs.swagger-username }}'
-          printf 'SWAGGER_PASSWORD=%s\n' '${{ inputs.swagger-password }}'
-        } > /tmp/staging.env
+        printenv | grep -E '^(IMAGE_NAME|IMAGE_TAG|STAGING_DOMAIN|DB_USER|DB_PASSWORD|REDIS_PASSWORD|JWT_SECRET|SWAGGER_USERNAME|SWAGGER_PASSWORD)=' > /tmp/staging.env
 
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
           /tmp/staging.env \
@@ -88,14 +87,31 @@ runs:
 
     - name: Deploy staging
       shell: bash
+      env:
+        REGISTRY_USERNAME: ${{ inputs.registry-username }}
+        REGISTRY_PASSWORD: ${{ inputs.registry-password }}
+        DB_ROOT_PASSWORD: ${{ inputs.db-root-password }}
+        DB_USER: ${{ inputs.db-user }}
+        SSH_USER: ${{ inputs.ssh-user }}
+        SSH_HOST: ${{ inputs.ssh-host }}
       run: |
+        # Write credentials to temp file (avoids shell expansion issues over SSH)
+        echo "$REGISTRY_PASSWORD" > /tmp/registry_pass
+
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          /tmp/registry_pass \
+          "${SSH_USER}@${SSH_HOST}:~/dumbbell/.registry_pass"
+
         ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
-          'set -euo pipefail && cd ~/dumbbell && \
-           echo "${{ inputs.registry-password }}" | docker login ghcr.io -u "${{ inputs.registry-username }}" --password-stdin && \
+          "${SSH_USER}@${SSH_HOST}" \
+          "cd ~/dumbbell && \
+           cat .registry_pass | docker login ghcr.io -u '${REGISTRY_USERNAME}' --password-stdin && \
            docker compose --env-file staging.env -f docker-compose.staging.yml pull backend-staging && \
-           docker exec mariadb-dumbbell mariadb -u root -p"${{ inputs.db-root-password }}" -e "CREATE DATABASE IF NOT EXISTS dumbbell_staging; GRANT ALL ON dumbbell_staging.* TO '"'"'${{ inputs.db-user }}'"'"'@'"'"'%'"'"';" 2>/dev/null || true && \
-           docker compose --env-file staging.env -f docker-compose.staging.yml up -d --force-recreate backend-staging'
+           docker exec mariadb-dumbbell mariadb -u root -p'${DB_ROOT_PASSWORD}' -e \"CREATE DATABASE IF NOT EXISTS dumbbell_staging; GRANT ALL ON dumbbell_staging.* TO '${DB_USER}'@'%';\" 2>/dev/null || true && \
+           docker compose --env-file staging.env -f docker-compose.staging.yml up -d --force-recreate backend-staging && \
+           rm -f .registry_pass"
+
+        rm -f /tmp/registry_pass
 
     - name: Health check staging
       shell: bash

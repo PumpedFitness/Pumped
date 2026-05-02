@@ -5,10 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      bootstrap:
-        description: Bootstrap MariaDB and Redis on the server (run once)
-        type: boolean
-        default: false
       force_backend:
         description: Force backend deployment (ignore change detection)
         type: boolean
@@ -125,6 +121,10 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
 
+          ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "mkdir -p ~/dumbbell && docker network create dumbbell-net 2>/dev/null || true"
+
           scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
             infra/docker-compose.yml \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/dumbbell/docker-compose.yml
@@ -132,6 +132,7 @@ jobs:
           ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "cd ~/dumbbell && \
+             touch acme.json && chmod 600 acme.json && \
              export ACME_EMAIL='${{ secrets.ACME_EMAIL }}' && \
              export DB_ROOT_PASSWORD='${{ secrets.DB_ROOT_PASSWORD }}' && \
              export DB_USER='${{ secrets.DB_USER }}' && \
@@ -259,22 +260,3 @@ jobs:
           git tag "deploy-$(date +%Y%m%d-%H%M%S)"
           git push origin --tags
 
-  # ─── Bootstrap (manual only) ──────────────────────────────────────────────────
-  bootstrap:
-    if: github.event_name == 'workflow_dispatch' && inputs.bootstrap == true
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Bootstrap server
-        uses: ./.github/actions/bootstrap-server
-        with:
-          ssh-host: ${{ secrets.SSH_HOST }}
-          ssh-user: ${{ secrets.SSH_USER }}
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          db-root-password: ${{ secrets.DB_ROOT_PASSWORD }}
-          db-user: ${{ secrets.DB_USER }}
-          db-password: ${{ secrets.DB_PASSWORD }}
-          redis-password: ${{ secrets.REDIS_PASSWORD }}
-          acme-email: ${{ secrets.ACME_EMAIL }}
