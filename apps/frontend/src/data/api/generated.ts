@@ -7,6 +7,45 @@
  */
 import { fetchClient } from './fetchClient';
 /**
+ * Recurring schedule type
+ */
+export type WorkoutTemplateScheduleRequestType = typeof WorkoutTemplateScheduleRequestType[keyof typeof WorkoutTemplateScheduleRequestType];
+
+
+export const WorkoutTemplateScheduleRequestType = {
+  DAYS: 'DAYS',
+  WEEKS: 'WEEKS',
+} as const;
+
+export type WorkoutTemplateScheduleRequestWeekdaysItem = typeof WorkoutTemplateScheduleRequestWeekdaysItem[keyof typeof WorkoutTemplateScheduleRequestWeekdaysItem];
+
+
+export const WorkoutTemplateScheduleRequestWeekdaysItem = {
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
+  SUNDAY: 'SUNDAY',
+} as const;
+
+/**
+ * Optional workout template schedule
+ */
+export interface WorkoutTemplateScheduleRequest {
+  /** Recurring schedule type */
+  type: WorkoutTemplateScheduleRequestType;
+  /**
+     * Repeat interval for the selected schedule type
+     * @minimum 1
+     */
+  interval: number;
+  /** Weekdays used when type is WEEKS */
+  weekdays?: WorkoutTemplateScheduleRequestWeekdaysItem[];
+}
+
+/**
  * Request to update an existing workout template
  */
 export interface UpdateWorkoutTemplateRequest {
@@ -22,6 +61,8 @@ export interface UpdateWorkoutTemplateRequest {
      * @maxLength 500
      */
   description?: string;
+  /** Optional recurrence schedule for the template. Use null to remove the schedule. */
+  schedule?: WorkoutTemplateScheduleRequest;
 }
 
 export interface WorkoutTemplateExerciseDto {
@@ -39,6 +80,42 @@ export interface WorkoutTemplateExerciseDto {
 }
 
 /**
+ * Recurring schedule type
+ */
+export type WorkoutTemplateScheduleResponseType = typeof WorkoutTemplateScheduleResponseType[keyof typeof WorkoutTemplateScheduleResponseType];
+
+
+export const WorkoutTemplateScheduleResponseType = {
+  DAYS: 'DAYS',
+  WEEKS: 'WEEKS',
+} as const;
+
+export type WorkoutTemplateScheduleResponseWeekdaysItem = typeof WorkoutTemplateScheduleResponseWeekdaysItem[keyof typeof WorkoutTemplateScheduleResponseWeekdaysItem];
+
+
+export const WorkoutTemplateScheduleResponseWeekdaysItem = {
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
+  SUNDAY: 'SUNDAY',
+} as const;
+
+/**
+ * Recurring schedule configured for a workout template
+ */
+export interface WorkoutTemplateScheduleResponse {
+  /** Recurring schedule type */
+  type: WorkoutTemplateScheduleResponseType;
+  /** Repeat interval for the selected schedule type */
+  interval: number;
+  /** Weekdays used when type is WEEKS */
+  weekdays: WorkoutTemplateScheduleResponseWeekdaysItem[];
+}
+
+/**
  * Response representing a workout template
  */
 export interface WorkoutTemplateResponse {
@@ -48,6 +125,8 @@ export interface WorkoutTemplateResponse {
   name: string;
   /** Optional description */
   description?: string;
+  /** Optional recurrence schedule */
+  schedule?: WorkoutTemplateScheduleResponse;
   /** Ordered exercises in this template */
   exercises: WorkoutTemplateExerciseDto[];
   /** Creation timestamp (epoch ms) */
@@ -111,6 +190,8 @@ export interface CreateWorkoutTemplateRequest {
      * @maxLength 500
      */
   description?: string;
+  /** Optional recurrence schedule for the template */
+  schedule?: WorkoutTemplateScheduleRequest;
 }
 
 /**
@@ -177,6 +258,12 @@ export interface LogSetRequest {
   /** Weight used in kg */
   weight?: number;
   /**
+     * Rate of perceived exertion on a 1-10 scale
+     * @minimum 1
+     * @maximum 10
+     */
+  rpe?: number;
+  /**
      * Rest time in seconds after this set
      * @minimum 0
      */
@@ -208,6 +295,8 @@ export interface WorkoutSessionSetResponse {
   reps: number;
   /** Weight in kg */
   weight?: number;
+  /** Rate of perceived exertion on a 1-10 scale */
+  rpe?: number;
   /** Rest time in seconds */
   restSeconds?: number;
   /** Duration in seconds */

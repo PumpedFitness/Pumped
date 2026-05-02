@@ -1,5 +1,57 @@
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
+# Code Generation
+
+## Schema Generation
+
+The frontend's local SQLite schema (`src/data/local/schema.generated.ts`) is auto-generated from the backend's Flyway SQL migrations using `drizzle-kit pull`.
+
+**How it works:**
+
+1. Flyway SQL migrations (MariaDB) are converted to SQLite-compatible SQL
+2. A temporary SQLite DB is created and populated with the converted migrations
+3. `drizzle-kit pull` introspects that DB and generates Drizzle ORM table definitions
+4. Post-processing adds frontend-specific concerns (JSON array columns, indexes, excluded tables)
+
+**All generated files are gitignored** and rebuilt automatically:
+
+- On `bun run start` / `ios` / `android` — generates before starting the dev server
+- In CI — generated fresh in every pipeline run, uploaded as artifacts
+
+**What's auto-generated (not committed):**
+
+| File | Source | Tool |
+|------|--------|------|
+| `openapi.json` | Backend `/v3/api-docs` endpoint | `curl` |
+| `src/data/api/generated.ts` | `openapi.json` | Orval |
+| `src/data/local/schema.generated.ts` | Flyway SQL migrations | `node-sql-parser` + `drizzle-kit pull` |
+| `src/data/local/schema.enums.generated.ts` | `openapi.json` | Custom extraction |
+
+**Prerequisite:** Backend must be running for the full `generate` command (to fetch the OpenAPI spec).
+
+```sh
+# Start backend first
+bun run backend
+
+# Generate everything (fetches spec from running backend + generates all)
+bun run frontend:generate
+
+# Or individual steps
+bun run frontend:api:fetch        # curl → openapi.json (needs backend running)
+bun run frontend:api:generate     # Orval → API client (needs openapi.json)
+bun run frontend:schema:generate  # Flyway SQL → drizzle-kit → Drizzle schema (no backend needed)
+```
+
+## CI/CD
+
+Generated files are built fresh in CI with change detection on `apps/backend/src/**`.
+The pipeline:
+1. Gradle `generateOpenApiDocs` (boots app with H2 profile, exports spec, stops)
+2. Orval generates API client
+3. `drizzle-kit pull` generates DB schema from Flyway migrations
+4. Typecheck validates everything
+5. Artifacts uploaded for downstream jobs
+
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.

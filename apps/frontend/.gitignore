@@ -73,3 +73,11 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Generated files (rebuilt on dev start and in CI)
+openapi.json
+src/data/local/schema.generated.ts
+src/data/local/schema.enums.generated.ts
+src/data/api/generated.ts
+temp-introspect.db
+src/data/local/pulled/

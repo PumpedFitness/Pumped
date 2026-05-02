@@ -2,19 +2,10 @@
 // API types are auto-generated in src/data/api/generated.ts — these types
 // represent the local SQLite row shape (e.g., JSON arrays stored as TEXT).
 
-export type MuscleGroup = 'CHEST' | 'BACK' | 'LEGS' | 'SHOULDERS' | 'ARMS' | 'CORE';
+// Enum types are auto-generated from the backend OpenAPI spec
+import type {MuscleGroup, ExerciseCategory, ExerciseEquipment} from '../data/local/schema.enums.generated';
 
-export type ExerciseCategory = 'STRENGTH' | 'CARDIO' | 'FLEXIBILITY' | 'BALANCE' | 'OTHER';
-
-export type ExerciseEquipment =
-  | 'DUMBBELL'
-  | 'BARBELL'
-  | 'KETTLEBELL'
-  | 'MACHINE'
-  | 'BODYWEIGHT'
-  | 'CABLE'
-  | 'BAND'
-  | 'OTHER';
+export type {MuscleGroup, ExerciseCategory, ExerciseEquipment};
 
 export type Exercise = {
   id: string;
@@ -37,7 +28,7 @@ export type WorkoutTemplate = {
 
 export type WorkoutTemplateExercise = {
   id: string;
-  templateId: string;
+  workoutTemplateId: string;
   exerciseId: string;
   orderIndex: number;
   sets: number;
@@ -52,7 +43,7 @@ export type WorkoutTemplateExercise = {
 export type WorkoutSession = {
   id: string;
   userId: string;
-  templateId: string | null;
+  workoutTemplateId: string | null;
   name: string;
   startedAt: number;
   endedAt: number | null;
@@ -61,7 +52,7 @@ export type WorkoutSession = {
 
 export type WorkoutSessionSet = {
   id: string;
-  sessionId: string;
+  workoutSessionId: string;
   exerciseId: string;
   setIndex: number;
   reps: number;

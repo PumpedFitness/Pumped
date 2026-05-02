@@ -2,7 +2,10 @@ import {defineConfig} from 'orval';
 
 export default defineConfig({
   dumbbell: {
-    input: './openapi.json',
+    input: {
+      target: './openapi.json',
+      unsafeDisableValidation: true,
+    },
     output: {
       target: './src/data/api/generated.ts',
       client: 'fetch',

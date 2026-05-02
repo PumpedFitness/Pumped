@@ -73,18 +73,57 @@ jobs:
           db-password: ${{ secrets.DB_PASSWORD }}
           redis-password: ${{ secrets.REDIS_PASSWORD }}
 
-  deploy:
-    needs: [ publish, bootstrap ]
+  deploy-staging:
+    needs: [publish, bootstrap]
     if: |
       always() &&
       needs.publish.result == 'success' &&
       (needs.bootstrap.result == 'success' || needs.bootstrap.result == 'skipped')
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy backend to server
+      - name: Deploy to staging
+        uses: ./.github/actions/deploy-staging
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-user: ${{ secrets.SSH_USER }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          image-name: ${{ needs.publish.outputs.image-name }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          db-root-password: ${{ secrets.DB_ROOT_PASSWORD }}
+          db-user: ${{ secrets.DB_USER }}
+          db-password: ${{ secrets.DB_PASSWORD }}
+          redis-password: ${{ secrets.REDIS_PASSWORD }}
+          jwt-secret: ${{ secrets.JWT_SECRET }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+
+  build-frontend:
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build frontend against staging
+        uses: ./.github/actions/build-frontend
+        with:
+          staging-host: ${{ secrets.SSH_HOST }}
+          swagger-username: ${{ secrets.SWAGGER_USERNAME }}
+          swagger-password: ${{ secrets.SWAGGER_PASSWORD }}
+
+  deploy-production:
+    needs: [publish, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy backend to production
         uses: ./.github/actions/deploy-backend
         with:
           ssh-host: ${{ secrets.SSH_HOST }}

@@ -1,0 +1,59 @@
+name: Build Frontend
+description: Fetches OpenAPI spec from staging, generates contracts, and typechecks
+
+inputs:
+  staging-host:
+    description: Staging server hostname or IP
+    required: true
+  staging-port:
+    description: Staging backend port
+    required: false
+    default: "8081"
+  swagger-username:
+    description: Swagger UI username for fetching spec
+    required: true
+  swagger-password:
+    description: Swagger UI password for fetching spec
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install frontend dependencies
+      shell: bash
+      run: bun install --cwd apps/frontend --frozen-lockfile
+
+    - name: Fetch OpenAPI spec from staging
+      shell: bash
+      run: |
+        curl -sf -u ${{ inputs.swagger-username }}:${{ inputs.swagger-password }} \
+          http://${{ inputs.staging-host }}:${{ inputs.staging-port }}/v3/api-docs \
+          -o apps/frontend/openapi.json
+
+    - name: Generate API client
+      shell: bash
+      run: bun run --cwd apps/frontend api:generate
+
+    - name: Generate DB schema
+      shell: bash
+      run: bun run --cwd apps/frontend schema:generate
+
+    - name: Typecheck
+      shell: bash
+      run: cd apps/frontend && bunx tsc --noEmit
+
+    - name: Upload generated files
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-generated
+        path: |
+          apps/frontend/openapi.json
+          apps/frontend/src/data/local/schema.generated.ts
+          apps/frontend/src/data/local/schema.enums.generated.ts
+          apps/frontend/src/data/api/generated.ts
+        retention-days: 7

@@ -7,6 +7,7 @@ plugins {
     id("com.google.cloud.tools.jib") version "3.4.4"
 }
 
+
 group = "de.pumpedfitness"
 version = "0.0.1-SNAPSHOT"
 description = "Dumbbell"

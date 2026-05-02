@@ -1,0 +1,87 @@
+name: Deploy Staging
+description: Deploys the backend to the staging environment (port 8081) with health check
+
+inputs:
+  ssh-host:
+    description: Server hostname or IP
+    required: true
+  ssh-user:
+    description: SSH user
+    required: true
+  ssh-private-key:
+    description: SSH private key
+    required: true
+  image-name:
+    description: Full image name including registry
+    required: true
+  image-tag:
+    description: Image tag to deploy
+    required: false
+    default: latest
+  registry-username:
+    description: GHCR username
+    required: true
+  registry-password:
+    description: GHCR password
+    required: true
+  db-root-password:
+    description: MariaDB root password (for creating staging DB)
+    required: true
+  db-user:
+    description: MariaDB application user
+    required: true
+  db-password:
+    description: MariaDB application user password
+    required: true
+  redis-password:
+    description: Redis password
+    required: true
+  jwt-secret:
+    description: JWT signing secret
+    required: true
+  swagger-username:
+    description: Swagger UI username
+    required: true
+  swagger-password:
+    description: Swagger UI password
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Copy staging files to server
+      shell: bash
+      run: |
+        echo "${{ inputs.ssh-private-key }}" > /tmp/ssh_key
+        chmod 600 /tmp/ssh_key
+
+        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
+          "mkdir -p ~/dumbbell"
+
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          apps/backend/docker-compose.staging.yml \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/docker-compose.staging.yml
+
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          .github/scripts/staging-deploy.sh \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/staging-deploy.sh
+
+    - name: Run staging deployment
+      shell: bash
+      run: |
+        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
+          "export IMAGE_NAME='${{ inputs.image-name }}' \
+           IMAGE_TAG='${{ inputs.image-tag }}' \
+           REGISTRY_USERNAME='${{ inputs.registry-username }}' \
+           REGISTRY_PASSWORD='${{ inputs.registry-password }}' \
+           DB_ROOT_PASSWORD='${{ inputs.db-root-password }}' \
+           DB_USER='${{ inputs.db-user }}' \
+           DB_PASSWORD='${{ inputs.db-password }}' \
+           REDIS_PASSWORD='${{ inputs.redis-password }}' \
+           JWT_SECRET='${{ inputs.jwt-secret }}' \
+           SWAGGER_USERNAME='${{ inputs.swagger-username }}' \
+           SWAGGER_PASSWORD='${{ inputs.swagger-password }}' && \
+           bash ~/dumbbell/staging-deploy.sh"
+        rm -f /tmp/ssh_key

@@ -17,24 +17,24 @@ type WorkoutState = {
   activeSession: WorkoutSession | null;
   activeExercises: ActiveExercise[];
 
-  startWorkout: (userId: string, name: string, templateId?: string) => void;
+  startWorkout: (userId: string, name: string, workoutTemplateId?: string) => void;
   addExercise: (exercise: Exercise) => void;
   logSet: (exerciseId: string, weight: number | null, reps: number) => void;
   deleteSet: (setId: string) => void;
   finishWorkout: (notes?: string) => void;
   discardWorkout: () => void;
-  reloadActiveSession: (sessionId: string) => void;
+  reloadActiveSession: (workoutSessionId: string) => void;
 };
 
 export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   activeSession: null,
   activeExercises: [],
 
-  startWorkout: (userId, name, templateId) => {
+  startWorkout: (userId, name, workoutTemplateId) => {
     const session: WorkoutSession = {
       id: randomUUID(),
       userId,
-      templateId: templateId ?? null,
+      workoutTemplateId: workoutTemplateId ?? null,
       name,
       startedAt: Date.now(),
       endedAt: null,
@@ -70,7 +70,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
 
     const newSet: WorkoutSessionSet = {
       id: randomUUID(),
-      sessionId: activeSession.id,
+      workoutSessionId: activeSession.id,
       exerciseId,
       setIndex: exerciseEntry.sets.length + 1,
       reps,
@@ -123,13 +123,13 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
     set({activeSession: null, activeExercises: []});
   },
 
-  reloadActiveSession: (sessionId) => {
-    const session = SessionRepo.getSessionById(sessionId);
+  reloadActiveSession: (workoutSessionId) => {
+    const session = SessionRepo.getSessionById(workoutSessionId);
     if (!session) {
       set({activeSession: null, activeExercises: []});
       return;
     }
-    const sets = SetRepo.getSetsForSession(sessionId);
+    const sets = SetRepo.getSetsForSession(workoutSessionId);
     // Group sets by exercise — we need exercise metadata from the exercise store
     const exerciseMap = new Map<string, WorkoutSessionSet[]>();
     for (const s of sets) {

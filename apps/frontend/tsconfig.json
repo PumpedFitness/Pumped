@@ -4,5 +4,5 @@
     "types": ["jest"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/Pods", "orval.config.ts"]
+  "exclude": ["**/node_modules", "**/Pods", "orval.config.ts", "drizzle-pull.config.ts", "scripts"]
 }

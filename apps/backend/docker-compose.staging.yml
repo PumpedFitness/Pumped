@@ -1,0 +1,33 @@
+services:
+  backend-staging:
+    image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
+    container_name: dumbbell-backend-staging
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+      DB_HOST: mariadb-dumbbell
+      DB_PORT: 3306
+      DB_NAME: dumbbell_staging
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis-dumbbell
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: 86400000
+      SWAGGER_USERNAME: ${SWAGGER_USERNAME}
+      SWAGGER_PASSWORD: ${SWAGGER_PASSWORD}
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    networks:
+      - dumbbell-net
+
+networks:
+  dumbbell-net:
+    external: true

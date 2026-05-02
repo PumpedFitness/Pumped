@@ -15,6 +15,11 @@
     "services:up": "docker compose -f apps/backend/docker-compose.dev.yml up -d",
     "services:down": "docker compose -f apps/backend/docker-compose.dev.yml down",
     "services:logs": "docker compose -f apps/backend/docker-compose.dev.yml logs -f",
+    "frontend:prepare": "bun run --cwd apps/frontend prepare",
+    "frontend:generate": "bun run --cwd apps/frontend generate",
+    "frontend:schema:generate": "bun run --cwd apps/frontend schema:generate",
+    "frontend:api:fetch": "curl -sf -u admin:admin http://localhost:8080/v3/api-docs -o apps/frontend/openapi.json",
+    "frontend:api:generate": "bun run --cwd apps/frontend api:generate",
     "install:all": "bun install"
   }
 }

@@ -8,7 +8,7 @@ function rowToSession(row: typeof workoutSessions.$inferSelect): WorkoutSession 
   return {
     id: row.id,
     userId: row.userId,
-    templateId: row.templateId ?? null,
+    workoutTemplateId: row.workoutTemplateId ?? null,
     name: row.name,
     startedAt: row.startedAt,
     endedAt: row.endedAt ?? null,
@@ -22,7 +22,7 @@ export function createSession(session: WorkoutSession): void {
       .values({
         id: session.id,
         userId: session.userId,
-        templateId: session.templateId,
+        workoutTemplateId: session.workoutTemplateId,
         name: session.name,
         startedAt: session.startedAt,
         endedAt: session.endedAt,
@@ -93,7 +93,7 @@ export function upsertSessionFromRemote(session: WorkoutSession): void {
     .values({
       id: session.id,
       userId: session.userId,
-      templateId: session.templateId,
+      workoutTemplateId: session.workoutTemplateId,
       name: session.name,
       startedAt: session.startedAt,
       endedAt: session.endedAt,
@@ -103,7 +103,7 @@ export function upsertSessionFromRemote(session: WorkoutSession): void {
       target: workoutSessions.id,
       set: {
         userId: session.userId,
-        templateId: session.templateId,
+        workoutTemplateId: session.workoutTemplateId,
         name: session.name,
         startedAt: session.startedAt,
         endedAt: session.endedAt,

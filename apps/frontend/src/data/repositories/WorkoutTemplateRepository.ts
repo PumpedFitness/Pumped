@@ -22,7 +22,7 @@ function rowToTemplateExercise(
 ): WorkoutTemplateExercise {
   return {
     id: row.id,
-    templateId: row.templateId,
+    workoutTemplateId: row.workoutTemplateId,
     exerciseId: row.exerciseId,
     orderIndex: row.orderIndex,
     sets: row.sets,
@@ -55,7 +55,7 @@ export function createTemplate(
       tx.insert(workoutTemplateExercises)
         .values({
           id: ex.id,
-          templateId: ex.templateId,
+          workoutTemplateId: ex.workoutTemplateId,
           exerciseId: ex.exerciseId,
           orderIndex: ex.orderIndex,
           sets: ex.sets,
@@ -92,14 +92,14 @@ export function updateTemplate(
 
     // Replace exercises: delete old, insert new
     tx.delete(workoutTemplateExercises)
-      .where(eq(workoutTemplateExercises.templateId, template.id))
+      .where(eq(workoutTemplateExercises.workoutTemplateId, template.id))
       .run();
 
     for (const ex of exerciseList) {
       tx.insert(workoutTemplateExercises)
         .values({
           id: ex.id,
-          templateId: ex.templateId,
+          workoutTemplateId: ex.workoutTemplateId,
           exerciseId: ex.exerciseId,
           orderIndex: ex.orderIndex,
           sets: ex.sets,
@@ -144,7 +144,7 @@ export function getTemplateById(id: string): {
   const exerciseRows = db
     .select()
     .from(workoutTemplateExercises)
-    .where(eq(workoutTemplateExercises.templateId, id))
+    .where(eq(workoutTemplateExercises.workoutTemplateId, id))
     .orderBy(asc(workoutTemplateExercises.orderIndex))
     .all();
 
@@ -191,14 +191,14 @@ export function upsertTemplateFromRemote(
       .run();
 
     tx.delete(workoutTemplateExercises)
-      .where(eq(workoutTemplateExercises.templateId, template.id))
+      .where(eq(workoutTemplateExercises.workoutTemplateId, template.id))
       .run();
 
     for (const ex of exerciseList) {
       tx.insert(workoutTemplateExercises)
         .values({
           id: ex.id,
-          templateId: ex.templateId,
+          workoutTemplateId: ex.workoutTemplateId,
           exerciseId: ex.exerciseId,
           orderIndex: ex.orderIndex,
           sets: ex.sets,

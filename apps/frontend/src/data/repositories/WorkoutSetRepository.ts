@@ -7,7 +7,7 @@ import type {WorkoutSessionSet} from '../../types/domain';
 function rowToSet(row: typeof workoutSessionSets.$inferSelect): WorkoutSessionSet {
   return {
     id: row.id,
-    sessionId: row.sessionId,
+    workoutSessionId: row.workoutSessionId,
     exerciseId: row.exerciseId,
     setIndex: row.setIndex,
     reps: row.reps,
@@ -24,7 +24,7 @@ export function logSet(set: WorkoutSessionSet): void {
     tx.insert(workoutSessionSets)
       .values({
         id: set.id,
-        sessionId: set.sessionId,
+        workoutSessionId: set.workoutSessionId,
         exerciseId: set.exerciseId,
         setIndex: set.setIndex,
         reps: set.reps,
@@ -48,11 +48,11 @@ export function deleteSet(id: string): void {
   });
 }
 
-export function getSetsForSession(sessionId: string): WorkoutSessionSet[] {
+export function getSetsForSession(workoutSessionId: string): WorkoutSessionSet[] {
   const rows = db
     .select()
     .from(workoutSessionSets)
-    .where(eq(workoutSessionSets.sessionId, sessionId))
+    .where(eq(workoutSessionSets.workoutSessionId, workoutSessionId))
     .orderBy(asc(workoutSessionSets.setIndex))
     .all();
   return rows.map(rowToSet);
@@ -97,7 +97,7 @@ export function upsertSetFromRemote(set: WorkoutSessionSet): void {
   db.insert(workoutSessionSets)
     .values({
       id: set.id,
-      sessionId: set.sessionId,
+      workoutSessionId: set.workoutSessionId,
       exerciseId: set.exerciseId,
       setIndex: set.setIndex,
       reps: set.reps,
@@ -110,7 +110,7 @@ export function upsertSetFromRemote(set: WorkoutSessionSet): void {
     .onConflictDoUpdate({
       target: workoutSessionSets.id,
       set: {
-        sessionId: set.sessionId,
+        workoutSessionId: set.workoutSessionId,
         exerciseId: set.exerciseId,
         setIndex: set.setIndex,
         reps: set.reps,
