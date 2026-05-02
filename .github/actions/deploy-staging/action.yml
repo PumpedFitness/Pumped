@@ -66,54 +66,57 @@ runs:
           infra/docker-compose.staging.yml \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/docker-compose.staging.yml
 
-    - name: Deploy staging
+    - name: Write .env file for docker compose
       shell: bash
-      env:
-        IMAGE_NAME: ${{ inputs.image-name }}
-        IMAGE_TAG: ${{ inputs.image-tag }}
-        REGISTRY_USERNAME: ${{ inputs.registry-username }}
-        REGISTRY_PASSWORD: ${{ inputs.registry-password }}
-        DB_ROOT_PASSWORD: ${{ inputs.db-root-password }}
-        DB_USER: ${{ inputs.db-user }}
-        DB_PASSWORD: ${{ inputs.db-password }}
-        REDIS_PASSWORD: ${{ inputs.redis-password }}
-        JWT_SECRET: ${{ inputs.jwt-secret }}
-        SWAGGER_USERNAME: ${{ inputs.swagger-username }}
-        SWAGGER_PASSWORD: ${{ inputs.swagger-password }}
-        STAGING_DOMAIN: ${{ inputs.staging-domain }}
       run: |
-        printenv | grep -E '^(IMAGE_NAME|IMAGE_TAG|REGISTRY_USERNAME|REGISTRY_PASSWORD|DB_ROOT_PASSWORD|DB_USER|DB_PASSWORD|REDIS_PASSWORD|JWT_SECRET|SWAGGER_USERNAME|SWAGGER_PASSWORD|STAGING_DOMAIN)=' > /tmp/staging.env
+        # Write env file using printf (handles special chars safely)
+        {
+          printf 'IMAGE_NAME=%s\n' '${{ inputs.image-name }}'
+          printf 'IMAGE_TAG=%s\n' '${{ inputs.image-tag }}'
+          printf 'STAGING_DOMAIN=%s\n' '${{ inputs.staging-domain }}'
+          printf 'DB_USER=%s\n' '${{ inputs.db-user }}'
+          printf 'DB_PASSWORD=%s\n' '${{ inputs.db-password }}'
+          printf 'REDIS_PASSWORD=%s\n' '${{ inputs.redis-password }}'
+          printf 'JWT_SECRET=%s\n' '${{ inputs.jwt-secret }}'
+          printf 'SWAGGER_USERNAME=%s\n' '${{ inputs.swagger-username }}'
+          printf 'SWAGGER_PASSWORD=%s\n' '${{ inputs.swagger-password }}'
+        } > /tmp/staging.env
 
         scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
           /tmp/staging.env \
           ${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:~/dumbbell/staging.env
 
+    - name: Deploy staging
+      shell: bash
+      run: |
         ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
-          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} << 'DEPLOY'
-          set -euo pipefail
-          cd ~/dumbbell
-          set -a && source staging.env && set +a
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
+          'set -euo pipefail && cd ~/dumbbell && \
+           echo "${{ inputs.registry-password }}" | docker login ghcr.io -u "${{ inputs.registry-username }}" --password-stdin && \
+           docker compose --env-file staging.env -f docker-compose.staging.yml pull backend-staging && \
+           docker exec mariadb-dumbbell mariadb -u root -p"${{ inputs.db-root-password }}" -e "CREATE DATABASE IF NOT EXISTS dumbbell_staging; GRANT ALL ON dumbbell_staging.* TO '"'"'${{ inputs.db-user }}'"'"'@'"'"'%'"'"';" 2>/dev/null || true && \
+           docker compose --env-file staging.env -f docker-compose.staging.yml up -d --force-recreate backend-staging'
 
-          echo "${REGISTRY_PASSWORD}" | docker login ghcr.io -u "${REGISTRY_USERNAME}" --password-stdin
-          docker compose -f docker-compose.staging.yml pull backend-staging
+    - name: Health check staging
+      shell: bash
+      run: |
+        for i in $(seq 1 18); do
+          STATUS=$(ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
+            "docker inspect --format='{{.State.Health.Status}}' dumbbell-backend-staging 2>/dev/null || echo starting")
+          echo "  attempt $i/18: $STATUS"
+          if [ "$STATUS" = "healthy" ]; then echo "Staging deploy complete"; exit 0; fi
+          if [ "$STATUS" = "unhealthy" ]; then echo "FAILED"; exit 1; fi
+          sleep 5
+        done
+        echo "Timed out"
+        exit 1
 
-          # Create staging DB if needed
-          docker exec mariadb-dumbbell mariadb -u root -p"${DB_ROOT_PASSWORD}" \
-            -e "CREATE DATABASE IF NOT EXISTS dumbbell_staging;" \
-            -e "GRANT ALL ON dumbbell_staging.* TO '${DB_USER}'@'%';" 2>/dev/null || true
-
-          docker compose -f docker-compose.staging.yml up -d --force-recreate backend-staging
-
-          # Health check
-          echo "Waiting for staging to be healthy..."
-          for i in $(seq 1 18); do
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' dumbbell-backend-staging 2>/dev/null || echo "starting")
-            echo "  attempt $i/18: $STATUS"
-            if [ "$STATUS" = "healthy" ]; then echo "Staging deploy complete"; rm -f staging.env; exit 0; fi
-            if [ "$STATUS" = "unhealthy" ]; then echo "FAILED"; rm -f staging.env; exit 1; fi
-            sleep 5
-          done
-          echo "Timed out"; rm -f staging.env; exit 1
-        DEPLOY
-
+    - name: Cleanup
+      if: always()
+      shell: bash
+      run: |
+        ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+          ${{ inputs.ssh-user }}@${{ inputs.ssh-host }} \
+          "rm -f ~/dumbbell/staging.env" 2>/dev/null || true
         rm -f /tmp/ssh_key /tmp/staging.env
