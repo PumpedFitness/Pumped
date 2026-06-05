@@ -16,7 +16,8 @@ apps/frontend/android/.gradle/
 .metro-health-check*
 
 # Watchman
-/apps/frontend/.watchman*
+.watchmanconfig
+.watchman-cookie-*
 
 # Bun
 bun.lock

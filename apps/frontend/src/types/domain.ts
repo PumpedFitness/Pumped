@@ -1,68 +1,24 @@
-// Local domain types for SQLite storage layer.
-// API types are auto-generated in src/data/api/generated.ts — these types
-// represent the local SQLite row shape (e.g., JSON arrays stored as TEXT).
+// Domain types — auto-derived from the Drizzle schema.
+// Do NOT maintain these manually. Change the schema, types update automatically.
 
-// Enum types are auto-generated from the backend OpenAPI spec
+import type { InferSelectModel } from 'drizzle-orm';
 import type {
+  exercises,
+  workoutTemplates,
+  workoutTemplateExercises,
+  workoutSessions,
+  workoutSessionSets,
+} from '../data/local/schema';
+
+export type Exercise = InferSelectModel<typeof exercises>;
+export type WorkoutTemplate = InferSelectModel<typeof workoutTemplates>;
+export type WorkoutTemplateExercise = InferSelectModel<typeof workoutTemplateExercises>;
+export type WorkoutSession = InferSelectModel<typeof workoutSessions>;
+export type WorkoutSessionSet = InferSelectModel<typeof workoutSessionSets>;
+
+// Re-export enums for convenience
+export type {
   MuscleGroup,
   ExerciseCategory,
   ExerciseEquipment,
-} from '../data/local/schema.enums.generated';
-
-export type { MuscleGroup, ExerciseCategory, ExerciseEquipment };
-
-export type Exercise = {
-  id: string;
-  name: string;
-  description: string | null;
-  exerciseCategory: ExerciseCategory;
-  muscleGroups: MuscleGroup[];
-  equipment: ExerciseEquipment[];
-  createdAt: number;
-};
-
-export type WorkoutTemplate = {
-  id: string;
-  userId: string;
-  name: string;
-  description: string | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
-export type WorkoutTemplateExercise = {
-  id: string;
-  workoutTemplateId: string;
-  exerciseId: string;
-  orderIndex: number;
-  sets: number;
-  targetReps: string;
-  targetWeight: number | null;
-  restSeconds: number | null;
-  notes: string | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
-export type WorkoutSession = {
-  id: string;
-  userId: string;
-  workoutTemplateId: string | null;
-  name: string;
-  startedAt: number;
-  endedAt: number | null;
-  notes: string | null;
-};
-
-export type WorkoutSessionSet = {
-  id: string;
-  workoutSessionId: string;
-  exerciseId: string;
-  setIndex: number;
-  reps: number;
-  weight: number | null;
-  restSeconds: number | null;
-  durationSeconds: number | null;
-  notes: string | null;
-  performedAt: number;
-};
+} from '../data/local/enums';

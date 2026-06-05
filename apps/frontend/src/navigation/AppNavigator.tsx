@@ -10,7 +10,7 @@ export type RootStackParamList = {
   Login: undefined;
   Main: undefined;
   ActiveWorkout: undefined;
-  HistoryDetail: undefined;
+  HistoryDetail: { sessionId: string };
   ExercisePicker: undefined;
 };
 

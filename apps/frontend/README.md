@@ -1,149 +1,107 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Pumped Frontend
 
-# Code Generation
+React Native (Expo) fitness tracking app with an offline-first SQLite data layer.
 
-## Schema Generation
-
-The frontend's local SQLite schema (`src/data/local/schema.generated.ts`) is auto-generated from the backend's Flyway SQL migrations using `drizzle-kit pull`.
-
-**How it works:**
-
-1. Flyway SQL migrations (MariaDB) are converted to SQLite-compatible SQL
-2. A temporary SQLite DB is created and populated with the converted migrations
-3. `drizzle-kit pull` introspects that DB and generates Drizzle ORM table definitions
-4. Post-processing adds frontend-specific concerns (JSON array columns, indexes, excluded tables)
-
-**All generated files are gitignored** and rebuilt automatically:
-
-- On `bun run start` / `ios` / `android` — generates before starting the dev server
-- In CI — generated fresh in every pipeline run, uploaded as artifacts
-
-**What's auto-generated (not committed):**
-
-| File | Source | Tool |
-|------|--------|------|
-| `openapi.json` | Backend `/v3/api-docs` endpoint | `curl` |
-| `src/data/api/generated.ts` | `openapi.json` | Orval |
-| `src/data/local/schema.generated.ts` | Flyway SQL migrations | `node-sql-parser` + `drizzle-kit pull` |
-| `src/data/local/schema.enums.generated.ts` | `openapi.json` | Custom extraction |
-
-**Prerequisite:** Backend must be running for the full `generate` command (to fetch the OpenAPI spec).
+## Getting Started
 
 ```sh
-# Start backend first
-bun run backend
-
-# Generate everything (fetches spec from running backend + generates all)
-bun run frontend:generate
-
-# Or individual steps
-bun run frontend:api:fetch        # curl → openapi.json (needs backend running)
-bun run frontend:api:generate     # Orval → API client (needs openapi.json)
-bun run frontend:schema:generate  # Flyway SQL → drizzle-kit → Drizzle schema (no backend needed)
+bun install
+bun run ios      # or: bun run android
 ```
 
-## CI/CD
+No backend required for development.
 
-Generated files are built fresh in CI with change detection on `apps/backend/src/**`.
-The pipeline:
-1. Gradle `generateOpenApiDocs` (boots app with H2 profile, exports spec, stops)
-2. Orval generates API client
-3. `drizzle-kit pull` generates DB schema from Flyway migrations
-4. Typecheck validates everything
-5. Artifacts uploaded for downstream jobs
+## Data Layer
 
-# Getting Started
+The frontend owns its data layer. All data lives in a local SQLite database managed by [Drizzle ORM](https://orm.drizzle.team/).
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+### Architecture
 
-## Step 1: Start Metro
+```
+schema.ts  →  types auto-derived  →  useRepository(table)  →  component
+```
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+| Layer | Location | Purpose |
+|-------|----------|---------|
+| Schema | `src/data/local/schema.ts` | Table definitions (single source of truth) |
+| Enums | `src/data/local/enums.ts` | Domain enums (types + value arrays) |
+| Types | `src/types/domain.ts` | Auto-derived from schema via `InferSelectModel` |
+| Migrations | `src/data/local/drizzle/` | Auto-generated SQL from schema |
+| useRepository | `src/data/local/useRepository.ts` | Generic typed CRUD hook for any table |
+| Custom hooks | `src/hooks/` | Complex logic on top of useRepository |
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### Using data in a screen
+
+```typescript
+import { eq, desc } from 'drizzle-orm';
+import { useRepository } from '../data/local/useRepository';
+import { workoutSessions, workoutSessionSets } from '../data/local/schema';
+
+function MyScreen() {
+  const sessionRepo = useRepository(workoutSessions);
+  const setRepo = useRepository(workoutSessionSets);
+
+  // Read — typed from the schema, no manual types needed
+  const session = sessionRepo.getById(sessionId);
+  const sets = setRepo.query({
+    where: eq(workoutSessionSets.workoutSessionId, sessionId),
+    orderBy: [desc(workoutSessionSets.performedAt)],
+  });
+
+  // Write — triggers re-render so reads pick up the change
+  sessionRepo.create({ id: uuid(), name: 'Push Day', ... });
+  sessionRepo.update(sessionId, { notes: 'Good session' });
+  sessionRepo.deleteById(sessionId);
+}
+```
+
+### Adding a new entity
+
+1. **Define the table** in `src/data/local/schema.ts`
+2. **Generate the migration**: `bun run db:generate`
+3. **Register the migration** in `src/data/local/drizzle/migrations.ts`
+4. **Use it**: `const repo = useRepository(myNewTable)` — that's it
+
+Types are derived automatically from the schema. For complex logic (computed values, multi-table operations), create a custom hook in `src/hooks/` on top of `useRepository`.
+
+### Adding a new enum
+
+Add the type and values array to `src/data/local/enums.ts`:
+
+```typescript
+export type MyEnum = 'A' | 'B' | 'C';
+export const myEnumValues = ['A', 'B', 'C'] as const;
+```
+
+### Database migrations
+
+Migrations are auto-generated from the Drizzle schema:
 
 ```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+# After changing schema.ts:
+bun run db:generate
 ```
 
-## Step 2: Build and run your app
+This creates a new `.sql` file in `src/data/local/drizzle/`. Then add it to the migrations bundle in `src/data/local/drizzle/migrations.ts`.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+Migrations run automatically on app startup via `initDatabase()` in `App.tsx`.
 
-### Android
+## Scripts
 
-```sh
-# Using npm
-npm run android
+| Script | Description |
+|--------|-------------|
+| `bun run ios` | Build and run on iOS |
+| `bun run android` | Build and run on Android |
+| `bun run start` | Start Metro dev server |
+| `bun run db:generate` | Generate migration from schema changes |
+| `bun run lint` | Run ESLint |
+| `bun run format` | Run Prettier |
+| `bun run test` | Run tests |
 
-# OR using Yarn
-yarn android
-```
+## Tech Stack
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- **Framework**: React Native 0.83 + Expo 55
+- **Database**: SQLite (expo-sqlite) + Drizzle ORM
+- **State**: Zustand + MMKV
+- **UI**: HeroUI Native + Tailwind (Uniwind)
+- **Navigation**: React Navigation 7

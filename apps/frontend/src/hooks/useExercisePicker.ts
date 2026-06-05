@@ -1,25 +1,29 @@
 import { useState, useMemo } from 'react';
-import { useExerciseStore } from '../stores/exerciseStore';
+import { asc, like } from 'drizzle-orm';
+import { useRepository } from '../data/local/useRepository';
+import { exercises } from '../data/local/schema';
 import type { Exercise, MuscleGroup } from '../types/domain';
 
 export function useExercisePicker() {
-  const exercises = useExerciseStore(s => s.exercises);
-  const searchExercises = useExerciseStore(s => s.searchExercises);
+  const exerciseRepo = useRepository(exercises);
   const [query, setQuery] = useState('');
   const [muscleFilter, setMuscleFilter] = useState<MuscleGroup | null>(null);
 
   const results = useMemo(() => {
     let filtered: Exercise[];
     if (query.trim()) {
-      filtered = searchExercises(query);
+      filtered = exerciseRepo.query({
+        where: like(exercises.name, `%${query}%`),
+        orderBy: [asc(exercises.name)],
+      });
     } else {
-      filtered = exercises;
+      filtered = exerciseRepo.query({ orderBy: [asc(exercises.name)] });
     }
     if (muscleFilter) {
       filtered = filtered.filter(e => e.muscleGroups.includes(muscleFilter));
     }
     return filtered;
-  }, [query, muscleFilter, exercises, searchExercises]);
+  }, [query, muscleFilter, exerciseRepo]);
 
   const grouped = useMemo(() => {
     const groups = new Map<MuscleGroup, Exercise[]>();

@@ -1,19 +1,56 @@
-import { View, Text, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useMemo } from 'react';
+import { View, Text, ScrollView, Alert } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { eq, asc } from 'drizzle-orm';
+import type { RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 import { AppView } from '../components/AppView';
 import { AppBar } from '../components/AppBar';
 import { IconButton, Icons, SvgIcon } from '../components/IconButton';
 import { Stat } from '../components/Stat';
-import { Badge } from '../components/Badge';
 import { colors } from '../theme/tokens';
+import { useRepository } from '../data/local/useRepository';
+import {
+  workoutSessions,
+  workoutSessionSets,
+  exercises as exerciseTable,
+} from '../data/local/schema';
+import type { WorkoutSessionSet } from '../types/domain';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatDate(ts: number): string {
+  const d = new Date(ts);
+  const day = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+  const month = d
+    .toLocaleDateString('en-US', { month: 'short' })
+    .toUpperCase();
+  const date = d.getDate();
+  return `${day} · ${month} ${date}`;
+}
+
+function formatDuration(startMs: number, endMs: number): string {
+  const diff = Math.floor((endMs - startMs) / 1000);
+  const m = Math.floor(diff / 60);
+  const s = String(diff % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 type ExerciseSummaryProps = {
   name: string;
   order: number;
-  sets: { w: number; r: number; pr?: boolean }[];
+  sets: WorkoutSessionSet[];
 };
 
 function ExerciseSummary({ name, order, sets }: ExerciseSummaryProps) {
+  const totalVolume = sets.reduce(
+    (sum, s) => sum + (s.weight ?? 0) * s.reps,
+    0,
+  );
+
   return (
     <View className="rounded-md overflow-hidden bg-surface-raised border border-border">
       <View className="p-3 px-3.5 flex-row items-center justify-between border-b border-border-soft">
@@ -26,9 +63,7 @@ function ExerciseSummary({ name, order, sets }: ExerciseSummaryProps) {
               {name}
             </Text>
             <Text className="body-sub font-mono mt-0.5">
-              {sets.length} sets ·{' '}
-              {sets.reduce((a, s) => a + s.w * s.r, 0).toLocaleString()} lb
-              total
+              {sets.length} sets · {totalVolume.toLocaleString()} lb total
             </Text>
           </View>
         </View>
@@ -36,23 +71,19 @@ function ExerciseSummary({ name, order, sets }: ExerciseSummaryProps) {
       <View className="p-2 px-3 pb-3">
         {sets.map((s, i) => (
           <View
-            key={i}
+            key={s.id}
             className={`flex-row items-center gap-2 p-2 ${i > 0 ? 'mt-1' : ''}`}
           >
             <Text className="w-8 mono-sm text-muted">{i + 1}</Text>
             <View className="flex-1 flex-row items-baseline gap-1">
-              <Text className="mono-value">{s.w}</Text>
+              <Text className="mono-value">{s.weight ?? 0}</Text>
               <Text className="eyebrow">lb</Text>
             </View>
             <View className="flex-1 flex-row items-baseline gap-1">
-              <Text className="mono-value">{s.r}</Text>
+              <Text className="mono-value">{s.reps}</Text>
               <Text className="eyebrow">reps</Text>
             </View>
-            {s.pr ? (
-              <Badge variant="accent">PR</Badge>
-            ) : (
-              <SvgIcon d={Icons.check} size={16} color={colors.textMuted} />
-            )}
+            <SvgIcon d={Icons.check} size={16} color={colors.textMuted} />
           </View>
         ))}
       </View>
@@ -60,14 +91,97 @@ function ExerciseSummary({ name, order, sets }: ExerciseSummaryProps) {
   );
 }
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export function HistoryDetailScreen() {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'HistoryDetail'>>();
+  const { sessionId } = route.params;
+
+  // ── Typed repos straight from the schema ───────────────────────────────────
+
+  const sessionRepo = useRepository(workoutSessions);
+  const setRepo = useRepository(workoutSessionSets);
+  const exerciseRepo = useRepository(exerciseTable);
+
+  // ── Read ───────────────────────────────────────────────────────────────────
+
+  const session = sessionRepo.getById(sessionId);
+  const sets = setRepo.query({
+    where: eq(workoutSessionSets.workoutSessionId, sessionId),
+    orderBy: [asc(workoutSessionSets.setIndex)],
+  });
+
+  // ── Derive ─────────────────────────────────────────────────────────────────
+
+  const exerciseGroups = useMemo(() => {
+    const groups = new Map<string, WorkoutSessionSet[]>();
+    for (const set of sets) {
+      const existing = groups.get(set.exerciseId) ?? [];
+      existing.push(set);
+      groups.set(set.exerciseId, existing);
+    }
+    return Array.from(groups.entries()).map(([exerciseId, groupSets]) => ({
+      exerciseId,
+      name: exerciseRepo.getById(exerciseId)?.name ?? 'Unknown Exercise',
+      sets: groupSets,
+    }));
+  }, [sets, exerciseRepo]);
+
+  const totalSets = sets.length;
+  const totalVolume = sets.reduce(
+    (sum, s) => sum + (s.weight ?? 0) * s.reps,
+    0,
+  );
+  const duration =
+    session?.startedAt && session?.endedAt
+      ? formatDuration(session.startedAt, session.endedAt)
+      : '--:--';
+
+  // ── Write ──────────────────────────────────────────────────────────────────
+
+  function handleDelete() {
+    Alert.alert('Delete Workout', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          sessionRepo.deleteById(sessionId);
+          navigation.goBack();
+        },
+      },
+    ]);
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  if (!session) {
+    return (
+      <AppView>
+        <AppBar
+          title="Workout"
+          leading={
+            <IconButton
+              icon={Icons.arrowLeft}
+              label="Back"
+              onPress={() => navigation.goBack()}
+            />
+          }
+        />
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-muted">Session not found</Text>
+        </View>
+      </AppView>
+    );
+  }
 
   return (
     <AppView>
       <AppBar
-        title="Push Day"
-        eyebrow="WED · APR 22"
+        title={session.name}
+        eyebrow={formatDate(session.startedAt)}
         leading={
           <IconButton
             icon={Icons.arrowLeft}
@@ -76,20 +190,20 @@ export function HistoryDetailScreen() {
           />
         }
         trailing={
-          <View className="flex-row">
-            <IconButton icon={Icons.edit} label="Edit" />
-            <IconButton icon={Icons.more} label="More" />
-          </View>
+          <IconButton
+            icon={Icons.more}
+            label="More"
+            onPress={handleDelete}
+          />
         }
       />
 
       <ScrollView className="flex-1 px-4 pt-4">
-        {/* Stats grid */}
         <View className="flex-row rounded-sm overflow-hidden mb-5 border border-border">
           {[
-            { label: 'Duration', value: '52:08' },
-            { label: 'Volume', value: '14,420' },
-            { label: 'Sets', value: '15' },
+            { label: 'Duration', value: duration },
+            { label: 'Volume', value: totalVolume.toLocaleString() },
+            { label: 'Sets', value: String(totalSets) },
           ].map((s, i) => (
             <View
               key={s.label}
@@ -102,63 +216,27 @@ export function HistoryDetailScreen() {
           ))}
         </View>
 
-        {/* PR callout */}
-        <View className="flex-row items-center gap-2.5 p-2.5 px-3 rounded-sm mb-5 border border-accent bg-accent-soft">
-          <SvgIcon d={Icons.bolt} size={16} color={colors.accent} />
-          <Text className="eyebrow text-accent">Personal Record</Text>
-          <Text className="text-[13px] text-foreground flex-1">
-            Bench Press · 195 lb x 6
-          </Text>
-        </View>
-
-        {/* Exercises */}
         <View className="gap-3.5">
-          <ExerciseSummary
-            name="Bench Press"
-            order={1}
-            sets={[
-              { w: 185, r: 8 },
-              { w: 185, r: 8 },
-              { w: 195, r: 6, pr: true },
-            ]}
-          />
-          <ExerciseSummary
-            name="Incline Dumbbell Press"
-            order={2}
-            sets={[
-              { w: 60, r: 10 },
-              { w: 60, r: 10 },
-              { w: 60, r: 9 },
-            ]}
-          />
-          <ExerciseSummary
-            name="Cable Fly"
-            order={3}
-            sets={[
-              { w: 30, r: 12 },
-              { w: 30, r: 12 },
-              { w: 35, r: 10 },
-            ]}
-          />
-          <ExerciseSummary
-            name="Tricep Pushdown"
-            order={4}
-            sets={[
-              { w: 50, r: 12 },
-              { w: 50, r: 12 },
-              { w: 50, r: 11 },
-              { w: 45, r: 12 },
-            ]}
-          />
+          {exerciseGroups.map((group, i) => (
+            <ExerciseSummary
+              key={group.exerciseId}
+              name={group.name}
+              order={i + 1}
+              sets={group.sets}
+            />
+          ))}
         </View>
 
-        {/* Notes */}
-        <View className="mt-5 p-3 px-3.5 rounded-sm mb-6 border border-dashed border-border-strong">
-          <Text className="eyebrow mb-1.5">Notes</Text>
-          <Text className="text-sm text-foreground-secondary leading-relaxed">
-            Felt strong on bench. Cable fly form check — last set was sloppy.
-          </Text>
-        </View>
+        {session.notes ? (
+          <View className="mt-5 p-3 px-3.5 rounded-sm mb-6 border border-dashed border-border-strong">
+            <Text className="eyebrow mb-1.5">Notes</Text>
+            <Text className="text-sm text-foreground-secondary leading-relaxed">
+              {session.notes}
+            </Text>
+          </View>
+        ) : (
+          <View className="h-6" />
+        )}
       </ScrollView>
     </AppView>
   );
