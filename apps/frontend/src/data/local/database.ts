@@ -11,11 +11,11 @@ const expoDb = openDatabaseSync(DB_NAME, { enableChangeListener: false });
 
 export const db = drizzle(expoDb, { schema });
 
-export async function initDatabase(userId: string): Promise<void> {
+export async function initDatabase(): Promise<void> {
   expoDb.execSync('PRAGMA journal_mode = WAL;');
   expoDb.execSync('PRAGMA foreign_keys = ON;');
   await migrate(db, migrations);
   if (__DEV__) {
-    seedDevelopmentData(db, userId);
+    seedDevelopmentData(db);
   }
 }

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { like } from 'drizzle-orm';
 import type { db } from './database';
 import {
   exercises,
@@ -12,6 +12,8 @@ import {
 
 type LocalDatabase = typeof db;
 
+const LOCAL_USER_ID = 'local';
+
 const EXERCISE_IDS = {
   benchPress: 'sample-exercise-bench-press',
   overheadPress: 'sample-exercise-overhead-press',
@@ -19,26 +21,19 @@ const EXERCISE_IDS = {
   backSquat: 'sample-exercise-back-squat',
 } as const;
 
-function sampleId(userId: string, entity: string): string {
-  return `sample:${userId}:${entity}`;
+function sampleId(entity: string): string {
+  return `sample:${entity}`;
 }
 
-export function seedDevelopmentData(
-  database: LocalDatabase,
-  userId: string,
-): void {
+export function seedDevelopmentData(database: LocalDatabase): void {
   const now = Date.now();
-  const pushTemplateId = sampleId(userId, 'template-push');
-  const fullBodyTemplateId = sampleId(userId, 'template-full-body');
-  const benchTemplateExerciseId = sampleId(userId, 'template-exercise-bench');
-  const overheadTemplateExerciseId = sampleId(
-    userId,
-    'template-exercise-overhead',
-  );
-  const squatTemplateExerciseId = sampleId(userId, 'template-exercise-squat');
-  const rowTemplateExerciseId = sampleId(userId, 'template-exercise-row');
-  const completedSessionId = sampleId(userId, 'session-completed-push');
-  const activeSessionId = sampleId(userId, 'session-active-full-body');
+  const pushTemplateId = sampleId('template-push');
+  const fullBodyTemplateId = sampleId('template-full-body');
+  const benchTemplateExerciseId = sampleId('template-exercise-bench');
+  const overheadTemplateExerciseId = sampleId('template-exercise-overhead');
+  const squatTemplateExerciseId = sampleId('template-exercise-squat');
+  const rowTemplateExerciseId = sampleId('template-exercise-row');
+  const completedSessionId = sampleId('session-completed-push');
 
   database
     .insert(exercises)
@@ -88,7 +83,7 @@ export function seedDevelopmentData(
     .values([
       {
         id: pushTemplateId,
-        userId,
+        userId: LOCAL_USER_ID,
         name: 'Push Strength',
         description: 'Bench and overhead press strength session.',
         scheduleType: 'WEEKS',
@@ -98,7 +93,7 @@ export function seedDevelopmentData(
       },
       {
         id: fullBodyTemplateId,
-        userId,
+        userId: LOCAL_USER_ID,
         name: 'Full Body Rotation',
         description: 'Simple squat and row session every three days.',
         scheduleType: 'DAYS',
@@ -162,43 +157,43 @@ export function seedDevelopmentData(
     .insert(workoutTemplateSets)
     .values([
       {
-        id: sampleId(userId, 'template-set-bench-warmup'),
+        id: sampleId('template-set-bench-warmup'),
         workoutTemplateExerciseId: benchTemplateExerciseId,
         position: 0,
         setType: 'WARMUP',
       },
       ...[0, 1, 2].map(position => ({
-        id: sampleId(userId, `template-set-bench-normal-${position}`),
+        id: sampleId(`template-set-bench-normal-${position}`),
         workoutTemplateExerciseId: benchTemplateExerciseId,
         position: position + 1,
         setType: 'NORMAL' as const,
       })),
       ...[0, 1, 2].map(position => ({
-        id: sampleId(userId, `template-set-overhead-${position}`),
+        id: sampleId(`template-set-overhead-${position}`),
         workoutTemplateExerciseId: overheadTemplateExerciseId,
         position,
         setType: 'NORMAL' as const,
       })),
       {
-        id: sampleId(userId, 'template-set-squat-warmup'),
+        id: sampleId('template-set-squat-warmup'),
         workoutTemplateExerciseId: squatTemplateExerciseId,
         position: 0,
         setType: 'WARMUP',
       },
       ...[0, 1, 2].map(position => ({
-        id: sampleId(userId, `template-set-squat-normal-${position}`),
+        id: sampleId(`template-set-squat-normal-${position}`),
         workoutTemplateExerciseId: squatTemplateExerciseId,
         position: position + 1,
         setType: 'NORMAL' as const,
       })),
       ...[0, 1].map(position => ({
-        id: sampleId(userId, `template-set-row-normal-${position}`),
+        id: sampleId(`template-set-row-normal-${position}`),
         workoutTemplateExerciseId: rowTemplateExerciseId,
         position,
         setType: 'NORMAL' as const,
       })),
       {
-        id: sampleId(userId, 'template-set-row-backoff'),
+        id: sampleId('template-set-row-backoff'),
         workoutTemplateExerciseId: rowTemplateExerciseId,
         position: 2,
         setType: 'BACKOFF',
@@ -209,14 +204,14 @@ export function seedDevelopmentData(
 
   database
     .delete(workoutSessions)
-    .where(eq(workoutSessions.id, activeSessionId))
+    .where(like(workoutSessions.id, 'sample:%session-active-full-body'))
     .run();
 
   database
     .insert(workoutSessions)
     .values({
       id: completedSessionId,
-      userId,
+      userId: LOCAL_USER_ID,
       workoutTemplateId: pushTemplateId,
       name: 'Push Strength',
       startedAt: now - 3 * 24 * 60 * 60 * 1000,
@@ -230,7 +225,7 @@ export function seedDevelopmentData(
     .insert(performedSets)
     .values([
       {
-        id: sampleId(userId, 'performed-bench-warmup'),
+        id: sampleId('performed-bench-warmup'),
         workoutSessionId: completedSessionId,
         exerciseId: EXERCISE_IDS.benchPress,
         exercisePosition: 0,
@@ -246,7 +241,7 @@ export function seedDevelopmentData(
         { reps: 8, weight: 80, rpe: 8 },
         { reps: 7, weight: 80, rpe: 8.5 },
       ].map((set, position) => ({
-        id: sampleId(userId, `performed-bench-normal-${position}`),
+        id: sampleId(`performed-bench-normal-${position}`),
         workoutSessionId: completedSessionId,
         exerciseId: EXERCISE_IDS.benchPress,
         exercisePosition: 0,
@@ -261,7 +256,7 @@ export function seedDevelopmentData(
         { reps: 9, weight: 42.5, rpe: 8 },
         { reps: 8, weight: 42.5, rpe: 8.5 },
       ].map((set, position) => ({
-        id: sampleId(userId, `performed-overhead-${position}`),
+        id: sampleId(`performed-overhead-${position}`),
         workoutSessionId: completedSessionId,
         exerciseId: EXERCISE_IDS.overheadPress,
         exercisePosition: 1,
