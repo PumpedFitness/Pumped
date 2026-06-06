@@ -3,7 +3,9 @@ import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 export type MainTabParamList = {
   Workout: undefined;
@@ -14,7 +16,26 @@ export type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function PlaceholderScreen({ title }: { title: string }) {
+type MainTabName = keyof MainTabParamList;
+
+type TranslationKey =
+  | 'navigation.workout'
+  | 'navigation.history'
+  | 'navigation.progress'
+  | 'navigation.profile';
+
+const tabLabelKeys: Record<MainTabName, TranslationKey> = {
+  Workout: 'navigation.workout',
+  History: 'navigation.history',
+  Progress: 'navigation.progress',
+  Profile: 'navigation.profile',
+};
+
+type PlaceholderScreenProps = {
+  title: string;
+};
+
+function PlaceholderScreen({ title }: PlaceholderScreenProps) {
   return (
     <View className="flex-1 bg-background items-center justify-center">
       <Text className="text-foreground text-lg font-semibold">{title}</Text>
@@ -23,24 +44,34 @@ function PlaceholderScreen({ title }: { title: string }) {
 }
 
 function WorkoutPlaceholder() {
-  return <PlaceholderScreen title="Workout" />;
+  const { t } = useTranslation();
+
+  return <PlaceholderScreen title={t('navigation.workout')} />;
 }
 
 function HistoryPlaceholder() {
-  return <PlaceholderScreen title="History" />;
+  const { t } = useTranslation();
+
+  return <PlaceholderScreen title={t('navigation.history')} />;
 }
 
 function ProgressPlaceholder() {
-  return <PlaceholderScreen title="Progress" />;
+  const { t } = useTranslation();
+
+  return <PlaceholderScreen title={t('navigation.progress')} />;
 }
 
 function ProfilePlaceholder() {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
 
   return (
     <View className="flex-1 bg-background items-center justify-center gap-4">
-      <Text className="text-foreground text-lg font-semibold">Profile</Text>
+      <Text className="text-foreground text-lg font-semibold">
+        {t('navigation.profile')}
+      </Text>
+      <LanguageSwitcher />
       <Pressable
         onPress={() => {
           resetOnboarding();
@@ -56,22 +87,24 @@ function ProfilePlaceholder() {
         })}
       >
         <Text style={{ color: '#FF5D5D', fontSize: 15, fontWeight: '600' }}>
-          Reset Onboarding
+          {t('navigation.resetOnboarding')}
         </Text>
       </Pressable>
     </View>
   );
 }
 
+type TabIconProps = {
+  name: MainTabName;
+  color: string;
+  size: number;
+};
+
 function TabIcon({
   name,
   color,
   size,
-}: {
-  name: string;
-  color: string;
-  size: number;
-}) {
+}: TabIconProps) {
   switch (name) {
     case 'Workout':
       return (
@@ -141,6 +174,7 @@ function TabIcon({
 }
 
 export function MainTabs() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   return (
@@ -150,6 +184,7 @@ export function MainTabs() {
         tabBarIcon: ({ color, size }) => (
           <TabIcon name={route.name} color={color} size={size} />
         ),
+        tabBarLabel: t(tabLabelKeys[route.name]),
         tabBarActiveTintColor: '#F4F5F6',
         tabBarInactiveTintColor: '#6F767D',
         tabBarStyle: {

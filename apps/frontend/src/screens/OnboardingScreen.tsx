@@ -22,14 +22,59 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useAuthStore } from '../stores/authStore';
 import { colors } from '../theme/tokens';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const genderOptions = ['male', 'female', 'other'] as const;
+
+type GenderOption = (typeof genderOptions)[number];
+
+type StepDotsProps = {
+  current: number;
+  total: number;
+};
+
+type CTAButtonProps = {
+  label: string;
+  onPress: () => void;
+  delay?: number;
+  variant?: 'primary' | 'ghost';
+};
+
+type ProfileFieldProps = {
+  label: string;
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder: string;
+  keyboardType?: 'default' | 'numeric' | 'decimal-pad';
+  delay?: number;
+};
+
+type GenderPickerProps = {
+  value: GenderOption | '';
+  onChange: (v: GenderOption) => void;
+  delay?: number;
+};
+
+type WelcomeStepProps = {
+  onNext: () => void;
+};
+
+type PrivacyStepProps = {
+  onNext: () => void;
+};
+
+type ProfileStepProps = {
+  onNext: () => void;
+  onSkip: () => void;
+};
 
 // ─── Step indicator ──────────────────────────────────────
-function StepDots({ current, total }: { current: number; total: number }) {
+function StepDots({ current, total }: StepDotsProps) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'center', marginTop: 16 }}>
       {Array.from({ length: total }).map((_, i) => (
@@ -53,12 +98,7 @@ function CTAButton({
   onPress,
   delay = 0,
   variant = 'primary',
-}: {
-  label: string;
-  onPress: () => void;
-  delay?: number;
-  variant?: 'primary' | 'ghost';
-}) {
+}: CTAButtonProps) {
   const isPrimary = variant === 'primary';
 
   return (
@@ -102,14 +142,7 @@ function ProfileField({
   placeholder,
   keyboardType = 'default',
   delay = 0,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder: string;
-  keyboardType?: 'default' | 'numeric' | 'decimal-pad';
-  delay?: number;
-}) {
+}: ProfileFieldProps) {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -148,12 +181,8 @@ function GenderPicker({
   value,
   onChange,
   delay = 0,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  delay?: number;
-}) {
-  const options = ['Male', 'Female', 'Other'];
+}: GenderPickerProps) {
+  const { t } = useTranslation();
 
   return (
     <Animated.View
@@ -161,15 +190,15 @@ function GenderPicker({
       style={{ gap: 6 }}
     >
       <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 0.66, textTransform: 'uppercase', color: colors.textMuted }}>
-        Gender
+        {t('onboarding.profile.genderLabel')}
       </Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {options.map(opt => {
-          const selected = value === opt;
+        {genderOptions.map(option => {
+          const selected = value === option;
           return (
             <Pressable
-              key={opt}
-              onPress={() => onChange(opt)}
+              key={option}
+              onPress={() => onChange(option)}
               style={{
                 flex: 1,
                 height: 52,
@@ -190,7 +219,7 @@ function GenderPicker({
                   color: selected ? colors.accent : colors.textSecondary,
                 }}
               >
-                {opt}
+                {t(`onboarding.gender.${option}`)}
               </Text>
             </Pressable>
           );
@@ -201,7 +230,8 @@ function GenderPicker({
 }
 
 // ─── Step 1: Welcome ─────────────────────────────────────
-function WelcomeStep({ onNext }: { onNext: () => void }) {
+function WelcomeStep({ onNext }: WelcomeStepProps) {
+  const { t } = useTranslation();
   const logoScale = useSharedValue(0);
   const logoRotate = useSharedValue(-15);
   const titleOpacity = useSharedValue(0);
@@ -249,6 +279,9 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
+      <View className="mb-8">
+        <LanguageSwitcher />
+      </View>
       <Animated.View
         style={[
           logoStyle,
@@ -309,10 +342,10 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           },
         ]}
       >
-        Your lifting companion.{'\n'}Track every rep, own every gain.
+        {t('onboarding.welcome.subtitle')}
       </Animated.Text>
 
-      <CTAButton label="Get a pump!" onPress={onNext} delay={1100} />
+      <CTAButton label={t('onboarding.welcome.cta')} onPress={onNext} delay={1100} />
       <View style={{ width: SCREEN_WIDTH - 64 }}>
         <StepDots current={0} total={3} />
       </View>
@@ -321,7 +354,9 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 }
 
 // ─── Step 2: Privacy ─────────────────────────────────────
-function PrivacyStep({ onNext }: { onNext: () => void }) {
+function PrivacyStep({ onNext }: PrivacyStepProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
       <Animated.View
@@ -354,8 +389,11 @@ function PrivacyStep({ onNext }: { onNext: () => void }) {
           marginBottom: 16,
         }}
       >
-        Offline first.{'\n'}
-        <Text style={{ color: colors.accent }}>Your data.</Text>
+        {t('onboarding.privacy.title')}
+        {'\n'}
+        <Text style={{ color: colors.accent }}>
+          {t('onboarding.privacy.accentTitle')}
+        </Text>
       </Animated.Text>
 
       <Animated.Text
@@ -370,11 +408,10 @@ function PrivacyStep({ onNext }: { onNext: () => void }) {
           marginBottom: 48,
         }}
       >
-        Pumped is an offline-first tracking app. No data is sent to any server,
-        unless you tell us to do so.
+        {t('onboarding.privacy.body')}
       </Animated.Text>
 
-      <CTAButton label="Understood" onPress={onNext} delay={600} />
+      <CTAButton label={t('onboarding.privacy.cta')} onPress={onNext} delay={600} />
       <StepDots current={1} total={3} />
     </View>
   );
@@ -384,13 +421,11 @@ function PrivacyStep({ onNext }: { onNext: () => void }) {
 function ProfileStep({
   onNext,
   onSkip,
-}: {
-  onNext: () => void;
-  onSkip: () => void;
-}) {
+}: ProfileStepProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState<GenderOption | ''>('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [bodyFat, setBodyFat] = useState('');
@@ -412,7 +447,7 @@ function ProfileStep({
             marginBottom: 4,
           }}
         >
-          About you
+          {t('onboarding.profile.title')}
         </Animated.Text>
 
         <Animated.Text
@@ -423,47 +458,47 @@ function ProfileStep({
             marginBottom: 28,
           }}
         >
-          Optional — you can always set this later.
+          {t('onboarding.profile.subtitle')}
         </Animated.Text>
 
         <View style={{ gap: 18 }}>
           <ProfileField
-            label="Name"
+            label={t('onboarding.profile.nameLabel')}
             value={name}
             onChangeText={setName}
-            placeholder="What should we call you?"
+            placeholder={t('onboarding.profile.namePlaceholder')}
             delay={150}
           />
           <GenderPicker value={gender} onChange={setGender} delay={200} />
           <ProfileField
-            label="Age"
+            label={t('onboarding.profile.ageLabel')}
             value={age}
             onChangeText={setAge}
-            placeholder="e.g. 25"
+            placeholder={t('onboarding.profile.agePlaceholder')}
             keyboardType="numeric"
             delay={250}
           />
           <ProfileField
-            label="Height"
+            label={t('onboarding.profile.heightLabel')}
             value={height}
             onChangeText={setHeight}
-            placeholder="e.g. 180 cm"
+            placeholder={t('onboarding.profile.heightPlaceholder')}
             keyboardType="decimal-pad"
             delay={300}
           />
           <ProfileField
-            label="Weight"
+            label={t('onboarding.profile.weightLabel')}
             value={weight}
             onChangeText={setWeight}
-            placeholder="e.g. 80 kg"
+            placeholder={t('onboarding.profile.weightPlaceholder')}
             keyboardType="decimal-pad"
             delay={350}
           />
           <ProfileField
-            label="Estimated body fat %"
+            label={t('onboarding.profile.bodyFatLabel')}
             value={bodyFat}
             onChangeText={setBodyFat}
-            placeholder="e.g. 15"
+            placeholder={t('onboarding.profile.bodyFatPlaceholder')}
             keyboardType="decimal-pad"
             delay={400}
           />
@@ -471,8 +506,8 @@ function ProfileStep({
       </ScrollView>
 
       <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
-        <CTAButton label="Let's go" onPress={onNext} delay={0} />
-        <CTAButton label="Skip for now" onPress={onSkip} delay={0} variant="ghost" />
+        <CTAButton label={t('onboarding.profile.nextCta')} onPress={onNext} delay={0} />
+        <CTAButton label={t('onboarding.profile.skipCta')} onPress={onSkip} delay={0} variant="ghost" />
         <StepDots current={2} total={3} />
       </View>
     </View>

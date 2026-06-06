@@ -1,4 +1,5 @@
 import './global.css';
+import './src/i18n';
 
 import {useEffect, useState} from 'react';
 import {HeroUINativeProvider} from 'heroui-native';
