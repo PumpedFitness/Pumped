@@ -5,6 +5,8 @@ import {
   real,
   index,
 } from 'drizzle-orm/sqlite-core';
+import type { WorkoutSetType } from '../enums';
+import { enumText } from './columns';
 import { workoutTemplates } from './workoutTemplate';
 
 export const workoutSessions = sqliteTable(
@@ -21,30 +23,34 @@ export const workoutSessions = sqliteTable(
     endedAt: integer('ended_at'),
     notes: text('notes'),
   },
-  table => [
-    index('idx_sessions_user_date').on(table.userId, table.startedAt),
-  ],
+  table => [index('idx_sessions_user_date').on(table.userId, table.startedAt)],
 );
 
-export const workoutSessionSets = sqliteTable(
-  'workout_session_set',
+export const performedSets = sqliteTable(
+  'performed_set',
   {
     id: text('id').primaryKey().notNull(),
     workoutSessionId: text('workout_session_id')
       .notNull()
       .references(() => workoutSessions.id, { onDelete: 'cascade' }),
     exerciseId: text('exercise_id').notNull(),
-    setIndex: integer('set_index').notNull(),
+    exercisePosition: integer('exercise_position').notNull(),
+    setPosition: integer('set_position').notNull(),
+    setType: enumText<WorkoutSetType>()('set_type').notNull(),
     reps: integer('reps').notNull(),
     weight: real('weight'),
-    restSeconds: integer('rest_seconds'),
-    durationSeconds: integer('duration_seconds'),
-    notes: text('notes'),
-    performedAt: integer('performed_at').notNull(),
     rpe: real('rpe'),
+    performedAt: integer('performed_at').notNull(),
   },
   table => [
-    index('idx_sets_session').on(table.workoutSessionId, table.setIndex),
-    index('idx_sets_exercise').on(table.exerciseId, table.performedAt),
+    index('idx_performed_sets_session_position').on(
+      table.workoutSessionId,
+      table.exercisePosition,
+      table.setPosition,
+    ),
+    index('idx_performed_sets_exercise_date').on(
+      table.exerciseId,
+      table.performedAt,
+    ),
   ],
 );

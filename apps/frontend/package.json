@@ -7,6 +7,7 @@
     "ios": "bun run dev:prepare && expo run:ios",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
     "format:check": "prettier --check 'src/**/*.{ts,tsx}'",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "start": "bun run dev:prepare && react-native start",

@@ -5,12 +5,13 @@
  * Run: bun run db:generate (called automatically after drizzle-kit generate)
  */
 
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 const drizzleDir = join(import.meta.dir, '../src/data/local/drizzle');
 const journalPath = join(drizzleDir, 'meta/_journal.json');
 const outPath = join(drizzleDir, 'index.ts');
+const generatedExpoBundlePath = join(drizzleDir, 'migrations.js');
 
 const journal = JSON.parse(readFileSync(journalPath, 'utf-8'));
 const entries: { tag: string }[] = journal.entries;
@@ -36,4 +37,7 @@ ${migrationEntries},
 `;
 
 writeFileSync(outPath, source);
+if (existsSync(generatedExpoBundlePath)) {
+  rmSync(generatedExpoBundlePath);
+}
 console.log(`Generated migrations index with ${entries.length} migration(s).`);

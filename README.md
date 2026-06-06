@@ -10,6 +10,30 @@ apps/
 └── backend/    # Kotlin/Spring Boot backend (Dumbbell)
 ```
 
+## Workout Data Model
+
+The frontend SQLite model separates planned workouts from performed workouts:
+
+```
+WorkoutTemplate
+  -> WorkoutTemplateExercise (ordered by position)
+       -> WorkoutTemplateSet (ordered by position)
+
+WorkoutSession
+  -> PerformedSet (ordered by exercisePosition, then setPosition)
+```
+
+- `WorkoutTemplate` stores reusable workout metadata and an optional recurrence such as every 2 days or selected weekdays
+  every 3 weeks.
+- `WorkoutTemplateExercise` identifies an exercise, its zero-based `position`, optional goal, notes, and explicit sets.
+- `WorkoutTemplateSet` stores its zero-based `position` and configurable type such as `WARMUP` or `NORMAL`.
+- `WorkoutSession` represents one actual workout and may reference its source `workoutTemplateId`.
+- `PerformedSet` stores the set type, actual reps, weight, RPE, and `performedAt`.
+
+`position` is the standard ordering term. Performed sets use `exercisePosition` and `setPosition` because both ordered
+levels must be retained. Exercise prescriptions use one flexible `goal` string instead of duplicating targets on every
+set.
+
 ## Prerequisites
 
 - [Bun](https://bun.sh) >= 1.0
@@ -47,8 +71,8 @@ bun run backend
 
 ## Available Scripts
 
-| Script                | Description                        |
-| --------------------- | ---------------------------------- |
+| Script                     | Description                        |
+| -------------------------- | ---------------------------------- |
 | `bun run frontend`         | Start the Metro bundler            |
 | `bun run frontend:ios`     | Build and run on iOS simulator     |
 | `bun run frontend:android` | Build and run on Android emulator  |
@@ -57,9 +81,9 @@ bun run backend
 | `bun run backend`          | Run the Spring Boot backend        |
 | `bun run backend:build`    | Build the backend                  |
 | `bun run backend:test`     | Run backend tests                  |
-| `bun run services:up`        | Start MariaDB & Redis              |
-| `bun run services:down`     | Stop MariaDB & Redis               |
-| `bun run services:logs`     | Tail service logs                  |
+| `bun run services:up`      | Start MariaDB & Redis              |
+| `bun run services:down`    | Stop MariaDB & Redis               |
+| `bun run services:logs`    | Tail service logs                  |
 | `bun run install:all`      | Install all workspace dependencies |
 
 ## Deployment
@@ -95,7 +119,7 @@ Run once when provisioning a new server. Requires Docker to already be installed
 1. Add the following secrets to the GitHub repository:
 
 | Secret             | Description                                    |
-|--------------------|------------------------------------------------|
+| ------------------ | ---------------------------------------------- |
 | `SSH_HOST`         | Server IP or hostname                          |
 | `SSH_USER`         | SSH user (e.g. `ubuntu`)                       |
 | `SSH_PRIVATE_KEY`  | Private key for SSH auth                       |

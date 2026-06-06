@@ -13,6 +13,7 @@ export { exercises } from './exercise';
 export {
   workoutTemplates,
   workoutTemplateExercises,
+  workoutTemplateSets,
   workoutTemplateScheduleWeekdays,
 } from './workoutTemplate';
-export { workoutSessions, workoutSessionSets } from './workoutSession';
+export { workoutSessions, performedSets } from './workoutSession';
