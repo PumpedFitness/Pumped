@@ -1,12 +1,12 @@
 # Pumped
 
-A fitness app monorepo powered by [Bun](https://bun.sh).
+A fitness app monorepo.
 
 ## Structure
 
 ```
 apps/
-├── frontend/   # React Native app
+├── frontend/   # React Native (Expo) app
 └── backend/    # Kotlin/Spring Boot backend (Dumbbell)
 ```
 
@@ -41,8 +41,8 @@ one transaction. Since the local SQLite database represents one user, the servic
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) >= 1.0
 - [Node.js](https://nodejs.org) >= 22
+- [Yarn](https://yarnpkg.com) (v1 / classic)
 - [Xcode](https://developer.apple.com/xcode/) (for iOS)
 - [Android Studio](https://developer.android.com/studio) (for Android)
 - [CocoaPods](https://cocoapods.org) (for iOS)
@@ -53,43 +53,65 @@ one transaction. Since the local SQLite database represents one user, the servic
 
 ```bash
 # Install all dependencies
-bun install
+bun install:all
 
-# iOS setup
-cd apps/frontend/ios && bundle install && bundle exec pod install && cd ..
+# iOS setup (first time / after native dependency changes)
+bun run frontend:setup:ios
 
 # Start the Metro bundler
 bun run frontend
 
-# Run on iOS
+# Build and run on iOS simulator
 bun run frontend:ios
 
-# Run on Android
+# Build and run on Android emulator
 bun run frontend:android
-
-# Start services (MariaDB, Redis)
-bun run services:up
-
-# Run the backend
-bun run backend
 ```
+
+### Running on iOS Simulator
+
+1. Open Xcode and make sure you have a simulator downloaded (e.g. iPhone 16).
+2. Run `bun run frontend:ios` — this builds the app via Expo and launches it in the simulator.
+3. If you get pod errors, run `bun run frontend:setup:ios` first.
+
+### Running on Android Emulator
+
+1. Open Android Studio and create an AVD (Android Virtual Device) via **Tools > Device Manager**.
+2. Start the emulator from Android Studio or via `emulator -avd <avd_name>`.
+3. Run `bun run frontend:android` — this builds the app via Expo and installs it on the running emulator.
+4. If you get build errors, run `bun run frontend:setup:android` first.
 
 ## Available Scripts
 
-| Script                     | Description                        |
-| -------------------------- | ---------------------------------- |
-| `bun run frontend`         | Start the Metro bundler            |
-| `bun run frontend:ios`     | Build and run on iOS simulator     |
-| `bun run frontend:android` | Build and run on Android emulator  |
-| `bun run frontend:lint`    | Lint the frontend code             |
-| `bun run frontend:test`    | Run frontend tests                 |
-| `bun run backend`          | Run the Spring Boot backend        |
-| `bun run backend:build`    | Build the backend                  |
-| `bun run backend:test`     | Run backend tests                  |
-| `bun run services:up`      | Start MariaDB & Redis              |
-| `bun run services:down`    | Stop MariaDB & Redis               |
-| `bun run services:logs`    | Tail service logs                  |
-| `bun run install:all`      | Install all workspace dependencies |
+### Frontend
+
+| Script | Description |
+| --- | --- |
+| `bun run frontend` | Start the Metro bundler |
+| `bun run frontend:ios` | Build and run on iOS simulator |
+| `bun run frontend:android` | Build and run on Android emulator |
+| `bun run frontend:lint` | Lint the frontend code |
+| `bun run frontend:lint:fix` | Lint and auto-fix |
+| `bun run frontend:typecheck` | Run TypeScript type checking |
+| `bun run frontend:format` | Format code with Prettier |
+| `bun run frontend:format:check` | Check formatting |
+| `bun run frontend:test` | Run frontend tests |
+| `bun run frontend:setup:ios` | Clean and reinstall iOS pods |
+| `bun run frontend:setup:android` | Clean Android build |
+| `bun run frontend:db:generate` | Generate Drizzle migrations |
+| `bun install:all` | Install all frontend dependencies |
+
+### Backend
+
+| Script | Description |
+| --- | --- |
+| `bun run backend` | Run the Spring Boot backend |
+| `bun run backend:build` | Build the backend |
+| `bun run backend:test` | Run backend tests |
+| `bun run backend:restart` | Kill port 8080 and restart backend |
+| `bun run services:up` | Start MariaDB & Redis |
+| `bun run services:down` | Stop MariaDB & Redis |
+| `bun run services:logs` | Tail service logs |
 
 ## Deployment
 
@@ -123,18 +145,18 @@ Run once when provisioning a new server. Requires Docker to already be installed
 
 1. Add the following secrets to the GitHub repository:
 
-| Secret             | Description                                    |
-| ------------------ | ---------------------------------------------- |
-| `SSH_HOST`         | Server IP or hostname                          |
-| `SSH_USER`         | SSH user (e.g. `ubuntu`)                       |
-| `SSH_PRIVATE_KEY`  | Private key for SSH auth                       |
-| `DB_ROOT_PASSWORD` | MariaDB root password                          |
-| `DB_USER`          | MariaDB application user                       |
-| `DB_PASSWORD`      | MariaDB application password                   |
-| `REDIS_PASSWORD`   | Redis password                                 |
-| `JWT_SECRET`       | JWT signing secret (min 256-bit random string) |
+| Secret | Description |
+| --- | --- |
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USER` | SSH user (e.g. `ubuntu`) |
+| `SSH_PRIVATE_KEY` | Private key for SSH auth |
+| `DB_ROOT_PASSWORD` | MariaDB root password |
+| `DB_USER` | MariaDB application user |
+| `DB_PASSWORD` | MariaDB application password |
+| `REDIS_PASSWORD` | Redis password |
+| `JWT_SECRET` | JWT signing secret (min 256-bit random string) |
 
-2. Go to **Actions → CI Backend → Run workflow**, check the **Bootstrap** checkbox and run.
+2. Go to **Actions > CI Backend > Run workflow**, check the **Bootstrap** checkbox and run.
 
 This will:
 
