@@ -13,30 +13,33 @@ export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const authReady = useAuthStore(s => s.isReady);
+  const userId = useAuthStore(s => s.userId);
   const initializeAuth = useAuthStore(s => s.initialize);
 
   useEffect(() => {
     Uniwind.setTheme('light');
   }, []);
 
+  // Auth initializes from MMKV (no DB needed), so it can run first
   useEffect(() => {
-    initDatabase()
-      .then(() => setDbReady(true))
-      .catch(error => {
-        console.error('Failed to initialize database:', error);
-        setDbError(
-          error instanceof Error
-            ? error.message
-            : 'An unknown database error occurred.',
-        );
-      });
-  }, []);
+    initializeAuth();
+  }, [initializeAuth]);
 
+  // Once auth is ready and we have a userId, initialize the DB (seed needs userId)
   useEffect(() => {
-    if (dbReady) {
-      initializeAuth();
+    if (authReady && userId) {
+      initDatabase(userId)
+        .then(() => setDbReady(true))
+        .catch(error => {
+          console.error('Failed to initialize database:', error);
+          setDbError(
+            error instanceof Error
+              ? error.message
+              : 'An unknown database error occurred.',
+          );
+        });
     }
-  }, [dbReady, initializeAuth]);
+  }, [authReady, userId]);
 
   if (dbError) {
     return (

@@ -2,11 +2,13 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { WidgetPickerScreen } from '../screens/WidgetPickerScreen';
 import { useAuthStore } from '../stores/authStore';
 
 export type RootStackParamList = {
   Onboarding: undefined;
   Main: undefined;
+  WidgetPicker: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +42,11 @@ export function AppNavigator() {
           options={{ animation: 'fade' }}
         />
         <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen
+          name="WidgetPicker"
+          component={WidgetPickerScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

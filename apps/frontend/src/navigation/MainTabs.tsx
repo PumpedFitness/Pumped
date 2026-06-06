@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAuthStore } from '../stores/authStore';
 import { AppShell } from '../components/AppShell';
+import { HomeScreen } from '../screens/HomeScreen';
 import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
 
@@ -28,10 +29,6 @@ function PlaceholderScreen({ title }: { title: string }) {
       <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>{title}</Text>
     </AppShell>
   );
-}
-
-function HomePlaceholder() {
-  return <PlaceholderScreen title="Home" />;
 }
 
 function PlanPlaceholder() {
@@ -151,6 +148,7 @@ function AppBar({ state, navigation }: any) {
 
       {TAB_CONFIG.map((tab, i) => {
         const active = activeIdx === i;
+        const isAvatar = tab.name === 'You';
         return (
           <Pressable
             key={tab.name}
@@ -168,12 +166,35 @@ function AppBar({ state, navigation }: any) {
               gap: 8,
             }}
           >
-            <ClayIcon
-              name={tab.icon}
-              size={22}
-              stroke={active ? 2.1 : 1.8}
-              color={active ? colors.cream : 'rgba(243, 238, 226, 0.55)'}
-            />
+            {isAvatar ? (
+              <View
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 13,
+                  backgroundColor: active ? colors.cream : 'rgba(243, 238, 226, 0.35)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: '700',
+                    color: active ? colors.moss : 'rgba(243, 238, 226, 0.7)',
+                  }}
+                >
+                  AK
+                </Text>
+              </View>
+            ) : (
+              <ClayIcon
+                name={tab.icon}
+                size={22}
+                stroke={active ? 2.1 : 1.8}
+                color={active ? colors.cream : 'rgba(243, 238, 226, 0.55)'}
+              />
+            )}
           </Pressable>
         );
       })}
@@ -194,7 +215,7 @@ export function MainTabs() {
           animationEnabled: true,
         }}
       >
-        <Tab.Screen name="Home" component={HomePlaceholder} />
+        <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Plan" component={PlanPlaceholder} />
         <Tab.Screen name="Progress" component={ProgressPlaceholder} />
         <Tab.Screen name="You" component={YouPlaceholder} />
