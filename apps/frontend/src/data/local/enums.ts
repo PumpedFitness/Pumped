@@ -54,11 +54,11 @@ export const muscleGroupValues = [
   'CORE',
 ] as const;
 
-export type ScheduleType = 'DAYS' | 'WEEKS';
+export type WorkoutScheduleType = 'DAYS' | 'WEEKS';
 
-export const scheduleTypeValues = ['DAYS', 'WEEKS'] as const;
+export const workoutScheduleTypeValues = ['DAYS', 'WEEKS'] as const;
 
-export type Weekday =
+export type WorkoutWeekday =
   | 'MONDAY'
   | 'TUESDAY'
   | 'WEDNESDAY'
@@ -67,7 +67,7 @@ export type Weekday =
   | 'SATURDAY'
   | 'SUNDAY';
 
-export const weekdayValues = [
+export const workoutWeekdayValues = [
   'MONDAY',
   'TUESDAY',
   'WEDNESDAY',
@@ -75,4 +75,14 @@ export const weekdayValues = [
   'FRIDAY',
   'SATURDAY',
   'SUNDAY',
+] as const;
+
+export type WorkoutSetType = 'WARMUP' | 'NORMAL' | 'BACKOFF' | 'DROP' | 'AMRAP';
+
+export const workoutSetTypeValues = [
+  'WARMUP',
+  'NORMAL',
+  'BACKOFF',
+  'DROP',
+  'AMRAP',
 ] as const;
