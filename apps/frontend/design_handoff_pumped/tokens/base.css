@@ -1,0 +1,25 @@
+/* Pumped — Base element styles (optional but recommended for consumers).
+   Sets the brand defaults so unstyled text already looks on-brand. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+
+::selection { background: var(--accent-soft); }

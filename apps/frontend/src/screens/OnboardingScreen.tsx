@@ -1,82 +1,46 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   Pressable,
   TextInput,
-  Dimensions,
   ScrollView,
+  Dimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import Animated, {
-  SlideInRight,
-  SlideOutLeft,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
-  withSpring,
   Easing,
-  ZoomIn,
-  FadeInDown,
-  FadeInUp,
 } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTranslation } from 'react-i18next';
-import type { RootStackParamList } from '../navigation/AppNavigator';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { useAuthStore } from '../stores/authStore';
-import { colors } from '../theme/tokens';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const genderOptions = ['male', 'female', 'other'] as const;
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { useAuthStore } from '../stores/authStore';
+import { colors, radii } from '../theme/tokens';
+import { ClayIcon } from '../components/icons/ClayIcon';
+import { SegmentedControl } from '../components/clay/SegmentedControl';
 
-type GenderOption = (typeof genderOptions)[number];
-
-type StepDotsProps = {
-  current: number;
-  total: number;
-};
-
-type CTAButtonProps = {
-  label: string;
-  onPress: () => void;
-  delay?: number;
-  variant?: 'primary' | 'ghost';
-};
-
-type ProfileFieldProps = {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder: string;
-  keyboardType?: 'default' | 'numeric' | 'decimal-pad';
-  delay?: number;
-};
-
-type GenderPickerProps = {
-  value: GenderOption | '';
-  onChange: (v: GenderOption) => void;
-  delay?: number;
-};
-
-type WelcomeStepProps = {
-  onNext: () => void;
-};
-
-type PrivacyStepProps = {
-  onNext: () => void;
-};
-
-type ProfileStepProps = {
-  onNext: () => void;
-  onSkip: () => void;
-};
+const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
+const TOTAL_STEPS = 3;
 
 // ─── Step indicator ──────────────────────────────────────
-function StepDots({ current, total }: StepDotsProps) {
+function StepDots({ current, total }: { current: number; total: number }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'center', marginTop: 16 }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        alignSelf: 'center',
+      }}
+    >
       {Array.from({ length: total }).map((_, i) => (
         <View
           key={i}
@@ -84,7 +48,7 @@ function StepDots({ current, total }: StepDotsProps) {
             width: i === current ? 24 : 6,
             height: 6,
             borderRadius: 3,
-            backgroundColor: i === current ? colors.accent : colors.borderStrong,
+            backgroundColor: i === current ? colors.accent : colors.line,
           }}
         />
       ))}
@@ -92,45 +56,35 @@ function StepDots({ current, total }: StepDotsProps) {
   );
 }
 
-// ─── Animated CTA button ─────────────────────────────────
+// ─── CTA button ──────────────────────────────────────────
 function CTAButton({
   label,
   onPress,
-  delay = 0,
-  variant = 'primary',
-}: CTAButtonProps) {
-  const isPrimary = variant === 'primary';
-
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <Animated.View entering={FadeInUp.delay(delay).duration(500).springify()}>
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => ({
-          backgroundColor: isPrimary
-            ? pressed
-              ? '#C4955E'
-              : colors.accent
-            : 'transparent',
-          borderWidth: isPrimary ? 0 : 1,
-          borderColor: isPrimary ? undefined : colors.borderStrong,
-          paddingVertical: 18,
-          borderRadius: 14,
-          alignItems: 'center',
-          transform: [{ scale: pressed ? 0.97 : 1 }],
-        })}
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? '#B06A42' : colors.accent,
+        paddingVertical: 18,
+        borderRadius: radii.pill,
+        alignItems: 'center' as const,
+        transform: [{ scale: pressed ? 0.97 : 1 }],
+      })}
+    >
+      <Text
+        style={{
+          fontSize: 17,
+          fontWeight: '600',
+          color: colors.accentInk,
+        }}
       >
-        <Text
-          style={{
-            fontSize: 17,
-            fontWeight: '700',
-            color: isPrimary ? colors.accentForeground : colors.textSecondary,
-            letterSpacing: -0.2,
-          }}
-        >
-          {label}
-        </Text>
-      </Pressable>
-    </Animated.View>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -141,416 +95,418 @@ function ProfileField({
   onChangeText,
   placeholder,
   keyboardType = 'default',
-  delay = 0,
-}: ProfileFieldProps) {
+}: {
+  label: string;
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder: string;
+  keyboardType?: 'default' | 'numeric' | 'decimal-pad';
+}) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <Animated.View
-      entering={FadeInDown.delay(delay).duration(400).springify()}
-      style={{ gap: 6 }}
-    >
-      <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 0.66, textTransform: 'uppercase', color: colors.textMuted }}>
+    <View style={{ gap: 6 }}>
+      <Text
+        style={{
+          fontSize: 12.5,
+          fontWeight: '600',
+          color: colors.muted,
+        }}
+      >
         {label}
       </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.muted}
         keyboardType={keyboardType}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
           height: 52,
           paddingHorizontal: 16,
-          backgroundColor: colors.surfaceInput,
-          color: colors.textPrimary,
-          fontSize: 17,
-          borderRadius: 10,
+          backgroundColor: colors.card,
+          color: colors.ink,
+          fontSize: 16,
+          fontWeight: '500',
+          borderRadius: radii.md,
           borderWidth: 1,
-          borderColor: focused ? colors.accent : colors.border,
+          borderColor: focused ? colors.accent : colors.line,
         }}
       />
-    </Animated.View>
-  );
-}
-
-// ─── Gender picker ───────────────────────────────────────
-function GenderPicker({
-  value,
-  onChange,
-  delay = 0,
-}: GenderPickerProps) {
-  const { t } = useTranslation();
-
-  return (
-    <Animated.View
-      entering={FadeInDown.delay(delay).duration(400).springify()}
-      style={{ gap: 6 }}
-    >
-      <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 0.66, textTransform: 'uppercase', color: colors.textMuted }}>
-        {t('onboarding.profile.genderLabel')}
-      </Text>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        {genderOptions.map(option => {
-          const selected = value === option;
-          return (
-            <Pressable
-              key={option}
-              onPress={() => onChange(option)}
-              style={{
-                flex: 1,
-                height: 52,
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: selected ? colors.accent : colors.border,
-                backgroundColor: selected
-                  ? colors.accentSoft
-                  : colors.surfaceInput,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: selected ? '600' : '500',
-                  color: selected ? colors.accent : colors.textSecondary,
-                }}
-              >
-                {t(`onboarding.gender.${option}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </Animated.View>
-  );
-}
-
-// ─── Step 1: Welcome ─────────────────────────────────────
-function WelcomeStep({ onNext }: WelcomeStepProps) {
-  const { t } = useTranslation();
-  const logoScale = useSharedValue(0);
-  const logoRotate = useSharedValue(-15);
-  const titleOpacity = useSharedValue(0);
-  const titleTranslateY = useSharedValue(30);
-  const subtitleOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    logoScale.value = withDelay(
-      200,
-      withSpring(1, { damping: 8, stiffness: 120 }),
-    );
-    logoRotate.value = withDelay(
-      200,
-      withSpring(0, { damping: 12, stiffness: 100 }),
-    );
-    titleOpacity.value = withDelay(
-      600,
-      withTiming(1, { duration: 600, easing: Easing.out(Easing.cubic) }),
-    );
-    titleTranslateY.value = withDelay(
-      600,
-      withSpring(0, { damping: 14, stiffness: 90 }),
-    );
-    subtitleOpacity.value = withDelay(
-      900,
-      withTiming(1, { duration: 500 }),
-    );
-  }, []);
-
-  const logoStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: logoScale.value },
-      { rotate: `${logoRotate.value}deg` },
-    ],
-  }));
-
-  const titleStyle = useAnimatedStyle(() => ({
-    opacity: titleOpacity.value,
-    transform: [{ translateY: titleTranslateY.value }],
-  }));
-
-  const subtitleStyle = useAnimatedStyle(() => ({
-    opacity: subtitleOpacity.value,
-  }));
-
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
-      <View className="mb-8">
-        <LanguageSwitcher />
-      </View>
-      <Animated.View
-        style={[
-          logoStyle,
-          {
-            width: 100,
-            height: 100,
-            borderRadius: 24,
-            backgroundColor: colors.accent,
-            alignItems: 'center',
-            justifyContent: 'center',
-            shadowColor: colors.accent,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.5,
-            shadowRadius: 40,
-            elevation: 20,
-            marginBottom: 32,
-          },
-        ]}
-      >
-        <Text
-          style={{
-            fontSize: 40,
-            fontWeight: '900',
-            color: colors.accentForeground,
-            letterSpacing: -1,
-          }}
-        >
-          P
-        </Text>
-      </Animated.View>
-
-      <Animated.Text
-        style={[
-          titleStyle,
-          {
-            fontSize: 48,
-            fontWeight: '800',
-            color: colors.textPrimary,
-            letterSpacing: -2,
-            textAlign: 'center',
-            marginBottom: 12,
-          },
-        ]}
-      >
-        PUMPED
-      </Animated.Text>
-
-      <Animated.Text
-        style={[
-          subtitleStyle,
-          {
-            fontSize: 17,
-            color: colors.textMuted,
-            textAlign: 'center',
-            lineHeight: 24,
-            maxWidth: 260,
-            marginBottom: 48,
-          },
-        ]}
-      >
-        {t('onboarding.welcome.subtitle')}
-      </Animated.Text>
-
-      <CTAButton label={t('onboarding.welcome.cta')} onPress={onNext} delay={1100} />
-      <View style={{ width: SCREEN_WIDTH - 64 }}>
-        <StepDots current={0} total={3} />
-      </View>
     </View>
   );
 }
 
-// ─── Step 2: Privacy ─────────────────────────────────────
-function PrivacyStep({ onNext }: PrivacyStepProps) {
-  const { t } = useTranslation();
+// ─── Welcome card data ───────────────────────────────────
+const WELCOME_CARDS: { icon: 'target' | 'bolt' | 'settings'; title: string; body: string }[] = [
+  {
+    icon: 'target',
+    title: 'Offline first',
+    body: 'We hate it when you can\'t use an app without internet, so you can use this app anytime.',
+  },
+  {
+    icon: 'bolt',
+    title: 'Always free',
+    body: 'All offline features stay free forever.',
+  },
+  {
+    icon: 'settings',
+    title: 'Lots of options',
+    body: 'We like to minmax our workouts to make more gains, so we added a bunch of stuff to achieve this.',
+  },
+];
+
+// ─── Step 1: Welcome ─────────────────────────────────────
+function WelcomeContent() {
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(16);
+
+  useEffect(() => {
+    opacity.value = withDelay(200, withTiming(1, { duration: 500, easing: EASE }));
+    translateY.value = withDelay(200, withTiming(0, { duration: 500, easing: EASE }));
+  }, []);
+
+  const contentStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
+      <Animated.View style={contentStyle}>
+        <Text
+          style={{
+            fontSize: 30,
+            fontWeight: '700',
+            color: colors.ink,
+            letterSpacing: -0.6,
+            marginBottom: 6,
+          }}
+        >
+          PUMPED
+        </Text>
+
+        <Text
+          style={{
+            fontSize: 15,
+            color: colors.muted,
+            lineHeight: 22,
+            marginBottom: 28,
+          }}
+        >
+          Your lifting companion.{'\n'}Track every rep, own every gain.
+        </Text>
+
+        <View style={{ gap: 10 }}>
+          {WELCOME_CARDS.map((card, i) => (
+            <View
+              key={i}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: radii.lg,
+                borderWidth: 1,
+                borderColor: colors.line,
+                padding: 16,
+                flexDirection: 'row',
+                gap: 14,
+              }}
+            >
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: radii.sm,
+                  backgroundColor: colors.accentSoft,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ClayIcon name={card.icon} size={20} color={colors.accent} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: '600',
+                    color: colors.ink,
+                    marginBottom: 3,
+                  }}
+                >
+                  {card.title}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13.5,
+                    color: colors.muted,
+                    lineHeight: 19,
+                  }}
+                >
+                  {card.body}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+// ─── Step 2: Preferences ─────────────────────────────────
+function PreferencesContent() {
+  const [weightUnit, setWeightUnit] = useState('kg');
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
-      <Animated.View
-        entering={ZoomIn.duration(500).springify()}
+      <Text
         style={{
-          width: 80,
-          height: 80,
-          borderRadius: 20,
-          backgroundColor: colors.surfaceRaised,
-          borderWidth: 1,
-          borderColor: colors.borderStrong,
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignSelf: 'center',
-          marginBottom: 32,
-        }}
-      >
-        <Text style={{ fontSize: 36 }}>🔒</Text>
-      </Animated.View>
-
-      <Animated.Text
-        entering={FadeInDown.delay(200).duration(500).springify()}
-        style={{
-          fontSize: 32,
+          fontSize: 30,
           fontWeight: '700',
-          color: colors.textPrimary,
-          letterSpacing: -0.8,
+          color: colors.ink,
+          letterSpacing: -0.6,
           textAlign: 'center',
-          lineHeight: 38,
-          marginBottom: 16,
+          marginBottom: 8,
         }}
       >
-        {t('onboarding.privacy.title')}
-        {'\n'}
-        <Text style={{ color: colors.accent }}>
-          {t('onboarding.privacy.accentTitle')}
-        </Text>
-      </Animated.Text>
+        Configure your{'\n'}experience
+      </Text>
 
-      <Animated.Text
-        entering={FadeInDown.delay(400).duration(500).springify()}
+      <Text
         style={{
-          fontSize: 16,
-          color: colors.textSecondary,
+          fontSize: 15,
+          color: colors.muted,
           textAlign: 'center',
-          lineHeight: 24,
-          maxWidth: 300,
-          alignSelf: 'center',
-          marginBottom: 48,
+          marginBottom: 40,
         }}
       >
-        {t('onboarding.privacy.body')}
-      </Animated.Text>
+        You can change this later in settings.
+      </Text>
 
-      <CTAButton label={t('onboarding.privacy.cta')} onPress={onNext} delay={600} />
-      <StepDots current={1} total={3} />
+      <View style={{ gap: 6 }}>
+        <Text style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}>
+          Weight unit
+        </Text>
+        <SegmentedControl
+          options={[
+            { value: 'kg', label: 'Kilograms' },
+            { value: 'lbs', label: 'Pounds' },
+          ]}
+          value={weightUnit}
+          onChange={setWeightUnit}
+        />
+      </View>
     </View>
   );
 }
 
 // ─── Step 3: Profile ─────────────────────────────────────
-function ProfileStep({
-  onNext,
-  onSkip,
-}: ProfileStepProps) {
-  const { t } = useTranslation();
+function ProfileContent() {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState<GenderOption | ''>('');
+  const [gender, setGender] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [bodyFat, setBodyFat] = useState('');
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 32 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: 24,
+      }}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      bounces
+    >
+      <Text
+        style={{
+          fontSize: 30,
+          fontWeight: '700',
+          color: colors.ink,
+          letterSpacing: -0.6,
+          marginBottom: 4,
+        }}
       >
-        <Animated.Text
-          entering={FadeInDown.duration(400).springify()}
-          style={{
-            fontSize: 32,
-            fontWeight: '700',
-            color: colors.textPrimary,
-            letterSpacing: -0.8,
-            marginBottom: 4,
-          }}
-        >
-          {t('onboarding.profile.title')}
-        </Animated.Text>
+        About you
+      </Text>
 
-        <Animated.Text
-          entering={FadeInDown.delay(100).duration(400).springify()}
-          style={{
-            fontSize: 15,
-            color: colors.textMuted,
-            marginBottom: 28,
-          }}
-        >
-          {t('onboarding.profile.subtitle')}
-        </Animated.Text>
+      <Text
+        style={{
+          fontSize: 15,
+          color: colors.muted,
+          marginBottom: 28,
+        }}
+      >
+        Optional — you can always set this later.
+      </Text>
 
-        <View style={{ gap: 18 }}>
-          <ProfileField
-            label={t('onboarding.profile.nameLabel')}
-            value={name}
-            onChangeText={setName}
-            placeholder={t('onboarding.profile.namePlaceholder')}
-            delay={150}
-          />
-          <GenderPicker value={gender} onChange={setGender} delay={200} />
-          <ProfileField
-            label={t('onboarding.profile.ageLabel')}
-            value={age}
-            onChangeText={setAge}
-            placeholder={t('onboarding.profile.agePlaceholder')}
-            keyboardType="numeric"
-            delay={250}
-          />
-          <ProfileField
-            label={t('onboarding.profile.heightLabel')}
-            value={height}
-            onChangeText={setHeight}
-            placeholder={t('onboarding.profile.heightPlaceholder')}
-            keyboardType="decimal-pad"
-            delay={300}
-          />
-          <ProfileField
-            label={t('onboarding.profile.weightLabel')}
-            value={weight}
-            onChangeText={setWeight}
-            placeholder={t('onboarding.profile.weightPlaceholder')}
-            keyboardType="decimal-pad"
-            delay={350}
-          />
-          <ProfileField
-            label={t('onboarding.profile.bodyFatLabel')}
-            value={bodyFat}
-            onChangeText={setBodyFat}
-            placeholder={t('onboarding.profile.bodyFatPlaceholder')}
-            keyboardType="decimal-pad"
-            delay={400}
+      <View style={{ gap: 18 }}>
+        <ProfileField
+          label="Name"
+          value={name}
+          onChangeText={setName}
+          placeholder="What should we call you?"
+        />
+        <View style={{ gap: 6 }}>
+          <Text style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}>
+            Gender
+          </Text>
+          <SegmentedControl
+            options={['Male', 'Female', 'Other']}
+            value={gender}
+            onChange={setGender}
           />
         </View>
-      </ScrollView>
-
-      <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
-        <CTAButton label={t('onboarding.profile.nextCta')} onPress={onNext} delay={0} />
-        <CTAButton label={t('onboarding.profile.skipCta')} onPress={onSkip} delay={0} variant="ghost" />
-        <StepDots current={2} total={3} />
+        <ProfileField
+          label="Age"
+          value={age}
+          onChangeText={setAge}
+          placeholder="e.g. 25"
+          keyboardType="numeric"
+        />
+        <ProfileField
+          label="Height"
+          value={height}
+          onChangeText={setHeight}
+          placeholder="e.g. 180 cm"
+          keyboardType="decimal-pad"
+        />
+        <ProfileField
+          label="Weight"
+          value={weight}
+          onChangeText={setWeight}
+          placeholder="e.g. 80 kg"
+          keyboardType="decimal-pad"
+        />
+        <ProfileField
+          label="Estimated body fat %"
+          value={bodyFat}
+          onChangeText={setBodyFat}
+          placeholder="e.g. 15"
+          keyboardType="decimal-pad"
+        />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
+// ─── Button labels per step ──────────────────────────────
+const STEP_LABELS = ['Get started', 'Continue', "Let's go"];
+
 // ─── Main Onboarding Screen ──────────────────────────────
 export function OnboardingScreen() {
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(0);
-  const [hasTransitioned, setHasTransitioned] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const isScrolling = useRef(false);
   const completeOnboarding = useAuthStore(s => s.completeOnboarding);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
-  const goNext = useCallback(() => {
-    if (step < 2) {
-      setHasTransitioned(true);
-      setStep(s => s + 1);
-    }
-  }, [step]);
 
   const finish = useCallback(() => {
     completeOnboarding();
     navigation.replace('Main');
   }, [completeOnboarding, navigation]);
 
+  const scrollToStep = useCallback((target: number) => {
+    scrollRef.current?.scrollTo({ x: target * SCREEN_WIDTH, animated: true });
+  }, []);
+
+  const goNext = useCallback(() => {
+    if (step < TOTAL_STEPS - 1) {
+      scrollToStep(step + 1);
+    } else {
+      finish();
+    }
+  }, [step, finish, scrollToStep]);
+
+  const goBack = useCallback(() => {
+    if (step > 0) scrollToStep(step - 1);
+  }, [step, scrollToStep]);
+
+  const onScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+      const clamped = Math.max(0, Math.min(TOTAL_STEPS - 1, page));
+      setStep(clamped);
+    },
+    [],
+  );
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {hasTransitioned ? (
-        <Animated.View
-          key={step}
-          entering={SlideInRight.duration(400).springify().damping(18)}
-          exiting={SlideOutLeft.duration(300)}
-          style={{ flex: 1 }}
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
+      {/* Top bar: back + skip */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          height: 52,
+        }}
+      >
+        {step > 0 ? (
+          <Pressable
+            onPress={goBack}
+            style={({ pressed }) => ({
+              width: 40,
+              height: 40,
+              borderRadius: radii.pill,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <ClayIcon name="back" size={22} color={colors.ink} />
+          </Pressable>
+        ) : (
+          <View style={{ width: 40 }} />
+        )}
+
+        <Pressable
+          onPress={finish}
+          style={({ pressed }) => ({
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            opacity: pressed ? 0.5 : 1,
+          })}
         >
-          {step === 1 && <PrivacyStep onNext={goNext} />}
-          {step === 2 && <ProfileStep onNext={finish} onSkip={finish} />}
-        </Animated.View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          <WelcomeStep onNext={goNext} />
-        </View>
-      )}
+          <Text style={{ fontSize: 15, fontWeight: '500', color: colors.muted }}>
+            Skip
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Paging content */}
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        scrollEventThrottle={16}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onScrollEnd}
+        style={{ flex: 1 }}
+      >
+        <View style={{ width: SCREEN_WIDTH }}><WelcomeContent /></View>
+        <View style={{ width: SCREEN_WIDTH }}><PreferencesContent /></View>
+        <View style={{ width: SCREEN_WIDTH }}><ProfileContent /></View>
+      </ScrollView>
+
+      {/* Bottom: CTA + dots */}
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingBottom: insets.bottom + 12,
+          gap: 16,
+        }}
+      >
+        <CTAButton label={STEP_LABELS[step]} onPress={goNext} />
+        <StepDots current={step} total={TOTAL_STEPS} />
+      </View>
     </View>
   );
 }

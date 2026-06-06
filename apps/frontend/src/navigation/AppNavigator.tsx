@@ -13,15 +13,15 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const pumped: typeof DefaultTheme = {
   ...DefaultTheme,
-  dark: true,
+  dark: false,
   colors: {
     ...DefaultTheme.colors,
-    background: '#0F1113',
-    card: '#0F1113',
-    text: '#F4F5F6',
-    border: '#1F2327',
-    primary: '#D4A574',
-    notification: '#D4A574',
+    background: '#EAE3D5',
+    card: '#F7F2E8',
+    text: '#34362C',
+    border: 'rgba(52, 54, 44, 0.09)',
+    primary: '#C67B52',
+    notification: '#C67B52',
   },
 };
 

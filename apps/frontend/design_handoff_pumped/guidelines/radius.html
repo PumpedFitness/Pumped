@@ -1,0 +1,20 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Radius scale" subtitle="Nothing sharp — 12px floor, pills for actions" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 22px; background: #fff; font-family: var(--font-body); }
+  .row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .sw { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .box { width: 78px; height: 64px; background: var(--clay-moss); }
+  .nm { font-size: 12px; font-weight: 600; color: var(--clay-ink); }
+  .vl { font-size: 11px; color: var(--clay-muted); }
+</style></head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="box" style="border-radius:var(--radius-sm)"></div><span class="nm">sm</span><span class="vl">12</span></div>
+    <div class="sw"><div class="box" style="border-radius:var(--radius-md)"></div><span class="nm">md</span><span class="vl">18</span></div>
+    <div class="sw"><div class="box" style="border-radius:var(--radius-lg)"></div><span class="nm">lg</span><span class="vl">22</span></div>
+    <div class="sw"><div class="box" style="border-radius:var(--radius-xl)"></div><span class="nm">xl</span><span class="vl">28</span></div>
+    <div class="sw"><div class="box" style="border-radius:var(--radius-2xl)"></div><span class="nm">2xl</span><span class="vl">34</span></div>
+    <div class="sw"><div class="box" style="border-radius:var(--radius-pill);width:110px"></div><span class="nm">pill</span><span class="vl">999</span></div>
+  </div>
+</body></html>

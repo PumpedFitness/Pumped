@@ -1,77 +1,54 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useState, useCallback } from 'react';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
-import Svg, { Path, Circle } from 'react-native-svg';
-import { useTranslation } from 'react-i18next';
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { useAuthStore } from '../stores/authStore';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { AppShell } from '../components/AppShell';
+import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
+import { colors, radii, shadows } from '../theme/tokens';
 
 export type MainTabParamList = {
-  Workout: undefined;
-  History: undefined;
+  Home: undefined;
+  Plan: undefined;
   Progress: undefined;
-  Profile: undefined;
+  You: undefined;
 };
 
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 
-type MainTabName = keyof MainTabParamList;
-
-type TranslationKey =
-  | 'navigation.workout'
-  | 'navigation.history'
-  | 'navigation.progress'
-  | 'navigation.profile';
-
-const tabLabelKeys: Record<MainTabName, TranslationKey> = {
-  Workout: 'navigation.workout',
-  History: 'navigation.history',
-  Progress: 'navigation.progress',
-  Profile: 'navigation.profile',
-};
-
-type PlaceholderScreenProps = {
-  title: string;
-};
-
-function PlaceholderScreen({ title }: PlaceholderScreenProps) {
+function PlaceholderScreen({ title }: { title: string }) {
   return (
-    <View className="flex-1 bg-background items-center justify-center">
-      <Text className="text-foreground text-lg font-semibold">{title}</Text>
-    </View>
+    <AppShell showTabBar style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>{title}</Text>
+    </AppShell>
   );
 }
 
-function WorkoutPlaceholder() {
-  const { t } = useTranslation();
-
-  return <PlaceholderScreen title={t('navigation.workout')} />;
+function HomePlaceholder() {
+  return <PlaceholderScreen title="Home" />;
 }
 
-function HistoryPlaceholder() {
-  const { t } = useTranslation();
-
-  return <PlaceholderScreen title={t('navigation.history')} />;
+function PlanPlaceholder() {
+  return <PlaceholderScreen title="Plan" />;
 }
 
 function ProgressPlaceholder() {
-  const { t } = useTranslation();
-
-  return <PlaceholderScreen title={t('navigation.progress')} />;
+  return <PlaceholderScreen title="Progress" />;
 }
 
-function ProfilePlaceholder() {
-  const { t } = useTranslation();
+function YouPlaceholder() {
   const navigation = useNavigation();
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
 
   return (
-    <View className="flex-1 bg-background items-center justify-center gap-4">
-      <Text className="text-foreground text-lg font-semibold">
-        {t('navigation.profile')}
-      </Text>
-      <LanguageSwitcher />
+    <AppShell showTabBar style={{ alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>You</Text>
       <Pressable
         onPress={() => {
           resetOnboarding();
@@ -80,132 +57,148 @@ function ProfilePlaceholder() {
           );
         }}
         style={({ pressed }) => ({
-          backgroundColor: pressed ? '#3D4147' : '#2A2F34',
+          backgroundColor: pressed ? colors.cardSunk : colors.card,
           paddingVertical: 12,
           paddingHorizontal: 24,
-          borderRadius: 10,
+          borderRadius: radii.md,
+          borderWidth: 1,
+          borderColor: colors.line,
         })}
       >
-        <Text style={{ color: '#FF5D5D', fontSize: 15, fontWeight: '600' }}>
-          {t('navigation.resetOnboarding')}
+        <Text style={{ color: colors.danger, fontSize: 15, fontWeight: '600' }}>
+          Reset Onboarding
         </Text>
       </Pressable>
+    </AppShell>
+  );
+}
+
+const TAB_CONFIG: { name: keyof MainTabParamList; icon: IconName; label: string }[] = [
+  { name: 'Home', icon: 'home', label: 'Home' },
+  { name: 'Plan', icon: 'calendar', label: 'Plan' },
+  { name: 'Progress', icon: 'pulse', label: 'Progress' },
+  { name: 'You', icon: 'settings', label: 'You' },
+];
+
+const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
+const DURATION = 300;
+
+type TabLayout = { x: number; width: number };
+
+function AppBar({ state, navigation }: any) {
+  const insets = useSafeAreaInsets();
+  const [layouts, setLayouts] = useState<TabLayout[]>([]);
+  const ready = layouts.length === TAB_CONFIG.length;
+  const activeIdx = state.index;
+
+  const onTabLayout = useCallback(
+    (i: number, x: number, width: number) => {
+      setLayouts(prev => {
+        const next = [...prev];
+        next[i] = { x, width };
+        return next;
+      });
+    },
+    [],
+  );
+
+  const bubbleStyle = useAnimatedStyle(() => {
+    if (!ready) return { opacity: 0 };
+    const target = layouts[activeIdx];
+    return {
+      opacity: 1,
+      transform: [
+        {
+          translateX: withTiming(target.x, { duration: DURATION, easing: EASE }),
+        },
+      ],
+      width: withTiming(target.width, { duration: DURATION, easing: EASE }),
+    };
+  }, [activeIdx, ready, layouts]);
+
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          left: 16,
+          right: 16,
+          bottom: insets.bottom + 8,
+          height: 64,
+          backgroundColor: colors.moss,
+          borderRadius: radii.pill,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          paddingHorizontal: 8,
+        },
+        shadows.nav,
+      ]}
+    >
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            top: 9,
+            bottom: 9,
+            left: 0,
+            borderRadius: radii.pill,
+            backgroundColor: 'rgba(243, 238, 226, 0.16)',
+          },
+          bubbleStyle,
+        ]}
+      />
+
+      {TAB_CONFIG.map((tab, i) => {
+        const active = activeIdx === i;
+        return (
+          <Pressable
+            key={tab.name}
+            onPress={() => navigation.navigate(tab.name)}
+            onLayout={e => {
+              const { x, width } = e.nativeEvent.layout;
+              onTabLayout(i, x, width);
+            }}
+            style={{
+              height: 46,
+              paddingHorizontal: 16,
+              borderRadius: radii.pill,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <ClayIcon
+              name={tab.icon}
+              size={22}
+              stroke={active ? 2.1 : 1.8}
+              color={active ? colors.cream : 'rgba(243, 238, 226, 0.55)'}
+            />
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
-type TabIconProps = {
-  name: MainTabName;
-  color: string;
-  size: number;
-};
-
-function TabIcon({
-  name,
-  color,
-  size,
-}: TabIconProps) {
-  switch (name) {
-    case 'Workout':
-      return (
-        <Svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={color}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <Path d="M2 12h2M20 12h2M6 6v12M9 6v12M15 6v12M18 6v12M6 12h12" />
-        </Svg>
-      );
-    case 'History':
-      return (
-        <Svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={color}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <Circle cx={12} cy={12} r={9} />
-          <Path d="M12 7v5l3 2" />
-        </Svg>
-      );
-    case 'Progress':
-      return (
-        <Svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={color}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <Path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
-        </Svg>
-      );
-    case 'Profile':
-      return (
-        <Svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={color}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <Circle cx={12} cy={8} r={4} />
-          <Path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
-        </Svg>
-      );
-    default:
-      return null;
-  }
-}
-
 export function MainTabs() {
-  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ color, size }) => (
-          <TabIcon name={route.name} color={color} size={size} />
-        ),
-        tabBarLabel: t(tabLabelKeys[route.name]),
-        tabBarActiveTintColor: '#F4F5F6',
-        tabBarInactiveTintColor: '#6F767D',
-        tabBarStyle: {
-          backgroundColor: '#0F1113',
-          borderTopColor: '#1F2327',
-          borderTopWidth: 1,
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          letterSpacing: 0.66,
-          textTransform: 'uppercase',
-        },
-      })}
-    >
-      <Tab.Screen name="Workout" component={WorkoutPlaceholder} />
-      <Tab.Screen name="History" component={HistoryPlaceholder} />
-      <Tab.Screen name="Progress" component={ProgressPlaceholder} />
-      <Tab.Screen name="Profile" component={ProfilePlaceholder} />
-    </Tab.Navigator>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
+      <Tab.Navigator
+        tabBar={props => <AppBar {...props} />}
+        tabBarPosition="bottom"
+        screenOptions={{
+          swipeEnabled: true,
+          animationEnabled: true,
+        }}
+      >
+        <Tab.Screen name="Home" component={HomePlaceholder} />
+        <Tab.Screen name="Plan" component={PlanPlaceholder} />
+        <Tab.Screen name="Progress" component={ProgressPlaceholder} />
+        <Tab.Screen name="You" component={YouPlaceholder} />
+      </Tab.Navigator>
+    </View>
   );
 }

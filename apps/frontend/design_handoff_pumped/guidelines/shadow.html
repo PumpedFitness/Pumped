@@ -1,0 +1,16 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Shadows" subtitle="Soft, far, low-opacity — never a hard drop" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 30px 22px; background: var(--clay-bg); font-family: var(--font-body); }
+  .row { display: flex; gap: 34px; }
+  .sw { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .box { width: 130px; height: 64px; border-radius: var(--radius-lg); }
+  .nm { font-size: 12px; font-weight: 600; color: var(--clay-ink); }
+</style></head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="box" style="background:var(--clay-card);box-shadow:var(--shadow-card);border:1px solid var(--border-hairline)"></div><span class="nm">shadow-card</span></div>
+    <div class="sw"><div class="box" style="background:var(--clay-moss);box-shadow:var(--shadow-raised)"></div><span class="nm">shadow-raised</span></div>
+    <div class="sw"><div class="box" style="background:var(--clay-moss);box-shadow:var(--shadow-nav);border-radius:var(--radius-pill)"></div><span class="nm">shadow-nav</span></div>
+  </div>
+</body></html>

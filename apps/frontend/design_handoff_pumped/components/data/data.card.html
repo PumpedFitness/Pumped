@@ -1,0 +1,29 @@
+<!-- @dsCard group="Components" viewport="700x230" name="StatTile · RingGauge · ProgressBar" subtitle="Data display primitives" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; padding: 24px; background: var(--clay-bg); font-family: var(--font-body); color: var(--clay-ink); }
+  .row { display: flex; gap: 16px; align-items: stretch; }
+  .tile { background: var(--surface-card); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 15px 18px; min-width: 120px; }
+  .tile.raised { background: var(--surface-raised); color: var(--text-on-raised); border: none; }
+  .cap { display:flex; align-items:center; gap:6px; font-size: 12.5px; font-weight: 600; color: var(--clay-muted); }
+  .raised .cap { color: var(--text-on-raised-dim); }
+  .accent { color: var(--accent); }
+  .val { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .unit { font-size: 13px; font-weight: 500; color: var(--clay-muted); }
+  .raised .unit { color: var(--text-on-raised-dim); }
+  .ring { width: 84px; height: 84px; border-radius: 50%; display:flex; align-items:center; justify-content:center;
+          background: conic-gradient(var(--clay-cream) 0deg 310deg, rgba(243,238,226,0.2) 310deg 360deg); }
+  .ring .hole { width: 62px; height: 62px; border-radius: 50%; background: var(--surface-raised); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .mossbox { background: var(--surface-raised); border-radius: var(--radius-lg); padding: 16px; display:flex; align-items:center; }
+  .prog { width: 220px; }
+  .track { height: 6px; border-radius: var(--radius-pill); background: rgba(52,54,44,0.08); overflow: hidden; }
+  .fill { height: 100%; width: 45%; background: var(--accent); border-radius: var(--radius-pill); }
+</style></head>
+<body>
+  <div class="row">
+    <div class="tile"><div class="cap accent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.7 2.5-1.2 3.8-2.4 5.4C8.3 10 8 11.5 8 13a4 4 0 0 0 8 0c0-1.6-.7-2.9-1.7-4 .2 1.2-.4 2-1.1 2.4.6-2.6-1.2-4.9-1.2-8.4Z"/></svg> Streak</div><div class="val">12<span class="unit"> days</span></div></div>
+    <div class="tile raised"><div class="cap">This week</div><div class="val">24.8k<span class="unit"> kg</span></div></div>
+    <div class="mossbox"><div class="ring"><div class="hole"><span style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--clay-cream)">86</span><span style="font-size:8.5px;letter-spacing:0.1em;color:var(--text-on-raised-dim);text-transform:uppercase">ready</span></div></div></div>
+    <div class="tile prog" style="display:flex;flex-direction:column;justify-content:center;gap:10px"><div class="cap">Workout progress</div><div class="track"><div class="fill"></div></div></div>
+  </div>
+</body></html>

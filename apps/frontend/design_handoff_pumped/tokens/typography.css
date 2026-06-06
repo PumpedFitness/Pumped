@@ -1,0 +1,39 @@
+/* Pumped — Typography tokens
+   Two families. A chunky humanist display (Bricolage Grotesque) for anything
+   that should feel confident — greetings, screen titles, numbers, button
+   labels. A calm, legible grotesque (Hanken Grotesk) for everything else.
+   Numbers in data contexts use tabular figures. */
+
+:root {
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body:    "Hanken Grotesk", system-ui, sans-serif;
+
+  /* Weights — body sits a notch heavier than usual for warmth */
+  --weight-regular: 500;
+  --weight-medium:  600;
+  --weight-bold:    700;
+
+  /* Type scale (mobile-first, px) ───────────────────────
+     role            size / line-height / family / weight / tracking      */
+  --text-display:   30px;  /* greetings, screen titles  · display 700 · -0.02em */
+  --text-display-lh: 1.05;
+  --text-title:     21px;  /* card titles, names        · display 700 · -0.01em */
+  --text-title-lh:  1.15;
+  --text-heading:   17px;  /* section / nav headings    · display 700 */
+  --text-stat:      28px;  /* big metric values         · display 700 · tabular */
+  --text-body:      15px;  /* default body / list rows  · body 500/600 */
+  --text-label:     13.5px;/* secondary labels          · body 600 */
+  --text-caption:   12.5px;/* captions, meta            · body 500 */
+  --text-micro:     11px;  /* uppercase eyebrows        · body 700 · 0.12em, uppercase */
+
+  --tracking-tight: -0.02em;
+  --tracking-eyebrow: 0.12em;
+}
+
+/* Optional helper classes — handy in prototypes, ignore in production. */
+.t-display { font-family: var(--font-display); font-size: var(--text-display); line-height: var(--text-display-lh); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+.t-title   { font-family: var(--font-display); font-size: var(--text-title);   line-height: var(--text-title-lh);   font-weight: var(--weight-bold); }
+.t-stat    { font-family: var(--font-display); font-size: var(--text-stat);    font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
+.t-body    { font-family: var(--font-body); font-size: var(--text-body); font-weight: var(--weight-regular); }
+.t-caption { font-family: var(--font-body); font-size: var(--text-caption); color: var(--text-muted); }
+.t-eyebrow { font-family: var(--font-body); font-size: var(--text-micro); font-weight: var(--weight-bold); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; }

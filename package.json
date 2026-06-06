@@ -1,19 +1,16 @@
 {
-  "workspaces": [
-    "apps/*"
-  ],
   "name": "pumped",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "frontend": "bun run --cwd apps/frontend start",
-    "frontend:ios": "bun run --cwd apps/frontend ios",
-    "frontend:android": "bun run --cwd apps/frontend android",
-    "frontend:lint": "bun run --cwd apps/frontend lint",
-    "frontend:lint:fix": "bun run --cwd apps/frontend lint:fix",
-    "frontend:format": "bun run --cwd apps/frontend format",
-    "frontend:format:check": "bun run --cwd apps/frontend format:check",
-    "frontend:test": "bun run --cwd apps/frontend test",
+    "frontend": "yarn --cwd apps/frontend start",
+    "frontend:ios": "yarn --cwd apps/frontend ios",
+    "frontend:android": "yarn --cwd apps/frontend android",
+    "frontend:lint": "yarn --cwd apps/frontend lint",
+    "frontend:lint:fix": "yarn --cwd apps/frontend lint:fix",
+    "frontend:format": "yarn --cwd apps/frontend format",
+    "frontend:format:check": "yarn --cwd apps/frontend format:check",
+    "frontend:test": "yarn --cwd apps/frontend test",
     "backend": "docker compose -f apps/backend/docker-compose.dev.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
     "backend:build": "./apps/backend/gradlew -p apps/backend build",
     "backend:test": "./apps/backend/gradlew -p apps/backend test",
@@ -21,13 +18,13 @@
     "services:up": "docker compose -f apps/backend/docker-compose.dev.yml up -d",
     "services:down": "docker compose -f apps/backend/docker-compose.dev.yml down",
     "services:logs": "docker compose -f apps/backend/docker-compose.dev.yml logs -f",
-    "frontend:prepare": "bun run --cwd apps/frontend dev:prepare",
-    "frontend:generate": "bun run --cwd apps/frontend generate",
-    "frontend:schema:generate": "bun run --cwd apps/frontend schema:generate",
+    "frontend:prepare": "yarn --cwd apps/frontend dev:prepare",
+    "frontend:generate": "yarn --cwd apps/frontend generate",
+    "frontend:schema:generate": "yarn --cwd apps/frontend schema:generate",
     "frontend:api:fetch": "curl -sf -u admin:admin http://localhost:8080/v3/api-docs -o apps/frontend/openapi.json",
-    "frontend:api:generate": "bun run --cwd apps/frontend api:generate",
-    "frontend:setup:ios": "bun run --cwd apps/frontend setup:ios",
-    "frontend:setup:android": "bun run --cwd apps/frontend setup:android",
-    "install:all": "bun install"
+    "frontend:api:generate": "yarn --cwd apps/frontend api:generate",
+    "frontend:setup:ios": "yarn --cwd apps/frontend setup:ios",
+    "frontend:setup:android": "yarn --cwd apps/frontend setup:android",
+    "install:all": "cd apps/frontend && yarn install"
   }
 }
