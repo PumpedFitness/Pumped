@@ -3,6 +3,8 @@ import { asc, desc, eq } from 'drizzle-orm';
 import type {
   WorkoutScheduleType,
   WorkoutSetType,
+  WorkoutTemplateColor,
+  WorkoutTemplateStatus,
   WorkoutWeekday,
 } from '../enums';
 import type {
@@ -29,6 +31,9 @@ const LOCAL_USER_ID = 'local';
 
 export type WorkoutTemplateSetInput = {
   setType: WorkoutSetType;
+  targetReps?: number | null;
+  targetPercentage1Rm?: number | null;
+  targetRpe?: number | null;
 };
 
 export type WorkoutTemplateExerciseInput = {
@@ -48,6 +53,8 @@ export type SaveWorkoutTemplateInput = {
   id?: string;
   name: string;
   description?: string | null;
+  status?: WorkoutTemplateStatus;
+  color?: WorkoutTemplateColor;
   schedule?: WorkoutTemplateScheduleInput | null;
   exercises: WorkoutTemplateExerciseInput[];
 };
@@ -101,6 +108,36 @@ function validateSchedule(
   }
 
   return { ...schedule, weekdays };
+}
+
+function validateTemplateSet(
+  set: WorkoutTemplateSetInput,
+): WorkoutTemplateSetInput {
+  if (
+    set.targetReps !== null &&
+    set.targetReps !== undefined &&
+    (!Number.isInteger(set.targetReps) || set.targetReps < 1)
+  ) {
+    throw new Error('Target reps must be a positive whole number');
+  }
+  if (
+    set.targetPercentage1Rm !== null &&
+    set.targetPercentage1Rm !== undefined &&
+    (!Number.isFinite(set.targetPercentage1Rm) ||
+      set.targetPercentage1Rm <= 0 ||
+      set.targetPercentage1Rm > 100)
+  ) {
+    throw new Error('Percentage of 1RM must be between 0 and 100');
+  }
+  if (
+    set.targetRpe !== null &&
+    set.targetRpe !== undefined &&
+    (!Number.isFinite(set.targetRpe) || set.targetRpe < 1 || set.targetRpe > 10)
+  ) {
+    throw new Error('Target RPE must be between 1 and 10');
+  }
+
+  return set;
 }
 
 export function createWorkoutService(database: LocalDatabase) {
@@ -181,6 +218,8 @@ export function createWorkoutService(database: LocalDatabase) {
       userId: template.userId,
       name: template.name,
       description: template.description,
+      status: template.status,
+      color: template.color,
       schedule:
         template.scheduleType && template.scheduleInterval
           ? {
@@ -212,6 +251,10 @@ export function createWorkoutService(database: LocalDatabase) {
     const now = Date.now();
     const name = requireText(input.name, 'Template name');
     const schedule = validateSchedule(input.schedule);
+    const validatedExercises = input.exercises.map(exercise => ({
+      ...exercise,
+      sets: exercise.sets.map(validateTemplateSet),
+    }));
 
     database.transaction(tx => {
       const existing = tx
@@ -225,6 +268,8 @@ export function createWorkoutService(database: LocalDatabase) {
           .set({
             name,
             description: input.description ?? null,
+            status: input.status ?? existing.status,
+            color: input.color ?? existing.color,
             scheduleType: schedule?.type ?? null,
             scheduleInterval: schedule?.interval ?? null,
             updatedAt: now,
@@ -238,6 +283,8 @@ export function createWorkoutService(database: LocalDatabase) {
             userId: LOCAL_USER_ID,
             name,
             description: input.description ?? null,
+            status: input.status ?? 'ACTIVE',
+            color: input.color ?? 'TERRACOTTA',
             scheduleType: schedule?.type ?? null,
             scheduleInterval: schedule?.interval ?? null,
             createdAt: now,
@@ -266,7 +313,7 @@ export function createWorkoutService(database: LocalDatabase) {
           .run();
       }
 
-      input.exercises.forEach((exercise, exercisePosition) => {
+      validatedExercises.forEach((exercise, exercisePosition) => {
         const exerciseRowId = randomUUID();
         tx.insert(workoutTemplateExercises)
           .values({
@@ -287,12 +334,29 @@ export function createWorkoutService(database: LocalDatabase) {
                 workoutTemplateExerciseId: exerciseRowId,
                 position: setPosition,
                 setType: set.setType,
+                targetReps: set.targetReps ?? null,
+                targetPercentage1Rm: set.targetPercentage1Rm ?? null,
+                targetRpe: set.targetRpe ?? null,
               })),
             )
             .run();
         }
       });
     });
+
+    return getWorkoutTemplate(templateId)!;
+  }
+
+  function updateWorkoutTemplateStatus(
+    templateId: string,
+    status: WorkoutTemplateStatus,
+  ): WorkoutTemplate {
+    assertTemplateExists(templateId);
+    database
+      .update(workoutTemplates)
+      .set({ status, updatedAt: Date.now() })
+      .where(eq(workoutTemplates.id, templateId))
+      .run();
 
     return getWorkoutTemplate(templateId)!;
   }
@@ -422,6 +486,7 @@ export function createWorkoutService(database: LocalDatabase) {
     listWorkoutTemplates,
     getWorkoutTemplate,
     saveWorkoutTemplate,
+    updateWorkoutTemplateStatus,
     deleteWorkoutTemplate,
     listWorkoutSessions,
     getWorkoutSession,

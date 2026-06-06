@@ -15,6 +15,27 @@
       "when": 1780756100529,
       "tag": "0001_glorious_boomer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1780770859310,
+      "tag": "0002_steady_namora",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1780772384618,
+      "tag": "0003_absent_aaron_stack",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1780772888343,
+      "tag": "0004_smiling_norman_osborn",
+      "breakpoints": true
     }
   ]
 }

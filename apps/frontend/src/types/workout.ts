@@ -1,6 +1,8 @@
 import type {
   WorkoutScheduleType,
   WorkoutSetType,
+  WorkoutTemplateColor,
+  WorkoutTemplateStatus,
   WorkoutWeekday,
 } from '../data/local/enums';
 
@@ -8,6 +10,9 @@ export type WorkoutTemplateSet = {
   id: string;
   position: number;
   setType: WorkoutSetType;
+  targetReps: number | null;
+  targetPercentage1Rm: number | null;
+  targetRpe: number | null;
 };
 
 export type WorkoutTemplateExercise = {
@@ -30,6 +35,8 @@ export type WorkoutTemplate = {
   userId: string;
   name: string;
   description: string | null;
+  status: WorkoutTemplateStatus;
+  color: WorkoutTemplateColor;
   schedule: WorkoutTemplateSchedule | null;
   exercises: WorkoutTemplateExercise[];
   createdAt: number;

@@ -23,21 +23,28 @@ WorkoutSession
   -> PerformedSet (ordered by exercisePosition, then setPosition)
 ```
 
-- `WorkoutTemplate` stores reusable workout metadata and an optional recurrence such as every 2 days or selected weekdays
-  every 3 weeks.
+- `WorkoutTemplate` stores reusable workout metadata, a lifecycle status (`ACTIVE`, `INACTIVE`, or `ARCHIVED`), a
+  calendar color, and an optional recurrence such as every 2 days or selected weekdays every 3 weeks.
 - `WorkoutTemplateExercise` identifies an exercise, its zero-based `position`, optional goal, notes, and explicit sets.
-- `WorkoutTemplateSet` stores its zero-based `position` and configurable type such as `WARMUP` or `NORMAL`.
+- `WorkoutTemplateSet` stores its zero-based `position`, configurable type such as `WARMUP` or `NORMAL`, and optional
+  prescriptions for target reps, percentage of 1RM, and target RPE. Any prescription may be left blank.
 - `WorkoutSession` represents one actual workout and may reference its source `workoutTemplateId`.
 - `PerformedSet` stores the set type, actual reps, weight, RPE, and `performedAt`.
 
 `position` is the standard ordering term. Performed sets use `exercisePosition` and `setPosition` because both ordered
-levels must be retained. Exercise prescriptions use one flexible `goal` string instead of duplicating targets on every
-set.
+levels must be retained. Exercises retain one flexible `goal` string for general intent, while structured prescriptions
+may be configured independently for each template set. The template editor selects reps, percentage of 1RM, and RPE
+through optional bottom-sheet sliders; clearing a slider leaves that prescription blank.
 
 Frontend workout persistence is exposed through `apps/frontend/src/data/local/services/workoutService.ts`. It provides
 ordered aggregate reads and transactional saves for templates and completed sessions. An active workout lives only in
 `apps/frontend/src/stores/currentWorkoutStore.ts`; finishing it writes the session and all performed sets to SQLite in
 one transaction. Since the local SQLite database represents one user, the service does not perform ownership checks.
+
+The Plan calendar treats completed `WorkoutSession` rows as workout history. Future planned entries are generated from
+active template recurrences, using the template's `createdAt` date as the recurrence anchor. Inactive and archived
+templates remain available in the library but do not generate planned calendar entries. Completed and planned calendar
+entries use the color assigned to their source template.
 
 ## Prerequisites
 

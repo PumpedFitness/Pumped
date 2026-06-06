@@ -13,6 +13,7 @@ import { AppShell } from '../components/AppShell';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
+import { PlanScreen } from '../screens/PlanScreen';
 
 export type MainTabParamList = {
   Home: undefined;
@@ -25,14 +26,15 @@ const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 
 function PlaceholderScreen({ title }: { title: string }) {
   return (
-    <AppShell showTabBar style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>{title}</Text>
+    <AppShell
+      showTabBar
+      style={{ alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>
+        {title}
+      </Text>
     </AppShell>
   );
-}
-
-function PlanPlaceholder() {
-  return <PlaceholderScreen title="Plan" />;
 }
 
 function ProgressPlaceholder() {
@@ -44,8 +46,13 @@ function YouPlaceholder() {
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
 
   return (
-    <AppShell showTabBar style={{ alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>You</Text>
+    <AppShell
+      showTabBar
+      style={{ alignItems: 'center', justifyContent: 'center', gap: 16 }}
+    >
+      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>
+        You
+      </Text>
       <Pressable
         onPress={() => {
           resetOnboarding();
@@ -70,7 +77,11 @@ function YouPlaceholder() {
   );
 }
 
-const TAB_CONFIG: { name: keyof MainTabParamList; icon: IconName; label: string }[] = [
+const TAB_CONFIG: {
+  name: keyof MainTabParamList;
+  icon: IconName;
+  label: string;
+}[] = [
   { name: 'Home', icon: 'home', label: 'Home' },
   { name: 'Plan', icon: 'calendar', label: 'Plan' },
   { name: 'Progress', icon: 'pulse', label: 'Progress' },
@@ -88,16 +99,13 @@ function AppBar({ state, navigation }: any) {
   const ready = layouts.length === TAB_CONFIG.length;
   const activeIdx = state.index;
 
-  const onTabLayout = useCallback(
-    (i: number, x: number, width: number) => {
-      setLayouts(prev => {
-        const next = [...prev];
-        next[i] = { x, width };
-        return next;
-      });
-    },
-    [],
-  );
+  const onTabLayout = useCallback((i: number, x: number, width: number) => {
+    setLayouts(prev => {
+      const next = [...prev];
+      next[i] = { x, width };
+      return next;
+    });
+  }, []);
 
   const bubbleStyle = useAnimatedStyle(() => {
     if (!ready) return { opacity: 0 };
@@ -106,7 +114,10 @@ function AppBar({ state, navigation }: any) {
       opacity: 1,
       transform: [
         {
-          translateX: withTiming(target.x, { duration: DURATION, easing: EASE }),
+          translateX: withTiming(target.x, {
+            duration: DURATION,
+            easing: EASE,
+          }),
         },
       ],
       width: withTiming(target.width, { duration: DURATION, easing: EASE }),
@@ -172,7 +183,9 @@ function AppBar({ state, navigation }: any) {
                   width: 26,
                   height: 26,
                   borderRadius: 13,
-                  backgroundColor: active ? colors.cream : 'rgba(243, 238, 226, 0.35)',
+                  backgroundColor: active
+                    ? colors.cream
+                    : 'rgba(243, 238, 226, 0.35)',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -206,7 +219,9 @@ export function MainTabs() {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}
+    >
       <Tab.Navigator
         tabBar={props => <AppBar {...props} />}
         tabBarPosition="bottom"
@@ -216,7 +231,7 @@ export function MainTabs() {
         }}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Plan" component={PlanPlaceholder} />
+        <Tab.Screen name="Plan" component={PlanScreen} />
         <Tab.Screen name="Progress" component={ProgressPlaceholder} />
         <Tab.Screen name="You" component={YouPlaceholder} />
       </Tab.Navigator>

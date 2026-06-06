@@ -1,0 +1,1 @@
+ALTER TABLE `workout_template` ADD `color` text DEFAULT 'TERRACOTTA' NOT NULL;

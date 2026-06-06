@@ -4,10 +4,13 @@ import {
   sqliteTable,
   text,
   integer,
+  real,
 } from 'drizzle-orm/sqlite-core';
 import type {
   WorkoutScheduleType,
   WorkoutSetType,
+  WorkoutTemplateColor,
+  WorkoutTemplateStatus,
   WorkoutWeekday,
 } from '../enums';
 import { enumText } from './columns';
@@ -17,6 +20,12 @@ export const workoutTemplates = sqliteTable('workout_template', {
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
   description: text('description'),
+  status: enumText<WorkoutTemplateStatus>()('status')
+    .notNull()
+    .default('ACTIVE'),
+  color: enumText<WorkoutTemplateColor>()('color')
+    .notNull()
+    .default('TERRACOTTA'),
   scheduleType: enumText<WorkoutScheduleType>()('schedule_type'),
   scheduleInterval: integer('schedule_interval'),
   createdAt: integer('created_at').notNull(),
@@ -52,6 +61,9 @@ export const workoutTemplateSets = sqliteTable(
       .references(() => workoutTemplateExercises.id, { onDelete: 'cascade' }),
     position: integer('position').notNull(),
     setType: enumText<WorkoutSetType>()('set_type').notNull(),
+    targetReps: integer('target_reps'),
+    targetPercentage1Rm: real('target_percentage_1rm'),
+    targetRpe: real('target_rpe'),
   },
   table => [
     index('idx_template_sets_exercise_position').on(

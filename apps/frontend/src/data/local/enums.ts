@@ -58,6 +58,31 @@ export type WorkoutScheduleType = 'DAYS' | 'WEEKS';
 
 export const workoutScheduleTypeValues = ['DAYS', 'WEEKS'] as const;
 
+export type WorkoutTemplateStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+
+export const workoutTemplateStatusValues = [
+  'ACTIVE',
+  'INACTIVE',
+  'ARCHIVED',
+] as const;
+
+export type WorkoutTemplateColor =
+  | 'TERRACOTTA'
+  | 'HONEY'
+  | 'SAGE'
+  | 'ROSE'
+  | 'MOSS'
+  | 'SLATE';
+
+export const workoutTemplateColorValues = [
+  'TERRACOTTA',
+  'HONEY',
+  'SAGE',
+  'ROSE',
+  'MOSS',
+  'SLATE',
+] as const;
+
 export type WorkoutWeekday =
   | 'MONDAY'
   | 'TUESDAY'

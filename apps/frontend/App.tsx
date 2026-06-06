@@ -25,10 +25,10 @@ export default function App() {
     initializeAuth();
   }, [initializeAuth]);
 
-  // Once auth is ready and we have a userId, initialize the DB (seed needs userId)
+  // Initialize the database once the local user identity is available.
   useEffect(() => {
     if (authReady && userId) {
-      initDatabase(userId)
+      initDatabase()
         .then(() => setDbReady(true))
         .catch(error => {
           console.error('Failed to initialize database:', error);

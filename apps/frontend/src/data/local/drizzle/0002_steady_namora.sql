@@ -1,0 +1,1 @@
+ALTER TABLE `workout_template` ADD `status` text DEFAULT 'ACTIVE' NOT NULL;
