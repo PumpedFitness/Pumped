@@ -58,3 +58,7 @@ export type PerformedSet = {
   rpe: number | null;
   performedAt: number;
 };
+
+export type WorkoutSessionDetails = WorkoutSession & {
+  sets: PerformedSet[];
+};

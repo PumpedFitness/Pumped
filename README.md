@@ -34,6 +34,11 @@ WorkoutSession
 levels must be retained. Exercise prescriptions use one flexible `goal` string instead of duplicating targets on every
 set.
 
+Frontend workout persistence is exposed through `apps/frontend/src/data/local/services/workoutService.ts`. It provides
+ordered aggregate reads and transactional saves for templates and completed sessions. An active workout lives only in
+`apps/frontend/src/stores/currentWorkoutStore.ts`; finishing it writes the session and all performed sets to SQLite in
+one transaction. Since the local SQLite database represents one user, the service does not perform ownership checks.
+
 ## Prerequisites
 
 - [Bun](https://bun.sh) >= 1.0

@@ -19,17 +19,21 @@ The frontend owns its data layer. All data lives in a local SQLite database mana
 ### Architecture
 
 ```
-schema/  ->  inferred row types  ->  useRepository(table)  ->  component
+schema/  ->  workoutService  ->  custom hook / screen
+       \->  useRepository(table)  ->  component
+currentWorkoutStore  ->  active workout screen
 ```
 
-| Layer         | Location                          | Purpose                                              |
-| ------------- | --------------------------------- | ---------------------------------------------------- |
-| Schema        | `src/data/local/schema/`          | Table definitions (single source of truth)           |
-| Enums         | `src/data/local/enums.ts`         | Domain enums (types + value arrays)                  |
-| Workout types | `src/types/workout.ts`            | Nested domain types used outside direct table access |
-| Migrations    | `src/data/local/drizzle/`         | Auto-generated SQL from schema                       |
-| useRepository | `src/data/local/useRepository.ts` | Generic typed CRUD hook for any table                |
-| Custom hooks  | `src/hooks/`                      | Complex logic on top of useRepository                |
+| Layer           | Location                            | Purpose                                              |
+| --------------- | ----------------------------------- | ---------------------------------------------------- |
+| Schema          | `src/data/local/schema/`            | Table definitions (single source of truth)           |
+| Enums           | `src/data/local/enums.ts`           | Domain enums (types + value arrays)                  |
+| Workout types   | `src/types/workout.ts`              | Nested domain types used outside direct table access |
+| Workout service | `src/data/local/services/`          | Transactional workout reads and writes               |
+| Current workout | `src/stores/currentWorkoutStore.ts` | In-memory active workout state                       |
+| Migrations      | `src/data/local/drizzle/`           | Auto-generated SQL from schema                       |
+| useRepository   | `src/data/local/useRepository.ts`   | Generic typed CRUD hook for any table                |
+| Custom hooks    | `src/hooks/`                        | UI state and refresh behavior                        |
 
 ### Workout model
 
@@ -61,30 +65,44 @@ Template recurrence uses `scheduleType` (`DAYS` or `WEEKS`) and `scheduleInterva
 selected weekdays in `workout_template_schedule_weekday`. Set types are `WARMUP`, `NORMAL`, `BACKOFF`, `DROP`, or
 `AMRAP`; the performed set stores the type as a snapshot so history remains meaningful if its source template changes.
 
-### Using data in a screen
+### Current workout store
 
 ```typescript
-import { eq, desc } from 'drizzle-orm';
-import { useRepository } from '../data/local/useRepository';
-import { workoutSessions, performedSets } from '../data/local/schema';
+import { useCurrentWorkoutStore } from './src/stores/currentWorkoutStore';
 
-function MyScreen() {
-  const sessionRepo = useRepository(workoutSessions);
-  const setRepo = useRepository(performedSets);
+const startWorkout = useCurrentWorkoutStore.getState().startWorkout;
+const saveSet = useCurrentWorkoutStore.getState().saveSet;
+const finishWorkout = useCurrentWorkoutStore.getState().finishWorkout;
 
-  // Reads are typed from the schema.
-  const session = sessionRepo.getById(sessionId);
-  const sets = setRepo.query({
-    where: eq(performedSets.workoutSessionId, sessionId),
-    orderBy: [desc(performedSets.performedAt)],
-  });
+startWorkout({
+  workoutTemplateId: template.id,
+});
 
-  // Writes trigger a re-render so reads pick up the change.
-  sessionRepo.create({ id: uuid(), name: 'Push Day', ... });
-  sessionRepo.update(sessionId, { notes: 'Good session' });
-  sessionRepo.deleteById(sessionId);
-}
+saveSet({
+  exerciseId: benchPressId,
+  exercisePosition: 0,
+  setPosition: 0,
+  setType: 'WARMUP',
+  reps: 10,
+  weight: 20,
+});
+
+const completedSession = finishWorkout();
 ```
+
+The active workout and its sets live only in the memory-backed Zustand store. Starting or editing a workout does not
+write to SQLite. `finishWorkout` commits the session and all performed sets in one database transaction and clears the
+store after the write succeeds. `discardWorkout` clears it without writing anything. Because this store is intentionally
+not persisted, an active workout is lost when the app process restarts.
+
+The workout service handles templates and completed workout history. `saveWorkoutTemplate` replaces a template's
+complete ordered exercise/set structure, while `saveCompletedWorkout` is the single persistence path used when the
+current workout finishes. Reads return ordered nested models through `getWorkoutTemplate` and `getWorkoutSession`. The
+local database represents one user, so service methods do not accept a user ID or perform ownership filtering.
+
+### Using a single table in a screen
+
+Use `useRepository` for simple entities that do not require a multi-table transaction.
 
 ### Adding a new entity
 
@@ -93,8 +111,8 @@ function MyScreen() {
 3. **Review the generated SQL**, especially data backfills and table rebuilds
 4. **Use it**: `const repo = useRepository(myNewTable)`
 
-The migration index is regenerated automatically. For complex logic (computed values, multi-table operations), create a
-custom hook in `src/hooks/` on top of `useRepository`.
+The migration index is regenerated automatically. Put multi-table persistence in a service under
+`src/data/local/services/`; use a custom hook under `src/hooks/` when React state or refresh behavior is needed.
 
 ### Adding a new enum
 
@@ -129,7 +147,6 @@ The sample includes:
 - A full-body template scheduled every three days
 - Warmup, normal, and backoff template sets
 - One completed workout with performed-set history
-- One active workout with partially completed squat sets
 
 The seed lives in `src/data/local/seed.ts` and only runs when `__DEV__` is true.
 

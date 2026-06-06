@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import type { db } from './database';
 import {
   exercises,
@@ -207,27 +208,21 @@ export function seedDevelopmentData(
     .run();
 
   database
+    .delete(workoutSessions)
+    .where(eq(workoutSessions.id, activeSessionId))
+    .run();
+
+  database
     .insert(workoutSessions)
-    .values([
-      {
-        id: completedSessionId,
-        userId,
-        workoutTemplateId: pushTemplateId,
-        name: 'Push Strength',
-        startedAt: now - 3 * 24 * 60 * 60 * 1000,
-        endedAt: now - 3 * 24 * 60 * 60 * 1000 + 62 * 60 * 1000,
-        notes: 'Bench moved well. Add 2.5 kg next time.',
-      },
-      {
-        id: activeSessionId,
-        userId,
-        workoutTemplateId: fullBodyTemplateId,
-        name: 'Full Body Rotation',
-        startedAt: now - 25 * 60 * 1000,
-        endedAt: null,
-        notes: 'Sample active workout.',
-      },
-    ])
+    .values({
+      id: completedSessionId,
+      userId,
+      workoutTemplateId: pushTemplateId,
+      name: 'Push Strength',
+      startedAt: now - 3 * 24 * 60 * 60 * 1000,
+      endedAt: now - 3 * 24 * 60 * 60 * 1000 + 62 * 60 * 1000,
+      notes: 'Bench moved well. Add 2.5 kg next time.',
+    })
     .onConflictDoNothing()
     .run();
 
@@ -276,30 +271,6 @@ export function seedDevelopmentData(
         performedAt:
           now - 3 * 24 * 60 * 60 * 1000 + (40 + position * 5) * 60 * 1000,
       })),
-      {
-        id: sampleId(userId, 'performed-active-squat-warmup'),
-        workoutSessionId: activeSessionId,
-        exerciseId: EXERCISE_IDS.backSquat,
-        exercisePosition: 0,
-        setPosition: 0,
-        setType: 'WARMUP',
-        reps: 8,
-        weight: 60,
-        rpe: 4,
-        performedAt: now - 18 * 60 * 1000,
-      },
-      {
-        id: sampleId(userId, 'performed-active-squat-normal'),
-        workoutSessionId: activeSessionId,
-        exerciseId: EXERCISE_IDS.backSquat,
-        exercisePosition: 0,
-        setPosition: 1,
-        setType: 'NORMAL',
-        reps: 5,
-        weight: 100,
-        rpe: 7.5,
-        performedAt: now - 10 * 60 * 1000,
-      },
     ])
     .onConflictDoNothing()
     .run();
