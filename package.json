@@ -1,4 +1,7 @@
 {
+  "workspaces": [
+    "apps/*"
+  ],
   "name": "pumped",
   "version": "0.0.1",
   "private": true,
