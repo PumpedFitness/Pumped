@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,14 @@ import {
   ScrollView,
 } from 'react-native';
 import Animated, {
-  FadeIn,
-  FadeOut,
   SlideInRight,
   SlideOutLeft,
-  SlideInLeft,
-  SlideOutRight,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withDelay,
-  withSequence,
   withSpring,
   Easing,
-  runOnJS,
   ZoomIn,
   FadeInDown,
   FadeInUp,
@@ -30,7 +24,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuthStore } from '../stores/authStore';
-import { AppView } from '../components/AppView';
 import { colors } from '../theme/tokens';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -38,9 +31,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ─── Step indicator ──────────────────────────────────────
 function StepDots({ current, total }: { current: number; total: number }) {
   return (
-    <View className="flex-row items-center gap-2 self-center mt-4">
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'center', marginTop: 16 }}>
       {Array.from({ length: total }).map((_, i) => (
-        <Animated.View
+        <View
           key={i}
           style={{
             width: i === current ? 24 : 6,
@@ -48,7 +41,6 @@ function StepDots({ current, total }: { current: number; total: number }) {
             borderRadius: 3,
             backgroundColor: i === current ? colors.accent : colors.borderStrong,
           }}
-          layout={withSpring as any}
         />
       ))}
     </View>
@@ -123,9 +115,11 @@ function ProfileField({
   return (
     <Animated.View
       entering={FadeInDown.delay(delay).duration(400).springify()}
-      className="gap-1.5"
+      style={{ gap: 6 }}
     >
-      <Text className="eyebrow">{label}</Text>
+      <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 0.66, textTransform: 'uppercase', color: colors.textMuted }}>
+        {label}
+      </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -164,10 +158,12 @@ function GenderPicker({
   return (
     <Animated.View
       entering={FadeInDown.delay(delay).duration(400).springify()}
-      className="gap-1.5"
+      style={{ gap: 6 }}
     >
-      <Text className="eyebrow">Gender</Text>
-      <View className="flex-row gap-2">
+      <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 0.66, textTransform: 'uppercase', color: colors.textMuted }}>
+        Gender
+      </Text>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
         {options.map(opt => {
           const selected = value === opt;
           return (
@@ -212,8 +208,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   const titleTranslateY = useSharedValue(30);
   const subtitleOpacity = useSharedValue(0);
 
-  useState(() => {
-    // Kick off the entrance sequence
+  useEffect(() => {
     logoScale.value = withDelay(
       200,
       withSpring(1, { damping: 8, stiffness: 120 }),
@@ -234,7 +229,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       900,
       withTiming(1, { duration: 500 }),
     );
-  });
+  }, []);
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [
@@ -254,7 +249,6 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
-      {/* Accent glow behind logo */}
       <Animated.View
         style={[
           logoStyle,
@@ -330,7 +324,6 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 function PrivacyStep({ onNext }: { onNext: () => void }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
-      {/* Shield icon */}
       <Animated.View
         entering={ZoomIn.duration(500).springify()}
         style={{
@@ -489,14 +482,14 @@ function ProfileStep({
 // ─── Main Onboarding Screen ──────────────────────────────
 export function OnboardingScreen() {
   const [step, setStep] = useState(0);
-  const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+  const [hasTransitioned, setHasTransitioned] = useState(false);
   const completeOnboarding = useAuthStore(s => s.completeOnboarding);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const goNext = useCallback(() => {
     if (step < 2) {
-      setDirection('forward');
+      setHasTransitioned(true);
       setStep(s => s + 1);
     }
   }, [step]);
@@ -506,22 +499,23 @@ export function OnboardingScreen() {
     navigation.replace('Main');
   }, [completeOnboarding, navigation]);
 
-  const entering =
-    direction === 'forward'
-      ? SlideInRight.duration(400).springify().damping(18)
-      : SlideInLeft.duration(400).springify().damping(18);
-  const exiting =
-    direction === 'forward'
-      ? SlideOutLeft.duration(300)
-      : SlideOutRight.duration(300);
-
   return (
-    <AppView edges={['top', 'bottom']}>
-      <Animated.View key={step} entering={entering} exiting={exiting} style={{ flex: 1 }}>
-        {step === 0 && <WelcomeStep onNext={goNext} />}
-        {step === 1 && <PrivacyStep onNext={goNext} />}
-        {step === 2 && <ProfileStep onNext={finish} onSkip={finish} />}
-      </Animated.View>
-    </AppView>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      {hasTransitioned ? (
+        <Animated.View
+          key={step}
+          entering={SlideInRight.duration(400).springify().damping(18)}
+          exiting={SlideOutLeft.duration(300)}
+          style={{ flex: 1 }}
+        >
+          {step === 1 && <PrivacyStep onNext={goNext} />}
+          {step === 2 && <ProfileStep onNext={finish} onSkip={finish} />}
+        </Animated.View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <WelcomeStep onNext={goNext} />
+        </View>
+      )}
+    </View>
   );
 }

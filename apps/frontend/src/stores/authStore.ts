@@ -19,6 +19,7 @@ type AuthState = {
   setLoggedIn: (userId: string) => void;
   logout: () => void;
   completeOnboarding: () => void;
+  resetOnboarding: () => void;
 };
 
 export const useAuthStore = create<AuthState>(set => ({
@@ -65,5 +66,10 @@ export const useAuthStore = create<AuthState>(set => ({
   completeOnboarding: () => {
     storage.set(ONBOARDED_KEY, true);
     set({ hasOnboarded: true });
+  },
+
+  resetOnboarding: () => {
+    storage.remove(ONBOARDED_KEY);
+    set({ hasOnboarded: false });
   },
 }));

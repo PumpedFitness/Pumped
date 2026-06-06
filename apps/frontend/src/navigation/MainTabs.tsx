@@ -1,7 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
+import { useAuthStore } from '../stores/authStore';
 
 export type MainTabParamList = {
   Workout: undefined;
@@ -33,7 +35,32 @@ function ProgressPlaceholder() {
 }
 
 function ProfilePlaceholder() {
-  return <PlaceholderScreen title="Profile" />;
+  const navigation = useNavigation();
+  const resetOnboarding = useAuthStore(s => s.resetOnboarding);
+
+  return (
+    <View className="flex-1 bg-background items-center justify-center gap-4">
+      <Text className="text-foreground text-lg font-semibold">Profile</Text>
+      <Pressable
+        onPress={() => {
+          resetOnboarding();
+          navigation.dispatch(
+            CommonActions.reset({ index: 0, routes: [{ name: 'Onboarding' }] }),
+          );
+        }}
+        style={({ pressed }) => ({
+          backgroundColor: pressed ? '#3D4147' : '#2A2F34',
+          paddingVertical: 12,
+          paddingHorizontal: 24,
+          borderRadius: 10,
+        })}
+      >
+        <Text style={{ color: '#FF5D5D', fontSize: 15, fontWeight: '600' }}>
+          Reset Onboarding
+        </Text>
+      </Pressable>
+    </View>
+  );
 }
 
 function TabIcon({

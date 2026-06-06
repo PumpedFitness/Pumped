@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { migrate } from 'drizzle-orm/expo-sqlite/migrator';
 import { openDatabaseSync } from 'expo-sqlite';
 import * as schema from './schema';
-import migrations from './drizzle/migrations';
+import migrations from './drizzle';
 
 const DB_NAME = 'pumped.db';
 
