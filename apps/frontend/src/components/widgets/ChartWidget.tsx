@@ -1,5 +1,7 @@
+import { useCallback } from 'react';
 import { View, Text } from 'react-native';
 import { WebView } from 'react-native-webview';
+import Animated, { useSharedValue, useAnimatedStyle, withDelay, withTiming, Easing } from 'react-native-reanimated';
 import { ClayIcon } from '../icons/ClayIcon';
 import { colors, typography, radii } from '../../theme/tokens';
 
@@ -16,7 +18,17 @@ const CHART_HTML = `
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: transparent; overflow: hidden; }
-    #chart { width: 100%; height: 100vh; padding: 0 6px; }
+    #chart {
+      width: 100%; height: 100vh; padding: 0 6px;
+      clip-path: inset(0 100% 0 0);
+    }
+    #chart.reveal {
+      animation: draw 1s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    }
+    @keyframes draw {
+      from { clip-path: inset(0 100% 0 0); }
+      to   { clip-path: inset(0 0 0 0); }
+    }
     /* Hide the TradingView watermark */
     a[href*="tradingview"], div[style*="absolute"] > a { display: none !important; }
   </style>
@@ -94,13 +106,12 @@ const CHART_HTML = `
 
     areaSeries.setData(data);
 
-    // Add subtle price lines as inline y-labels on the chart
+    // Add price lines
     var allVals = data.map(function(d){ return d.value; });
     var minV = Math.min.apply(null, allVals);
     var maxV = Math.max.apply(null, allVals);
     var step = Math.round((maxV - minV) / 3 / 1000) * 1000;
     var base = Math.round(minV / 1000) * 1000;
-
     var levels = [base, base + step, base + step * 2];
     levels.forEach(function(price) {
       if (price < minV - 500 || price > maxV + 500) return;
@@ -116,12 +127,35 @@ const CHART_HTML = `
     });
 
     chart.timeScale().fitContent();
+
+    // Draw the line from left to right
+    setTimeout(function() {
+      document.getElementById('chart').classList.add('reveal');
+      window.ReactNativeWebView.postMessage('ready');
+    }, 100);
   </script>
 </body>
 </html>
 `;
 
 export function ChartWidget(_props: ChartWidgetProps) {
+  const chartOpacity = useSharedValue(0);
+  const chartTranslateY = useSharedValue(8);
+
+  const chartAnimStyle = useAnimatedStyle(() => ({
+    opacity: chartOpacity.value,
+    transform: [{ translateY: chartTranslateY.value }],
+  }));
+
+  const onMessage = useCallback(() => {
+    // Y-labels fade in as the line draws across
+    chartOpacity.value = withDelay(
+      300,
+      withTiming(1, { duration: 600, easing: Easing.out(Easing.cubic) }),
+    );
+    chartTranslateY.value = withTiming(0, { duration: 1 });
+  }, [chartOpacity, chartTranslateY]);
+
   return (
     <View
       style={{
@@ -190,22 +224,26 @@ export function ChartWidget(_props: ChartWidgetProps) {
           showsVerticalScrollIndicator={false}
           javaScriptEnabled
           originWhitelist={['*']}
+          onMessage={onMessage}
         />
-        {/* Y-axis labels — floating over the chart */}
-        <View
-          style={{
-            position: 'absolute',
-            right: 8,
-            top: 6,
-            bottom: 20,
-            justifyContent: 'space-between',
-            pointerEvents: 'none',
-          }}
+        {/* Y-axis labels — fade in after the line draws past them */}
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              right: 8,
+              top: 6,
+              bottom: 20,
+              justifyContent: 'space-between',
+              pointerEvents: 'none',
+            },
+            chartAnimStyle,
+          ]}
         >
           <Text style={{ fontSize: 11, fontWeight: '500', color: colors.ink2 }}>18k</Text>
           <Text style={{ fontSize: 11, fontWeight: '500', color: colors.ink2 }}>16k</Text>
           <Text style={{ fontSize: 11, fontWeight: '500', color: colors.ink2 }}>14k</Text>
-        </View>
+        </Animated.View>
       </View>
     </View>
   );
