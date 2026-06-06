@@ -1,7 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ProgressScreen } from '../screens/ProgressScreen';
 import Svg, { Path, Circle } from 'react-native-svg';
 
 export type MainTabParamList = {
@@ -27,6 +26,10 @@ function WorkoutPlaceholder() {
 
 function HistoryPlaceholder() {
   return <PlaceholderScreen title="History" />;
+}
+
+function ProgressPlaceholder() {
+  return <PlaceholderScreen title="Progress" />;
 }
 
 function ProfilePlaceholder() {
@@ -139,7 +142,7 @@ export function MainTabs() {
     >
       <Tab.Screen name="Workout" component={WorkoutPlaceholder} />
       <Tab.Screen name="History" component={HistoryPlaceholder} />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Progress" component={ProgressPlaceholder} />
       <Tab.Screen name="Profile" component={ProfilePlaceholder} />
     </Tab.Navigator>
   );

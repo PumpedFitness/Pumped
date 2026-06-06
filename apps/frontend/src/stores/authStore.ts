@@ -6,35 +6,40 @@ const storage = createMMKV({ id: 'auth-storage' });
 
 const USER_ID_KEY = 'user_id';
 const IS_GUEST_KEY = 'is_guest';
+const ONBOARDED_KEY = 'onboarded';
 
 type AuthState = {
   userId: string;
   isGuest: boolean;
   isReady: boolean;
+  hasOnboarded: boolean;
 
   initialize: () => void;
   continueAsGuest: () => void;
   setLoggedIn: (userId: string) => void;
   logout: () => void;
+  completeOnboarding: () => void;
 };
 
 export const useAuthStore = create<AuthState>(set => ({
   userId: '',
   isGuest: true,
   isReady: false,
+  hasOnboarded: false,
 
   initialize: () => {
     const storedUserId = storage.getString(USER_ID_KEY);
     const isGuest = storage.getBoolean(IS_GUEST_KEY) ?? true;
+    const hasOnboarded = storage.getBoolean(ONBOARDED_KEY) ?? false;
 
     if (storedUserId) {
-      set({ userId: storedUserId, isGuest, isReady: true });
+      set({ userId: storedUserId, isGuest, hasOnboarded, isReady: true });
     } else {
       // First launch: auto-create guest identity
       const guestId = randomUUID();
       storage.set(USER_ID_KEY, guestId);
       storage.set(IS_GUEST_KEY, true);
-      set({ userId: guestId, isGuest: true, isReady: true });
+      set({ userId: guestId, isGuest: true, hasOnboarded, isReady: true });
     }
   },
 
@@ -55,5 +60,10 @@ export const useAuthStore = create<AuthState>(set => ({
     storage.remove(USER_ID_KEY);
     storage.remove(IS_GUEST_KEY);
     set({ userId: '', isGuest: true, isReady: false });
+  },
+
+  completeOnboarding: () => {
+    storage.set(ONBOARDED_KEY, true);
+    set({ hasOnboarded: true });
   },
 }));

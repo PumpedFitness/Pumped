@@ -1,17 +1,12 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
-import { LoginScreen } from '../screens/LoginScreen';
-import { ActiveWorkoutScreen } from '../screens/ActiveWorkoutScreen';
-import { HistoryDetailScreen } from '../screens/HistoryDetailScreen';
-import { ExercisePickerScreen } from '../screens/ExercisePickerScreen';
+import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { useAuthStore } from '../stores/authStore';
 
 export type RootStackParamList = {
-  Login: undefined;
+  Onboarding: undefined;
   Main: undefined;
-  ActiveWorkout: undefined;
-  HistoryDetail: { sessionId: string };
-  ExercisePicker: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,29 +26,20 @@ const pumped: typeof DefaultTheme = {
 };
 
 export function AppNavigator() {
+  const hasOnboarded = useAuthStore(s => s.hasOnboarded);
+
   return (
     <NavigationContainer theme={pumped}>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
-        initialRouteName="Login"
+        initialRouteName={hasOnboarded ? 'Main' : 'Onboarding'}
       >
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen
+          name="Onboarding"
+          component={OnboardingScreen}
+          options={{ animation: 'fade' }}
+        />
         <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen
-          name="ActiveWorkout"
-          component={ActiveWorkoutScreen}
-          options={{ animation: 'slide_from_bottom' }}
-        />
-        <Stack.Screen
-          name="HistoryDetail"
-          component={HistoryDetailScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="ExercisePicker"
-          component={ExercisePickerScreen}
-          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -8,13 +8,11 @@ import {Uniwind} from 'uniwind';
 import {AppNavigator} from './src/navigation/AppNavigator';
 import {initDatabase} from './src/data/local/database';
 import {useAuthStore} from './src/stores/authStore';
-import {useSyncStore} from './src/stores/syncStore';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const authReady = useAuthStore((s) => s.isReady);
   const initializeAuth = useAuthStore((s) => s.initialize);
-  const initializeSync = useSyncStore((s) => s.initialize);
 
   useEffect(() => {
     Uniwind.setTheme('dark');
@@ -29,9 +27,8 @@ export default function App() {
   useEffect(() => {
     if (dbReady) {
       initializeAuth();
-      initializeSync();
     }
-  }, [dbReady, initializeAuth, initializeSync]);
+  }, [dbReady, initializeAuth]);
 
   if (!dbReady || !authReady) {
     return (
