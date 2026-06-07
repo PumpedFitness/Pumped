@@ -2,12 +2,12 @@ import { useCallback } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert, ScrollView } from 'react-native';
-import { AppView } from '../components/AppView';
-import { WorkoutTemplateLibrary } from '../components/workout/WorkoutTemplateLibrary';
-import type { WorkoutTemplateStatus } from '../data/local/enums';
-import { useWorkoutTemplates } from '../hooks/useWorkoutTemplates';
-import type { RootStackParamList } from '../navigation/AppNavigator';
-import type { WorkoutTemplate } from '../types/workout';
+import { AppView } from '../../components/AppView';
+import { WorkoutTemplateLibrary } from '../../components/workout/WorkoutTemplateLibrary';
+import type { WorkoutTemplateStatus } from '../../data/local/enums';
+import { useWorkoutTemplates } from '../../hooks/useWorkoutTemplates';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
+import type { WorkoutTemplate } from '../../types/workout';
 
 export function PlanScreen() {
   const navigation =

@@ -168,7 +168,7 @@ export function UserSettings() {
       <BottomSheet isOpen={birthdateSheet} onOpenChange={open => { if (!open) setBirthdateSheet(false); }}>
         <BottomSheet.Portal>
           <BottomSheet.Overlay />
-          <BottomSheet.Content>
+          <BottomSheet.Content backgroundClassName="bg-background">
             <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
               Birthdate
             </BottomSheet.Title>

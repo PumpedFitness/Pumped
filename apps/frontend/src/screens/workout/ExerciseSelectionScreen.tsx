@@ -1,9 +1,9 @@
 import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppView } from '../components/AppView';
-import { ExerciseSelectionList } from '../components/exercise/ExerciseSelectionList';
-import { useExerciseOptions } from '../hooks/useExerciseOptions';
-import type { RootStackParamList } from '../navigation/AppNavigator';
+import { AppView } from '../../components/AppView';
+import { ExerciseSelectionList } from '../../components/exercise/ExerciseSelectionList';
+import { useExerciseOptions } from '../../hooks/useExerciseOptions';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 
 type ExerciseSelectionScreenProps = NativeStackScreenProps<
   RootStackParamList,

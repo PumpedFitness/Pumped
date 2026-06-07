@@ -9,14 +9,14 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AppShell } from '../components/AppShell';
-import { Card } from '../components/clay/Card';
-import { Button } from '../components/clay/Button';
-import { ClayIcon } from '../components/icons/ClayIcon';
-import { widgetRegistry } from '../components/widgets/registry';
-import { useHomescreenStore } from '../stores/homescreenStore';
-import { colors, typography } from '../theme/tokens';
-import type { WidgetType } from '../types/widget';
+import { AppShell } from '../../components/AppShell';
+import { Card } from '../../components/clay/Card';
+import { Button } from '../../components/clay/Button';
+import { ClayIcon } from '../../components/icons/ClayIcon';
+import { widgetRegistry } from '../../components/widgets/registry';
+import { useHomescreenStore } from '../../stores/homescreenStore';
+import { colors, typography } from '../../theme/tokens';
+import type { WidgetType } from '../../types/widget';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const PREVIEW_GUTTER = 20;

@@ -87,7 +87,7 @@ export function OptionalSliderSheet({
     <BottomSheet isOpen={visible} onOpenChange={open => { if (!open) onClose(); }}>
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
-        <BottomSheet.Content>
+        <BottomSheet.Content backgroundClassName="bg-background">
           <View className="items-center">
             <BottomSheet.Title className="text-[21px] font-bold text-foreground">
               {config.title}

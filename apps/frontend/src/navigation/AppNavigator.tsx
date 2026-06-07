@@ -1,13 +1,14 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
-import { ExerciseSelectionScreen } from '../screens/ExerciseSelectionScreen';
-import { OnboardingScreen } from '../screens/OnboardingScreen';
-import { WorkoutPlaceholderScreen } from '../screens/WorkoutPlaceholderScreen';
-import { WorkoutTemplateEditorScreen } from '../screens/WorkoutTemplateEditorScreen';
-import { WidgetPickerScreen } from '../screens/WidgetPickerScreen';
-import { WeightHistoryScreen } from '../screens/WeightHistoryScreen';
-import { BodyFatHistoryScreen } from '../screens/BodyFatHistoryScreen';
+import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
+import { WidgetPickerScreen } from '../screens/home/WidgetPickerScreen';
+import { ExerciseSelectionScreen } from '../screens/workout/ExerciseSelectionScreen';
+import { WorkoutPlaceholderScreen } from '../screens/workout/WorkoutPlaceholderScreen';
+import { WorkoutTemplateEditorScreen } from '../screens/workout/WorkoutTemplateEditorScreen';
+import { WeightHistoryScreen } from '../screens/tracking/WeightHistoryScreen';
+import { BodyFatHistoryScreen } from '../screens/tracking/BodyFatHistoryScreen';
+import { AddMetricScreen } from '../screens/tracking/AddMetricScreen';
 import { useAuthStore } from '../stores/authStore';
 import type { ExerciseSelectionResult } from '../types/exercise';
 
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   WidgetPicker: undefined;
   WeightHistory: undefined;
   BodyFatHistory: undefined;
+  AddMetric: { metric: 'weight' | 'bodyFat' };
   WorkoutTemplateEditor:
     | {
         templateId?: string;
@@ -75,6 +77,11 @@ export function AppNavigator() {
           name="BodyFatHistory"
           component={BodyFatHistoryScreen}
           options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="AddMetric"
+          component={AddMetricScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
         />
         <Stack.Screen
           name="WorkoutTemplateEditor"

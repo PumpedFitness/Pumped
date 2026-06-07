@@ -11,27 +11,27 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/AppNavigator';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { randomUUID } from 'expo-crypto';
-import { useAuthStore } from '../stores/authStore';
-import { useUserProfile } from '../hooks/useUserProfile';
-import type { Gender, WeightUnit } from '../data/local/schema/userProfile';
+import { useAuthStore } from '../../stores/authStore';
+import { useUserProfile } from '../../hooks/useUserProfile';
+import type { Gender, WeightUnit } from '../../data/local/schema/userProfile';
 import {
   bodyWeightEntries,
   bodyFatEntries,
-} from '../data/local/schema/bodyMetrics';
-import { useRepository } from '../data/local/useRepository';
-import { toKg } from '../utils/units';
-import { colors, radii } from '../theme/tokens';
-import { ClayIcon } from '../components/icons/ClayIcon';
-import { StepDots } from '../components/clay/StepDots';
-import { CTAButton } from '../components/clay/CTAButton';
-import { WelcomeContent } from '../components/onboarding/WelcomeContent';
-import { PreferencesContent } from '../components/onboarding/PreferencesContent';
+} from '../../data/local/schema/bodyMetrics';
+import { useRepository } from '../../data/local/useRepository';
+import { toKg } from '../../utils/units';
+import { colors, radii } from '../../theme/tokens';
+import { ClayIcon } from '../../components/icons/ClayIcon';
+import { StepDots } from '../../components/clay/StepDots';
+import { CTAButton } from '../../components/clay/CTAButton';
+import { WelcomeContent } from '../../components/onboarding/WelcomeContent';
+import { PreferencesContent } from '../../components/onboarding/PreferencesContent';
 import {
   ProfileContent,
   type ProfileFields,
-} from '../components/onboarding/ProfileContent';
+} from '../../components/onboarding/ProfileContent';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TOTAL_STEPS = 3;

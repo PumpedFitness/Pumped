@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { AppShell } from '../components/AppShell';
-import { WidgetGrid } from '../components/widgets/WidgetGrid';
-import { useHomescreenStore } from '../stores/homescreenStore';
-import { colors, typography } from '../theme/tokens';
+import { AppShell } from '../../components/AppShell';
+import { WidgetGrid } from '../../components/widgets/WidgetGrid';
+import { useHomescreenStore } from '../../stores/homescreenStore';
+import { colors, typography } from '../../theme/tokens';
 
 function getGreeting(): { timeLabel: string; greeting: string } {
   const hour = new Date().getHours();

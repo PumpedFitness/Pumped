@@ -1,10 +1,10 @@
 import { Alert, Text } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from 'heroui-native';
-import { AppView } from '../components/AppView';
-import { WorkoutTemplateEditor } from '../components/workout/WorkoutTemplateEditor';
-import { useWorkoutTemplates } from '../hooks/useWorkoutTemplates';
-import type { RootStackParamList } from '../navigation/AppNavigator';
+import { AppView } from '../../components/AppView';
+import { WorkoutTemplateEditor } from '../../components/workout/WorkoutTemplateEditor';
+import { useWorkoutTemplates } from '../../hooks/useWorkoutTemplates';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 
 type WorkoutTemplateEditorScreenProps = NativeStackScreenProps<
   RootStackParamList,

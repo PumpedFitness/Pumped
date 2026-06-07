@@ -1,9 +1,9 @@
 import { Pressable, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppView } from '../components/AppView';
-import { ClayIcon } from '../components/icons/ClayIcon';
-import type { RootStackParamList } from '../navigation/AppNavigator';
-import { colors } from '../theme/tokens';
+import { AppView } from '../../components/AppView';
+import { ClayIcon } from '../../components/icons/ClayIcon';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
+import { colors } from '../../theme/tokens';
 
 type WorkoutPlaceholderScreenProps = NativeStackScreenProps<
   RootStackParamList,

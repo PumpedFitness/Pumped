@@ -12,11 +12,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { AppShell } from '../components/AppShell';
-import { HomeScreen } from '../screens/HomeScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { HomeScreen } from '../screens/home/HomeScreen';
+import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
-import { PlanScreen } from '../screens/PlanScreen';
+import { PlanScreen } from '../screens/plan/PlanScreen';
 
 export type MainTabParamList = {
   Home: undefined;

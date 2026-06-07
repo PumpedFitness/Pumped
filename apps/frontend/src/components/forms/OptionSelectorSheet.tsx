@@ -29,7 +29,7 @@ export function OptionSelectorSheet<T extends string>({
     <BottomSheet isOpen={visible} onOpenChange={open => { if (!open) onClose(); }}>
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
-        <BottomSheet.Content>
+        <BottomSheet.Content backgroundClassName="bg-background">
           <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
             {title}
           </BottomSheet.Title>

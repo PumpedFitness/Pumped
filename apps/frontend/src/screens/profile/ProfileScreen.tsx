@@ -1,8 +1,8 @@
 import { Text, ScrollView } from 'react-native';
-import { AppShell } from '../components/AppShell';
-import { UserSettings } from '../components/settings/UserSettings';
-import { AppSettings } from '../components/settings/AppSettings';
-import { colors, typography } from '../theme/tokens';
+import { AppShell } from '../../components/AppShell';
+import { UserSettings } from '../../components/settings/UserSettings';
+import { AppSettings } from '../../components/settings/AppSettings';
+import { colors, typography } from '../../theme/tokens';
 
 export function ProfileScreen() {
   return (
