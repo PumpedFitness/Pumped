@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import {
+  createMaterialTopTabNavigator,
+  type MaterialTopTabBarProps,
+} from '@react-navigation/material-top-tabs';
 import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -24,7 +27,11 @@ export type MainTabParamList = {
 
 const Tab = createMaterialTopTabNavigator<MainTabParamList>();
 
-function PlaceholderScreen({ title }: { title: string }) {
+type PlaceholderScreenProps = {
+  title: string;
+};
+
+function PlaceholderScreen({ title }: PlaceholderScreenProps) {
   return (
     <AppShell
       showTabBar
@@ -65,7 +72,9 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function AppBar({ state, navigation }: any) {
+type AppBarProps = MaterialTopTabBarProps;
+
+function AppBar({ state, navigation }: AppBarProps) {
   const insets = useSafeAreaInsets();
   const { profile } = useUserProfile();
   const profileName = profile.name;

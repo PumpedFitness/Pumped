@@ -1,27 +1,12 @@
-import { useCallback, useMemo, useState } from 'react';
-import { asc } from 'drizzle-orm';
-import { db } from '../data/local/database';
-import type {
-  ExerciseCategory,
-  ExerciseEquipment,
-  MuscleGroup,
-} from '../data/local/enums';
-import { exercises } from '../data/local/schema';
+import { useCallback, useState } from 'react';
 import {
   workoutService,
   type SaveWorkoutTemplateInput,
 } from '../data/local/services';
 import type { WorkoutTemplateStatus } from '../data/local/enums';
+import type { ExerciseOption } from '../types/exercise';
 import type { WorkoutSession, WorkoutTemplate } from '../types/workout';
-
-export type ExerciseOption = {
-  id: string;
-  name: string;
-  description: string | null;
-  exerciseCategory: ExerciseCategory;
-  muscleGroups: MuscleGroup[];
-  equipment: ExerciseEquipment[];
-};
+import { useExerciseOptions } from './useExerciseOptions';
 
 type UseWorkoutTemplatesResult = {
   templates: WorkoutTemplate[];
@@ -44,22 +29,7 @@ export function useWorkoutTemplates(): UseWorkoutTemplatesResult {
     workoutService.listWorkoutSessions(),
   );
 
-  const exerciseOptions = useMemo(
-    () =>
-      db
-        .select({
-          id: exercises.id,
-          name: exercises.name,
-          description: exercises.description,
-          exerciseCategory: exercises.exerciseCategory,
-          muscleGroups: exercises.muscleGroups,
-          equipment: exercises.equipment,
-        })
-        .from(exercises)
-        .orderBy(asc(exercises.name))
-        .all(),
-    [],
-  );
+  const exerciseOptions = useExerciseOptions();
 
   const refresh = useCallback(() => {
     setTemplates(workoutService.listWorkoutTemplates());
