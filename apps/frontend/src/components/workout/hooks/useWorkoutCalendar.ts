@@ -1,6 +1,7 @@
-import type { WorkoutWeekday } from '../../data/local/enums';
-import type { WorkoutSession, WorkoutTemplate } from '../../types/workout';
-import { getWorkoutTemplateColor } from './workoutTemplateColors';
+import { useMemo, useState } from 'react';
+import type { WorkoutWeekday } from '../../../data/local/enums';
+import type { WorkoutSession, WorkoutTemplate } from '../../../types/workout';
+import { getWorkoutTemplateColor } from '../services/workoutTemplatePresentationService';
 
 export type WorkoutCalendarEntry = {
   id: string;
@@ -16,6 +17,11 @@ export type WorkoutCalendarDay = {
   inMonth: boolean;
   isToday: boolean;
   entries: WorkoutCalendarEntry[];
+};
+
+type UseWorkoutCalendarOptions = {
+  templates: WorkoutTemplate[];
+  sessions: WorkoutSession[];
 };
 
 const WEEKDAY_INDEX: Record<WorkoutWeekday, number> = {
@@ -104,6 +110,7 @@ export function buildWorkoutCalendarDays(
   const templatesById = new Map(
     templates.map(template => [template.id, template] as const),
   );
+
   sessions
     .filter(session => session.endedAt !== null)
     .forEach(session => {
@@ -165,4 +172,34 @@ export function buildWorkoutCalendarDays(
   }
 
   return days;
+}
+
+export function useWorkoutCalendar({
+  templates,
+  sessions,
+}: UseWorkoutCalendarOptions) {
+  const [month, setMonth] = useState(
+    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  );
+  const days = useMemo(
+    () => buildWorkoutCalendarDays(month, templates, sessions),
+    [month, sessions, templates],
+  );
+  const monthLabel = useMemo(
+    () =>
+      month.toLocaleDateString(undefined, {
+        month: 'long',
+        year: 'numeric',
+      }),
+    [month],
+  );
+
+  const moveMonth = (direction: -1 | 1) => {
+    setMonth(
+      current =>
+        new Date(current.getFullYear(), current.getMonth() + direction, 1),
+    );
+  };
+
+  return { days, monthLabel, moveMonth };
 }

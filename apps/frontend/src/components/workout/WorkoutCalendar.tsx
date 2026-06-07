@@ -1,9 +1,8 @@
-import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { WorkoutSession, WorkoutTemplate } from '../../types/workout';
 import { colors } from '../../theme/tokens';
 import { ClayIcon } from '../icons/ClayIcon';
-import { buildWorkoutCalendarDays } from './workoutCalendarModel';
+import { useWorkoutCalendar } from './hooks/useWorkoutCalendar';
 
 type WorkoutCalendarProps = {
   templates: WorkoutTemplate[];
@@ -13,24 +12,10 @@ type WorkoutCalendarProps = {
 const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export function WorkoutCalendar({ templates, sessions }: WorkoutCalendarProps) {
-  const [month, setMonth] = useState(
-    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-  );
-  const days = useMemo(
-    () => buildWorkoutCalendarDays(month, templates, sessions),
-    [month, sessions, templates],
-  );
-  const monthLabel = month.toLocaleDateString(undefined, {
-    month: 'long',
-    year: 'numeric',
+  const { days, monthLabel, moveMonth } = useWorkoutCalendar({
+    templates,
+    sessions,
   });
-
-  const moveMonth = (direction: -1 | 1) => {
-    setMonth(
-      current =>
-        new Date(current.getFullYear(), current.getMonth() + direction, 1),
-    );
-  };
 
   return (
     <View className="gap-4 rounded-[26px] border border-border-hairline bg-surface-card p-4">

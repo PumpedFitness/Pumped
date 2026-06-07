@@ -1,14 +1,14 @@
 import { Pressable, Text, View } from 'react-native';
 import type { WorkoutTemplateStatus } from '../../data/local/enums';
-import type { ExerciseOption } from '../../hooks/useWorkoutTemplates';
+import type { ExerciseOption } from '../../types/exercise';
 import type { WorkoutTemplate } from '../../types/workout';
 import { colors } from '../../theme/tokens';
 import { ClayIcon } from '../icons/ClayIcon';
 import {
   countTemplateSets,
   formatTemplateSchedule,
-} from './workoutTemplatePresentation';
-import { getWorkoutTemplateColor } from './workoutTemplateColors';
+  getWorkoutTemplateColor,
+} from './services/workoutTemplatePresentationService';
 
 type WorkoutTemplateCardProps = {
   template: WorkoutTemplate;

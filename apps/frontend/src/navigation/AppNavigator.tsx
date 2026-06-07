@@ -1,11 +1,15 @@
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
+import { ExerciseSelectionScreen } from '../screens/ExerciseSelectionScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { WorkoutPlaceholderScreen } from '../screens/WorkoutPlaceholderScreen';
+import { WorkoutTemplateEditorScreen } from '../screens/WorkoutTemplateEditorScreen';
 import { WidgetPickerScreen } from '../screens/WidgetPickerScreen';
 import { WeightHistoryScreen } from '../screens/WeightHistoryScreen';
 import { BodyFatHistoryScreen } from '../screens/BodyFatHistoryScreen';
 import { useAuthStore } from '../stores/authStore';
+import type { ExerciseSelectionResult } from '../types/exercise';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -13,6 +17,17 @@ export type RootStackParamList = {
   WidgetPicker: undefined;
   WeightHistory: undefined;
   BodyFatHistory: undefined;
+  WorkoutTemplateEditor:
+    | {
+        templateId?: string;
+        exerciseSelection?: ExerciseSelectionResult;
+      }
+    | undefined;
+  ExerciseSelection: {
+    selectedExerciseIds: string[];
+    returnRouteKey: string;
+  };
+  WorkoutPlaceholder: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -59,6 +74,21 @@ export function AppNavigator() {
         <Stack.Screen
           name="BodyFatHistory"
           component={BodyFatHistoryScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="WorkoutTemplateEditor"
+          component={WorkoutTemplateEditorScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="ExerciseSelection"
+          component={ExerciseSelectionScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="WorkoutPlaceholder"
+          component={WorkoutPlaceholderScreen}
           options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>
