@@ -20,6 +20,7 @@
     "setup:android": "cd android && ./gradlew clean"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-community/datetimepicker": "^9.1.0",
     "@react-native/new-app-screen": "0.85.2",
     "@react-navigation/bottom-tabs": "^7.15.11",
