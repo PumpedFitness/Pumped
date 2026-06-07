@@ -3,12 +3,16 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { WidgetPickerScreen } from '../screens/WidgetPickerScreen';
+import { WeightHistoryScreen } from '../screens/WeightHistoryScreen';
+import { BodyFatHistoryScreen } from '../screens/BodyFatHistoryScreen';
 import { useAuthStore } from '../stores/authStore';
 
 export type RootStackParamList = {
   Onboarding: undefined;
   Main: undefined;
   WidgetPicker: undefined;
+  WeightHistory: undefined;
+  BodyFatHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -46,6 +50,16 @@ export function AppNavigator() {
           name="WidgetPicker"
           component={WidgetPickerScreen}
           options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="WeightHistory"
+          component={WeightHistoryScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="BodyFatHistory"
+          component={BodyFatHistoryScreen}
+          options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -17,3 +17,5 @@ export {
   workoutTemplateScheduleWeekdays,
 } from './workoutTemplate';
 export { workoutSessions, performedSets } from './workoutSession';
+export { bodyWeightEntries, bodyFatEntries } from './bodyMetrics';
+export { userProfile, type Gender, type WeightUnit } from './userProfile';

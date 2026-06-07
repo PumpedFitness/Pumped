@@ -36,6 +36,20 @@
       "when": 1780772888343,
       "tag": "0004_smiling_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1780837866080,
+      "tag": "0005_romantic_nehzno",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780839736996,
+      "tag": "0006_lean_storm",
+      "breakpoints": true
     }
   ]
 }

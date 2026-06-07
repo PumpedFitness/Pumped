@@ -53,6 +53,18 @@ const PATHS: Record<string, string[]> = {
   more: ['M5 12h.01M12 12h.01M19 12h.01'],
   pause: ['M8 5v14M16 5v14'],
   dot: ['M12 12h.01'],
+  user: [
+    'M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
+    'M5 20c0-3.3 2.7-6 7-6s7 2.7 7 6',
+  ],
+  scale: ['M4 18h16', 'M5 18v-2a7 7 0 0 1 14 0v2', 'M12 4v3'],
+  percent: [
+    'M19 5 5 19',
+    'M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+    'M17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  ],
+  ruler: ['M3 5v14h4V5H3Z', 'M7 8h3M7 12h5M7 16h3'],
+  warning: ['M12 3 2 21h20L12 3Z', 'M12 10v4M12 17h.01'],
 };
 
 export type IconName = keyof typeof PATHS;

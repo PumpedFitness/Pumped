@@ -12,6 +12,9 @@ apps/frontend/android/app/build/
 apps/frontend/android/.gradle/
 *.hbc
 
+# Expo
+apps/frontend/.expo/
+
 # Metro
 .metro-health-check*
 

@@ -2,15 +2,15 @@ import { useState, useCallback } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, CommonActions } from '@react-navigation/native';
 import Animated, {
   useAnimatedStyle,
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { useAuthStore } from '../stores/authStore';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { AppShell } from '../components/AppShell';
 import { HomeScreen } from '../screens/HomeScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
 import { PlanScreen } from '../screens/PlanScreen';
@@ -41,41 +41,6 @@ function ProgressPlaceholder() {
   return <PlaceholderScreen title="Progress" />;
 }
 
-function YouPlaceholder() {
-  const navigation = useNavigation();
-  const resetOnboarding = useAuthStore(s => s.resetOnboarding);
-
-  return (
-    <AppShell
-      showTabBar
-      style={{ alignItems: 'center', justifyContent: 'center', gap: 16 }}
-    >
-      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>
-        You
-      </Text>
-      <Pressable
-        onPress={() => {
-          resetOnboarding();
-          navigation.dispatch(
-            CommonActions.reset({ index: 0, routes: [{ name: 'Onboarding' }] }),
-          );
-        }}
-        style={({ pressed }) => ({
-          backgroundColor: pressed ? colors.cardSunk : colors.card,
-          paddingVertical: 12,
-          paddingHorizontal: 24,
-          borderRadius: radii.md,
-          borderWidth: 1,
-          borderColor: colors.line,
-        })}
-      >
-        <Text style={{ color: colors.danger, fontSize: 15, fontWeight: '600' }}>
-          Reset Onboarding
-        </Text>
-      </Pressable>
-    </AppShell>
-  );
-}
 
 const TAB_CONFIG: {
   name: keyof MainTabParamList;
@@ -93,8 +58,18 @@ const DURATION = 300;
 
 type TabLayout = { x: number; width: number };
 
+function getInitials(name: string): string {
+  if (!name.trim()) return '';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 function AppBar({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const { profile } = useUserProfile();
+  const profileName = profile.name;
+  const initials = getInitials(profileName);
   const [layouts, setLayouts] = useState<TabLayout[]>([]);
   const ready = layouts.length === TAB_CONFIG.length;
   const activeIdx = state.index;
@@ -178,28 +153,37 @@ function AppBar({ state, navigation }: any) {
             }}
           >
             {isAvatar ? (
-              <View
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: 13,
-                  backgroundColor: active
-                    ? colors.cream
-                    : 'rgba(243, 238, 226, 0.35)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text
+              initials ? (
+                <View
                   style={{
-                    fontSize: 10,
-                    fontWeight: '700',
-                    color: active ? colors.moss : 'rgba(243, 238, 226, 0.7)',
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    backgroundColor: active
+                      ? colors.cream
+                      : 'rgba(243, 238, 226, 0.35)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  AK
-                </Text>
-              </View>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: '700',
+                      color: active ? colors.moss : 'rgba(243, 238, 226, 0.7)',
+                    }}
+                  >
+                    {initials}
+                  </Text>
+                </View>
+              ) : (
+                <ClayIcon
+                  name="settings"
+                  size={22}
+                  stroke={active ? 2.1 : 1.8}
+                  color={active ? colors.cream : 'rgba(243, 238, 226, 0.55)'}
+                />
+              )
             ) : (
               <ClayIcon
                 name={tab.icon}
@@ -233,7 +217,7 @@ export function MainTabs() {
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Plan" component={PlanScreen} />
         <Tab.Screen name="Progress" component={ProgressPlaceholder} />
-        <Tab.Screen name="You" component={YouPlaceholder} />
+        <Tab.Screen name="You" component={ProfileScreen} />
       </Tab.Navigator>
     </View>
   );

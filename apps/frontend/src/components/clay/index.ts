@@ -9,3 +9,5 @@ export { RingGauge } from './RingGauge';
 export { Toggle } from './Toggle';
 export { Stepper } from './Stepper';
 export { SegmentedControl } from './SegmentedControl';
+export { SettingsSection } from './SettingsSection';
+export { EditableRow } from './EditableRow';

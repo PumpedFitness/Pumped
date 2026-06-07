@@ -2,131 +2,89 @@
 
 ## Stack
 
-- React Native 0.85 + TypeScript 5.8
-- HeroUI Native (UI components: Button, Input, Card, etc.)
-- Uniwind 1.6 (Tailwind CSS v4 for React Native)
-- React Navigation 7 (native-stack + bottom-tabs)
-- Reanimated 4 + Gesture Handler 2
+- React Native 0.83 + Expo 55 + TypeScript
+- Uniwind (Tailwind CSS v4 for React Native)
+- HeroUI Native (Button, Input, Slider, etc.)
+- Drizzle ORM + expo-sqlite (local-first persistence)
+- Zustand + MMKV (auth/session state only)
+- React Navigation (native-stack + material-top-tabs)
+- Reanimated + Gesture Handler
 
-## Styling Rules
+## Data Layer
 
-**Always use Tailwind `className`.** Never use `style={}` except for:
-- Animated styles (Reanimated `useAnimatedStyle`)
-- SVG props (fill, stroke, viewBox)
-- Safe area insets on non-Uniwind components
+**All domain data lives in SQLite via Drizzle.** This includes user profile, body metrics, workouts, exercises — everything. Do NOT create Zustand/MMKV stores for domain data. MMKV is only for auth/session state (`authStore`).
 
-**Third-party components** (e.g. `SafeAreaView`) — wrap with `withUniwind()` at module scope:
-```tsx
-import {withUniwind} from 'uniwind';
-const StyledSafeAreaView = withUniwind(SafeAreaView);
-```
+### Schema & Migrations
 
-### Typography Utilities (defined in `global.css`)
+- Schema files: `src/data/local/schema/`
+- Migrations: `src/data/local/drizzle/` — generate with `npx drizzle-kit generate`, then register in `drizzle/index.ts`
+- Custom column helpers in `schema/columns.ts` (`enumText`, `jsonArray`)
 
-Use these instead of repeating class combinations:
+### Data Access
 
-| Utility | Use for |
-|---|---|
-| `eyebrow` | 11px mono uppercase muted labels |
-| `mono-sm` | 11px mono semibold (badges, small values) |
-| `mono-value` | 18px mono semibold (set weights/reps) |
-| `mono-display` | 30px mono semibold (stepper values) |
-| `heading-lg` | 32px bold (hero text) |
-| `heading-md` | 20px semibold (section titles) |
-| `body-text` | 16px medium (list row titles) |
-| `body-sub` | 12px muted (subtitles) |
+- **`useRepository(table)`** — generic CRUD hook for any Drizzle table. Do not create per-entity repository files.
+- **Domain hooks** live in `src/hooks/` (e.g. `useUserProfile`, `useWorkoutTemplates`). These wrap `useRepository` with domain-specific convenience logic.
+- The generic `useRepository` stays in `data/local/` as an infrastructure primitive.
+- **Never access `db` directly** from components, screens, or hooks. All reads and writes go through `useRepository` or a domain hook that wraps it. Direct `db.insert/select/delete` calls break the repository layer and bypass re-render triggers. The only exception is `database.ts` (init/migrations) and the reset-all-data action.
 
-### Color Tokens
+## UI / UX
 
-Semantic colors from `global.css` — use as Tailwind classes:
+### Component Architecture
 
-- `bg-background`, `text-foreground` — page level
-- `bg-surface`, `bg-surface-raised`, `bg-surface-hover` — cards, elevated, hover
-- `text-muted`, `text-foreground-secondary` — secondary text
-- `border-border`, `border-border-soft`, `border-border-strong` — hairlines
-- `bg-accent`, `text-accent`, `border-accent` — primary action color (clay)
-- `bg-accent-soft` — accent at 14% opacity
-- `bg-field-background`, `border-field-border` — form inputs
+- **Screen files must stay small** (~30-50 lines). They compose sub-components — no business logic, sheets, or inline styles in screen files.
+- **Extract reusable components** when patterns repeat. UI primitives go in `components/clay/`, feature groups in `components/<feature>/`.
+- **Sub-components own their state.** Sheets, modals, and editing state live in the sub-component, not the parent.
 
-## Component Patterns
+### Mobile Input Rules
 
-### Screen Wrapper
+- For text/number input, use **inline editing with the OS keyboard** — no custom bottom sheets for text entry.
+- **Bottom sheets** are for pickers only (date picker, option selector).
+- Use **native OS controls**: `@react-native-community/datetimepicker` for dates, `OptionSelectorSheet` for enums.
 
-Every screen must use `<AppView>` as its root:
+### Styling
 
-```tsx
-import {AppView} from '../components/AppView';
+- Use Tailwind `className` via Uniwind. Avoid `style={}` except for animated styles, SVG props, and safe-area insets.
+- Third-party components without `className` support: wrap with `withUniwind()` at module scope.
+- Design tokens in `theme/tokens.ts` for JS contexts (SVG, animations). Prefer Tailwind classes everywhere else.
+- Light theme with Clay design system (earthy palette: terracotta accent, moss brand, cream surfaces).
 
-export function MyScreen() {
-  return (
-    <AppView>
-      {/* screen content */}
-    </AppView>
-  );
-}
-```
+### Typography Utilities (from `global.css`)
 
-`AppView` handles safe area insets and background color. Pass `edges` to control which edges get insets (default: `['top']`). Pass `className` for additional styling.
-
-### Component Props
-
-Always define a named `type` for props:
-
-```tsx
-type MyComponentProps = {
-  title: string;
-  onPress?: () => void;
-};
-
-export function MyComponent({title, onPress}: MyComponentProps) {
-  return (...);
-}
-```
+`t-display` (30px) · `t-title` (21px) · `t-heading` (17px) · `t-body` (15px) · `t-label` (13.5px) · `t-caption` (12.5px) · `t-eyebrow` (11px uppercase)
 
 ### Icons
 
-Use `SvgIcon` + `Icons` map from `components/IconButton`:
+`ClayIcon` component with SVG paths — `<ClayIcon name="settings" size={18} color={colors.accent} />`. Add new icons to the `PATHS` record in `ClayIcon.tsx`.
 
-```tsx
-import {SvgIcon, Icons} from '../components/IconButton';
+### Clay Design System Components
 
-<SvgIcon d={Icons.check} size={18} color={colors.accent} />
+Button, Card, ListRow, EditableRow, SettingsSection, Chip, Badge, StatTile, Toggle, Stepper, SegmentedControl, ProgressBar, RingGauge — all in `components/clay/`.
+
+## File Organization
+
 ```
-
-Add new icons to the `Icons` const in `IconButton.tsx` using Lucide-style SVG path data.
-
-### HeroUI Native Components
-
-Use HeroUI components where available (Button, Input, Card, etc.):
-
-```tsx
-import {Button} from 'heroui-native';
-
-<Button variant="primary" size="lg" className="w-full rounded-sm" onPress={handlePress}>
-  <Button.Label>Sign in</Button.Label>
-</Button>
+src/
+├── components/
+│   ├── clay/          # Design system primitives
+│   ├── charts/        # Data-driven chart components
+│   ├── forms/         # BottomSheetFrame, OptionSelectorSheet, ProfileField
+│   ├── icons/         # ClayIcon SVG icon system
+│   ├── settings/      # Settings sub-components (UserSettings, AppSettings)
+│   └── widgets/       # Home screen widgets
+├── screens/           # Thin screen orchestrators
+├── hooks/             # Domain hooks (useUserProfile, useWorkoutTemplates)
+├── navigation/        # React Navigation config
+├── data/local/        # Drizzle schema, migrations, useRepository, database init
+├── stores/            # MMKV stores (auth only)
+├── utils/             # Pure functions (unit conversion, etc.)
+└── theme/             # Design tokens (JS fallback for non-Tailwind contexts)
 ```
-
-Variants: `primary`, `secondary`, `tertiary`, `outline`, `ghost`, `danger`.
 
 ## Navigation
 
-- **Stack:** `AppNavigator` (Login, Main, ActiveWorkout, HistoryDetail, ExercisePicker)
-- **Tabs:** `MainTabs` (Workout, History, Progress, Profile)
-- Type-safe navigation via `RootStackParamList` and `MainTabParamList`
+- **Stack:** `AppNavigator` — Onboarding, Main, WidgetPicker, WeightHistory, BodyFatHistory
+- **Tabs:** `MainTabs` — Home, Plan, Progress, You
+- Type-safe via `RootStackParamList` and `MainTabParamList`
+- Tab screens use `AppShell` wrapper (handles safe area + floating tab bar spacing)
 - Modal screens use `animation: 'slide_from_bottom'`
-
-## Theme
-
-- Dark-first design, forced via `Uniwind.setTheme('dark')` in `App.tsx`
-- Accent color: clay (`oklch(75% 0.09 70)` / `#D4A574`)
-- All tokens defined in `global.css` using CSS variables in OKLCH
-- `theme/tokens.ts` exists only as a fallback for SVG/dynamic contexts — prefer Tailwind classes
-
-## Design Reference
-
-The design handoff lives in `design_handoff_pumped 2/`. Key specs:
-- Dark-first, sharp radii (2-6px), no shadows (hairlines only)
-- Touch targets: 44px minimum (iOS HIG)
-- Stepper: press-and-hold ramp (320ms delay, 0.85x acceleration, 50ms floor)
-- Monospace numerals everywhere numbers change
+- Detail screens use `animation: 'slide_from_right'`

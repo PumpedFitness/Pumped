@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Pressable,
-  TextInput,
   ScrollView,
   Dimensions,
   type NativeScrollEvent,
@@ -22,10 +21,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { randomUUID } from 'expo-crypto';
 import { useAuthStore } from '../stores/authStore';
+import { useUserProfile } from '../hooks/useUserProfile';
+import type { Gender, WeightUnit } from '../data/local/schema/userProfile';
+import { db } from '../data/local/database';
+import { bodyWeightEntries, bodyFatEntries } from '../data/local/schema/bodyMetrics';
+import { toKg } from '../utils/units';
 import { colors, radii } from '../theme/tokens';
 import { ClayIcon } from '../components/icons/ClayIcon';
 import { SegmentedControl } from '../components/clay/SegmentedControl';
+import { ProfileField } from '../components/forms/ProfileField';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 const TOTAL_STEPS = 3;
@@ -85,57 +91,6 @@ function CTAButton({
         {label}
       </Text>
     </Pressable>
-  );
-}
-
-// ─── Profile input field ─────────────────────────────────
-function ProfileField({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType = 'default',
-}: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder: string;
-  keyboardType?: 'default' | 'numeric' | 'decimal-pad';
-}) {
-  const [focused, setFocused] = useState(false);
-
-  return (
-    <View style={{ gap: 6 }}>
-      <Text
-        style={{
-          fontSize: 12.5,
-          fontWeight: '600',
-          color: colors.muted,
-        }}
-      >
-        {label}
-      </Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.muted}
-        keyboardType={keyboardType}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={{
-          height: 52,
-          paddingHorizontal: 16,
-          backgroundColor: colors.card,
-          color: colors.ink,
-          fontSize: 16,
-          fontWeight: '500',
-          borderRadius: radii.md,
-          borderWidth: 1,
-          borderColor: focused ? colors.accent : colors.line,
-        }}
-      />
-    </View>
   );
 }
 
@@ -255,9 +210,13 @@ function WelcomeContent() {
 }
 
 // ─── Step 2: Preferences ─────────────────────────────────
-function PreferencesContent() {
-  const [weightUnit, setWeightUnit] = useState('kg');
-
+function PreferencesContent({
+  weightUnit,
+  setWeightUnit,
+}: {
+  weightUnit: string;
+  setWeightUnit: (v: string) => void;
+}) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
       <Text
@@ -302,14 +261,22 @@ function PreferencesContent() {
 }
 
 // ─── Step 3: Profile ─────────────────────────────────────
-function ProfileContent() {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [bodyFat, setBodyFat] = useState('');
+type ProfileFields = {
+  name: string;
+  age: string;
+  gender: string;
+  height: string;
+  weight: string;
+  bodyFat: string;
+};
 
+function ProfileContent({
+  fields,
+  setField,
+}: {
+  fields: ProfileFields;
+  setField: <K extends keyof ProfileFields>(key: K, value: string) => void;
+}) {
   return (
     <ScrollView
       contentContainerStyle={{
@@ -347,8 +314,8 @@ function ProfileContent() {
       <View style={{ gap: 18 }}>
         <ProfileField
           label="Name"
-          value={name}
-          onChangeText={setName}
+          value={fields.name}
+          onChangeText={v => setField('name', v)}
           placeholder="What should we call you?"
         />
         <View style={{ gap: 6 }}>
@@ -357,35 +324,35 @@ function ProfileContent() {
           </Text>
           <SegmentedControl
             options={['Male', 'Female', 'Other']}
-            value={gender}
-            onChange={setGender}
+            value={fields.gender}
+            onChange={v => setField('gender', v)}
           />
         </View>
         <ProfileField
           label="Age"
-          value={age}
-          onChangeText={setAge}
+          value={fields.age}
+          onChangeText={v => setField('age', v)}
           placeholder="e.g. 25"
           keyboardType="numeric"
         />
         <ProfileField
           label="Height"
-          value={height}
-          onChangeText={setHeight}
+          value={fields.height}
+          onChangeText={v => setField('height', v)}
           placeholder="e.g. 180 cm"
           keyboardType="decimal-pad"
         />
         <ProfileField
           label="Weight"
-          value={weight}
-          onChangeText={setWeight}
+          value={fields.weight}
+          onChangeText={v => setField('weight', v)}
           placeholder="e.g. 80 kg"
           keyboardType="decimal-pad"
         />
         <ProfileField
           label="Estimated body fat %"
-          value={bodyFat}
-          onChangeText={setBodyFat}
+          value={fields.bodyFat}
+          onChangeText={v => setField('bodyFat', v)}
           placeholder="e.g. 15"
           keyboardType="decimal-pad"
         />
@@ -404,13 +371,77 @@ export function OnboardingScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const isScrolling = useRef(false);
   const completeOnboarding = useAuthStore(s => s.completeOnboarding);
+  const { set: setProfile } = useUserProfile();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  // Lifted state from child steps
+  const [weightUnit, setWeightUnit] = useState('kg');
+  const [profileFields, setProfileFields] = useState<ProfileFields>({
+    name: '',
+    age: '',
+    gender: '',
+    height: '',
+    weight: '',
+    bodyFat: '',
+  });
+
+  const setField = useCallback(<K extends keyof ProfileFields>(key: K, value: string) => {
+    setProfileFields(prev => ({ ...prev, [key]: value }));
+  }, []);
+
   const finish = useCallback(() => {
+    // Build profile fields to persist
+    const genderMap: Record<string, Gender> = {
+      Male: 'MALE',
+      Female: 'FEMALE',
+      Other: 'OTHER',
+    };
+
+    const profileData: Record<string, unknown> = {
+      weightUnit: weightUnit as WeightUnit,
+    };
+    if (profileFields.name) profileData.name = profileFields.name;
+    if (profileFields.gender) {
+      const g = genderMap[profileFields.gender];
+      if (g) profileData.gender = g;
+    }
+    if (profileFields.age) {
+      const age = parseInt(profileFields.age, 10);
+      if (!isNaN(age) && age > 0) {
+        const birthYear = new Date().getFullYear() - age;
+        profileData.birthdate = `${birthYear}-01-01`;
+      }
+    }
+    if (profileFields.height) {
+      const h = parseFloat(profileFields.height);
+      if (!isNaN(h) && h > 0) profileData.heightCm = h;
+    }
+
+    setProfile(profileData);
+
+    // Create initial body metric entries
+    if (profileFields.weight) {
+      const w = parseFloat(profileFields.weight);
+      if (!isNaN(w) && w > 0) {
+        const valueKg = toKg(w, weightUnit as WeightUnit);
+        db.insert(bodyWeightEntries)
+          .values({ id: randomUUID(), value: valueKg, recordedAt: Date.now() })
+          .run();
+      }
+    }
+    if (profileFields.bodyFat) {
+      const bf = parseFloat(profileFields.bodyFat);
+      if (!isNaN(bf) && bf > 0 && bf <= 100) {
+        db.insert(bodyFatEntries)
+          .values({ id: randomUUID(), value: bf, recordedAt: Date.now() })
+          .run();
+      }
+    }
+
     completeOnboarding();
     navigation.replace('Main');
-  }, [completeOnboarding, navigation]);
+  }, [completeOnboarding, navigation, setProfile, profileFields, weightUnit]);
 
   const scrollToStep = useCallback((target: number) => {
     scrollRef.current?.scrollTo({ x: target * SCREEN_WIDTH, animated: true });
@@ -492,8 +523,12 @@ export function OnboardingScreen() {
         style={{ flex: 1 }}
       >
         <View style={{ width: SCREEN_WIDTH }}><WelcomeContent /></View>
-        <View style={{ width: SCREEN_WIDTH }}><PreferencesContent /></View>
-        <View style={{ width: SCREEN_WIDTH }}><ProfileContent /></View>
+        <View style={{ width: SCREEN_WIDTH }}>
+          <PreferencesContent weightUnit={weightUnit} setWeightUnit={setWeightUnit} />
+        </View>
+        <View style={{ width: SCREEN_WIDTH }}>
+          <ProfileContent fields={profileFields} setField={setField} />
+        </View>
       </ScrollView>
 
       {/* Bottom: CTA + dots */}
