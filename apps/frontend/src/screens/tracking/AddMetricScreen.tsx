@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { DateTimeWheelPicker } from '../../components/forms/DateTimeWheelPicker';
+import DateTimePicker from '@expo/ui/community/datetime-picker';
 import { randomUUID } from 'expo-crypto';
 import type { InferInsertModel } from 'drizzle-orm';
 import { ClayIcon } from '../../components/icons/ClayIcon';
@@ -131,24 +130,17 @@ export function AddMetricScreen() {
         <Card variant="card" radius="xl" pad={0}>
           {/* Date + Time picker */}
           <View style={{ alignItems: 'center', paddingVertical: 12 }}>
-            {Platform.OS === 'ios' ? (
-              <DateTimePicker
-                value={entryDate}
-                onChange={(_, selected) => {
-                  if (selected) setEntryDate(selected);
-                }}
-                mode="datetime"
-                display="spinner"
-                maximumDate={new Date()}
-                themeVariant="light"
-              />
-            ) : (
-              <DateTimeWheelPicker
-                value={entryDate}
-                onChange={setEntryDate}
-                maximumDate={new Date()}
-              />
-            )}
+            <DateTimePicker
+              value={entryDate}
+              onValueChange={(_, selected) => {
+                if (selected) setEntryDate(selected);
+              }}
+              mode="datetime"
+              display="spinner"
+              maximumDate={new Date()}
+              presentation="inline"
+              themeVariant="light"
+            />
           </View>
 
           {/* Divider */}

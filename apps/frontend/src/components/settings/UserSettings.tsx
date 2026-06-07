@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { DateWheelPicker } from '../forms/DateWheelPicker';
 import { BottomSheet, Button } from 'heroui-native';
 import { desc } from 'drizzle-orm';
@@ -174,27 +172,12 @@ export function UserSettings() {
               Birthdate
             </BottomSheet.Title>
 
-            {Platform.OS === 'ios' ? (
-              <DateTimePicker
-                value={birthdateDate}
-                onChange={(_, selected) => {
-                  if (selected) setBirthdateDate(selected);
-                }}
-                mode="date"
-                display="spinner"
-                maximumDate={new Date()}
-                minimumDate={new Date(1900, 0, 1)}
-                themeVariant="light"
-                style={{ alignSelf: 'center', width: '100%', height: 200, marginTop: 16 }}
-              />
-            ) : (
-              <DateWheelPicker
-                value={birthdateDate}
-                onChange={setBirthdateDate}
-                maximumDate={new Date()}
-                minimumDate={new Date(1900, 0, 1)}
-              />
-            )}
+            <DateWheelPicker
+              value={birthdateDate}
+              onChange={setBirthdateDate}
+              maximumDate={new Date()}
+              minimumDate={new Date(1900, 0, 1)}
+            />
 
             <Button
               className="mt-4 h-13 rounded-full bg-accent"

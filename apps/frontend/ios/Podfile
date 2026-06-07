@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/..']})"`), "scripts/autolinking")
 
-platform :ios, min_ios_version_supported
+platform :ios, '16.4'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
