@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Button, Slider } from 'heroui-native';
-import { BottomSheetFrame } from './BottomSheetFrame';
+import { BottomSheet, Button, Slider } from 'heroui-native';
 
 export type OptionalSliderConfig = {
   title: string;
@@ -85,87 +84,84 @@ export function OptionalSliderSheet({
   }, [config.defaultValue, value, visible]);
 
   return (
-    <BottomSheetFrame
-      visible={visible}
-      accessibilityLabel="Close value picker"
-      onClose={onClose}
-    >
-      <View className="gap-6 px-5 pb-8 pt-3">
-        <View className="mx-auto h-1.5 w-11 rounded-full bg-border-hairline" />
+    <BottomSheet isOpen={visible} onOpenChange={open => { if (!open) onClose(); }}>
+      <BottomSheet.Portal>
+        <BottomSheet.Overlay />
+        <BottomSheet.Content>
+          <View className="items-center">
+            <BottomSheet.Title className="text-[21px] font-bold text-foreground">
+              {config.title}
+            </BottomSheet.Title>
+            <BottomSheet.Description className="mt-1 text-center text-[13px] text-muted">
+              {config.description}
+            </BottomSheet.Description>
+          </View>
 
-        <View className="items-center">
-          <Text className="text-[21px] font-bold text-foreground">
-            {config.title}
+          <Text className="mt-6 text-center text-[34px] font-bold tabular-nums text-foreground">
+            {config.formatValue(sliderValue)}
           </Text>
-          <Text className="mt-1 text-center text-[13px] text-muted">
-            {config.description}
-          </Text>
-        </View>
 
-        <Text className="text-center text-[34px] font-bold tabular-nums text-foreground">
-          {config.formatValue(sliderValue)}
-        </Text>
-
-        <View className="justify-center py-3">
-          <Slider
-            aria-label={config.title}
-            value={sliderValue}
-            minValue={config.minValue}
-            maxValue={config.maxValue}
-            step={config.step}
-            onChange={nextValue => setSliderValue(getSliderValue(nextValue))}
-          >
-            <Slider.Track
-              className="h-3 rounded-full bg-surface-sunk"
-              hitSlop={16}
+          <View className="mt-6 justify-center py-3">
+            <Slider
+              aria-label={config.title}
+              value={sliderValue}
+              minValue={config.minValue}
+              maxValue={config.maxValue}
+              step={config.step}
+              onChange={nextValue => setSliderValue(getSliderValue(nextValue))}
             >
-              <Slider.Fill className="rounded-full bg-accent" />
-              <Slider.Thumb
-                hitSlop={18}
-                classNames={{
-                  thumbContainer: 'size-7 rounded-full bg-accent',
-                  thumbKnob: 'rounded-full bg-accent-foreground',
-                }}
-              />
-            </Slider.Track>
-          </Slider>
-        </View>
+              <Slider.Track
+                className="h-3 rounded-full bg-surface-sunk"
+                hitSlop={16}
+              >
+                <Slider.Fill className="rounded-full bg-accent" />
+                <Slider.Thumb
+                  hitSlop={18}
+                  classNames={{
+                    thumbContainer: 'size-7 rounded-full bg-accent',
+                    thumbKnob: 'rounded-full bg-accent-foreground',
+                  }}
+                />
+              </Slider.Track>
+            </Slider>
+          </View>
 
-        <View className="flex-row justify-between">
-          <Text className="t-caption tabular-nums">
-            {config.formatValue(config.minValue)}
-          </Text>
-          <Text className="t-caption tabular-nums">
-            {config.formatValue(config.maxValue)}
-          </Text>
-        </View>
+          <View className="flex-row justify-between">
+            <Text className="t-caption tabular-nums">
+              {config.formatValue(config.minValue)}
+            </Text>
+            <Text className="t-caption tabular-nums">
+              {config.formatValue(config.maxValue)}
+            </Text>
+          </View>
 
-        <View className="flex-row gap-2">
-          <Button
-            className="h-13 flex-1 rounded-full"
-            variant="ghost"
-            feedbackVariant="scale"
-            onPress={() => {
-              onChange(null);
-              onClose();
-            }}
-          >
-            <Button.Label>Clear</Button.Label>
-          </Button>
-          <Button
-            className="h-13 flex-1 rounded-full bg-accent"
-            feedbackVariant="scale"
-            onPress={() => {
-              onChange(sliderValue);
-              onClose();
-            }}
-          >
-            <Button.Label className="font-bold text-accent-foreground">
-              Apply
-            </Button.Label>
-          </Button>
-        </View>
-      </View>
-    </BottomSheetFrame>
+          <View className="mt-6 flex-row gap-2">
+            <Button
+              className="h-13 flex-1 rounded-full"
+              variant="ghost"
+              feedbackVariant="scale"
+              onPress={() => {
+                onChange(null);
+                onClose();
+              }}
+            >
+              <Button.Label>Clear</Button.Label>
+            </Button>
+            <Button
+              className="h-13 flex-1 rounded-full bg-accent"
+              feedbackVariant="scale"
+              onPress={() => {
+                onChange(sliderValue);
+                onClose();
+              }}
+            >
+              <Button.Label className="font-bold text-accent-foreground">
+                Apply
+              </Button.Label>
+            </Button>
+          </View>
+        </BottomSheet.Content>
+      </BottomSheet.Portal>
+    </BottomSheet>
   );
 }

@@ -14,10 +14,10 @@ import { randomUUID } from 'expo-crypto';
 import { desc, type InferInsertModel } from 'drizzle-orm';
 import type { SQLiteTable, SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { BottomSheet, Button } from 'heroui-native';
 import { ClayIcon } from '../components/icons/ClayIcon';
 import { Card } from '../components/clay/Card';
 import { MetricChart } from '../components/charts/MetricChart';
-import { BottomSheetFrame } from '../components/forms/BottomSheetFrame';
 import { useRepository } from '../data/local/useRepository';
 import { colors, radii, typography } from '../theme/tokens';
 
@@ -289,109 +289,84 @@ export function MetricHistoryScreen({
       </ScrollView>
 
       {/* Add Entry Sheet */}
-      <BottomSheetFrame
-        visible={addSheet}
-        accessibilityLabel="Close add entry"
-        onClose={() => setAddSheet(false)}
-      >
-        <View
-          style={{
-            gap: 16,
-            paddingHorizontal: 20,
-            paddingBottom: 32,
-            paddingTop: 12,
-          }}
-        >
-          <View
-            style={{
-              width: 44,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: colors.line,
-              alignSelf: 'center',
-            }}
-          />
-          <Text
-            style={{
-              fontSize: typography.title,
-              fontWeight: '700',
-              color: colors.ink,
-              textAlign: 'center',
-            }}
-          >
-            Add {title}
-          </Text>
+      <BottomSheet isOpen={addSheet} onOpenChange={open => { if (!open) setAddSheet(false); }}>
+        <BottomSheet.Portal>
+          <BottomSheet.Overlay />
+          <BottomSheet.Content>
+            <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
+              Add {title}
+            </BottomSheet.Title>
 
-          {/* Value input */}
-          <View style={{ gap: 6 }}>
-            <Text
-              style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}
-            >
-              Value ({unit})
-            </Text>
-            <TextInput
-              ref={inputRef}
-              value={inputValue}
-              onChangeText={setInputValue}
-              placeholder={inputPlaceholder}
-              placeholderTextColor={colors.muted}
-              keyboardType={inputKeyboard}
-              returnKeyType="done"
-              style={{
-                height: 52,
-                paddingHorizontal: 16,
-                backgroundColor: colors.card,
-                color: colors.ink,
-                fontSize: 16,
-                fontWeight: '500',
-                borderRadius: radii.md,
-                borderWidth: 1,
-                borderColor: colors.line,
-              }}
-            />
-          </View>
+            {/* Value input */}
+            <View style={{ gap: 6, marginTop: 16 }}>
+              <Text
+                style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}
+              >
+                Value ({unit})
+              </Text>
+              <TextInput
+                ref={inputRef}
+                value={inputValue}
+                onChangeText={setInputValue}
+                placeholder={inputPlaceholder}
+                placeholderTextColor={colors.muted}
+                keyboardType={inputKeyboard}
+                returnKeyType="done"
+                style={{
+                  height: 52,
+                  paddingHorizontal: 16,
+                  backgroundColor: colors.card,
+                  color: colors.ink,
+                  fontSize: 16,
+                  fontWeight: '500',
+                  borderRadius: radii.md,
+                  borderWidth: 1,
+                  borderColor: colors.line,
+                }}
+              />
+            </View>
 
-          {/* Date picker */}
-          <View style={{ gap: 6 }}>
-            <Text
-              style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}
-            >
-              Date
-            </Text>
-            <DateTimePicker
-              value={entryDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'compact' : 'default'}
-              maximumDate={new Date()}
-              onChange={(_, selected) => {
-                if (selected) setEntryDate(selected);
-              }}
-              style={{ alignSelf: 'flex-start' }}
-            />
-          </View>
+            {/* Date picker */}
+            <View style={{ gap: 6, marginTop: 16 }}>
+              <Text
+                style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}
+              >
+                Date
+              </Text>
+              <DateTimePicker
+                value={entryDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'compact' : 'default'}
+                maximumDate={new Date()}
+                onValueChange={(_, selected) => {
+                  if (selected) setEntryDate(selected);
+                }}
+                style={{ alignSelf: 'flex-start' }}
+              />
+            </View>
 
-          <Pressable
-            onPress={handleAdd}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? '#B06A42' : colors.accent,
-              paddingVertical: 16,
-              borderRadius: radii.pill,
-              alignItems: 'center',
-              transform: [{ scale: pressed ? 0.97 : 1 }],
-            })}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: colors.accentInk,
-              }}
-            >
-              Save
-            </Text>
-          </Pressable>
-        </View>
-      </BottomSheetFrame>
+            <View className="mt-4 flex-row gap-2">
+              <Button
+                className="h-13 flex-1 rounded-full bg-accent"
+                feedbackVariant="scale"
+                onPress={handleAdd}
+              >
+                <Button.Label className="font-bold text-accent-foreground">
+                  Save
+                </Button.Label>
+              </Button>
+              <Button
+                className="h-13 rounded-full"
+                variant="ghost"
+                feedbackVariant="scale"
+                onPress={() => setAddSheet(false)}
+              >
+                <Button.Label>Done</Button.Label>
+              </Button>
+            </View>
+          </BottomSheet.Content>
+        </BottomSheet.Portal>
+      </BottomSheet>
     </View>
   );
 }

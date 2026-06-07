@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { View, Text, Pressable, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { BottomSheet, Button } from 'heroui-native';
 import { desc } from 'drizzle-orm';
 import { SettingsSection } from '../clay/SettingsSection';
 import { EditableRow } from '../clay/EditableRow';
 import { ListRow } from '../clay/ListRow';
 import { ClayIcon } from '../icons/ClayIcon';
-import { BottomSheetFrame } from '../forms/BottomSheetFrame';
 import { OptionSelectorSheet } from '../forms/OptionSelectorSheet';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useRepository } from '../../data/local/useRepository';
@@ -19,7 +19,7 @@ import {
   bodyFatEntries,
 } from '../../data/local/schema/bodyMetrics';
 import { formatWeight } from '../../utils/units';
-import { colors, radii, typography } from '../../theme/tokens';
+import { colors } from '../../theme/tokens';
 
 const GENDER_OPTIONS: { value: Gender; label: string }[] = [
   { value: 'MALE', label: 'Male' },
@@ -165,79 +165,44 @@ export function UserSettings() {
         onChange={v => set({ gender: v as Gender })}
       />
 
-      <BottomSheetFrame
-        visible={birthdateSheet}
-        accessibilityLabel="Close birthdate editor"
-        onClose={() => setBirthdateSheet(false)}
-      >
-        <View
-          style={{
-            gap: 16,
-            paddingHorizontal: 20,
-            paddingBottom: 32,
-            paddingTop: 12,
-          }}
-        >
-          <View
-            style={{
-              width: 44,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: colors.line,
-              alignSelf: 'center',
-            }}
-          />
-          <Text
-            style={{
-              fontSize: typography.title,
-              fontWeight: '700',
-              color: colors.ink,
-              textAlign: 'center',
-            }}
-          >
-            Birthdate
-          </Text>
+      <BottomSheet isOpen={birthdateSheet} onOpenChange={open => { if (!open) setBirthdateSheet(false); }}>
+        <BottomSheet.Portal>
+          <BottomSheet.Overlay />
+          <BottomSheet.Content>
+            <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
+              Birthdate
+            </BottomSheet.Title>
 
-          <DateTimePicker
-            value={birthdateDate}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            maximumDate={new Date()}
-            minimumDate={new Date(1900, 0, 1)}
-            onChange={(_, selected) => {
-              if (selected) setBirthdateDate(selected);
-            }}
-            style={{ alignSelf: 'center' }}
-          />
+            <DateTimePicker
+              value={birthdateDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              maximumDate={new Date()}
+              minimumDate={new Date(1900, 0, 1)}
+              onValueChange={(_, selected) => {
+                if (selected) setBirthdateDate(selected);
+              }}
+              style={{ alignSelf: 'center', marginTop: 16 }}
+            />
 
-          <Pressable
-            onPress={() => {
-              const y = birthdateDate.getFullYear();
-              const m = String(birthdateDate.getMonth() + 1).padStart(2, '0');
-              const d = String(birthdateDate.getDate()).padStart(2, '0');
-              set({ birthdate: `${y}-${m}-${d}` });
-              setBirthdateSheet(false);
-            }}
-            style={({ pressed }) => ({
-              backgroundColor: pressed ? '#B06A42' : colors.accent,
-              paddingVertical: 16,
-              borderRadius: radii.pill,
-              alignItems: 'center',
-              transform: [{ scale: pressed ? 0.97 : 1 }],
-            })}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: colors.accentInk,
+            <Button
+              className="mt-4 h-13 rounded-full bg-accent"
+              feedbackVariant="scale"
+              onPress={() => {
+                const y = birthdateDate.getFullYear();
+                const m = String(birthdateDate.getMonth() + 1).padStart(2, '0');
+                const d = String(birthdateDate.getDate()).padStart(2, '0');
+                set({ birthdate: `${y}-${m}-${d}` });
+                setBirthdateSheet(false);
               }}
             >
-              Save
-            </Text>
-          </Pressable>
-        </View>
-      </BottomSheetFrame>
+              <Button.Label className="font-bold text-accent-foreground">
+                Save
+              </Button.Label>
+            </Button>
+          </BottomSheet.Content>
+        </BottomSheet.Portal>
+      </BottomSheet>
     </>
   );
 }
