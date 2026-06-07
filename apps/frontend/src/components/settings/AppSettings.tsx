@@ -33,7 +33,7 @@ export function AppSettings() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { profile, set, resetProfile } = useUserProfile();
+  const { profile, set } = useUserProfile();
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
 
   const handleResetAll = useCallback(() => {

@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { colors, radii } from '../../theme/tokens';
 import { ClayIcon } from '../icons/ClayIcon';

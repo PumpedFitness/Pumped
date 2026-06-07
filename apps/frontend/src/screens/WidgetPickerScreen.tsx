@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,9 @@ import { AppShell } from '../components/AppShell';
 import { Card } from '../components/clay/Card';
 import { Button } from '../components/clay/Button';
 import { ClayIcon } from '../components/icons/ClayIcon';
-import { widgetRegistry, type WidgetComponentProps } from '../components/widgets/registry';
+import { widgetRegistry } from '../components/widgets/registry';
 import { useHomescreenStore } from '../stores/homescreenStore';
-import { colors, typography, radii, spacing, shadows } from '../theme/tokens';
+import { colors, typography } from '../theme/tokens';
 import type { WidgetType } from '../types/widget';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -37,10 +37,7 @@ type WidgetPickerCardProps = {
 function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
   const addWidget = useHomescreenStore(s => s.addWidget);
   const entry = widgetRegistry[type];
-  if (!entry) return null;
-
-  const { meta, component: WidgetComponent } = entry;
-  const spans = meta.allowedSpans;
+  const spans = useMemo(() => entry?.meta.allowedSpans ?? [], [entry]);
   const [selectedSpanIdx, setSelectedSpanIdx] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const selectedSpan = spans[selectedSpanIdx];
@@ -57,6 +54,10 @@ function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
     },
     [spans, selectedSpanIdx],
   );
+
+  if (!entry) return null;
+
+  const { meta, component: WidgetComponent } = entry;
 
   return (
     <Card variant="card" radius="2xl" pad={0} style={{ marginBottom: 16 }}>
@@ -102,8 +103,8 @@ function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
             {spans.length > 1
               ? `${spans.length} sizes available`
               : selectedSpan === 3
-                ? 'Full width'
-                : `${selectedSpan} of 3 columns`}
+              ? 'Full width'
+              : `${selectedSpan} of 3 columns`}
           </Text>
         </View>
       </View>
@@ -147,7 +148,7 @@ function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
               gap: 16,
             }}
           >
-            {spans.map((span, idx) => {
+            {spans.map(span => {
               const w = previewWidth(span);
               return (
                 <View
@@ -160,7 +161,10 @@ function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
                 >
                   <View
                     style={{
-                      width: Math.min(w, SCREEN_WIDTH - 2 * PREVIEW_GUTTER - 48),
+                      width: Math.min(
+                        w,
+                        SCREEN_WIDTH - 2 * PREVIEW_GUTTER - 48,
+                      ),
                       transform: [{ scale: 0.85 }],
                       transformOrigin: 'center top',
                     }}
@@ -180,9 +184,7 @@ function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
                       marginTop: 8,
                     }}
                   >
-                    {span === 3
-                      ? 'Full width'
-                      : `${span} of 3 columns`}
+                    {span === 3 ? 'Full width' : `${span} of 3 columns`}
                   </Text>
                 </View>
               );

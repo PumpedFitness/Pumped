@@ -18,7 +18,7 @@ import {
   bodyWeightEntries,
   bodyFatEntries,
 } from '../../data/local/schema/bodyMetrics';
-import { formatWeight, formatHeight } from '../../utils/units';
+import { formatWeight } from '../../utils/units';
 import { colors, radii, typography } from '../../theme/tokens';
 
 const GENDER_OPTIONS: { value: Gender; label: string }[] = [
@@ -31,8 +31,18 @@ function formatBirthdate(iso: string | null): string {
   if (!iso) return 'Not set';
   const d = new Date(iso + 'T00:00:00');
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
@@ -65,7 +75,9 @@ export function UserSettings() {
   const [genderSheet, setGenderSheet] = useState(false);
   const [birthdateSheet, setBirthdateSheet] = useState(false);
   const [birthdateDate, setBirthdateDate] = useState(
-    profile.birthdate ? new Date(profile.birthdate + 'T00:00:00') : new Date(2000, 0, 1),
+    profile.birthdate
+      ? new Date(profile.birthdate + 'T00:00:00')
+      : new Date(2000, 0, 1),
   );
 
   return (

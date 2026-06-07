@@ -7,16 +7,6 @@ const storage = createMMKV({ id: 'homescreen-storage' });
 
 const LAYOUT_KEY = 'widget_layout';
 
-const VALID_TYPES: Set<string> = new Set<string>([
-  'recovery',
-  'nextWorkout',
-  'streak',
-  'schedule',
-  'time',
-  'weeklyVolume',
-  'chart',
-]);
-
 const DEFAULT_LAYOUT: WidgetPlacement[] = [
   { id: 'default-recovery', type: 'recovery', colSpan: 3 },
   { id: 'default-nextWorkout', type: 'nextWorkout', colSpan: 3 },

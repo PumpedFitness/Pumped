@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Pressable, LayoutChangeEvent } from 'react-native';
+import { View, Text, Pressable, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withTiming,

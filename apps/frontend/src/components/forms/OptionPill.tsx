@@ -1,5 +1,4 @@
-import type { AccessibilityRole } from 'react-native';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, type AccessibilityRole } from 'react-native';
 
 type OptionPillProps = {
   label: string;

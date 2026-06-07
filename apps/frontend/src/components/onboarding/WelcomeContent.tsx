@@ -12,11 +12,15 @@ import { colors, radii } from '../../theme/tokens';
 
 const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
 
-const WELCOME_CARDS: { icon: 'target' | 'bolt' | 'settings'; title: string; body: string }[] = [
+const WELCOME_CARDS: {
+  icon: 'target' | 'bolt' | 'settings';
+  title: string;
+  body: string;
+}[] = [
   {
     icon: 'target',
     title: 'Offline first',
-    body: 'We hate it when you can\'t use an app without internet, so you can use this app anytime.',
+    body: "We hate it when you can't use an app without internet, so you can use this app anytime.",
   },
   {
     icon: 'bolt',
@@ -35,9 +39,15 @@ export function WelcomeContent() {
   const translateY = useSharedValue(16);
 
   useEffect(() => {
-    opacity.value = withDelay(200, withTiming(1, { duration: 500, easing: EASE }));
-    translateY.value = withDelay(200, withTiming(0, { duration: 500, easing: EASE }));
-  }, []);
+    opacity.value = withDelay(
+      200,
+      withTiming(1, { duration: 500, easing: EASE }),
+    );
+    translateY.value = withDelay(
+      200,
+      withTiming(0, { duration: 500, easing: EASE }),
+    );
+  }, [opacity, translateY]);
 
   const contentStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

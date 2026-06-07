@@ -1,9 +1,17 @@
 import { useState, useRef, useCallback } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, Alert, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Pressable,
+  Alert,
+  Platform,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { randomUUID } from 'expo-crypto';
-import { desc } from 'drizzle-orm';
+import { desc, type InferInsertModel } from 'drizzle-orm';
 import type { SQLiteTable, SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ClayIcon } from '../components/icons/ClayIcon';
@@ -36,8 +44,18 @@ type MetricHistoryScreenProps = {
 function formatDate(epoch: number): string {
   const d = new Date(epoch);
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
@@ -97,7 +115,7 @@ export function MetricHistoryScreen({
       id: randomUUID(),
       value: parsed,
       recordedAt: entryDate.getTime(),
-    } as any);
+    } as InferInsertModel<typeof table>);
 
     setInputValue('');
     setAddSheet(false);
@@ -122,7 +140,9 @@ export function MetricHistoryScreen({
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}
+    >
       {/* Header */}
       <View
         style={{
@@ -178,7 +198,9 @@ export function MetricHistoryScreen({
       >
         {/* Latest value */}
         {entries.length > 0 && (
-          <View style={{ alignItems: 'center', marginBottom: 16, marginTop: 8 }}>
+          <View
+            style={{ alignItems: 'center', marginBottom: 16, marginTop: 8 }}
+          >
             <Text
               style={{
                 fontSize: 36,
@@ -189,7 +211,13 @@ export function MetricHistoryScreen({
             >
               {formatValue(entries[0].value)}
             </Text>
-            <Text style={{ fontSize: typography.caption, color: colors.muted, marginTop: 2 }}>
+            <Text
+              style={{
+                fontSize: typography.caption,
+                color: colors.muted,
+                marginTop: 2,
+              }}
+            >
               {formatDate(entries[0].recordedAt)}
             </Text>
           </View>
@@ -225,7 +253,9 @@ export function MetricHistoryScreen({
                   borderTopColor: colors.line,
                 }}
               >
-                <Text style={{ fontSize: 15, fontWeight: '500', color: colors.ink }}>
+                <Text
+                  style={{ fontSize: 15, fontWeight: '500', color: colors.ink }}
+                >
                   {formatDate(entry.recordedAt)}
                 </Text>
                 <Text
@@ -264,7 +294,14 @@ export function MetricHistoryScreen({
         accessibilityLabel="Close add entry"
         onClose={() => setAddSheet(false)}
       >
-        <View style={{ gap: 16, paddingHorizontal: 20, paddingBottom: 32, paddingTop: 12 }}>
+        <View
+          style={{
+            gap: 16,
+            paddingHorizontal: 20,
+            paddingBottom: 32,
+            paddingTop: 12,
+          }}
+        >
           <View
             style={{
               width: 44,
@@ -287,7 +324,9 @@ export function MetricHistoryScreen({
 
           {/* Value input */}
           <View style={{ gap: 6 }}>
-            <Text style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}>
+            <Text
+              style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}
+            >
               Value ({unit})
             </Text>
             <TextInput
@@ -314,7 +353,9 @@ export function MetricHistoryScreen({
 
           {/* Date picker */}
           <View style={{ gap: 6 }}>
-            <Text style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}>
+            <Text
+              style={{ fontSize: 12.5, fontWeight: '600', color: colors.muted }}
+            >
               Date
             </Text>
             <DateTimePicker
@@ -339,7 +380,13 @@ export function MetricHistoryScreen({
               transform: [{ scale: pressed ? 0.97 : 1 }],
             })}
           >
-            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.accentInk }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.accentInk,
+              }}
+            >
               Save
             </Text>
           </Pressable>

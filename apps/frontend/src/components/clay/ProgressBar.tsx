@@ -22,7 +22,7 @@ export function ProgressBar({
   const clamped = Math.max(0, Math.min(100, value));
 
   const fillStyle = useAnimatedStyle(() => ({
-    width: withTiming(`${clamped}%` as any, {
+    width: withTiming(`${clamped}%` as `${number}%`, {
       duration: 400,
       easing: Easing.bezier(0.22, 0.61, 0.36, 1),
     }),

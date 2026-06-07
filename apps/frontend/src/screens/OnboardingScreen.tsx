@@ -16,7 +16,10 @@ import { randomUUID } from 'expo-crypto';
 import { useAuthStore } from '../stores/authStore';
 import { useUserProfile } from '../hooks/useUserProfile';
 import type { Gender, WeightUnit } from '../data/local/schema/userProfile';
-import { bodyWeightEntries, bodyFatEntries } from '../data/local/schema/bodyMetrics';
+import {
+  bodyWeightEntries,
+  bodyFatEntries,
+} from '../data/local/schema/bodyMetrics';
 import { useRepository } from '../data/local/useRepository';
 import { toKg } from '../utils/units';
 import { colors, radii } from '../theme/tokens';
@@ -25,7 +28,10 @@ import { StepDots } from '../components/clay/StepDots';
 import { CTAButton } from '../components/clay/CTAButton';
 import { WelcomeContent } from '../components/onboarding/WelcomeContent';
 import { PreferencesContent } from '../components/onboarding/PreferencesContent';
-import { ProfileContent, type ProfileFields } from '../components/onboarding/ProfileContent';
+import {
+  ProfileContent,
+  type ProfileFields,
+} from '../components/onboarding/ProfileContent';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TOTAL_STEPS = 3;
@@ -52,9 +58,12 @@ export function OnboardingScreen() {
     bodyFat: '',
   });
 
-  const setField = useCallback(<K extends keyof ProfileFields>(key: K, value: string) => {
-    setProfileFields(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const setField = useCallback(
+    <K extends keyof ProfileFields>(key: K, value: string) => {
+      setProfileFields(prev => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
   const finish = useCallback(() => {
     const genderMap: Record<string, Gender> = {
@@ -89,19 +98,35 @@ export function OnboardingScreen() {
       const w = parseFloat(profileFields.weight);
       if (!isNaN(w) && w > 0) {
         const valueKg = toKg(w, weightUnit as WeightUnit);
-        weightRepo.create({ id: randomUUID(), value: valueKg, recordedAt: Date.now() } as any);
+        weightRepo.create({
+          id: randomUUID(),
+          value: valueKg,
+          recordedAt: Date.now(),
+        });
       }
     }
     if (profileFields.bodyFat) {
       const bf = parseFloat(profileFields.bodyFat);
       if (!isNaN(bf) && bf > 0 && bf <= 100) {
-        bodyFatRepo.create({ id: randomUUID(), value: bf, recordedAt: Date.now() } as any);
+        bodyFatRepo.create({
+          id: randomUUID(),
+          value: bf,
+          recordedAt: Date.now(),
+        });
       }
     }
 
     completeOnboarding();
     navigation.replace('Main');
-  }, [completeOnboarding, navigation, setProfile, profileFields, weightUnit, weightRepo, bodyFatRepo]);
+  }, [
+    completeOnboarding,
+    navigation,
+    setProfile,
+    profileFields,
+    weightUnit,
+    weightRepo,
+    bodyFatRepo,
+  ]);
 
   const scrollToStep = useCallback((target: number) => {
     scrollRef.current?.scrollTo({ x: target * SCREEN_WIDTH, animated: true });
@@ -129,7 +154,9 @@ export function OnboardingScreen() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}
+    >
       {/* Top bar: back + skip */}
       <View
         style={{
@@ -166,7 +193,9 @@ export function OnboardingScreen() {
             opacity: pressed ? 0.5 : 1,
           })}
         >
-          <Text style={{ fontSize: 15, fontWeight: '500', color: colors.muted }}>
+          <Text
+            style={{ fontSize: 15, fontWeight: '500', color: colors.muted }}
+          >
             Skip
           </Text>
         </Pressable>
@@ -182,9 +211,14 @@ export function OnboardingScreen() {
         onMomentumScrollEnd={onScrollEnd}
         style={{ flex: 1 }}
       >
-        <View style={{ width: SCREEN_WIDTH }}><WelcomeContent /></View>
         <View style={{ width: SCREEN_WIDTH }}>
-          <PreferencesContent weightUnit={weightUnit} setWeightUnit={setWeightUnit} />
+          <WelcomeContent />
+        </View>
+        <View style={{ width: SCREEN_WIDTH }}>
+          <PreferencesContent
+            weightUnit={weightUnit}
+            setWeightUnit={setWeightUnit}
+          />
         </View>
         <View style={{ width: SCREEN_WIDTH }}>
           <ProfileContent fields={profileFields} setField={setField} />

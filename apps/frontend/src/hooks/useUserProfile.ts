@@ -1,7 +1,10 @@
 import { useCallback } from 'react';
-import { randomUUID } from 'expo-crypto';
 import type { InferInsertModel } from 'drizzle-orm';
-import { userProfile, type Gender, type WeightUnit } from '../data/local/schema/userProfile';
+import {
+  userProfile,
+  type Gender,
+  type WeightUnit,
+} from '../data/local/schema/userProfile';
 import { useRepository } from '../data/local/useRepository';
 
 const PROFILE_ID = 'default';

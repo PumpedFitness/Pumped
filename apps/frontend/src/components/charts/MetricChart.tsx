@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Animated, {
   useSharedValue,
