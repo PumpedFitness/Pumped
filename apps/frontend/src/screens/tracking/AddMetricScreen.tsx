@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimeWheelPicker } from '../../components/forms/DateTimeWheelPicker';
 import { randomUUID } from 'expo-crypto';
 import type { InferInsertModel } from 'drizzle-orm';
 import { ClayIcon } from '../../components/icons/ClayIcon';
@@ -128,60 +129,26 @@ export function AddMetricScreen() {
       {/* Form card */}
       <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
         <Card variant="card" radius="xl" pad={0}>
-          {/* Date row */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingVertical: 14,
-              paddingHorizontal: 16,
-            }}
-          >
-            <Text style={{ fontSize: typography.body, color: colors.muted }}>
-              Date
-            </Text>
-            <DateTimePicker
-              value={entryDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'compact' : 'default'}
-              maximumDate={new Date()}
-              onValueChange={(_, selected) => {
-                if (selected) setEntryDate(selected);
-              }}
-            />
-          </View>
-
-          {/* Divider */}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: colors.line,
-              marginHorizontal: 16,
-            }}
-          />
-
-          {/* Time row */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingVertical: 14,
-              paddingHorizontal: 16,
-            }}
-          >
-            <Text style={{ fontSize: typography.body, color: colors.muted }}>
-              Time
-            </Text>
-            <DateTimePicker
-              value={entryDate}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'compact' : 'default'}
-              onValueChange={(_, selected) => {
-                if (selected) setEntryDate(selected);
-              }}
-            />
+          {/* Date + Time picker */}
+          <View style={{ alignItems: 'center', paddingVertical: 12 }}>
+            {Platform.OS === 'ios' ? (
+              <DateTimePicker
+                value={entryDate}
+                onChange={(_, selected) => {
+                  if (selected) setEntryDate(selected);
+                }}
+                mode="datetime"
+                display="spinner"
+                maximumDate={new Date()}
+                themeVariant="light"
+              />
+            ) : (
+              <DateTimeWheelPicker
+                value={entryDate}
+                onChange={setEntryDate}
+                maximumDate={new Date()}
+              />
+            )}
           </View>
 
           {/* Divider */}

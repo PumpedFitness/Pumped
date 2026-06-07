@@ -1,4 +1,4 @@
-CREATE TABLE `exercise` (
+CREATE TABLE IF NOT EXISTS `exercise` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
@@ -8,12 +8,12 @@ CREATE TABLE `exercise` (
 	`created_at` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `sync_metadata` (
+CREATE TABLE IF NOT EXISTS `sync_metadata` (
 	`key` text PRIMARY KEY NOT NULL,
 	`value` text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `sync_queue` (
+CREATE TABLE IF NOT EXISTS `sync_queue` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`entity` text NOT NULL,
 	`entity_id` text NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE `sync_queue` (
 	`last_error` text
 );
 --> statement-breakpoint
-CREATE TABLE `workout_session_set` (
+CREATE TABLE IF NOT EXISTS `workout_session_set` (
 	`id` text PRIMARY KEY NOT NULL,
 	`workout_session_id` text NOT NULL,
 	`exercise_id` text NOT NULL,
@@ -39,9 +39,9 @@ CREATE TABLE `workout_session_set` (
 	FOREIGN KEY (`workout_session_id`) REFERENCES `workout_session`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `idx_sets_session` ON `workout_session_set` (`workout_session_id`,`set_index`);--> statement-breakpoint
-CREATE INDEX `idx_sets_exercise` ON `workout_session_set` (`exercise_id`,`performed_at`);--> statement-breakpoint
-CREATE TABLE `workout_session` (
+CREATE INDEX IF NOT EXISTS `idx_sets_session` ON `workout_session_set` (`workout_session_id`,`set_index`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `idx_sets_exercise` ON `workout_session_set` (`exercise_id`,`performed_at`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `workout_session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`workout_template_id` text,
@@ -52,8 +52,8 @@ CREATE TABLE `workout_session` (
 	FOREIGN KEY (`workout_template_id`) REFERENCES `workout_template`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
-CREATE INDEX `idx_sessions_user_date` ON `workout_session` (`user_id`,`started_at`);--> statement-breakpoint
-CREATE TABLE `workout_template_exercise` (
+CREATE INDEX IF NOT EXISTS `idx_sessions_user_date` ON `workout_session` (`user_id`,`started_at`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `workout_template_exercise` (
 	`id` text PRIMARY KEY NOT NULL,
 	`workout_template_id` text NOT NULL,
 	`exercise_id` text NOT NULL,
@@ -68,14 +68,14 @@ CREATE TABLE `workout_template_exercise` (
 	FOREIGN KEY (`workout_template_id`) REFERENCES `workout_template`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `workout_template_schedule_weekday` (
+CREATE TABLE IF NOT EXISTS `workout_template_schedule_weekday` (
 	`workout_template_id` text NOT NULL,
 	`weekday` text NOT NULL,
 	PRIMARY KEY(`workout_template_id`, `weekday`),
 	FOREIGN KEY (`workout_template_id`) REFERENCES `workout_template`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `workout_template` (
+CREATE TABLE IF NOT EXISTS `workout_template` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`name` text NOT NULL,
