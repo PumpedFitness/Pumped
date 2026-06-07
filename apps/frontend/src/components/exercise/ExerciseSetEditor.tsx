@@ -6,7 +6,6 @@ import type { EditableExerciseSet } from '../../types/exercise';
 import { OptionSelectorSheet } from '../forms/OptionSelectorSheet';
 import {
   OptionalSliderSheet,
-  OptionalSliderTrigger,
   type OptionalSliderConfig,
 } from '../forms/OptionalSliderSheet';
 import { ClayIcon } from '../icons/ClayIcon';
@@ -61,6 +60,40 @@ function formatNumber(value: number): string {
   return Number.isInteger(value) ? value.toString() : value.toFixed(1);
 }
 
+type SetValueCellProps = {
+  accessibilityLabel: string;
+  value: string;
+  emptyLabel?: string;
+  align?: 'left' | 'center';
+  onPress: () => void;
+};
+
+function SetValueCell({
+  accessibilityLabel,
+  value,
+  emptyLabel = '-',
+  align = 'center',
+  onPress,
+}: SetValueCellProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${accessibilityLabel}: ${value || emptyLabel}`}
+      className="h-10 flex-1 justify-center rounded-[10px] px-1 active:bg-surface-card"
+      onPress={onPress}
+    >
+      <Text
+        className={`text-[12px] font-bold tabular-nums ${
+          align === 'left' ? 'text-left' : 'text-center'
+        } ${value ? 'text-foreground' : 'text-muted'}`}
+        numberOfLines={1}
+      >
+        {value || emptyLabel}
+      </Text>
+    </Pressable>
+  );
+}
+
 export function ExerciseSetEditor({
   index,
   set,
@@ -99,36 +132,30 @@ export function ExerciseSetEditor({
   };
 
   return (
-    <View className="rounded-[18px] bg-surface-sunk p-2">
-      <View className="flex-row items-center gap-1.5">
+    <>
+      <View className="flex-row items-center gap-1.5 border-t border-border-soft px-1 py-1">
         <Text className="w-6 text-center text-[12px] font-bold tabular-nums text-muted">
           {index + 1}
         </Text>
-        <OptionalSliderTrigger
-          compact
-          label="Type"
+        <SetValueCell
+          accessibilityLabel={`Set ${index + 1} type`}
           value={setTypeLabel}
+          align="left"
           onPress={() => setIsSetTypeSelectorOpen(true)}
         />
-        <OptionalSliderTrigger
-          compact
-          label="Reps"
+        <SetValueCell
+          accessibilityLabel={`Set ${index + 1} target reps`}
           value={set.targetReps}
-          emptyLabel="-"
           onPress={() => setActivePrescription('REPS')}
         />
-        <OptionalSliderTrigger
-          compact
-          label="% 1RM"
+        <SetValueCell
+          accessibilityLabel={`Set ${index + 1} percentage of 1RM`}
           value={set.targetPercentage1Rm}
-          emptyLabel="-"
           onPress={() => setActivePrescription('PERCENTAGE_1RM')}
         />
-        <OptionalSliderTrigger
-          compact
-          label="RPE"
+        <SetValueCell
+          accessibilityLabel={`Set ${index + 1} target RPE`}
           value={set.targetRpe}
-          emptyLabel="-"
           onPress={() => setActivePrescription('RPE')}
         />
         {canRemove && (
@@ -141,6 +168,7 @@ export function ExerciseSetEditor({
             <ClayIcon name="trash" size={15} color={colors.danger} />
           </Pressable>
         )}
+        {!canRemove && <View className="w-8" />}
       </View>
 
       <OptionSelectorSheet
@@ -162,6 +190,6 @@ export function ExerciseSetEditor({
           }
         }}
       />
-    </View>
+    </>
   );
 }

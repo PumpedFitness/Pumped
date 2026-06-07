@@ -95,7 +95,26 @@ export function ExerciseEditorCard({
         </Pressable>
 
         {setsExpanded && (
-          <View className="gap-3 border-t border-border-soft p-3">
+          <View className="border-t border-border-soft px-1 pb-2">
+            <View className="flex-row items-center gap-1.5 px-1 py-2">
+              <Text className="w-6 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+                Set
+              </Text>
+              <Text className="flex-1 text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+                Type
+              </Text>
+              <Text className="flex-1 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+                Reps
+              </Text>
+              <Text className="flex-1 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+                % 1RM
+              </Text>
+              <Text className="flex-1 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+                RPE
+              </Text>
+              <View className="w-8" />
+            </View>
+
             {exercise.sets.map((set, index) => (
               <ExerciseSetEditor
                 key={index}
@@ -109,7 +128,7 @@ export function ExerciseEditorCard({
             ))}
             <Pressable
               accessibilityRole="button"
-              className="min-h-11 flex-row items-center justify-center gap-2 rounded-full bg-accent-soft px-4"
+              className="mx-1 mt-2 min-h-10 flex-row items-center justify-center gap-2 rounded-full bg-accent-soft px-3"
               onPress={onAddSet}
             >
               <ClayIcon name="plus" size={16} color={colors.accent} />
