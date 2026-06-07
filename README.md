@@ -1,71 +1,53 @@
 # Pumped
 
-A fitness app monorepo.
+An offline-first fitness tracking app built with React Native and Expo.
 
-## Structure
+## Tech Stack
+
+- **React Native** 0.83 with **Expo** 55
+- **TypeScript**
+- **SQLite** via expo-sqlite + **Drizzle ORM** for local persistence
+- **Zustand** for state management
+- **React Navigation** 7 (native stack + material top tabs)
+- **Reanimated** 4 for animations
+- **TailwindCSS** + Uniwind for styling
+- **MMKV** for key-value storage
+
+## Project Structure
 
 ```
 apps/
-├── frontend/   # React Native (Expo) app
-└── backend/    # Kotlin/Spring Boot backend (Dumbbell)
+├── frontend/          # React Native app
+│   ├── src/
+│   │   ├── components/    # UI components (Clay design system)
+│   │   ├── data/local/    # SQLite schema, migrations, services
+│   │   ├── navigation/    # Stack + tab navigators
+│   │   ├── screens/       # App screens
+│   │   ├── stores/        # Zustand stores
+│   │   └── theme/         # Design tokens
+│   ├── App.tsx            # Entry point
+│   └── metro.config.js
+└── backend/           # Kotlin/Spring Boot (not currently in use)
 ```
-
-## Workout Data Model
-
-The frontend SQLite model separates planned workouts from performed workouts:
-
-```
-WorkoutTemplate
-  -> WorkoutTemplateExercise (ordered by position)
-       -> WorkoutTemplateSet (ordered by position)
-
-WorkoutSession
-  -> PerformedSet (ordered by exercisePosition, then setPosition)
-```
-
-- `WorkoutTemplate` stores reusable workout metadata, a lifecycle status (`ACTIVE`, `INACTIVE`, or `ARCHIVED`), a
-  calendar color, and an optional recurrence such as every 2 days or selected weekdays every 3 weeks.
-- `WorkoutTemplateExercise` identifies an exercise, its zero-based `position`, optional goal, notes, and explicit sets.
-- `WorkoutTemplateSet` stores its zero-based `position`, configurable type such as `WARMUP` or `NORMAL`, and optional
-  prescriptions for target reps, percentage of 1RM, and target RPE. Any prescription may be left blank.
-- `WorkoutSession` represents one actual workout and may reference its source `workoutTemplateId`.
-- `PerformedSet` stores the set type, actual reps, weight, RPE, and `performedAt`.
-
-`position` is the standard ordering term. Performed sets use `exercisePosition` and `setPosition` because both ordered
-levels must be retained. Exercises retain one flexible `goal` string for general intent, while structured prescriptions
-may be configured independently for each template set. The template editor selects reps, percentage of 1RM, and RPE
-through optional bottom-sheet sliders; clearing a slider leaves that prescription blank.
-
-Frontend workout persistence is exposed through `apps/frontend/src/data/local/services/workoutService.ts`. It provides
-ordered aggregate reads and transactional saves for templates and completed sessions. An active workout lives only in
-`apps/frontend/src/stores/currentWorkoutStore.ts`; finishing it writes the session and all performed sets to SQLite in
-one transaction. Since the local SQLite database represents one user, the service does not perform ownership checks.
-
-The Plan calendar treats completed `WorkoutSession` rows as workout history. Future planned entries are generated from
-active template recurrences, using the template's `createdAt` date as the recurrence anchor. Inactive and archived
-templates remain available in the library but do not generate planned calendar entries. Completed and planned calendar
-entries use the color assigned to their source template.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org) >= 22
-- [Yarn](https://yarnpkg.com) (v1 / classic)
+- [Bun](https://bun.sh)
 - [Xcode](https://developer.apple.com/xcode/) (for iOS)
 - [Android Studio](https://developer.android.com/studio) (for Android)
 - [CocoaPods](https://cocoapods.org) (for iOS)
-- [JDK 21+](https://adoptium.net) (for backend)
-- [Docker](https://www.docker.com) (for backend services)
 
 ## Getting Started
 
 ```bash
-# Install all dependencies
+# Install dependencies
 bun install:all
 
-# iOS setup (first time / after native dependency changes)
+# iOS: install pods (first time or after native dep changes)
 bun run frontend:setup:ios
 
-# Start the Metro bundler
+# Start Metro bundler
 bun run frontend
 
 # Build and run on iOS simulator
@@ -75,130 +57,56 @@ bun run frontend:ios
 bun run frontend:android
 ```
 
-### Running on iOS Simulator
+### iOS Simulator
 
-1. Open Xcode and make sure you have a simulator downloaded (e.g. iPhone 16).
-2. Run `bun run frontend:ios` — this builds the app via Expo and launches it in the simulator.
+1. Open Xcode and ensure you have a simulator installed (e.g. iPhone 16).
+2. Run `bun run frontend:ios`.
 3. If you get pod errors, run `bun run frontend:setup:ios` first.
 
-### Running on Android Emulator
+### Android Emulator
 
-1. Open Android Studio and create an AVD (Android Virtual Device) via **Tools > Device Manager**.
-2. Start the emulator from Android Studio or via `emulator -avd <avd_name>`.
-3. Run `bun run frontend:android` — this builds the app via Expo and installs it on the running emulator.
+1. Create an AVD in Android Studio via **Tools > Device Manager**.
+2. Start the emulator.
+3. Run `bun run frontend:android`.
 4. If you get build errors, run `bun run frontend:setup:android` first.
 
-## Available Scripts
-
-### Frontend
+## Scripts
 
 | Script | Description |
 | --- | --- |
-| `bun run frontend` | Start the Metro bundler |
+| `bun run frontend` | Start Metro bundler |
 | `bun run frontend:ios` | Build and run on iOS simulator |
 | `bun run frontend:android` | Build and run on Android emulator |
-| `bun run frontend:lint` | Lint the frontend code |
+| `bun run frontend:lint` | Lint |
 | `bun run frontend:lint:fix` | Lint and auto-fix |
-| `bun run frontend:typecheck` | Run TypeScript type checking |
-| `bun run frontend:format` | Format code with Prettier |
-| `bun run frontend:format:check` | Check formatting |
-| `bun run frontend:test` | Run frontend tests |
+| `bun run frontend:typecheck` | TypeScript type checking |
+| `bun run frontend:format` | Format with Prettier |
+| `bun run frontend:test` | Run tests |
 | `bun run frontend:setup:ios` | Clean and reinstall iOS pods |
 | `bun run frontend:setup:android` | Clean Android build |
 | `bun run frontend:db:generate` | Generate Drizzle migrations |
-| `bun install:all` | Install all frontend dependencies |
+| `bun install:all` | Install all dependencies |
 
-### Backend
+## Data Model
 
-| Script | Description |
-| --- | --- |
-| `bun run backend` | Run the Spring Boot backend |
-| `bun run backend:build` | Build the backend |
-| `bun run backend:test` | Run backend tests |
-| `bun run backend:restart` | Kill port 8080 and restart backend |
-| `bun run services:up` | Start MariaDB & Redis |
-| `bun run services:down` | Stop MariaDB & Redis |
-| `bun run services:logs` | Tail service logs |
-
-## Deployment
-
-### Overview
-
-The backend is deployed to a VPS over SSH using a blue/green strategy for zero downtime. The frontend is deployed
-separately (app stores / OTA).
-
-### Infrastructure
-
-All backend services run as Docker containers on a single VPS connected via a shared `dumbbell-net` bridge network:
+All data is stored locally in SQLite. The schema separates planned workouts from performed workouts:
 
 ```
-        [ nginx :80 ]
-              │
-     ┌────────▼────────┐
-     │  upstream.conf  │  ← swapped on each deploy
-     └────────┬────────┘
-              │
-    ┌─────────┴──────────┐
-    │                    │
-[blue:8080]        [green:8080]
-  (active)           (idle)
+Exercise
 
-[mariadb-dumbbell:3306]   [redis-dumbbell:6379]
+WorkoutTemplate
+  └─ WorkoutTemplateExercise  (ordered by position)
+       └─ WorkoutTemplateSet  (ordered by position)
+
+WorkoutSession
+  └─ PerformedSet  (ordered by exercisePosition, setPosition)
 ```
 
-### One-time Bootstrap
+- **Exercise** — name, category, equipment, primary/secondary muscle groups.
+- **WorkoutTemplate** — reusable workout with optional recurrence (every N days or selected weekdays).
+- **WorkoutTemplateExercise** — exercise in a template with position, goal, and notes.
+- **WorkoutTemplateSet** — set within an exercise, typed as `WARMUP`, `NORMAL`, `BACKOFF`, `DROP`, or `AMRAP`.
+- **WorkoutSession** — a completed workout, optionally linked to its source template.
+- **PerformedSet** — actual reps, weight, RPE, and timestamp.
 
-Run once when provisioning a new server. Requires Docker to already be installed on the VPS.
-
-1. Add the following secrets to the GitHub repository:
-
-| Secret | Description |
-| --- | --- |
-| `SSH_HOST` | Server IP or hostname |
-| `SSH_USER` | SSH user (e.g. `ubuntu`) |
-| `SSH_PRIVATE_KEY` | Private key for SSH auth |
-| `DB_ROOT_PASSWORD` | MariaDB root password |
-| `DB_USER` | MariaDB application user |
-| `DB_PASSWORD` | MariaDB application password |
-| `REDIS_PASSWORD` | Redis password |
-| `JWT_SECRET` | JWT signing secret (min 256-bit random string) |
-
-2. Go to **Actions > CI Backend > Run workflow**, check the **Bootstrap** checkbox and run.
-
-This will:
-
-- Create the `dumbbell-net` Docker network on the server
-- Start MariaDB and Redis via `docker-compose.yml`
-- Wait for both services to pass their health checks
-
-### Deploying the Backend
-
-Every push to `main` that touches `apps/backend/**` automatically:
-
-1. Runs `gradlew build` (compile + test)
-2. Builds a Docker image via JIB and pushes it to GHCR (`ghcr.io/<owner>/dumbbell-backend`)
-3. SSHes into the server and performs a blue/green deploy:
-   - Pulls the new image
-   - Starts the idle slot (blue or green)
-   - Polls the Spring Boot `/actuator/health` endpoint until healthy
-   - Rewrites `nginx/upstream.conf` and reloads nginx — zero downtime traffic switch
-   - Stops the previously active slot
-
-If the new slot fails its health check the deploy aborts and the original slot stays live.
-
-### Local Backend Development
-
-```bash
-# Copy and fill in your local credentials
-cp apps/backend/.env.example apps/backend/.env
-
-# Start MariaDB and Redis
-bun run services:up
-
-# Run the backend (uses application.properties by default)
-bun run backend
-```
-
-The `application.properties` file is used for local development with hardcoded defaults. On the server,
-`SPRING_PROFILES_ACTIVE=production` activates `application-production.yml` which reads all credentials from environment
-variables injected by the deploy action.
+Active workouts live in `src/stores/currentWorkoutStore.ts`. Finishing a workout writes the session and all sets to SQLite in a single transaction via `src/data/local/services/workoutService.ts`.
