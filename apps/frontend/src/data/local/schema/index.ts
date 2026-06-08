@@ -10,6 +10,8 @@ import type { SQLiteTable } from 'drizzle-orm/sqlite-core';
 export type TypeOfSchema<T extends SQLiteTable> = InferSelectModel<T>;
 
 export { exercises } from './exercise';
+export { exerciseTypes } from './exerciseType';
+export { muscleGroups } from './muscleGroup';
 export {
   workoutTemplates,
   workoutTemplateExercises,

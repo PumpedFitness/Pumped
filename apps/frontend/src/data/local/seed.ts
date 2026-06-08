@@ -2,6 +2,8 @@ import { like } from 'drizzle-orm';
 import type { db } from './database';
 import {
   exercises,
+  exerciseTypes,
+  muscleGroups,
   performedSets,
   workoutSessions,
   workoutTemplateExercises,
@@ -13,6 +15,27 @@ import {
 type LocalDatabase = typeof db;
 
 const LOCAL_USER_ID = 'local';
+
+const MUSCLE_GROUP_IDS = {
+  chest: 'default-mg-chest',
+  back: 'default-mg-back',
+  shoulders: 'default-mg-shoulders',
+  biceps: 'default-mg-biceps',
+  triceps: 'default-mg-triceps',
+  abs: 'default-mg-abs',
+  quads: 'default-mg-quads',
+  hamstrings: 'default-mg-hamstrings',
+  glutes: 'default-mg-glutes',
+  calves: 'default-mg-calves',
+  forearms: 'default-mg-forearms',
+  traps: 'default-mg-traps',
+} as const;
+
+const EXERCISE_TYPE_IDS = {
+  machine: 'default-et-machine',
+  band: 'default-et-band',
+  bodyweight: 'default-et-bodyweight',
+} as const;
 
 const EXERCISE_IDS = {
   benchPress: 'sample-exercise-bench-press',
@@ -35,6 +58,38 @@ export function seedDevelopmentData(database: LocalDatabase): void {
   const rowTemplateExerciseId = sampleId('template-exercise-row');
   const completedSessionId = sampleId('session-completed-push');
 
+  // Seed exercise types
+  database
+    .insert(exerciseTypes)
+    .values([
+      { id: EXERCISE_TYPE_IDS.machine, name: 'Machine', createdAt: now },
+      { id: EXERCISE_TYPE_IDS.band, name: 'Band', createdAt: now },
+      { id: EXERCISE_TYPE_IDS.bodyweight, name: 'Bodyweight', createdAt: now },
+    ])
+    .onConflictDoNothing()
+    .run();
+
+  // Seed muscle groups
+  database
+    .insert(muscleGroups)
+    .values([
+      { id: MUSCLE_GROUP_IDS.chest, name: 'Chest', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.back, name: 'Back', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.shoulders, name: 'Shoulders', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.biceps, name: 'Biceps', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.triceps, name: 'Triceps', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.abs, name: 'Abs', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.quads, name: 'Quads', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.hamstrings, name: 'Hamstrings', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.glutes, name: 'Glutes', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.calves, name: 'Calves', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.forearms, name: 'Forearms', createdAt: now },
+      { id: MUSCLE_GROUP_IDS.traps, name: 'Traps', createdAt: now },
+    ])
+    .onConflictDoNothing()
+    .run();
+
+  // Seed exercises
   database
     .insert(exercises)
     .values([
@@ -42,36 +97,46 @@ export function seedDevelopmentData(database: LocalDatabase): void {
         id: EXERCISE_IDS.benchPress,
         name: 'Barbell Bench Press',
         description: 'Horizontal barbell press performed on a flat bench.',
-        exerciseCategory: 'STRENGTH',
-        muscleGroups: ['CHEST', 'SHOULDERS', 'ARMS'],
-        equipment: ['BARBELL'],
+        typeId: null,
+        muscleGroups: [
+          MUSCLE_GROUP_IDS.chest,
+          MUSCLE_GROUP_IDS.shoulders,
+          MUSCLE_GROUP_IDS.triceps,
+        ],
         createdAt: now,
       },
       {
         id: EXERCISE_IDS.overheadPress,
         name: 'Overhead Press',
         description: 'Standing barbell press from shoulder height.',
-        exerciseCategory: 'STRENGTH',
-        muscleGroups: ['SHOULDERS', 'ARMS'],
-        equipment: ['BARBELL'],
+        typeId: null,
+        muscleGroups: [
+          MUSCLE_GROUP_IDS.shoulders,
+          MUSCLE_GROUP_IDS.triceps,
+        ],
         createdAt: now,
       },
       {
         id: EXERCISE_IDS.barbellRow,
         name: 'Barbell Row',
         description: 'Bent-over horizontal pull with a barbell.',
-        exerciseCategory: 'STRENGTH',
-        muscleGroups: ['BACK', 'ARMS'],
-        equipment: ['BARBELL'],
+        typeId: null,
+        muscleGroups: [
+          MUSCLE_GROUP_IDS.back,
+          MUSCLE_GROUP_IDS.biceps,
+        ],
         createdAt: now,
       },
       {
         id: EXERCISE_IDS.backSquat,
         name: 'Barbell Back Squat',
         description: 'Barbell squat with the bar supported across the back.',
-        exerciseCategory: 'STRENGTH',
-        muscleGroups: ['LEGS', 'CORE'],
-        equipment: ['BARBELL'],
+        typeId: null,
+        muscleGroups: [
+          MUSCLE_GROUP_IDS.quads,
+          MUSCLE_GROUP_IDS.glutes,
+          MUSCLE_GROUP_IDS.hamstrings,
+        ],
         createdAt: now,
       },
     ])

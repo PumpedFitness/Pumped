@@ -1,17 +1,14 @@
-import type {
-  ExerciseCategory,
-  ExerciseEquipment,
-  MuscleGroup,
-  WorkoutSetType,
-} from '../data/local/enums';
+import type { WorkoutSetType } from '../data/local/enums';
 
 export type ExerciseOption = {
   id: string;
   name: string;
   description: string | null;
-  exerciseCategory: ExerciseCategory;
-  muscleGroups: MuscleGroup[];
-  equipment: ExerciseEquipment[];
+  typeId: string | null;
+  typeName: string | null;
+  picture: string | null;
+  muscleGroupIds: string[];
+  muscleGroupNames: string[];
 };
 
 export type ExerciseSelectionResult = {

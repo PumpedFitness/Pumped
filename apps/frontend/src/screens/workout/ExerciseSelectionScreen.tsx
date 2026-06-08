@@ -1,4 +1,5 @@
-import { CommonActions } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppView } from '../../components/AppView';
 import { ExerciseSelectionList } from '../../components/exercise/ExerciseSelectionList';
@@ -14,6 +15,9 @@ export function ExerciseSelectionScreen({
   navigation,
   route,
 }: ExerciseSelectionScreenProps) {
+  const [, setFocusCount] = useState(0);
+  useFocusEffect(useCallback(() => { setFocusCount(c => c + 1); }, []));
+
   const exerciseOptions = useExerciseOptions();
 
   return (
@@ -34,6 +38,7 @@ export function ExerciseSelectionScreen({
           });
           navigation.goBack();
         }}
+        onCreateExercise={() => navigation.navigate('CreateExercise')}
       />
     </AppView>
   );

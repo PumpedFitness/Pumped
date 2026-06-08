@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { WidgetPickerScreen } from '../screens/home/WidgetPickerScreen';
+import { CreateExerciseScreen } from '../screens/workout/CreateExerciseScreen';
 import { ExerciseSelectionScreen } from '../screens/workout/ExerciseSelectionScreen';
 import { WorkoutPlaceholderScreen } from '../screens/workout/WorkoutPlaceholderScreen';
 import { WorkoutTemplateEditorScreen } from '../screens/workout/WorkoutTemplateEditorScreen';
@@ -29,6 +30,7 @@ export type RootStackParamList = {
     selectedExerciseIds: string[];
     returnRouteKey: string;
   };
+  CreateExercise: undefined;
   WorkoutPlaceholder: undefined;
 };
 
@@ -92,6 +94,11 @@ export function AppNavigator() {
           name="ExerciseSelection"
           component={ExerciseSelectionScreen}
           options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="CreateExercise"
+          component={CreateExerciseScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
         />
         <Stack.Screen
           name="WorkoutPlaceholder"

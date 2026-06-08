@@ -37,6 +37,8 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (56.0.5):
     - ExpoModulesCore
+  - ExpoImagePicker (56.0.16):
+    - ExpoModulesCore
   - ExpoKeepAwake (56.0.3):
     - ExpoModulesCore
   - ExpoLogBox (56.0.12):
@@ -2033,28 +2035,6 @@ PODS:
     - React-utils (= 0.85.3)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.85.3)
-  - RNDateTimePicker (9.1.0):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
   - RNGestureHandler (2.31.2):
     - hermes-engine
     - RCTRequired
@@ -2325,6 +2305,7 @@ DEPENDENCIES:
   - "ExpoDomWebView (from `../node_modules/@expo/dom-webview/ios`)"
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
+  - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - "ExpoLogBox (from `../node_modules/@expo/log-box`)"
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
@@ -2412,7 +2393,6 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
-  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2440,6 +2420,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
     :path: "../node_modules/expo-font/ios"
+  ExpoImagePicker:
+    :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoLogBox:
@@ -2613,8 +2595,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
-  RNDateTimePicker:
-    :path: "../node_modules/@react-native-community/datetimepicker"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -2636,6 +2616,7 @@ SPEC CHECKSUMS:
   ExpoDomWebView: 27205be8754f9992913b8a9a08e65019f2207075
   ExpoFileSystem: d730a1cb33f2c91dec01561f0d710054fda32ae9
   ExpoFont: 6fe496f2be617ed4367f159f215dcc4ba27d37d6
+  ExpoImagePicker: 7682e7eab7b4b7d27e32614e0f47c46e4f69c94c
   ExpoKeepAwake: 359c47a1d9ccc3a3c519bca6e39562cce230c5bb
   ExpoLogBox: 7aa03244fe5eeced5129e4ec7ad5bd9a3994378e
   ExpoModulesCore: 3c76b58994a4b749d9a8353663d563f1ea18d5e9
@@ -2723,7 +2704,6 @@ SPEC CHECKSUMS:
   ReactCodegen: c8f81e6c6f762dcf442a6203a1fb58f7dafc8014
   ReactCommon: 7dfc3250793bf36cf221096ff59e1179e13eef7f
   ReactNativeDependencies: 9b8a48f0106a4aca5ac7fcb516a2172c28e22fb8
-  RNDateTimePicker: 7b2738f1e595f83c14580a11c476872755c5befc
   RNGestureHandler: 2ff61eac036eaf89f6818bf4ed9c39771a17d134
   RNReanimated: f735b1747a7a93bda7ca102c6d37a3cf54b6d5e8
   RNScreens: 991cc417cd396602a6cf59a42139e5a9d91462a9
@@ -2734,4 +2714,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: e271f1a2172d5e58c86c279492d85f0bf7ea0d18
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

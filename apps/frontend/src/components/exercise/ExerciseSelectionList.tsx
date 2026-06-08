@@ -10,20 +10,15 @@ type ExerciseSelectionListProps = {
   initialSelectedExerciseIds: string[];
   onCancel: () => void;
   onDone: (exerciseIds: string[]) => void;
+  onCreateExercise: () => void;
 };
-
-function formatLabel(value: string): string {
-  return value
-    .toLocaleLowerCase()
-    .replaceAll('_', ' ')
-    .replace(/(^|\s)\S/g, character => character.toLocaleUpperCase());
-}
 
 export function ExerciseSelectionList({
   exercises,
   initialSelectedExerciseIds,
   onCancel,
   onDone,
+  onCreateExercise,
 }: ExerciseSelectionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState(initialSelectedExerciseIds);
@@ -37,9 +32,8 @@ export function ExerciseSelectionList({
       [
         exercise.name,
         exercise.description ?? '',
-        exercise.exerciseCategory,
-        ...exercise.muscleGroups,
-        ...exercise.equipment,
+        exercise.typeName ?? '',
+        ...exercise.muscleGroupNames,
       ]
         .join(' ')
         .toLocaleLowerCase()
@@ -76,16 +70,27 @@ export function ExerciseSelectionList({
       </View>
 
       <View className="gap-4 px-5 pb-3 pt-5">
-        <View>
-          <Text className="t-display">Exercise library</Text>
-          <Text className="t-caption mt-1">{selectedIds.length} selected</Text>
+        <View className="flex-row items-end justify-between">
+          <View>
+            <Text className="t-display">Exercise library</Text>
+            <Text className="t-caption mt-1">
+              {selectedIds.length} selected
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            className="h-10 w-10 items-center justify-center rounded-full bg-accent"
+            onPress={onCreateExercise}
+          >
+            <ClayIcon name="plus" size={20} color={colors.cream} />
+          </Pressable>
         </View>
         <View className="relative">
           <Input
             autoFocus
             accessibilityLabel="Search exercises"
             className="h-[54px] rounded-full border-border-hairline bg-surface-card pl-12 pr-4 text-foreground"
-            placeholder="Search name, muscle, or equipment"
+            placeholder="Search name, muscle, or type"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -107,9 +112,11 @@ export function ExerciseSelectionList({
         {filteredExercises.map(exercise => {
           const selected = selectedIds.includes(exercise.id);
           const metadata = [
-            ...exercise.muscleGroups.map(formatLabel),
-            ...exercise.equipment.map(formatLabel),
-          ].join(' · ');
+            ...exercise.muscleGroupNames,
+            exercise.typeName,
+          ]
+            .filter(Boolean)
+            .join(' · ');
 
           return (
             <Pressable
@@ -137,9 +144,11 @@ export function ExerciseSelectionList({
               </View>
               <View className="flex-1">
                 <Text className="t-heading">{exercise.name}</Text>
-                <Text className="t-caption mt-1" numberOfLines={2}>
-                  {metadata || formatLabel(exercise.exerciseCategory)}
-                </Text>
+                {metadata ? (
+                  <Text className="t-caption mt-1" numberOfLines={2}>
+                    {metadata}
+                  </Text>
+                ) : null}
               </View>
             </Pressable>
           );
@@ -150,8 +159,18 @@ export function ExerciseSelectionList({
             <ClayIcon name="search" size={24} color={colors.muted} />
             <Text className="t-heading">No exercises found</Text>
             <Text className="t-caption text-center">
-              Try another name, muscle group, or equipment type.
+              Try another search, or create a new exercise.
             </Text>
+            <Pressable
+              accessibilityRole="button"
+              className="mt-2 h-11 flex-row items-center gap-2 rounded-full bg-accent px-5"
+              onPress={onCreateExercise}
+            >
+              <ClayIcon name="plus" size={16} color={colors.cream} />
+              <Text className="t-label font-bold text-accent-foreground">
+                Create Exercise
+              </Text>
+            </Pressable>
           </View>
         )}
       </ScrollView>
