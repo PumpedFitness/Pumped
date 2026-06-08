@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Animated, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Input } from 'heroui-native';
-import { Swipeable } from 'react-native-gesture-handler';
 import type { WorkoutSetType } from '../../data/local/enums';
-import { colors, radii } from '../../theme/tokens';
+import { colors } from '../../theme/tokens';
 import type {
   EditableExercise,
   EditableExerciseSet,
 } from '../../types/exercise';
+import { SwipeToDelete } from '../clay/SwipeToDelete';
 import { ClayIcon } from '../icons/ClayIcon';
 import { ExerciseSetEditor } from './ExerciseSetEditor';
 
@@ -42,44 +42,8 @@ export function ExerciseEditorCard({
 }: ExerciseEditorCardProps) {
   const [setsExpanded, setSetsExpanded] = useState(false);
 
-  const renderRightActions = (
-    _progress: Animated.AnimatedInterpolation<number>,
-    dragX: Animated.AnimatedInterpolation<number>,
-  ) => {
-    const opacity = dragX.interpolate({
-      inputRange: [-80, -40, 0],
-      outputRange: [1, 0.5, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <Pressable
-        onPress={onRemove}
-        style={{
-          width: 80,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: colors.danger,
-          borderRadius: 22,
-          marginLeft: -22,
-          paddingLeft: 22,
-        }}
-      >
-        <Animated.View style={{ opacity }}>
-          <ClayIcon name="trash" size={22} color="#fff" />
-        </Animated.View>
-      </Pressable>
-    );
-  };
-
   return (
-    <Swipeable
-      renderRightActions={renderRightActions}
-      rightThreshold={80}
-      overshootRight={false}
-      onSwipeableWillOpen={onRemove}
-      friction={2}
-    >
+    <SwipeToDelete onDelete={onRemove} borderRadius={22}>
       <View className="gap-4 rounded-[22px] border border-border-hairline bg-surface-card p-4">
         <View className="flex-row items-start gap-3">
           <View className="h-10 w-10 items-center justify-center rounded-[13px] bg-accent-soft">
@@ -168,6 +132,6 @@ export function ExerciseEditorCard({
           )}
         </View>
       </View>
-    </Swipeable>
+    </SwipeToDelete>
   );
 }

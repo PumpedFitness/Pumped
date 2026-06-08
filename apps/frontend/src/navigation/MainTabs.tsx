@@ -16,11 +16,13 @@ import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
+import { ExerciseLibraryTabScreen } from '../screens/workout/ExerciseLibraryTabScreen';
 import { PlanScreen } from '../screens/plan/PlanScreen';
 
 export type MainTabParamList = {
   Home: undefined;
   Plan: undefined;
+  Library: undefined;
   Progress: undefined;
   You: undefined;
 };
@@ -56,6 +58,7 @@ const TAB_CONFIG: {
 }[] = [
   { name: 'Home', icon: 'home', label: 'Home' },
   { name: 'Plan', icon: 'calendar', label: 'Plan' },
+  { name: 'Library', icon: 'dumbbell', label: 'Library' },
   { name: 'Progress', icon: 'pulse', label: 'Progress' },
   { name: 'You', icon: 'settings', label: 'You' },
 ];
@@ -225,6 +228,7 @@ export function MainTabs() {
       >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Plan" component={PlanScreen} />
+        <Tab.Screen name="Library" component={ExerciseLibraryTabScreen} />
         <Tab.Screen name="Progress" component={ProgressPlaceholder} />
         <Tab.Screen name="You" component={ProfileScreen} />
       </Tab.Navigator>

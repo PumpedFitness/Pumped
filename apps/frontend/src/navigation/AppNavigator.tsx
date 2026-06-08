@@ -4,6 +4,8 @@ import { MainTabs } from './MainTabs';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { WidgetPickerScreen } from '../screens/home/WidgetPickerScreen';
 import { CreateExerciseScreen } from '../screens/workout/CreateExerciseScreen';
+import { EditExerciseScreen } from '../screens/workout/EditExerciseScreen';
+import { ExerciseLibraryScreen } from '../screens/workout/ExerciseLibraryScreen';
 import { ExerciseSelectionScreen } from '../screens/workout/ExerciseSelectionScreen';
 import { WorkoutPlaceholderScreen } from '../screens/workout/WorkoutPlaceholderScreen';
 import { WorkoutTemplateEditorScreen } from '../screens/workout/WorkoutTemplateEditorScreen';
@@ -31,6 +33,8 @@ export type RootStackParamList = {
     returnRouteKey: string;
   };
   CreateExercise: undefined;
+  EditExercise: { exerciseId: string };
+  ExerciseLibrary: undefined;
   WorkoutPlaceholder: undefined;
 };
 
@@ -99,6 +103,16 @@ export function AppNavigator() {
           name="CreateExercise"
           component={CreateExerciseScreen}
           options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="EditExercise"
+          component={EditExerciseScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="ExerciseLibrary"
+          component={ExerciseLibraryScreen}
+          options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen
           name="WorkoutPlaceholder"
