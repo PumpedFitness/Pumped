@@ -1,5 +1,5 @@
-import type { WorkoutSetType } from '../../data/local/enums';
-import type { EditableExerciseSet } from '../../types/exercise';
+import type { WorkoutSetType } from '../../../data/local/enums';
+import type { EditableExerciseSet } from '../../../types/exercise';
 
 export const EXERCISE_SET_TYPE_OPTIONS: {
   value: WorkoutSetType;

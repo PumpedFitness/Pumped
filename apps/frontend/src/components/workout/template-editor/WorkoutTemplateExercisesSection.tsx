@@ -4,7 +4,7 @@ import { ExerciseEditorCard } from '../../exercise/ExerciseEditorCard';
 import {
   EXERCISE_SET_TYPE_OPTIONS,
   formatExerciseSetSummary,
-} from '../../exercise/exerciseSetPresentation';
+} from '../../exercise/set-table';
 import { FormSection } from '../../forms/FormSection';
 import { ClayIcon } from '../../icons/ClayIcon';
 import {

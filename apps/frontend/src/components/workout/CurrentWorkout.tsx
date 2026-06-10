@@ -11,8 +11,10 @@ import type {
 import { colors } from '../../theme/tokens';
 import type { ExerciseSelectionResult } from '../../types/exercise';
 import { ExerciseCard } from '../exercise/ExerciseCard';
-import { ExerciseSetTable } from '../exercise/ExerciseSetTable';
-import { EXERCISE_SET_TYPE_OPTIONS } from '../exercise/exerciseSetPresentation';
+import {
+  EXERCISE_SET_TYPE_OPTIONS,
+  ExerciseSetTable,
+} from '../exercise/set-table';
 import { ClayIcon } from '../icons/ClayIcon';
 
 type CurrentWorkoutProps = {

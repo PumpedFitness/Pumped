@@ -1,10 +1,10 @@
-import type { WorkoutSetType } from '../../data/local/enums';
+import type { WorkoutSetType } from '../../../data/local/enums';
 import type {
   CurrentWorkoutSet,
   UpdateCurrentWorkoutSetInput,
-} from '../../stores/currentWorkoutModel';
-import type { EditableExerciseSet } from '../../types/exercise';
-import type { OptionalSliderConfig } from '../forms/OptionalSliderSheet';
+} from '../../../stores/currentWorkoutModel';
+import type { EditableExerciseSet } from '../../../types/exercise';
+import type { OptionalSliderConfig } from '../../forms/OptionalSliderSheet';
 
 export type SetTypeOption = {
   value: WorkoutSetType;

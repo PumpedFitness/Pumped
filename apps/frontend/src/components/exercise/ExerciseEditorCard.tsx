@@ -6,7 +6,7 @@ import type {
   EditableExerciseSet,
 } from '../../types/exercise';
 import { ExerciseCard } from './ExerciseCard';
-import { CollapsibleExerciseSetTable } from './ExerciseSetTable';
+import { CollapsibleExerciseSetTable } from './set-table';
 
 type ExerciseEditorCardProps = {
   exercise: EditableExercise;
