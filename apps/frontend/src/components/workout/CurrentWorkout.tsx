@@ -350,9 +350,7 @@ export function CurrentWorkout({
 
       <CurrentWorkoutFooter
         canFinish={canFinish}
-        shouldPromptForTemplate={Boolean(
-          currentWorkout.workoutTemplateId && structureChanged,
-        )}
+        shouldPromptForTemplate={structureChanged}
         navigation={navigation}
         finishWorkout={finishWorkout}
         discardWorkout={discardWorkout}

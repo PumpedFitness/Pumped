@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import {
   hasWorkoutStructureChanged,
   isCurrentWorkoutComplete,
-  type StartCurrentWorkoutInput,
 } from '../stores/currentWorkoutModel';
 import { useCurrentWorkoutStore } from '../stores/currentWorkoutStore';
 import { useExerciseOptions } from './useExerciseOptions';
@@ -20,7 +19,6 @@ export function useCurrentWorkout() {
     state => state.updateExercises,
   );
   const removeExercise = useCurrentWorkoutStore(state => state.removeExercise);
-  const updateWorkout = useCurrentWorkoutStore(state => state.updateWorkout);
   const exerciseOptions = useExerciseOptions();
   const canFinish = useMemo(
     () => (currentWorkout ? isCurrentWorkoutComplete(currentWorkout) : false),
@@ -31,18 +29,10 @@ export function useCurrentWorkout() {
     [currentWorkout],
   );
 
-  const startTemplateWorkout = (templateId: string) =>
-    startWorkout({ workoutTemplateId: templateId });
-
-  const startEmptyWorkout = (
-    input?: Omit<StartCurrentWorkoutInput, 'workoutTemplateId'>,
-  ) => startWorkout(input);
-
   return {
     currentWorkout,
     exerciseOptions,
-    startTemplateWorkout,
-    startEmptyWorkout,
+    startTemplateWorkout: startWorkout,
     discardWorkout,
     finishWorkout,
     updateSet,
@@ -51,7 +41,6 @@ export function useCurrentWorkout() {
     removeSet,
     updateExercises,
     removeExercise,
-    updateWorkout,
     canFinish,
     structureChanged,
   };

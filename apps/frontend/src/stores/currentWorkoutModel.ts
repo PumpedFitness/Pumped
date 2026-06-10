@@ -9,9 +9,6 @@ export type CurrentWorkoutSet = {
   sourceTemplateSetId: string | null;
   position: number;
   setType: WorkoutSetType;
-  targetReps: number | null;
-  targetPercentage1Rm: number | null;
-  targetRpe: number | null;
   reps: number | null;
   weight: number | null;
   rpe: number | null;
@@ -31,36 +28,22 @@ export type CurrentWorkoutExercise = {
 
 export type CurrentWorkout = {
   id: string;
-  workoutTemplateId: string | null;
+  workoutTemplateId: string;
   name: string;
   startedAt: number;
-  notes: string | null;
   exercises: CurrentWorkoutExercise[];
-};
-
-export type StartCurrentWorkoutInput = {
-  workoutTemplateId?: string | null;
-  name?: string;
-  notes?: string | null;
-  startedAt?: number;
 };
 
 export type UpdateCurrentWorkoutSetInput = Partial<
   Pick<CurrentWorkoutSet, 'weight' | 'reps' | 'rpe' | 'setType'>
 >;
 
-export function createCurrentWorkoutSet(
-  position: number,
-  setType: WorkoutSetType = 'NORMAL',
-): CurrentWorkoutSet {
+export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
   return {
     id: randomUUID(),
     sourceTemplateSetId: null,
     position,
-    setType,
-    targetReps: null,
-    targetPercentage1Rm: null,
-    targetRpe: null,
+    setType: 'NORMAL',
     reps: null,
     weight: null,
     rpe: null,
@@ -89,33 +72,29 @@ export function createCurrentWorkoutExercise(
 }
 
 export function createTemplateSnapshot(
-  template: WorkoutTemplate | null,
+  template: WorkoutTemplate,
 ): CurrentWorkoutExercise[] {
-  return uniqueBy(
-    template?.exercises ?? [],
-    exercise => exercise.exerciseId,
-  ).map(exercise => ({
-    id: randomUUID(),
-    sourceTemplateExerciseId: exercise.id,
-    exerciseId: exercise.exerciseId,
-    position: exercise.position,
-    goal: exercise.goal,
-    notes: exercise.notes,
-    sets: exercise.sets.map(set => ({
+  return uniqueBy(template.exercises, exercise => exercise.exerciseId).map(
+    exercise => ({
       id: randomUUID(),
-      sourceTemplateSetId: set.id,
-      position: set.position,
-      setType: set.setType,
-      targetReps: set.targetReps,
-      targetPercentage1Rm: set.targetPercentage1Rm,
-      targetRpe: set.targetRpe,
-      reps: set.targetReps,
-      weight: null,
-      rpe: null,
-      isDone: false,
-      performedAt: null,
-    })),
-  }));
+      sourceTemplateExerciseId: exercise.id,
+      exerciseId: exercise.exerciseId,
+      position: exercise.position,
+      goal: exercise.goal,
+      notes: exercise.notes,
+      sets: exercise.sets.map(set => ({
+        id: randomUUID(),
+        sourceTemplateSetId: set.id,
+        position: set.position,
+        setType: set.setType,
+        reps: set.targetReps,
+        weight: null,
+        rpe: null,
+        isDone: false,
+        performedAt: null,
+      })),
+    }),
+  );
 }
 
 export function normalizeCurrentWorkoutExercises(
@@ -156,9 +135,6 @@ export function updateCurrentWorkoutExercise(
 export function syncCurrentWorkoutTemplateStructure(
   workout: CurrentWorkout,
 ): void {
-  if (!workout.workoutTemplateId) {
-    return;
-  }
   const template = workoutService.getWorkoutTemplate(workout.workoutTemplateId);
   if (!template) {
     throw new Error('Workout template not found');
@@ -195,9 +171,6 @@ export function syncCurrentWorkoutTemplateStructure(
 }
 
 export function hasWorkoutStructureChanged(workout: CurrentWorkout): boolean {
-  if (!workout.workoutTemplateId) {
-    return false;
-  }
   const template = workoutService.getWorkoutTemplate(workout.workoutTemplateId);
   if (!template || template.exercises.length !== workout.exercises.length) {
     return true;
