@@ -1,60 +1,31 @@
-import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '../../theme/tokens';
 import { ClayIcon } from '../icons/ClayIcon';
+import {
+  buildTemplateSetTableRows,
+  buildWorkoutSetTableRows,
+  type CollapsibleExerciseSetTableProps,
+  type ExerciseSetTableProps,
+  type SetTableRow,
+  type SetTypeOption,
+} from './exerciseSetTableModel';
+import { ExerciseSetTableRow } from './ExerciseSetTableRow';
 
-type ExerciseSetTableProps = {
-  columns: [string, string, string, string];
-  children: ReactNode;
+type ExerciseSetTableContentProps = {
+  columns: readonly [string, string, string, string];
+  rows: SetTableRow[];
+  setTypeOptions: SetTypeOption[];
   addSetLabel?: string;
   onAddSet: () => void;
 };
 
-type CollapsibleExerciseSetTableProps = ExerciseSetTableProps & {
-  setCount: number;
-  summary: string;
-  expanded: boolean;
-  onToggle: () => void;
-};
-
-type ExerciseSetValueCellProps = {
-  accessibilityLabel: string;
-  value: string;
-  align?: 'left' | 'center';
-  onPress: () => void;
-};
-
-export function ExerciseSetValueCell({
-  accessibilityLabel,
-  value,
-  align = 'center',
-  onPress,
-}: ExerciseSetValueCellProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${accessibilityLabel}: ${value || '-'}`}
-      className="h-10 flex-1 justify-center rounded-[10px] px-1 active:bg-surface-card"
-      onPress={onPress}
-    >
-      <Text
-        className={`text-[12px] font-bold tabular-nums ${
-          align === 'left' ? 'text-left' : 'text-center'
-        } ${value ? 'text-foreground' : 'text-muted'}`}
-        numberOfLines={1}
-      >
-        {value || '-'}
-      </Text>
-    </Pressable>
-  );
-}
-
 function ExerciseSetTableContent({
   columns,
-  children,
+  rows,
+  setTypeOptions,
   addSetLabel = 'Add set',
   onAddSet,
-}: ExerciseSetTableProps) {
+}: ExerciseSetTableContentProps) {
   return (
     <View className="px-1 pb-2">
       <View className="flex-row items-center gap-1.5 px-1 py-2">
@@ -74,7 +45,13 @@ function ExerciseSetTableContent({
         <View className="w-8" />
       </View>
 
-      {children}
+      {rows.map(row => (
+        <ExerciseSetTableRow
+          key={row.key}
+          row={row}
+          setTypeOptions={setTypeOptions}
+        />
+      ))}
 
       <Pressable
         accessibilityRole="button"
@@ -88,21 +65,61 @@ function ExerciseSetTableContent({
   );
 }
 
-export function ExerciseSetTable(props: ExerciseSetTableProps) {
+export function ExerciseSetTable({
+  sets,
+  setTypeOptions,
+  addSetLabel,
+  onAddSet,
+  onChangeSet,
+  onToggleSetDone,
+  onRemoveSet,
+}: ExerciseSetTableProps) {
+  const rows = buildWorkoutSetTableRows({
+    sets,
+    setTypeOptions,
+    addSetLabel,
+    onAddSet,
+    onChangeSet,
+    onToggleSetDone,
+    onRemoveSet,
+  });
+
   return (
     <View className="overflow-hidden rounded-[18px] border border-border-soft">
-      <ExerciseSetTableContent {...props} />
+      <ExerciseSetTableContent
+        columns={['Type', 'Weight', 'Reps', 'RPE']}
+        rows={rows}
+        setTypeOptions={setTypeOptions}
+        addSetLabel={addSetLabel}
+        onAddSet={onAddSet}
+      />
     </View>
   );
 }
 
 export function CollapsibleExerciseSetTable({
-  setCount,
+  sets,
+  setTypeOptions,
+  addSetLabel,
   summary,
   expanded,
   onToggle,
-  ...tableProps
+  onAddSet,
+  onChangeSet,
+  onRemoveSet,
 }: CollapsibleExerciseSetTableProps) {
+  const rows = buildTemplateSetTableRows({
+    sets,
+    setTypeOptions,
+    addSetLabel,
+    summary,
+    expanded,
+    onToggle,
+    onAddSet,
+    onChangeSet,
+    onRemoveSet,
+  });
+
   return (
     <View className="overflow-hidden rounded-[18px] border border-border-soft">
       <Pressable
@@ -116,7 +133,7 @@ export function CollapsibleExerciseSetTable({
         </View>
         <View className="flex-1">
           <Text className="t-label">
-            {setCount} {setCount === 1 ? 'set' : 'sets'}
+            {sets.length} {sets.length === 1 ? 'set' : 'sets'}
           </Text>
           <Text className="t-caption mt-0.5">
             {expanded ? 'Hide prescriptions' : summary}
@@ -131,7 +148,13 @@ export function CollapsibleExerciseSetTable({
 
       {expanded && (
         <View className="border-t border-border-soft">
-          <ExerciseSetTableContent {...tableProps} />
+          <ExerciseSetTableContent
+            columns={['Type', 'Reps', '%', 'RPE']}
+            rows={rows}
+            setTypeOptions={setTypeOptions}
+            addSetLabel={addSetLabel}
+            onAddSet={onAddSet}
+          />
         </View>
       )}
     </View>

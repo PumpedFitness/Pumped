@@ -14,7 +14,6 @@ import { ExerciseCard } from '../exercise/ExerciseCard';
 import { ExerciseSetTable } from '../exercise/ExerciseSetTable';
 import { EXERCISE_SET_TYPE_OPTIONS } from '../exercise/exerciseSetPresentation';
 import { ClayIcon } from '../icons/ClayIcon';
-import { CurrentWorkoutSetEditor } from './CurrentWorkoutSetEditor';
 
 type CurrentWorkoutProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'CurrentWorkout'>;
@@ -321,22 +320,15 @@ export function CurrentWorkout({
             onRemove={() => requestRemoveExercise(exercise, removeExercise)}
           >
             <ExerciseSetTable
-              columns={['Type', 'Weight', 'Reps', 'RPE']}
+              sets={exercise.sets}
+              setTypeOptions={EXERCISE_SET_TYPE_OPTIONS}
               onAddSet={() => addSet(exercise.id)}
-            >
-              {exercise.sets.map((set, index) => (
-                <CurrentWorkoutSetEditor
-                  key={set.id}
-                  index={index}
-                  set={set}
-                  canRemove={exercise.sets.length > 1}
-                  setTypeOptions={EXERCISE_SET_TYPE_OPTIONS}
-                  onChange={values => updateSet(exercise.id, set.id, values)}
-                  onToggleDone={() => toggleSetDone(exercise.id, set.id)}
-                  onRemove={() => requestRemoveSet(exercise, set, removeSet)}
-                />
-              ))}
-            </ExerciseSetTable>
+              onChangeSet={(setId, values) =>
+                updateSet(exercise.id, setId, values)
+              }
+              onToggleSetDone={setId => toggleSetDone(exercise.id, setId)}
+              onRemoveSet={set => requestRemoveSet(exercise, set, removeSet)}
+            />
           </ExerciseCard>
         ))}
 

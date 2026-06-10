@@ -6,7 +6,6 @@ import type {
   EditableExerciseSet,
 } from '../../types/exercise';
 import { ExerciseCard } from './ExerciseCard';
-import { ExerciseSetEditor } from './ExerciseSetEditor';
 import { CollapsibleExerciseSetTable } from './ExerciseSetTable';
 
 type ExerciseEditorCardProps = {
@@ -50,26 +49,16 @@ export function ExerciseEditorCard({
       />
 
       <CollapsibleExerciseSetTable
-        setCount={exercise.sets.length}
+        sets={exercise.sets}
+        setTypeOptions={setTypeOptions}
         summary={setSummary}
         expanded={setsExpanded}
-        columns={['Type', 'Reps', '%', 'RPE']}
         addSetLabel={addSetLabel}
         onToggle={() => setSetsExpanded(current => !current)}
         onAddSet={onAddSet}
-      >
-        {exercise.sets.map((set, index) => (
-          <ExerciseSetEditor
-            key={index}
-            index={index}
-            set={set}
-            canRemove={exercise.sets.length > 1}
-            setTypeOptions={setTypeOptions}
-            onChange={nextSet => onSetChange(index, nextSet)}
-            onRemove={() => onRemoveSet(index)}
-          />
-        ))}
-      </CollapsibleExerciseSetTable>
+        onChangeSet={onSetChange}
+        onRemoveSet={onRemoveSet}
+      />
     </ExerciseCard>
   );
 }
