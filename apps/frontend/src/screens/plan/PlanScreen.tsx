@@ -6,6 +6,7 @@ import { AppView } from '../../components/AppView';
 import { WorkoutTemplateLibrary } from '../../components/workout/WorkoutTemplateLibrary';
 import type { WorkoutTemplateStatus } from '../../data/local/enums';
 import { useWorkoutTemplates } from '../../hooks/useWorkoutTemplates';
+import { useCurrentWorkout } from '../../hooks/useCurrentWorkout';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import type { WorkoutTemplate } from '../../types/workout';
 
@@ -14,6 +15,7 @@ export function PlanScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { templates, exerciseOptions, updateTemplateStatus, refresh } =
     useWorkoutTemplates();
+  const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
 
   useFocusEffect(
     useCallback(() => {
@@ -29,6 +31,33 @@ export function PlanScreen() {
     navigation.navigate('WorkoutTemplateEditor', {
       templateId: template.id,
     });
+  };
+
+  const startTemplate = (template: WorkoutTemplate) => {
+    if (currentWorkout) {
+      Alert.alert(
+        'Workout already in progress',
+        `Finish or discard ${currentWorkout.name} before starting another workout.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Open workout',
+            onPress: () => navigation.navigate('CurrentWorkout'),
+          },
+        ],
+      );
+      return;
+    }
+
+    try {
+      startTemplateWorkout(template.id);
+      navigation.navigate('CurrentWorkout');
+    } catch (error) {
+      Alert.alert(
+        'Could not start workout',
+        error instanceof Error ? error.message : 'Please try again.',
+      );
+    }
   };
 
   const browsePremadeWorkouts = () => {
@@ -61,6 +90,7 @@ export function PlanScreen() {
           exerciseOptions={exerciseOptions}
           onCreateTemplate={openCreate}
           onBrowsePremadeWorkouts={browsePremadeWorkouts}
+          onStartTemplate={startTemplate}
           onEditTemplate={openEdit}
           onStatusChange={handleStatusChange}
         />

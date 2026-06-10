@@ -13,6 +13,7 @@ import {
 type WorkoutTemplateCardProps = {
   template: WorkoutTemplate;
   exerciseOptions: ExerciseOption[];
+  onStart: (template: WorkoutTemplate) => void;
   onEdit: (template: WorkoutTemplate) => void;
   onStatusChange: (
     template: WorkoutTemplate,
@@ -23,6 +24,7 @@ type WorkoutTemplateCardProps = {
 export function WorkoutTemplateCard({
   template,
   exerciseOptions,
+  onStart,
   onEdit,
   onStatusChange,
 }: WorkoutTemplateCardProps) {
@@ -63,9 +65,9 @@ export function WorkoutTemplateCard({
     >
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Edit ${template.name}`}
+        accessibilityLabel={`Start ${template.name}`}
         className="p-5 active:bg-surface-sunk"
-        onPress={() => onEdit(template)}
+        onPress={() => onStart(template)}
       >
         <View className="flex-row items-start gap-3">
           <View

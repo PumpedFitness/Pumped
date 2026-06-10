@@ -9,6 +9,7 @@ import {
   type OptionalSliderConfig,
 } from '../forms/OptionalSliderSheet';
 import { ClayIcon } from '../icons/ClayIcon';
+import { ExerciseSetValueCell } from './ExerciseSetTable';
 
 type ExerciseSetEditorProps = {
   index: number;
@@ -32,13 +33,13 @@ const PRESCRIPTION_CONFIG: Record<PrescriptionField, OptionalSliderConfig> = {
     formatValue: value => `${value} reps`,
   },
   PERCENTAGE_1RM: {
-    title: 'Percentage of 1RM',
-    description: 'Choose the planned load relative to your one-rep max.',
+    title: 'Percentage',
+    description: 'Choose the planned load percentage for this set.',
     minValue: 5,
     maxValue: 100,
     step: 2.5,
     defaultValue: 70,
-    formatValue: value => `${value}% 1RM`,
+    formatValue: value => `${value}%`,
   },
   RPE: {
     title: 'Target RPE',
@@ -58,40 +59,6 @@ function parseOptionalNumber(value: string): number | null {
 
 function formatNumber(value: number): string {
   return Number.isInteger(value) ? value.toString() : value.toFixed(1);
-}
-
-type SetValueCellProps = {
-  accessibilityLabel: string;
-  value: string;
-  emptyLabel?: string;
-  align?: 'left' | 'center';
-  onPress: () => void;
-};
-
-function SetValueCell({
-  accessibilityLabel,
-  value,
-  emptyLabel = '-',
-  align = 'center',
-  onPress,
-}: SetValueCellProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${accessibilityLabel}: ${value || emptyLabel}`}
-      className="h-10 flex-1 justify-center rounded-[10px] px-1 active:bg-surface-card"
-      onPress={onPress}
-    >
-      <Text
-        className={`text-[12px] font-bold tabular-nums ${
-          align === 'left' ? 'text-left' : 'text-center'
-        } ${value ? 'text-foreground' : 'text-muted'}`}
-        numberOfLines={1}
-      >
-        {value || emptyLabel}
-      </Text>
-    </Pressable>
-  );
 }
 
 export function ExerciseSetEditor({
@@ -137,23 +104,23 @@ export function ExerciseSetEditor({
         <Text className="w-6 text-center text-[12px] font-bold tabular-nums text-muted">
           {index + 1}
         </Text>
-        <SetValueCell
+        <ExerciseSetValueCell
           accessibilityLabel={`Set ${index + 1} type`}
           value={setTypeLabel}
           align="left"
           onPress={() => setIsSetTypeSelectorOpen(true)}
         />
-        <SetValueCell
+        <ExerciseSetValueCell
           accessibilityLabel={`Set ${index + 1} target reps`}
           value={set.targetReps}
           onPress={() => setActivePrescription('REPS')}
         />
-        <SetValueCell
-          accessibilityLabel={`Set ${index + 1} percentage of 1RM`}
+        <ExerciseSetValueCell
+          accessibilityLabel={`Set ${index + 1} percentage`}
           value={set.targetPercentage1Rm}
           onPress={() => setActivePrescription('PERCENTAGE_1RM')}
         />
-        <SetValueCell
+        <ExerciseSetValueCell
           accessibilityLabel={`Set ${index + 1} target RPE`}
           value={set.targetRpe}
           onPress={() => setActivePrescription('RPE')}

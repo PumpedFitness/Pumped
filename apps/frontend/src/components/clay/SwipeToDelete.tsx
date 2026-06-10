@@ -12,12 +12,10 @@ import { ClayIcon } from '../icons/ClayIcon';
 type SwipeToDeleteProps = {
   children: ReactNode;
   onDelete: () => void;
+  borderRadius?: number;
 };
 
-function RightAction(
-  prog: SharedValue<number>,
-  _drag: SharedValue<number>,
-) {
+function RightAction(prog: SharedValue<number>, _drag: SharedValue<number>) {
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(prog.value, [0, 0.5, 1], [0, 0.8, 1], 'clamp'),
   }));
@@ -34,6 +32,7 @@ function RightAction(
 export function SwipeToDelete({
   children,
   onDelete,
+  borderRadius = 0,
 }: SwipeToDeleteProps) {
   return (
     <Swipeable
@@ -42,6 +41,7 @@ export function SwipeToDelete({
       overshootFriction={8}
       enableTrackpadTwoFingerGesture
       dragOffsetFromRightEdge={20}
+      containerStyle={{ borderRadius }}
       onSwipeableOpen={onDelete}
       renderRightActions={(prog, drag) => RightAction(prog, drag)}
     >

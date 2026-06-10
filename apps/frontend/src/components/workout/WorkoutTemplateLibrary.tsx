@@ -16,6 +16,7 @@ type WorkoutTemplateLibraryProps = {
   exerciseOptions: ExerciseOption[];
   onCreateTemplate: () => void;
   onBrowsePremadeWorkouts: () => void;
+  onStartTemplate: (template: WorkoutTemplate) => void;
   onEditTemplate: (template: WorkoutTemplate) => void;
   onStatusChange: (
     template: WorkoutTemplate,
@@ -28,6 +29,7 @@ export function WorkoutTemplateLibrary({
   exerciseOptions,
   onCreateTemplate,
   onBrowsePremadeWorkouts,
+  onStartTemplate,
   onEditTemplate,
   onStatusChange,
 }: WorkoutTemplateLibraryProps) {
@@ -147,6 +149,7 @@ export function WorkoutTemplateLibrary({
             key={template.id}
             template={template}
             exerciseOptions={exerciseOptions}
+            onStart={onStartTemplate}
             onEdit={onEditTemplate}
             onStatusChange={onStatusChange}
           />
