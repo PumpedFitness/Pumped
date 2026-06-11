@@ -105,7 +105,7 @@ const REPS_CONFIG: OptionalSliderConfig = {
 const RPE_CONFIG: OptionalSliderConfig = {
   title: 'RPE',
   description: 'Choose the effort for this set.',
-  minValue: 1,
+  minValue: 6,
   maxValue: 10,
   step: 0.5,
   defaultValue: 8,
