@@ -3,6 +3,7 @@ import {
   createMaterialTopTabNavigator,
   type MaterialTopTabBarProps,
 } from '@react-navigation/material-top-tabs';
+import { useIsFocused } from '@react-navigation/native';
 import { View, Text, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -18,6 +19,7 @@ import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
 import { ExerciseLibraryTabScreen } from '../screens/workout/ExerciseLibraryTabScreen';
 import { PlanScreen } from '../screens/plan/PlanScreen';
+import { ConnectedCurrentWorkoutOverlay } from '../components/workout/current-workout-overlay';
 
 export type MainTabParamList = {
   Home: undefined;
@@ -49,7 +51,6 @@ function PlaceholderScreen({ title }: PlaceholderScreenProps) {
 function ProgressPlaceholder() {
   return <PlaceholderScreen title="Progress" />;
 }
-
 
 const TAB_CONFIG: {
   name: keyof MainTabParamList;
@@ -213,11 +214,13 @@ function AppBar({ state, navigation }: AppBarProps) {
 
 export function MainTabs() {
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
 
   return (
     <View
       style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}
     >
+      <ConnectedCurrentWorkoutOverlay visible={isFocused} />
       <Tab.Navigator
         tabBar={props => <AppBar {...props} />}
         tabBarPosition="bottom"

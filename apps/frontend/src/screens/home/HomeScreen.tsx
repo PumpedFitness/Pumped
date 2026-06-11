@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { AppShell } from '../../components/AppShell';
-import { WorkoutOverlayTestButton } from '../../components/home/WorkoutOverlayTestButton';
 import { WidgetGrid } from '../../components/widgets/WidgetGrid';
 import { useHomescreenStore } from '../../stores/homescreenStore';
 import { colors, typography } from '../../theme/tokens';
@@ -78,7 +77,6 @@ export function HomeScreen() {
 
         {/* Widget Grid */}
         <View style={{ paddingHorizontal: 20 }}>
-          <WorkoutOverlayTestButton />
           <WidgetGrid layout={layout} />
         </View>
       </ScrollView>
