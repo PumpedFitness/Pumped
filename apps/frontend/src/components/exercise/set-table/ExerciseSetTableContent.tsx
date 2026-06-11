@@ -8,6 +8,7 @@ type ExerciseSetTableContentProps = {
   columns: readonly [string, string, string, string];
   rows: SetTableRow[];
   setTypeOptions: SetTypeOption[];
+  actionColumnLabel?: string;
   addSetLabel?: string;
   onAddSet: () => void;
 };
@@ -16,6 +17,7 @@ export function ExerciseSetTableContent({
   columns,
   rows,
   setTypeOptions,
+  actionColumnLabel,
   addSetLabel = 'Add set',
   onAddSet,
 }: ExerciseSetTableContentProps) {
@@ -35,7 +37,9 @@ export function ExerciseSetTableContent({
             {column}
           </Text>
         ))}
-        <View className="w-8" />
+        <Text className="w-8 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+          {actionColumnLabel}
+        </Text>
       </View>
 
       {rows.map(row => (

@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Swipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated, {
   interpolate,
   useAnimatedStyle,
@@ -34,15 +36,23 @@ export function SwipeToDelete({
   onDelete,
   borderRadius = 0,
 }: SwipeToDeleteProps) {
+  const swipeableRef = useRef<SwipeableMethods>(null);
+
+  const handleOpen = () => {
+    swipeableRef.current?.reset();
+    onDelete();
+  };
+
   return (
     <Swipeable
+      ref={swipeableRef}
       friction={2}
       rightThreshold={120}
       overshootFriction={8}
       enableTrackpadTwoFingerGesture
       dragOffsetFromRightEdge={20}
       containerStyle={{ borderRadius }}
-      onSwipeableOpen={onDelete}
+      onSwipeableOpen={handleOpen}
       renderRightActions={(prog, drag) => RightAction(prog, drag)}
     >
       {children}

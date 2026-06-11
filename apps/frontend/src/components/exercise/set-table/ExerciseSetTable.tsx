@@ -30,6 +30,7 @@ export function ExerciseSetTable({
         columns={['Type', 'Weight', 'Reps', 'RPE']}
         rows={rows}
         setTypeOptions={setTypeOptions}
+        actionColumnLabel="Done"
         addSetLabel={addSetLabel}
         onAddSet={onAddSet}
       />
