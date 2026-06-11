@@ -11,3 +11,8 @@ export { Stepper } from './Stepper';
 export { SegmentedControl } from './SegmentedControl';
 export { SettingsSection } from './SettingsSection';
 export { EditableRow } from './EditableRow';
+export {
+  OptionPopup,
+  type OptionPopupProps,
+  type PopupOption,
+} from './option-popup';

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button } from 'heroui-native';
@@ -15,6 +15,7 @@ import {
   EXERCISE_SET_TYPE_OPTIONS,
   ExerciseSetTable,
 } from '../exercise/set-table';
+import { OptionPopup, type PopupOption } from '../clay/option-popup';
 import { ClayIcon } from '../icons/ClayIcon';
 
 type CurrentWorkoutProps = {
@@ -30,6 +31,20 @@ type CurrentWorkoutNavigation = NativeStackNavigationProp<
 type FinishWorkout = ReturnType<typeof useCurrentWorkout>['finishWorkout'];
 type RemoveSet = ReturnType<typeof useCurrentWorkout>['removeSet'];
 type RemoveExercise = ReturnType<typeof useCurrentWorkout>['removeExercise'];
+type TemplateFinishChoice = 'keep' | 'update';
+
+const TEMPLATE_FINISH_OPTIONS: PopupOption<TemplateFinishChoice>[] = [
+  {
+    value: 'keep',
+    label: 'Keep current template',
+    description: 'Save this workout without changing the template.',
+  },
+  {
+    value: 'update',
+    label: 'Update template',
+    description: 'Use these exercises and sets for future workouts.',
+  },
+];
 
 type EmptyWorkoutProps = {
   onBack: () => void;
@@ -71,36 +86,6 @@ function completeWorkout(
       error instanceof Error ? error.message : 'Please try again.',
     );
   }
-}
-
-function requestFinishWorkout(
-  navigation: CurrentWorkoutNavigation,
-  finishWorkout: FinishWorkout,
-  canFinish: boolean,
-  shouldPromptForTemplate: boolean,
-) {
-  if (!canFinish) {
-    return;
-  }
-  if (!shouldPromptForTemplate) {
-    completeWorkout(navigation, finishWorkout);
-    return;
-  }
-  Alert.alert(
-    'Update workout template?',
-    'You changed the exercises or sets during this workout.',
-    [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Keep template',
-        onPress: () => completeWorkout(navigation, finishWorkout),
-      },
-      {
-        text: 'Update template',
-        onPress: () => completeWorkout(navigation, finishWorkout, true),
-      },
-    ],
-  );
 }
 
 function requestRemoveSet(
@@ -185,6 +170,23 @@ function CurrentWorkoutFooter({
   finishWorkout,
   discardWorkout,
 }: CurrentWorkoutFooterProps) {
+  const [templatePopupVisible, setTemplatePopupVisible] = useState(false);
+
+  const requestFinish = () => {
+    if (!canFinish) {
+      return;
+    }
+    if (shouldPromptForTemplate) {
+      setTemplatePopupVisible(true);
+      return;
+    }
+    completeWorkout(navigation, finishWorkout);
+  };
+
+  const finishWithTemplateChoice = (choice: TemplateFinishChoice) => {
+    completeWorkout(navigation, finishWorkout, choice === 'update');
+  };
+
   const requestDiscard = () =>
     Alert.alert(
       'Discard workout?',
@@ -203,46 +205,51 @@ function CurrentWorkoutFooter({
     );
 
   return (
-    <View className="flex-row gap-3 border-t border-border-soft bg-background px-5 py-4">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Discard workout"
-        className="h-12 w-12 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
-        onPress={requestDiscard}
-      >
-        <ClayIcon name="trash" size={19} color={colors.muted} />
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Finish workout"
-        accessibilityState={{ disabled: !canFinish }}
-        disabled={!canFinish}
-        className={`h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full ${
-          canFinish ? 'bg-accent' : 'bg-surface-sunk'
-        }`}
-        onPress={() =>
-          requestFinishWorkout(
-            navigation,
-            finishWorkout,
-            canFinish,
-            shouldPromptForTemplate,
-          )
-        }
-      >
-        <ClayIcon
-          name="check"
-          size={18}
-          color={canFinish ? colors.accentInk : colors.muted}
-        />
-        <Text
-          className={`t-label ${
-            canFinish ? 'text-accent-foreground' : 'text-muted'
-          }`}
+    <>
+      <View className="flex-row gap-3 border-t border-border-soft bg-background px-5 py-4">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Discard workout"
+          className="h-12 w-12 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
+          onPress={requestDiscard}
         >
-          Finish workout
-        </Text>
-      </Pressable>
-    </View>
+          <ClayIcon name="trash" size={19} color={colors.muted} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Finish workout"
+          accessibilityState={{ disabled: !canFinish }}
+          disabled={!canFinish}
+          className={`h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full ${
+            canFinish ? 'bg-accent' : 'bg-surface-sunk'
+          }`}
+          onPress={requestFinish}
+        >
+          <ClayIcon
+            name="check"
+            size={18}
+            color={canFinish ? colors.accentInk : colors.muted}
+          />
+          <Text
+            className={`t-label ${
+              canFinish ? 'text-accent-foreground' : 'text-muted'
+            }`}
+          >
+            Finish workout
+          </Text>
+        </Pressable>
+      </View>
+
+      <OptionPopup
+        needsConfirmation
+        visible={templatePopupVisible}
+        title="Update workout template?"
+        text="You changed the exercises or sets during this workout. Choose what to use next time."
+        options={TEMPLATE_FINISH_OPTIONS}
+        onClose={() => setTemplatePopupVisible(false)}
+        onSelect={finishWithTemplateChoice}
+      />
+    </>
   );
 }
 
