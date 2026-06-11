@@ -38,6 +38,8 @@ export type UpdateCurrentWorkoutSetInput = Partial<
   Pick<CurrentWorkoutSet, 'weight' | 'reps' | 'rpe' | 'setType'>
 >;
 
+export type CurrentWorkoutSetField = 'weight' | 'reps' | 'rpe';
+
 export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
   return {
     id: randomUUID(),
@@ -194,13 +196,22 @@ export function hasWorkoutStructureChanged(workout: CurrentWorkout): boolean {
   });
 }
 
+export function isCurrentWorkoutSetFieldValid(
+  set: CurrentWorkoutSet,
+  field: CurrentWorkoutSetField,
+): boolean {
+  if (field === 'weight') {
+    return set.weight !== null && set.weight >= 0;
+  }
+  if (field === 'reps') {
+    return set.reps !== null && Number.isInteger(set.reps) && set.reps >= 1;
+  }
+  return set.rpe === null || (set.rpe >= 1 && set.rpe <= 10);
+}
+
 export function isCurrentWorkoutSetValid(set: CurrentWorkoutSet): boolean {
-  return (
-    set.reps !== null &&
-    Number.isInteger(set.reps) &&
-    set.reps >= 1 &&
-    (set.weight === null || set.weight >= 0) &&
-    (set.rpe === null || (set.rpe >= 1 && set.rpe <= 10))
+  return (['weight', 'reps', 'rpe'] as const).every(field =>
+    isCurrentWorkoutSetFieldValid(set, field),
   );
 }
 

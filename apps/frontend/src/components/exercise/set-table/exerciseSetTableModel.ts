@@ -1,7 +1,8 @@
 import type { WorkoutSetType } from '../../../data/local/enums';
-import type {
-  CurrentWorkoutSet,
-  UpdateCurrentWorkoutSetInput,
+import {
+  isCurrentWorkoutSetFieldValid,
+  type CurrentWorkoutSet,
+  type UpdateCurrentWorkoutSetInput,
 } from '../../../stores/currentWorkoutModel';
 import type { EditableExerciseSet } from '../../../types/exercise';
 import type { OptionalSliderConfig } from '../../forms/OptionalSliderSheet';
@@ -37,6 +38,7 @@ type BaseSetField = {
   id: string;
   accessibilityLabel: string;
   value: number | null;
+  isValid?: boolean;
 };
 
 export type SetField =
@@ -54,6 +56,7 @@ export type SetTableRow = {
   index: number;
   setType: WorkoutSetType;
   fields: [SetField, SetField, SetField];
+  tone?: 'default' | 'completed';
   isDone?: boolean;
   canRemove: boolean;
   onSetTypeChange: (setType: WorkoutSetType) => void;
@@ -189,6 +192,7 @@ export function buildWorkoutSetTableRows(
         id: 'weight',
         accessibilityLabel: `Set ${index + 1} weight`,
         value: set.weight,
+        isValid: isCurrentWorkoutSetFieldValid(set, 'weight'),
         inputMethod: 'keyboard',
         allowDecimal: true,
       },
@@ -196,6 +200,7 @@ export function buildWorkoutSetTableRows(
         id: 'reps',
         accessibilityLabel: `Set ${index + 1} reps`,
         value: set.reps,
+        isValid: isCurrentWorkoutSetFieldValid(set, 'reps'),
         inputMethod: 'slider',
         sliderConfig: REPS_CONFIG,
       },
@@ -203,10 +208,12 @@ export function buildWorkoutSetTableRows(
         id: 'rpe',
         accessibilityLabel: `Set ${index + 1} RPE`,
         value: set.rpe,
+        isValid: isCurrentWorkoutSetFieldValid(set, 'rpe'),
         inputMethod: 'slider',
         sliderConfig: RPE_CONFIG,
       },
     ],
+    tone: set.isDone ? 'completed' : 'default',
     isDone: set.isDone,
     canRemove: props.sets.length > 1,
     onSetTypeChange: setType => props.onChangeSet(set.id, { setType }),

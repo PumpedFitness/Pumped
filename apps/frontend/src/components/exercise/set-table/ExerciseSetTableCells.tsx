@@ -13,11 +13,13 @@ type NumberInputCellProps = {
   label: string;
   value: number | null;
   allowDecimal: boolean;
+  hasError?: boolean;
   onChange: (value: number | null) => void;
 };
 
 type SliderValueCellProps = {
   field: Extract<SetField, { inputMethod: 'slider' }>;
+  hasError?: boolean;
   onPress: () => void;
 };
 
@@ -58,6 +60,7 @@ export function NumberInputCell({
   label,
   value,
   allowDecimal,
+  hasError = false,
   onChange,
 }: NumberInputCellProps) {
   const [draft, setDraft] = useState(() => formatSetNumber(value));
@@ -89,10 +92,14 @@ export function NumberInputCell({
   return (
     <TextInput
       accessibilityLabel={label}
-      className="h-10 flex-1 px-1 text-center text-[12px] font-bold tabular-nums text-foreground"
+      className={`h-10 flex-1 rounded-[10px] border px-1 text-center text-[12px] font-bold tabular-nums ${
+        hasError
+          ? 'border-danger bg-danger/10 text-danger'
+          : 'border-transparent text-foreground'
+      }`}
       keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
       placeholder="-"
-      placeholderTextColor={colors.muted}
+      placeholderTextColor={hasError ? colors.danger : colors.muted}
       returnKeyType="done"
       selectTextOnFocus
       value={draft}
@@ -112,19 +119,27 @@ export function NumberInputCell({
   );
 }
 
-export function SliderValueCell({ field, onPress }: SliderValueCellProps) {
+export function SliderValueCell({
+  field,
+  hasError = false,
+  onPress,
+}: SliderValueCellProps) {
   const value = formatSetNumber(field.value);
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${field.accessibilityLabel}: ${value || '-'}`}
-      className="h-10 flex-1 justify-center rounded-[10px] px-1 active:bg-surface-card"
+      className={`h-10 flex-1 justify-center rounded-[10px] border px-1 ${
+        hasError
+          ? 'border-danger bg-danger/10'
+          : 'border-transparent active:bg-surface-card'
+      }`}
       onPress={onPress}
     >
       <Text
         className={`text-center text-[12px] font-bold tabular-nums ${
-          value ? 'text-foreground' : 'text-muted'
+          hasError ? 'text-danger' : value ? 'text-foreground' : 'text-muted'
         }`}
         numberOfLines={1}
       >

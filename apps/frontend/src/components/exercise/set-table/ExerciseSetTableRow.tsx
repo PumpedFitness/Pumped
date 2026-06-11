@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Keyboard, Pressable, Text, View } from 'react-native';
+import { Keyboard, Pressable, Text, View } from 'react-native';
 import { colors } from '../../../theme/tokens';
 import { SwipeToDelete } from '../../clay/SwipeToDelete';
 import { OptionSelectorSheet } from '../../forms/OptionSelectorSheet';
@@ -86,6 +86,7 @@ export function ExerciseSetTableRow({
   const [activeSliderFieldId, setActiveSliderFieldId] = useState<string | null>(
     null,
   );
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [isSetTypeSelectorOpen, setIsSetTypeSelectorOpen] = useState(false);
   const sliderFields = row.fields.filter(
     (field): field is Extract<SetField, { inputMethod: 'slider' }> =>
@@ -97,21 +98,21 @@ export function ExerciseSetTableRow({
   const setTypeLabel =
     setTypeOptions.find(option => option.value === row.setType)?.label ??
     'Working';
+  const rowToneClassName =
+    row.tone === 'completed'
+      ? 'border-l-moss bg-sage/20'
+      : 'border-l-transparent bg-surface-card';
 
   const toggleDone = () => {
-    if (row.onToggleDone && !row.onToggleDone()) {
-      Alert.alert(
-        'Complete the set details',
-        'Reps must be a positive whole number. Weight cannot be negative, and RPE must be between 1 and 10.',
-      );
+    if (!row.onToggleDone) {
+      return;
     }
+    setShowValidationErrors(!row.onToggleDone());
   };
 
   const content = (
     <View
-      className={`flex-row items-center gap-1.5 border-t border-border-soft px-1 py-1 ${
-        row.isDone ? 'bg-moss/10' : 'bg-surface-card'
-      }`}
+      className={`flex-row items-center gap-1.5 border-l-2 border-t border-border-soft px-1 py-1 ${rowToneClassName}`}
     >
       <SetPositionCell row={row} />
       <SetTypeCell
@@ -126,12 +127,14 @@ export function ExerciseSetTableRow({
             label={field.accessibilityLabel}
             value={field.value}
             allowDecimal={field.allowDecimal}
+            hasError={showValidationErrors && field.isValid === false}
             onChange={value => row.onFieldChange(field.id, value)}
           />
         ) : (
           <SliderValueCell
             key={field.id}
             field={field}
+            hasError={showValidationErrors && field.isValid === false}
             onPress={() => {
               Keyboard.dismiss();
               setActiveSliderFieldId(field.id);
