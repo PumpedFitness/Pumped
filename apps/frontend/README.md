@@ -142,13 +142,15 @@ user and is idempotent, so restarting the app does not duplicate rows.
 
 The sample includes:
 
-- Four barbell exercises
-- A weekly push template scheduled for Monday and Thursday
-- A full-body template scheduled every three days
-- Warmup, normal, and backoff template sets
-- One completed workout with performed-set history
+- Fifteen exercises covering free weights, machines, and bodyweight movements
+- Five workout templates with weekly, interval, and unscheduled examples
+- Active and inactive templates with all supported set styles represented
+- Twenty-four completed workouts spread across roughly three months
+- Progressive loads, RPEs, notes, bodyweight sets, and recent activity for history widgets
 
-The seed lives in `src/data/local/seed.ts` and only runs when `__DEV__` is true.
+The seed lives under `src/data/local/seed/`, is orchestrated by
+`src/data/local/seed.ts`, and only runs when `__DEV__` is true. Sample history
+is refreshed on startup so relative-date charts continue to show recent data.
 
 ## Scripts
 
