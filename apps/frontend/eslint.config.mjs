@@ -146,7 +146,6 @@ export default [
     files: [
       'src/components/exercise/ExerciseSelectionList.tsx',
       'src/components/settings/UserSettings.tsx',
-      'src/components/workout/WorkoutCalendar.tsx',
       'src/components/workout/WorkoutTemplateCard.tsx',
       'src/components/workout/WorkoutTemplateEditor.tsx',
       'src/components/workout/WorkoutTemplateLibrary.tsx',

@@ -1,0 +1,1 @@
+export { WorkoutHistoryItemCard } from './WorkoutHistoryItemCard';

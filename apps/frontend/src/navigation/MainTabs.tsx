@@ -12,45 +12,24 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { AppShell } from '../components/AppShell';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { ClayIcon, type IconName } from '../components/icons/ClayIcon';
 import { colors, radii, shadows } from '../theme/tokens';
 import { ExerciseLibraryTabScreen } from '../screens/workout/ExerciseLibraryTabScreen';
 import { PlanScreen } from '../screens/plan/PlanScreen';
+import { WorkoutHistoryScreen } from '../screens/history/WorkoutHistoryScreen';
 import { ConnectedCurrentWorkoutOverlay } from '../components/workout/current-workout-overlay';
 
 export type MainTabParamList = {
   Home: undefined;
   Plan: undefined;
   Library: undefined;
-  Progress: undefined;
+  History: undefined;
   You: undefined;
 };
 
 const Tab = createMaterialTopTabNavigator<MainTabParamList>();
-
-type PlaceholderScreenProps = {
-  title: string;
-};
-
-function PlaceholderScreen({ title }: PlaceholderScreenProps) {
-  return (
-    <AppShell
-      showTabBar
-      style={{ alignItems: 'center', justifyContent: 'center' }}
-    >
-      <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>
-        {title}
-      </Text>
-    </AppShell>
-  );
-}
-
-function ProgressPlaceholder() {
-  return <PlaceholderScreen title="Progress" />;
-}
 
 const TAB_CONFIG: {
   name: keyof MainTabParamList;
@@ -60,7 +39,7 @@ const TAB_CONFIG: {
   { name: 'Home', icon: 'home', label: 'Home' },
   { name: 'Plan', icon: 'calendar', label: 'Plan' },
   { name: 'Library', icon: 'dumbbell', label: 'Library' },
-  { name: 'Progress', icon: 'pulse', label: 'Progress' },
+  { name: 'History', icon: 'history', label: 'History' },
   { name: 'You', icon: 'settings', label: 'You' },
 ];
 
@@ -232,7 +211,11 @@ export function MainTabs() {
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Plan" component={PlanScreen} />
         <Tab.Screen name="Library" component={ExerciseLibraryTabScreen} />
-        <Tab.Screen name="Progress" component={ProgressPlaceholder} />
+        <Tab.Screen
+          name="History"
+          component={WorkoutHistoryScreen}
+          options={{ swipeEnabled: false }}
+        />
         <Tab.Screen name="You" component={ProfileScreen} />
       </Tab.Navigator>
     </View>
