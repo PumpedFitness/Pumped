@@ -39,6 +39,10 @@ type SetActionCellProps = {
 };
 
 function SetActionCell({ row, onToggleDone }: SetActionCellProps) {
+  if (row.readOnly) {
+    return null;
+  }
+
   if (row.onToggleDone) {
     return (
       <Pressable
@@ -118,7 +122,9 @@ export function ExerciseSetTableRow({
       <SetTypeCell
         label={`Set ${row.index + 1} type`}
         value={setTypeLabel}
-        onPress={() => setIsSetTypeSelectorOpen(true)}
+        onPress={
+          row.readOnly ? undefined : () => setIsSetTypeSelectorOpen(true)
+        }
       />
       {row.fields.map(field =>
         field.inputMethod === 'keyboard' ? (
@@ -128,6 +134,7 @@ export function ExerciseSetTableRow({
             value={field.value}
             allowDecimal={field.allowDecimal}
             hasError={showValidationErrors && field.isValid === false}
+            readOnly={row.readOnly}
             onChange={value => row.onFieldChange(field.id, value)}
           />
         ) : (
@@ -135,10 +142,14 @@ export function ExerciseSetTableRow({
             key={field.id}
             field={field}
             hasError={showValidationErrors && field.isValid === false}
-            onPress={() => {
-              Keyboard.dismiss();
-              setActiveSliderFieldId(field.id);
-            }}
+            onPress={
+              row.readOnly
+                ? undefined
+                : () => {
+                    Keyboard.dismiss();
+                    setActiveSliderFieldId(field.id);
+                  }
+            }
           />
         ),
       )}
@@ -148,13 +159,13 @@ export function ExerciseSetTableRow({
 
   return (
     <>
-      {row.canRemove ? (
+      {row.canRemove && !row.readOnly ? (
         <SwipeToDelete onDelete={row.onRemove}>{content}</SwipeToDelete>
       ) : (
         content
       )}
 
-      {isSetTypeSelectorOpen && (
+      {!row.readOnly && isSetTypeSelectorOpen && (
         <OptionSelectorSheet
           visible
           title={`Set ${row.index + 1} type`}
@@ -164,7 +175,7 @@ export function ExerciseSetTableRow({
           onChange={row.onSetTypeChange}
         />
       )}
-      {sliderSheetField && (
+      {!row.readOnly && sliderSheetField && (
         <OptionalSliderSheet
           visible={activeSliderField !== null}
           value={activeSliderField?.value ?? null}

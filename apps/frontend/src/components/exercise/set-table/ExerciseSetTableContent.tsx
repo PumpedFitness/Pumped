@@ -10,7 +10,7 @@ type ExerciseSetTableContentProps = {
   setTypeOptions: SetTypeOption[];
   actionColumnLabel?: string;
   addSetLabel?: string;
-  onAddSet: () => void;
+  onAddSet?: () => void;
 };
 
 export function ExerciseSetTableContent({
@@ -37,9 +37,11 @@ export function ExerciseSetTableContent({
             {column}
           </Text>
         ))}
-        <Text className="w-8 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
-          {actionColumnLabel}
-        </Text>
+        {actionColumnLabel ? (
+          <Text className="w-8 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
+            {actionColumnLabel}
+          </Text>
+        ) : null}
       </View>
 
       {rows.map(row => (
@@ -50,14 +52,16 @@ export function ExerciseSetTableContent({
         />
       ))}
 
-      <Pressable
-        accessibilityRole="button"
-        className="mx-1 mt-2 min-h-10 flex-row items-center justify-center gap-2 rounded-full bg-accent-soft px-3"
-        onPress={onAddSet}
-      >
-        <ClayIcon name="plus" size={16} color={colors.accent} />
-        <Text className="t-label text-accent">{addSetLabel}</Text>
-      </Pressable>
+      {onAddSet ? (
+        <Pressable
+          accessibilityRole="button"
+          className="mx-1 mt-2 min-h-10 flex-row items-center justify-center gap-2 rounded-full bg-accent-soft px-3"
+          onPress={onAddSet}
+        >
+          <ClayIcon name="plus" size={16} color={colors.accent} />
+          <Text className="t-label text-accent">{addSetLabel}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
