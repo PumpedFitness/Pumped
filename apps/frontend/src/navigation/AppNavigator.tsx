@@ -13,6 +13,7 @@ import { WorkoutTemplateEditorScreen } from '../screens/workout/WorkoutTemplateE
 import { WeightHistoryScreen } from '../screens/tracking/WeightHistoryScreen';
 import { BodyFatHistoryScreen } from '../screens/tracking/BodyFatHistoryScreen';
 import { AddMetricScreen } from '../screens/tracking/AddMetricScreen';
+import { CompletedWorkoutScreen } from '../screens/history/CompletedWorkoutScreen';
 import { useAuthStore } from '../stores/authStore';
 import type { ExerciseSelectionResult } from '../types/exercise';
 
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   WidgetPicker: undefined;
   WeightHistory: undefined;
   BodyFatHistory: undefined;
+  CompletedWorkout: { workoutId: string };
   AddMetric: { metric: 'weight' | 'bodyFat' };
   WorkoutTemplateEditor:
     | {
@@ -88,6 +90,11 @@ export function AppNavigator() {
         <Stack.Screen
           name="BodyFatHistory"
           component={BodyFatHistoryScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="CompletedWorkout"
+          component={CompletedWorkoutScreen}
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen
