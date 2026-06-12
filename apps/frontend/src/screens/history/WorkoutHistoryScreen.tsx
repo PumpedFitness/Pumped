@@ -1,6 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  type CompositeScreenProps,
+} from '@react-navigation/native';
+import type { MaterialTopTabScreenProps } from '@react-navigation/material-top-tabs';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Input } from 'heroui-native';
 import { AppShell } from '../../components/AppShell';
 import { ClayIcon } from '../../components/icons/ClayIcon';
@@ -8,9 +13,18 @@ import { WorkoutHistoryList } from '../../components/workout/history/WorkoutHist
 import { WorkoutHistorySummary } from '../../components/workout/history/workout-history-summary';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useWorkoutHistory } from '../../hooks/useWorkoutHistory';
+import type { MainTabParamList } from '../../navigation/MainTabs';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { colors } from '../../theme/tokens';
 
-export function WorkoutHistoryScreen() {
+type WorkoutHistoryScreenProps = CompositeScreenProps<
+  MaterialTopTabScreenProps<MainTabParamList, 'History'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function WorkoutHistoryScreen({
+  navigation,
+}: WorkoutHistoryScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const { profile } = useUserProfile();
   const { workouts, refresh } = useWorkoutHistory();
@@ -74,6 +88,9 @@ export function WorkoutHistoryScreen() {
           workouts={filteredWorkouts}
           weightUnit={profile.weightUnit}
           hasSearchQuery={searchQuery.trim().length > 0}
+          onWorkoutPress={workoutId =>
+            navigation.navigate('CompletedWorkout', { workoutId })
+          }
         />
       </ScrollView>
     </AppShell>

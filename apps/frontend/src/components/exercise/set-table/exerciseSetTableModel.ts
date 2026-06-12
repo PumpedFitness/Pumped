@@ -1,10 +1,13 @@
 import type { WorkoutSetType } from '../../../data/local/enums';
+import type { WeightUnit } from '../../../data/local/schema/userProfile';
 import {
   isCurrentWorkoutSetFieldValid,
   type CurrentWorkoutSet,
   type UpdateCurrentWorkoutSetInput,
 } from '../../../stores/currentWorkoutModel';
 import type { EditableExerciseSet } from '../../../types/exercise';
+import type { PerformedSet } from '../../../types/workout';
+import { displayWeight } from '../../../utils/units';
 import type { OptionalSliderConfig } from '../../forms/OptionalSliderSheet';
 
 export type SetTypeOption = {
@@ -27,12 +30,29 @@ export type CollapsibleExerciseSetTableProps = BaseExerciseSetTableProps & {
   onRemoveSet: (index: number) => void;
 };
 
-export type ExerciseSetTableProps = BaseExerciseSetTableProps & {
+type EditableExerciseSetTableProps = BaseExerciseSetTableProps & {
+  readOnly?: false;
   sets: CurrentWorkoutSet[];
   onChangeSet: (setId: string, values: UpdateCurrentWorkoutSetInput) => void;
   onToggleSetDone: (setId: string) => boolean;
   onRemoveSet: (set: CurrentWorkoutSet) => void;
 };
+
+export type ReadOnlyExerciseSet = Pick<
+  PerformedSet,
+  'id' | 'setType' | 'weight' | 'reps' | 'rpe'
+>;
+
+type ReadOnlyExerciseSetTableProps = {
+  readOnly: true;
+  sets: ReadOnlyExerciseSet[];
+  setTypeOptions: SetTypeOption[];
+  weightUnit: WeightUnit;
+};
+
+export type ExerciseSetTableProps =
+  | EditableExerciseSetTableProps
+  | ReadOnlyExerciseSetTableProps;
 
 type BaseSetField = {
   id: string;
@@ -56,6 +76,7 @@ export type SetTableRow = {
   index: number;
   setType: WorkoutSetType;
   fields: [SetField, SetField, SetField];
+  readOnly?: boolean;
   tone?: 'default' | 'completed';
   isDone?: boolean;
   canRemove: boolean;
@@ -181,7 +202,7 @@ export function buildTemplateSetTableRows(
 }
 
 export function buildWorkoutSetTableRows(
-  props: ExerciseSetTableProps,
+  props: EditableExerciseSetTableProps,
 ): SetTableRow[] {
   return props.sets.map((set, index) => ({
     key: set.id,
@@ -221,5 +242,46 @@ export function buildWorkoutSetTableRows(
       props.onChangeSet(set.id, { [fieldId]: value }),
     onToggleDone: () => props.onToggleSetDone(set.id),
     onRemove: () => props.onRemoveSet(set),
+  }));
+}
+
+export function buildReadOnlyWorkoutSetTableRows(
+  props: ReadOnlyExerciseSetTableProps,
+): SetTableRow[] {
+  return props.sets.map((set, index) => ({
+    key: set.id,
+    index,
+    setType: set.setType,
+    fields: [
+      {
+        id: 'weight',
+        accessibilityLabel: `Set ${index + 1} weight`,
+        value:
+          set.weight === null
+            ? null
+            : displayWeight(set.weight, props.weightUnit),
+        inputMethod: 'keyboard',
+        allowDecimal: true,
+      },
+      {
+        id: 'reps',
+        accessibilityLabel: `Set ${index + 1} reps`,
+        value: set.reps,
+        inputMethod: 'slider',
+        sliderConfig: REPS_CONFIG,
+      },
+      {
+        id: 'rpe',
+        accessibilityLabel: `Set ${index + 1} RPE`,
+        value: set.rpe,
+        inputMethod: 'slider',
+        sliderConfig: RPE_CONFIG,
+      },
+    ],
+    readOnly: true,
+    canRemove: false,
+    onSetTypeChange: () => undefined,
+    onFieldChange: () => undefined,
+    onRemove: () => undefined,
   }));
 }

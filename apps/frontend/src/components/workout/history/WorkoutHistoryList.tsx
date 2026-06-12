@@ -9,6 +9,7 @@ type WorkoutHistoryListProps = {
   workouts: WorkoutHistoryItem[];
   weightUnit: WeightUnit;
   hasSearchQuery: boolean;
+  onWorkoutPress: (workoutId: string) => void;
 };
 
 type WorkoutGroup = {
@@ -39,6 +40,7 @@ export function WorkoutHistoryList({
   workouts,
   weightUnit,
   hasSearchQuery,
+  onWorkoutPress,
 }: WorkoutHistoryListProps) {
   const groups = groupWorkouts(workouts);
 
@@ -74,6 +76,7 @@ export function WorkoutHistoryList({
               key={workout.id}
               workout={workout}
               weightUnit={weightUnit}
+              onPress={() => onWorkoutPress(workout.id)}
             />
           ))}
         </View>

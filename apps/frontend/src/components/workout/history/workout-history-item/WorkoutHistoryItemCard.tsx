@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import type { WeightUnit } from '../../../../data/local/schema/userProfile';
 import type { WorkoutHistoryItem } from '../../../../hooks/useWorkoutHistory';
 import { colors } from '../../../../theme/tokens';
@@ -8,6 +8,7 @@ import { ClayIcon } from '../../../icons/ClayIcon';
 type WorkoutHistoryItemCardProps = {
   workout: WorkoutHistoryItem;
   weightUnit: WeightUnit;
+  onPress: () => void;
 };
 
 function formatWorkoutDate(timestamp: number): string {
@@ -29,6 +30,7 @@ function formatVolume(volumeKg: number, weightUnit: WeightUnit): string {
 export function WorkoutHistoryItemCard({
   workout,
   weightUnit,
+  onPress,
 }: WorkoutHistoryItemCardProps) {
   const exerciseSummary =
     workout.exerciseNames.length > 0
@@ -37,7 +39,12 @@ export function WorkoutHistoryItemCard({
   const muscleSummary = workout.muscleGroupNames.slice(0, 3).join(' + ');
 
   return (
-    <View className="gap-4 rounded-[22px] border border-border-hairline bg-surface-card p-4">
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`View ${workout.name} workout`}
+      className="gap-4 rounded-[22px] border border-border-hairline bg-surface-card p-4 active:bg-surface-sunk"
+      onPress={onPress}
+    >
       <View className="flex-row items-start gap-3">
         <View className="h-12 w-12 items-center justify-center rounded-[16px] bg-accent-soft">
           <ClayIcon name="dumbbell" size={22} color={colors.accent} />
@@ -84,6 +91,6 @@ export function WorkoutHistoryItemCard({
           </Text>
         </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 }

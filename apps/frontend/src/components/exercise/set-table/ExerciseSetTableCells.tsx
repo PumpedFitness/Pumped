@@ -6,7 +6,7 @@ import { formatSetNumber, type SetField } from './exerciseSetTableModel';
 type SetTypeCellProps = {
   label: string;
   value: string;
-  onPress: () => void;
+  onPress?: () => void;
 };
 
 type NumberInputCellProps = {
@@ -14,16 +14,31 @@ type NumberInputCellProps = {
   value: number | null;
   allowDecimal: boolean;
   hasError?: boolean;
+  readOnly?: boolean;
   onChange: (value: number | null) => void;
 };
 
 type SliderValueCellProps = {
   field: Extract<SetField, { inputMethod: 'slider' }>;
   hasError?: boolean;
-  onPress: () => void;
+  onPress?: () => void;
 };
 
 export function SetTypeCell({ label, value, onPress }: SetTypeCellProps) {
+  if (!onPress) {
+    return (
+      <Text
+        accessibilityLabel={`${label}: ${value || '-'}`}
+        className={`h-10 flex-1 py-3 pl-1 text-left text-[12px] font-bold ${
+          value ? 'text-foreground' : 'text-muted'
+        }`}
+        numberOfLines={1}
+      >
+        {value || '-'}
+      </Text>
+    );
+  }
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -57,6 +72,41 @@ function parseInputValue(value: string, allowDecimal: boolean): number | null {
 }
 
 export function NumberInputCell({
+  label,
+  value,
+  allowDecimal,
+  hasError = false,
+  readOnly = false,
+  onChange,
+}: NumberInputCellProps) {
+  if (readOnly) {
+    const formattedValue = formatSetNumber(value);
+
+    return (
+      <Text
+        accessibilityLabel={`${label}: ${formattedValue || '-'}`}
+        className={`h-10 flex-1 py-3 text-center text-[12px] font-bold tabular-nums ${
+          formattedValue ? 'text-foreground' : 'text-muted'
+        }`}
+        numberOfLines={1}
+      >
+        {formattedValue || '-'}
+      </Text>
+    );
+  }
+
+  return (
+    <EditableNumberInputCell
+      label={label}
+      value={value}
+      allowDecimal={allowDecimal}
+      hasError={hasError}
+      onChange={onChange}
+    />
+  );
+}
+
+function EditableNumberInputCell({
   label,
   value,
   allowDecimal,
@@ -125,6 +175,20 @@ export function SliderValueCell({
   onPress,
 }: SliderValueCellProps) {
   const value = formatSetNumber(field.value);
+
+  if (!onPress) {
+    return (
+      <Text
+        accessibilityLabel={`${field.accessibilityLabel}: ${value || '-'}`}
+        className={`h-10 flex-1 py-3 text-center text-[12px] font-bold tabular-nums ${
+          value ? 'text-foreground' : 'text-muted'
+        }`}
+        numberOfLines={1}
+      >
+        {value || '-'}
+      </Text>
+    );
+  }
 
   return (
     <Pressable
