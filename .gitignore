@@ -22,9 +22,6 @@ apps/frontend/.expo/
 .watchmanconfig
 .watchman-cookie-*
 
-# Bun
-bun.lock
-
 # Environment
 .env
 .env.*
