@@ -1,11 +1,8 @@
 import { useState } from 'react';
 import { View, Text, Pressable, type LayoutChangeEvent } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
-import { colors, radii, motion } from '../../theme/tokens';
+import { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { motion } from '@/theme/tokens';
+import { AnimatedView } from '@/components/uniwind';
 
 type Option = string | { value: string; label: string };
 
@@ -13,12 +10,14 @@ type SegmentedControlProps = {
   options: Option[];
   value: string;
   onChange?: (value: string) => void;
+  className?: string;
 };
 
 export function SegmentedControl({
   options = [],
   value,
   onChange,
+  className = '',
 }: SegmentedControlProps) {
   const [containerWidth, setContainerWidth] = useState(0);
   const n = options.length || 1;
@@ -30,6 +29,7 @@ export function SegmentedControl({
     opts.findIndex(o => o.value === value),
   );
 
+  // Must stay in sync with the p-[3px] / top-[3px] / bottom-[3px] classes below.
   const padding = 3;
   const segmentWidth = (containerWidth - padding * 2) / n;
 
@@ -52,27 +52,12 @@ export function SegmentedControl({
   return (
     <View
       onLayout={onLayout}
-      style={{
-        flexDirection: 'row',
-        padding,
-        backgroundColor: colors.cardSunk,
-        borderRadius: radii.pill,
-        borderWidth: 1,
-        borderColor: colors.lineSoft,
-      }}
+      className={`flex-row p-[3px] bg-surface-sunk rounded-full border border-border-soft ${className}`}
     >
       {containerWidth > 0 && (
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: padding,
-              bottom: padding,
-              backgroundColor: colors.accent,
-              borderRadius: radii.pill,
-            },
-            thumbStyle,
-          ]}
+        <AnimatedView
+          className="absolute top-[3px] bottom-[3px] bg-accent rounded-full"
+          style={thumbStyle}
         />
       )}
       {opts.map(o => {
@@ -81,21 +66,12 @@ export function SegmentedControl({
           <Pressable
             key={o.value}
             onPress={() => onChange?.(o.value)}
-            style={{
-              flex: 1,
-              height: 38,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: radii.pill,
-            }}
+            className="flex-1 h-[38px] items-center justify-center rounded-full"
           >
             <Text
-              style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: on ? colors.accentInk : colors.ink2,
-                textTransform: 'capitalize',
-              }}
+              className={`text-sm font-semibold capitalize ${
+                on ? 'text-accent-foreground' : 'text-text-secondary'
+              }`}
             >
               {o.label}
             </Text>

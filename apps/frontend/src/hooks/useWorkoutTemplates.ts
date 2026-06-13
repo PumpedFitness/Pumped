@@ -1,11 +1,23 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import {
-  workoutService,
+  deleteWorkoutTemplate,
+  listWorkoutTemplates,
+  saveWorkoutTemplate,
+  updateWorkoutTemplateStatus,
   type SaveWorkoutTemplateInput,
-} from '../data/local/services';
-import type { WorkoutTemplateStatus } from '../data/local/enums';
-import type { ExerciseOption } from '../types/exercise';
-import type { WorkoutSession, WorkoutTemplate } from '../types/workout';
+} from '@/data/local/workouts/templates';
+import { listWorkoutSessions } from '@/data/local/workouts/sessions';
+import { useTableQuery } from '@/data/local/tableVersions';
+import {
+  workoutSessions,
+  workoutTemplateExercises,
+  workoutTemplateScheduleWeekdays,
+  workoutTemplateSets,
+  workoutTemplates,
+} from '@/data/local/schema';
+import type { WorkoutTemplateStatus } from '@/data/local/enums';
+import type { ExerciseOption } from '@/types/exercise';
+import type { WorkoutSession, WorkoutTemplate } from '@/types/workout';
 import { useExerciseOptions } from './useExerciseOptions';
 
 type UseWorkoutTemplatesResult = {
@@ -18,51 +30,37 @@ type UseWorkoutTemplatesResult = {
     status: WorkoutTemplateStatus,
   ) => WorkoutTemplate;
   deleteTemplate: (templateId: string) => void;
-  refresh: () => void;
 };
 
 export function useWorkoutTemplates(): UseWorkoutTemplatesResult {
-  const [templates, setTemplates] = useState(() =>
-    workoutService.listWorkoutTemplates(),
+  const templates = useTableQuery(
+    [
+      workoutTemplates,
+      workoutTemplateExercises,
+      workoutTemplateSets,
+      workoutTemplateScheduleWeekdays,
+    ],
+    () => listWorkoutTemplates(),
   );
-  const [sessions, setSessions] = useState(() =>
-    workoutService.listWorkoutSessions(),
+  const sessions = useTableQuery([workoutSessions], () =>
+    listWorkoutSessions(),
   );
-
   const exerciseOptions = useExerciseOptions();
 
-  const refresh = useCallback(() => {
-    setTemplates(workoutService.listWorkoutTemplates());
-    setSessions(workoutService.listWorkoutSessions());
-  }, []);
-
+  // Writes notify table subscribers, so every reader re-renders — no manual
+  // refresh needed.
   const saveTemplate = useCallback(
-    (input: SaveWorkoutTemplateInput) => {
-      const savedTemplate = workoutService.saveWorkoutTemplate(input);
-      refresh();
-      return savedTemplate;
-    },
-    [refresh],
+    (input: SaveWorkoutTemplateInput) => saveWorkoutTemplate(input),
+    [],
   );
-
   const deleteTemplate = useCallback(
-    (templateId: string) => {
-      workoutService.deleteWorkoutTemplate(templateId);
-      refresh();
-    },
-    [refresh],
+    (templateId: string) => deleteWorkoutTemplate(templateId),
+    [],
   );
-
-  const updateTemplateStatus = useCallback(
-    (templateId: string, status: WorkoutTemplateStatus) => {
-      const updatedTemplate = workoutService.updateWorkoutTemplateStatus(
-        templateId,
-        status,
-      );
-      refresh();
-      return updatedTemplate;
-    },
-    [refresh],
+  const updateStatus = useCallback(
+    (templateId: string, status: WorkoutTemplateStatus) =>
+      updateWorkoutTemplateStatus(templateId, status),
+    [],
   );
 
   return {
@@ -70,8 +68,7 @@ export function useWorkoutTemplates(): UseWorkoutTemplatesResult {
     sessions,
     exerciseOptions,
     saveTemplate,
-    updateTemplateStatus,
+    updateTemplateStatus: updateStatus,
     deleteTemplate,
-    refresh,
   };
 }

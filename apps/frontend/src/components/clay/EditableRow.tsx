@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
-import { colors, radii } from '../../theme/tokens';
+import { colors } from '@/theme/tokens';
 
 type EditableRowProps = {
   icon: React.ReactNode;
@@ -10,6 +10,7 @@ type EditableRowProps = {
   keyboardType?: 'default' | 'numeric' | 'decimal-pad';
   divider?: boolean;
   onSave: (value: string) => void;
+  className?: string;
 };
 
 export function EditableRow({
@@ -20,6 +21,7 @@ export function EditableRow({
   keyboardType = 'default',
   divider = false,
   onSave,
+  className = '',
 }: EditableRowProps) {
   const inputRef = useRef<TextInput>(null);
   const [editing, setEditing] = useState(false);
@@ -39,36 +41,14 @@ export function EditableRow({
   return (
     <Pressable onPress={startEdit}>
       <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 13,
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-          borderTopWidth: divider ? 1 : 0,
-          borderTopColor: colors.line,
-        }}
+        className={`flex-row items-center gap-[13px] py-[14px] px-4 ${
+          divider ? 'border-t border-border-hairline' : ''
+        } ${className}`}
       >
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: radii.sm,
-            backgroundColor: colors.accentSoft,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <View className="w-8 h-8 rounded-xl bg-accent-soft items-center justify-center">
           {icon}
         </View>
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: '500',
-            color: colors.ink,
-            width: 70,
-          }}
-        >
+        <Text className="text-[15px] font-medium text-foreground w-[70px]">
           {label}
         </Text>
         {editing ? (
@@ -81,23 +61,13 @@ export function EditableRow({
             keyboardType={keyboardType}
             placeholder={placeholder}
             placeholderTextColor={colors.muted}
-            style={{
-              flex: 1,
-              fontSize: 14,
-              fontWeight: '500',
-              color: colors.ink,
-              padding: 0,
-              textAlign: 'right',
-            }}
+            className="flex-1 text-sm font-medium text-foreground p-0 text-right"
           />
         ) : (
           <Text
-            style={{
-              flex: 1,
-              fontSize: 14,
-              color: value ? colors.muted : colors.line,
-              textAlign: 'right',
-            }}
+            className={`flex-1 text-sm text-right ${
+              value ? 'text-muted' : 'text-[rgba(52,54,44,0.09)]'
+            }`}
           >
             {value || placeholder}
           </Text>

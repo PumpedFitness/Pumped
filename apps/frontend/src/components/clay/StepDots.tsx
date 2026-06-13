@@ -1,30 +1,20 @@
 import { View } from 'react-native';
-import { colors } from '../../theme/tokens';
 
 type StepDotsProps = {
   current: number;
   total: number;
+  className?: string;
 };
 
-export function StepDots({ current, total }: StepDotsProps) {
+export function StepDots({ current, total, className = '' }: StepDotsProps) {
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        alignSelf: 'center',
-      }}
-    >
+    <View className={`flex-row items-center gap-2 self-center ${className}`}>
       {Array.from({ length: total }).map((_, i) => (
         <View
           key={i}
-          style={{
-            width: i === current ? 24 : 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: i === current ? colors.accent : colors.line,
-          }}
+          className={`h-1.5 rounded-[3px] ${
+            i === current ? 'w-6 bg-accent' : 'w-1.5 bg-[rgba(52,54,44,0.09)]'
+          }`}
         />
       ))}
     </View>

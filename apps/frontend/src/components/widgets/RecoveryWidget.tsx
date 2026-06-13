@@ -1,9 +1,10 @@
 import { View, Text } from 'react-native';
-import { Card } from '../clay/Card';
-import { RingGauge } from '../clay/RingGauge';
-import { Button } from '../clay/Button';
-import { ClayIcon } from '../icons/ClayIcon';
-import { colors, typography } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import { Card } from '@/components/clay/Card';
+import { RingGauge } from '@/components/clay/RingGauge';
+import { Button } from '@/components/clay/Button';
+import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@/theme/tokens';
 
 type RecoveryWidgetProps = {
   colSpan: number;
@@ -11,90 +12,49 @@ type RecoveryWidgetProps = {
 };
 
 export function RecoveryWidget(_props: RecoveryWidgetProps) {
+  const { t } = useTranslation();
+
   return (
     <Card variant="raised" radius="2xl" pad={20}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <View className="flex-row items-center gap-4">
         <RingGauge value={86} size={84} thickness={11}>
-          <Text
-            style={{
-              fontSize: typography.title,
-              fontWeight: '700',
-              color: colors.cream,
-              letterSpacing: -0.3,
-            }}
-          >
+          <Text className="text-[21px] font-bold text-cream tracking-[-0.3px]">
             86
           </Text>
-          <Text
-            style={{
-              fontSize: typography.micro,
-              fontWeight: '700',
-              color: colors.creamDim,
-              textTransform: 'uppercase',
-              letterSpacing: 1.2,
-              marginTop: -2,
-            }}
-          >
-            READY
+          <Text className="text-[11px] font-bold text-cream-dim uppercase tracking-[1.2px] mt-[-2px]">
+            {t('widgets.recovery.ready')}
           </Text>
         </RingGauge>
 
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              fontSize: typography.micro,
-              fontWeight: '700',
-              color: colors.creamDim,
-              textTransform: 'uppercase',
-              letterSpacing: 1.2,
-              marginBottom: 4,
-            }}
-          >
-            RECOVERY
+        <View className="flex-1">
+          <Text className="text-[11px] font-bold text-cream-dim uppercase tracking-[1.2px] mb-1">
+            {t('widgets.recovery.title')}
           </Text>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: '700',
-              color: colors.cream,
-              lineHeight: 26,
-            }}
-          >
-            You're primed{'\n'}for Push Day
+          <Text className="text-xl font-bold text-cream leading-[26px]">
+            {t('widgets.recovery.primed')}
           </Text>
         </View>
       </View>
 
-      <View
-        style={{
-          height: 1,
-          backgroundColor: colors.lineOnMoss,
-          marginTop: 16,
-          marginBottom: 14,
-        }}
-      />
+      <View className="h-px bg-border-on-moss mt-4 mb-[14px]" />
 
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View style={{ flex: 1, flexDirection: 'row', gap: 20 }}>
+      <View className="flex-row items-center">
+        <View className="flex-1 flex-row gap-5">
           <View>
-            <Text style={{ fontSize: typography.title, fontWeight: '700', color: colors.cream }}>
-              6
-            </Text>
-            <Text style={{ fontSize: typography.micro, color: colors.creamDim, marginTop: 2 }}>
-              movements
+            <Text className="text-[21px] font-bold text-cream">6</Text>
+            <Text className="text-[11px] text-cream-dim mt-[2px]">
+              {t('widgets.recovery.movements')}
             </Text>
           </View>
           <View>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={{ fontSize: typography.title, fontWeight: '700', color: colors.cream }}>
-                48
-              </Text>
-              <Text style={{ fontSize: typography.caption, fontWeight: '500', color: colors.creamDim, marginLeft: 2 }}>
+            <View className="flex-row items-baseline">
+              <Text className="text-[21px] font-bold text-cream">48</Text>
+              <Text className="text-[12.5px] font-medium text-cream-dim ml-[2px]">
                 m
               </Text>
             </View>
-            <Text style={{ fontSize: typography.micro, color: colors.creamDim, marginTop: 2 }}>
-              est. time
+            <Text className="text-[11px] text-cream-dim mt-[2px]">
+              {t('widgets.recovery.estTime')}
             </Text>
           </View>
         </View>
@@ -102,9 +62,11 @@ export function RecoveryWidget(_props: RecoveryWidgetProps) {
         <Button
           variant="primary"
           size="sm"
-          iconRight={<ClayIcon name="play" size={16} color={colors.accentInk} />}
+          iconRight={
+            <ClayIcon name="play" size={16} color={colors.accentInk} />
+          }
         >
-          Start
+          {t('widgets.recovery.start')}
         </Button>
       </View>
     </Card>

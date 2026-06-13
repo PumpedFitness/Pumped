@@ -12,7 +12,7 @@ import type {
   WorkoutTemplateColor,
   WorkoutTemplateStatus,
   WorkoutWeekday,
-} from '../enums';
+} from '@/data/local/enums';
 import { enumText } from './columns';
 
 export const workoutTemplates = sqliteTable('workout_template', {

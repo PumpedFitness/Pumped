@@ -5,7 +5,7 @@ import {
   real,
   index,
 } from 'drizzle-orm/sqlite-core';
-import type { WorkoutSetType } from '../enums';
+import type { WorkoutSetType } from '@/data/local/enums';
 import { enumText } from './columns';
 import { workoutTemplates } from './workoutTemplate';
 

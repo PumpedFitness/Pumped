@@ -1,18 +1,24 @@
-import type { WorkoutSetType } from '../../../data/local/enums';
-import type { WeightUnit } from '../../../data/local/schema/userProfile';
+import type { TFunction } from 'i18next';
+import type { WorkoutSetType } from '@/data/local/enums';
+import type { WeightUnit } from '@/data/local/schema/userProfile';
 import {
   isCurrentWorkoutSetFieldValid,
   type CurrentWorkoutSet,
   type UpdateCurrentWorkoutSetInput,
-} from '../../../stores/currentWorkoutModel';
-import type { EditableExerciseSet } from '../../../types/exercise';
-import type { PerformedSet } from '../../../types/workout';
-import { displayWeight } from '../../../utils/units';
-import type { OptionalSliderConfig } from '../../forms/OptionalSliderSheet';
+} from '@/stores/currentWorkoutModel';
+import type { EditableExerciseSet } from '@/types/exercise';
+import type { PerformedSet } from '@/types/workout';
+import { displayWeight } from '@/utils/units';
+import type { OptionalSliderConfig } from '@/components/forms/OptionalSliderSheet';
 
 export type SetTypeOption = {
   value: WorkoutSetType;
-  label: string;
+  labelKey: `setTable.setTypes.${
+    | 'warmup'
+    | 'working'
+    | 'backoff'
+    | 'drop'
+    | 'amrap'}`;
 };
 
 type BaseExerciseSetTableProps = {
@@ -38,7 +44,7 @@ type EditableExerciseSetTableProps = BaseExerciseSetTableProps & {
   onRemoveSet: (set: CurrentWorkoutSet) => void;
 };
 
-export type ReadOnlyExerciseSet = Pick<
+type ReadOnlyExerciseSet = Pick<
   PerformedSet,
   'id' | 'setType' | 'weight' | 'reps' | 'rpe'
 >;
@@ -86,55 +92,69 @@ export type SetTableRow = {
   onRemove: () => void;
 };
 
-const TARGET_REPS_CONFIG: OptionalSliderConfig = {
-  title: 'Target reps',
-  description: 'Choose the planned repetitions for this set.',
-  minValue: 1,
-  maxValue: 30,
-  step: 1,
-  defaultValue: 8,
-  formatValue: value => `${value} reps`,
-};
+export function buildTargetRepsSliderConfig(
+  t: TFunction,
+): OptionalSliderConfig {
+  return {
+    title: t('setTable.sliders.targetReps.title'),
+    description: t('setTable.sliders.targetReps.description'),
+    minValue: 1,
+    maxValue: 30,
+    step: 1,
+    defaultValue: 8,
+    formatValue: value => t('setTable.sliders.repsValue', { count: value }),
+  };
+}
 
-const PERCENTAGE_CONFIG: OptionalSliderConfig = {
-  title: 'Percentage',
-  description: 'Choose the planned load percentage for this set.',
-  minValue: 5,
-  maxValue: 100,
-  step: 2.5,
-  defaultValue: 70,
-  formatValue: value => `${value}%`,
-};
+export function buildPercentageSliderConfig(
+  t: TFunction,
+): OptionalSliderConfig {
+  return {
+    title: t('setTable.sliders.percentage.title'),
+    description: t('setTable.sliders.percentage.description'),
+    minValue: 5,
+    maxValue: 100,
+    step: 2.5,
+    defaultValue: 70,
+    formatValue: value => t('setTable.sliders.percentValue', { value }),
+  };
+}
 
-const TARGET_RPE_CONFIG: OptionalSliderConfig = {
-  title: 'Target RPE',
-  description: 'Choose the planned effort from 1 to 10.',
-  minValue: 1,
-  maxValue: 10,
-  step: 0.5,
-  defaultValue: 8,
-  formatValue: value => `RPE ${value}`,
-};
+export function buildTargetRpeSliderConfig(t: TFunction): OptionalSliderConfig {
+  return {
+    title: t('setTable.sliders.targetRpe.title'),
+    description: t('setTable.sliders.targetRpe.description'),
+    minValue: 1,
+    maxValue: 10,
+    step: 0.5,
+    defaultValue: 8,
+    formatValue: value => t('setTable.sliders.rpeValue', { value }),
+  };
+}
 
-const REPS_CONFIG: OptionalSliderConfig = {
-  title: 'Reps',
-  description: 'Choose the repetitions performed for this set.',
-  minValue: 1,
-  maxValue: 30,
-  step: 1,
-  defaultValue: 8,
-  formatValue: value => `${value} reps`,
-};
+export function buildRepsSliderConfig(t: TFunction): OptionalSliderConfig {
+  return {
+    title: t('setTable.sliders.reps.title'),
+    description: t('setTable.sliders.reps.description'),
+    minValue: 1,
+    maxValue: 30,
+    step: 1,
+    defaultValue: 8,
+    formatValue: value => t('setTable.sliders.repsValue', { count: value }),
+  };
+}
 
-const RPE_CONFIG: OptionalSliderConfig = {
-  title: 'RPE',
-  description: 'Choose the effort for this set.',
-  minValue: 6,
-  maxValue: 10,
-  step: 0.5,
-  defaultValue: 8,
-  formatValue: value => `RPE ${value}`,
-};
+export function buildRpeSliderConfig(t: TFunction): OptionalSliderConfig {
+  return {
+    title: t('setTable.sliders.rpe.title'),
+    description: t('setTable.sliders.rpe.description'),
+    minValue: 6,
+    maxValue: 10,
+    step: 0.5,
+    defaultValue: 8,
+    formatValue: value => t('setTable.sliders.rpeValue', { value }),
+  };
+}
 
 function parseOptionalNumber(value: string): number | null {
   const normalized = value.trim().replace(',', '.');
@@ -164,33 +184,44 @@ function updateTemplateField(
 }
 
 export function buildTemplateSetTableRows(
+  t: TFunction,
   props: CollapsibleExerciseSetTableProps,
 ): SetTableRow[] {
+  const targetRepsConfig = buildTargetRepsSliderConfig(t);
+  const percentageConfig = buildPercentageSliderConfig(t);
+  const targetRpeConfig = buildTargetRpeSliderConfig(t);
+
   return props.sets.map((set, index) => ({
-    key: `template-${index}`,
+    key: set.id,
     index,
     setType: set.setType,
     fields: [
       {
         id: 'reps',
-        accessibilityLabel: `Set ${index + 1} target reps`,
+        accessibilityLabel: t('setTable.a11y.setTargetReps', {
+          number: index + 1,
+        }),
         value: parseOptionalNumber(set.targetReps),
         inputMethod: 'slider',
-        sliderConfig: TARGET_REPS_CONFIG,
+        sliderConfig: targetRepsConfig,
       },
       {
         id: 'percentage',
-        accessibilityLabel: `Set ${index + 1} percentage`,
+        accessibilityLabel: t('setTable.a11y.setPercentage', {
+          number: index + 1,
+        }),
         value: parseOptionalNumber(set.targetPercentage1Rm),
         inputMethod: 'slider',
-        sliderConfig: PERCENTAGE_CONFIG,
+        sliderConfig: percentageConfig,
       },
       {
         id: 'rpe',
-        accessibilityLabel: `Set ${index + 1} target RPE`,
+        accessibilityLabel: t('setTable.a11y.setTargetRpe', {
+          number: index + 1,
+        }),
         value: parseOptionalNumber(set.targetRpe),
         inputMethod: 'slider',
-        sliderConfig: TARGET_RPE_CONFIG,
+        sliderConfig: targetRpeConfig,
       },
     ],
     canRemove: props.sets.length > 1,
@@ -202,8 +233,12 @@ export function buildTemplateSetTableRows(
 }
 
 export function buildWorkoutSetTableRows(
+  t: TFunction,
   props: EditableExerciseSetTableProps,
 ): SetTableRow[] {
+  const repsConfig = buildRepsSliderConfig(t);
+  const rpeConfig = buildRpeSliderConfig(t);
+
   return props.sets.map((set, index) => ({
     key: set.id,
     index,
@@ -211,7 +246,7 @@ export function buildWorkoutSetTableRows(
     fields: [
       {
         id: 'weight',
-        accessibilityLabel: `Set ${index + 1} weight`,
+        accessibilityLabel: t('setTable.a11y.setWeight', { number: index + 1 }),
         value: set.weight,
         isValid: isCurrentWorkoutSetFieldValid(set, 'weight'),
         inputMethod: 'keyboard',
@@ -219,19 +254,19 @@ export function buildWorkoutSetTableRows(
       },
       {
         id: 'reps',
-        accessibilityLabel: `Set ${index + 1} reps`,
+        accessibilityLabel: t('setTable.a11y.setReps', { number: index + 1 }),
         value: set.reps,
         isValid: isCurrentWorkoutSetFieldValid(set, 'reps'),
         inputMethod: 'slider',
-        sliderConfig: REPS_CONFIG,
+        sliderConfig: repsConfig,
       },
       {
         id: 'rpe',
-        accessibilityLabel: `Set ${index + 1} RPE`,
+        accessibilityLabel: t('setTable.a11y.setRpe', { number: index + 1 }),
         value: set.rpe,
         isValid: isCurrentWorkoutSetFieldValid(set, 'rpe'),
         inputMethod: 'slider',
-        sliderConfig: RPE_CONFIG,
+        sliderConfig: rpeConfig,
       },
     ],
     tone: set.isDone ? 'completed' : 'default',
@@ -246,8 +281,12 @@ export function buildWorkoutSetTableRows(
 }
 
 export function buildReadOnlyWorkoutSetTableRows(
+  t: TFunction,
   props: ReadOnlyExerciseSetTableProps,
 ): SetTableRow[] {
+  const repsConfig = buildRepsSliderConfig(t);
+  const rpeConfig = buildRpeSliderConfig(t);
+
   return props.sets.map((set, index) => ({
     key: set.id,
     index,
@@ -255,7 +294,7 @@ export function buildReadOnlyWorkoutSetTableRows(
     fields: [
       {
         id: 'weight',
-        accessibilityLabel: `Set ${index + 1} weight`,
+        accessibilityLabel: t('setTable.a11y.setWeight', { number: index + 1 }),
         value:
           set.weight === null
             ? null
@@ -265,17 +304,17 @@ export function buildReadOnlyWorkoutSetTableRows(
       },
       {
         id: 'reps',
-        accessibilityLabel: `Set ${index + 1} reps`,
+        accessibilityLabel: t('setTable.a11y.setReps', { number: index + 1 }),
         value: set.reps,
         inputMethod: 'slider',
-        sliderConfig: REPS_CONFIG,
+        sliderConfig: repsConfig,
       },
       {
         id: 'rpe',
-        accessibilityLabel: `Set ${index + 1} RPE`,
+        accessibilityLabel: t('setTable.a11y.setRpe', { number: index + 1 }),
         value: set.rpe,
         inputMethod: 'slider',
-        sliderConfig: RPE_CONFIG,
+        sliderConfig: rpeConfig,
       },
     ],
     readOnly: true,

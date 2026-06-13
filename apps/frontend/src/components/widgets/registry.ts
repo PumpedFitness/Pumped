@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { WidgetType, WidgetMeta } from '../../types/widget';
+import type { WidgetType, WidgetMeta } from '@/types/widget';
 import { RecoveryWidget } from './RecoveryWidget';
 import { NextWorkoutWidget } from './NextWorkoutWidget';
 import { StreakWidget } from './StreakWidget';
@@ -8,7 +8,7 @@ import { TimeWidget } from './TimeWidget';
 import { WeeklyVolumeWidget } from './WeeklyVolumeWidget';
 import { ChartWidget } from './ChartWidget';
 
-export type WidgetComponentProps = {
+type WidgetComponentProps = {
   colSpan: number;
   width: number;
 };
@@ -23,7 +23,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: RecoveryWidget,
     meta: {
       type: 'recovery',
-      displayName: 'Recovery',
+      nameKey: 'widgets.names.recovery',
       icon: 'target',
       allowedSpans: [3],
       defaultSpan: 3,
@@ -33,7 +33,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: NextWorkoutWidget,
     meta: {
       type: 'nextWorkout',
-      displayName: 'Last Session',
+      nameKey: 'widgets.names.lastSession',
       icon: 'dumbbell',
       allowedSpans: [3],
       defaultSpan: 3,
@@ -43,7 +43,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: StreakWidget,
     meta: {
       type: 'streak',
-      displayName: 'Streak',
+      nameKey: 'widgets.names.streak',
       icon: 'flame',
       allowedSpans: [1, 2],
       defaultSpan: 2,
@@ -53,7 +53,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: ScheduleWidget,
     meta: {
       type: 'schedule',
-      displayName: 'Schedule',
+      nameKey: 'widgets.names.schedule',
       icon: 'calendar',
       allowedSpans: [2, 3],
       defaultSpan: 2,
@@ -63,7 +63,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: TimeWidget,
     meta: {
       type: 'time',
-      displayName: 'Time',
+      nameKey: 'widgets.names.time',
       icon: 'clock',
       allowedSpans: [1],
       defaultSpan: 1,
@@ -73,7 +73,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: WeeklyVolumeWidget,
     meta: {
       type: 'weeklyVolume',
-      displayName: 'Weekly Volume',
+      nameKey: 'widgets.names.weeklyVolume',
       icon: 'trend',
       allowedSpans: [1],
       defaultSpan: 1,
@@ -83,7 +83,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
     component: ChartWidget,
     meta: {
       type: 'chart',
-      displayName: 'Trend',
+      nameKey: 'widgets.names.trend',
       icon: 'trend',
       allowedSpans: [2, 3],
       defaultSpan: 3,

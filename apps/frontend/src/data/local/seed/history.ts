@@ -1,6 +1,6 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import type { WorkoutSetType } from '../enums';
-import type { performedSets, workoutSessions } from '../schema';
+import type { WorkoutSetType } from '@/data/local/enums';
+import type { performedSets, workoutSessions } from '@/data/local/schema';
 import { EXERCISE_IDS, LOCAL_USER_ID, sampleId, TEMPLATE_IDS } from './ids';
 
 type SessionInsert = InferInsertModel<typeof workoutSessions>;

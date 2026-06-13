@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ConfirmationActions } from './OptionPopupActions';
 import { OptionPopupFrame } from './OptionPopupFrame';
 import { OptionPopupList } from './OptionPopupList';
@@ -10,10 +11,11 @@ export function ConfirmableOptionPopup<T extends string>({
   text,
   options,
   selectedValue,
-  confirmLabel = 'Confirm',
+  confirmLabel,
   onClose,
   onSelect,
 }: OptionPopupVariantProps<T>) {
+  const { t } = useTranslation();
   const [draftValue, setDraftValue] = useState<T | undefined>(selectedValue);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function ConfirmableOptionPopup<T extends string>({
       text={text}
       footer={
         <ConfirmationActions
-          confirmLabel={confirmLabel}
+          confirmLabel={confirmLabel ?? t('common.confirm')}
           disabled={draftValue === undefined}
           onClose={onClose}
           onConfirm={confirm}

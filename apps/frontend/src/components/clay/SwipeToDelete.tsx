@@ -1,15 +1,14 @@
 import { useRef, type ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 import Swipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Reanimated, {
+import {
   interpolate,
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { colors } from '../../theme/tokens';
-import { ClayIcon } from '../icons/ClayIcon';
+import { ClayIcon } from '@/components/icons/ClayIcon';
+import { AnimatedView } from '@/components/uniwind';
 
 type SwipeToDeleteProps = {
   children: ReactNode;
@@ -17,17 +16,22 @@ type SwipeToDeleteProps = {
   borderRadius?: number;
 };
 
-function RightAction(prog: SharedValue<number>, _drag: SharedValue<number>) {
+type RightActionProps = {
+  prog: SharedValue<number>;
+  drag: SharedValue<number>;
+};
+
+function RightAction({ prog }: RightActionProps) {
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(prog.value, [0, 0.5, 1], [0, 0.8, 1], 'clamp'),
   }));
 
   return (
-    <Reanimated.View style={styles.action}>
-      <Reanimated.View style={animatedStyle}>
+    <AnimatedView className="flex-1 justify-center items-center bg-danger">
+      <AnimatedView style={animatedStyle}>
         <ClayIcon name="trash" size={22} color="#fff" />
-      </Reanimated.View>
-    </Reanimated.View>
+      </AnimatedView>
+    </AnimatedView>
   );
 }
 
@@ -53,18 +57,11 @@ export function SwipeToDelete({
       dragOffsetFromRightEdge={20}
       containerStyle={{ borderRadius }}
       onSwipeableOpen={handleOpen}
-      renderRightActions={(prog, drag) => RightAction(prog, drag)}
+      renderRightActions={(prog, drag) => (
+        <RightAction prog={prog} drag={drag} />
+      )}
     >
       {children}
     </Swipeable>
   );
 }
-
-const styles = StyleSheet.create({
-  action: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.danger,
-  },
-});

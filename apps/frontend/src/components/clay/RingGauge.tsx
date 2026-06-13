@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors } from '../../theme/tokens';
+import { colors } from '@/theme/tokens';
 
 type RingGaugeProps = {
   value?: number;
@@ -12,6 +12,7 @@ type RingGaugeProps = {
   centerColor?: string;
   children?: ReactNode;
   style?: ViewStyle;
+  className?: string;
 };
 
 export function RingGauge({
@@ -23,6 +24,7 @@ export function RingGauge({
   centerColor = colors.moss,
   children,
   style,
+  className = '',
 }: RingGaugeProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const center = size / 2;
@@ -32,15 +34,8 @@ export function RingGauge({
 
   return (
     <View
-      style={[
-        {
-          width: size,
-          height: size,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        style,
-      ]}
+      className={`items-center justify-center ${className}`}
+      style={[{ width: size, height: size }, style]}
     >
       <Svg
         width={size}
@@ -71,13 +66,11 @@ export function RingGauge({
       </Svg>
       {/* Center */}
       <View
+        className="items-center justify-center rounded-full"
         style={{
           width: size - thickness * 2,
           height: size - thickness * 2,
-          borderRadius: 999,
           backgroundColor: centerColor,
-          alignItems: 'center',
-          justifyContent: 'center',
         }}
       >
         {children}

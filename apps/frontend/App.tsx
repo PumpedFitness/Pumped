@@ -1,13 +1,16 @@
 import './global.css';
+// Initialize i18next before the first render (side-effect import).
+import '@/i18n';
 
 import { useEffect, useState } from 'react';
 import { HeroUINativeProvider } from 'heroui-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar, ActivityIndicator, Text, View } from 'react-native';
 import { Uniwind } from 'uniwind';
-import { AppNavigator } from './src/navigation/AppNavigator';
-import { initDatabase } from './src/data/local/database';
-import { useAuthStore } from './src/stores/authStore';
+import { AppNavigator } from '@/navigation/AppNavigator';
+import { initDatabase } from '@/data/local/database';
+import { useAuthStore } from '@/stores/authStore';
+import { useHomescreenStore } from '@/stores/homescreenStore';
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
@@ -15,6 +18,7 @@ export default function App() {
   const authReady = useAuthStore(s => s.isReady);
   const userId = useAuthStore(s => s.userId);
   const initializeAuth = useAuthStore(s => s.initialize);
+  const initializeHomescreen = useHomescreenStore(s => s.initialize);
 
   useEffect(() => {
     Uniwind.setTheme('light');
@@ -24,6 +28,12 @@ export default function App() {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  // Homescreen layout initializes from MMKV once per launch (not per
+  // HomeScreen mount, which would reset user widget customization).
+  useEffect(() => {
+    initializeHomescreen();
+  }, [initializeHomescreen]);
 
   // Initialize the database once the local user identity is available.
   useEffect(() => {

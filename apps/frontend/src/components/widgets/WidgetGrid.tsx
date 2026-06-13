@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
-import type { WidgetPlacement } from '../../types/widget';
+import type { WidgetPlacement } from '@/types/widget';
 import { widgetRegistry } from './registry';
-import { spacing } from '../../theme/tokens';
+import { spacing } from '@/theme/tokens';
 
-const GAP = spacing[3]; // 12
+const GAP = spacing[3]; // 12 — keep in sync with the gap-3 classes below
 const COLS = 3;
 
 type RowItem = WidgetPlacement & { width: number; flatIndex: number };
@@ -14,7 +14,10 @@ type Row = {
   items: RowItem[];
 };
 
-function packRows(placements: WidgetPlacement[], availableWidth: number): Row[] {
+function packRows(
+  placements: WidgetPlacement[],
+  availableWidth: number,
+): Row[] {
   const unitWidth = (availableWidth - (COLS - 1) * GAP) / COLS;
   const rows: Row[] = [];
   let currentRow: RowItem[] = [];
@@ -25,7 +28,10 @@ function packRows(placements: WidgetPlacement[], availableWidth: number): Row[] 
     const span = Math.min(placement.colSpan, COLS);
     if (currentCols + span > COLS) {
       if (currentRow.length > 0) {
-        rows.push({ key: currentRow.map(r => r.id).join('-'), items: currentRow });
+        rows.push({
+          key: currentRow.map(r => r.id).join('-'),
+          items: currentRow,
+        });
       }
       currentRow = [];
       currentCols = 0;
@@ -55,15 +61,15 @@ export function WidgetGrid({ layout }: WidgetGridProps) {
   }, []);
 
   if (containerWidth === 0) {
-    return <View onLayout={onLayout} style={{ minHeight: 1 }} />;
+    return <View onLayout={onLayout} className="min-h-[1px]" />;
   }
 
   const rows = packRows(layout, containerWidth);
 
   return (
-    <View onLayout={onLayout} style={{ gap: GAP }}>
+    <View onLayout={onLayout} className="gap-3">
       {rows.map(row => (
-        <View key={row.key} style={{ flexDirection: 'row', gap: GAP }}>
+        <View key={row.key} className="flex-row gap-3">
           {row.items.map(item => {
             const entry = widgetRegistry[item.type];
             if (!entry) return null;

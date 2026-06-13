@@ -1,2 +1,2 @@
 export { OptionPopup } from './OptionPopup';
-export type { OptionPopupProps, PopupOption } from './optionPopupModel';
+export type { PopupOption } from './optionPopupModel';

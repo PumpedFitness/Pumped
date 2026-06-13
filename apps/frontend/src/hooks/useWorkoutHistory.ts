@@ -1,6 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
-import { workoutService } from '../data/local/services';
-import type { WorkoutSessionDetails } from '../types/workout';
+import {
+  getWorkoutSession,
+  listWorkoutSessions,
+} from '@/data/local/workouts/sessions';
+import { useTableQuery } from '@/data/local/tableVersions';
+import { performedSets, workoutSessions } from '@/data/local/schema';
+import type { ExerciseOption } from '@/types/exercise';
+import type { WorkoutSessionDetails } from '@/types/workout';
 import { useExerciseOptions } from './useExerciseOptions';
 
 export type WorkoutHistoryItem = WorkoutSessionDetails & {
@@ -11,70 +16,89 @@ export type WorkoutHistoryItem = WorkoutSessionDetails & {
   totalVolumeKg: number;
 };
 
-type UseWorkoutHistoryResult = {
-  workouts: WorkoutHistoryItem[];
-  refresh: () => void;
-};
+function buildWorkoutHistoryItem(
+  session: WorkoutSessionDetails,
+  exerciseById: Map<string, ExerciseOption>,
+): WorkoutHistoryItem {
+  const exerciseIds = [
+    ...new Set(
+      [...session.sets]
+        .sort((a, b) => a.exercisePosition - b.exercisePosition)
+        .map(set => set.exerciseId),
+    ),
+  ];
+  const exerciseNames = exerciseIds.map(
+    id => exerciseById.get(id)?.name ?? 'Unknown exercise',
+  );
+  const muscleGroupNames = [
+    ...new Set(
+      exerciseIds.flatMap(id => exerciseById.get(id)?.muscleGroupNames ?? []),
+    ),
+  ];
 
-function loadCompletedWorkouts(): WorkoutSessionDetails[] {
-  return workoutService
-    .listWorkoutSessions()
-    .filter(session => session.endedAt !== null)
-    .map(session => workoutService.getWorkoutSession(session.id))
-    .filter((session): session is WorkoutSessionDetails => session !== null);
+  return {
+    ...session,
+    durationMinutes: Math.max(
+      1,
+      Math.round(
+        ((session.endedAt ?? session.startedAt) - session.startedAt) / 60_000,
+      ),
+    ),
+    exerciseCount: exerciseIds.length,
+    exerciseNames,
+    muscleGroupNames,
+    totalVolumeKg: session.sets.reduce(
+      (total, set) => total + (set.weight ?? 0) * set.reps,
+      0,
+    ),
+  };
 }
 
-export function useWorkoutHistory(): UseWorkoutHistoryResult {
-  const [sessions, setSessions] = useState(loadCompletedWorkouts);
+function buildExerciseMap(
+  exerciseOptions: ExerciseOption[],
+): Map<string, ExerciseOption> {
+  return new Map(
+    exerciseOptions.map(exercise => [exercise.id, exercise] as const),
+  );
+}
+
+export function useWorkoutHistory(): { workouts: WorkoutHistoryItem[] } {
   const exerciseOptions = useExerciseOptions();
 
-  const refresh = useCallback(() => {
-    setSessions(loadCompletedWorkouts());
-  }, []);
+  const workouts = useTableQuery(
+    [workoutSessions, performedSets],
+    () => {
+      const exerciseById = buildExerciseMap(exerciseOptions);
+      return listWorkoutSessions()
+        .filter(session => session.endedAt !== null)
+        .map(session => getWorkoutSession(session.id))
+        .filter((session): session is WorkoutSessionDetails => session !== null)
+        .map(session => buildWorkoutHistoryItem(session, exerciseById));
+    },
+    [exerciseOptions],
+  );
 
-  const workouts = useMemo(() => {
-    const exerciseById = new Map(
-      exerciseOptions.map(exercise => [exercise.id, exercise] as const),
-    );
+  return { workouts };
+}
 
-    return sessions.map(session => {
-      const exerciseIds = [
-        ...new Set(
-          [...session.sets]
-            .sort((a, b) => a.exercisePosition - b.exercisePosition)
-            .map(set => set.exerciseId),
-        ),
-      ];
-      const exerciseNames = exerciseIds.map(
-        id => exerciseById.get(id)?.name ?? 'Unknown exercise',
+/** Loads a single completed workout without hydrating the whole history. */
+export function useWorkoutSession(
+  workoutId: string,
+): WorkoutHistoryItem | null {
+  const exerciseOptions = useExerciseOptions();
+
+  return useTableQuery(
+    [workoutSessions, performedSets],
+    () => {
+      const session = getWorkoutSession(workoutId);
+      if (!session || session.endedAt === null) {
+        return null;
+      }
+      return buildWorkoutHistoryItem(
+        session,
+        buildExerciseMap(exerciseOptions),
       );
-      const muscleGroupNames = [
-        ...new Set(
-          exerciseIds.flatMap(
-            id => exerciseById.get(id)?.muscleGroupNames ?? [],
-          ),
-        ),
-      ];
-
-      return {
-        ...session,
-        durationMinutes: Math.max(
-          1,
-          Math.round(
-            ((session.endedAt ?? session.startedAt) - session.startedAt) /
-              60_000,
-          ),
-        ),
-        exerciseCount: exerciseIds.length,
-        exerciseNames,
-        muscleGroupNames,
-        totalVolumeKg: session.sets.reduce(
-          (total, set) => total + (set.weight ?? 0) * set.reps,
-          0,
-        ),
-      };
-    });
-  }, [exerciseOptions, sessions]);
-
-  return { workouts, refresh };
+    },
+    [workoutId, exerciseOptions],
+  );
 }

@@ -1,23 +1,43 @@
-import type { WorkoutSetType } from '../../../data/local/enums';
-import type { EditableExerciseSet } from '../../../types/exercise';
+import type { TFunction } from 'i18next';
+import type { WorkoutSetType } from '@/data/local/enums';
+import type { EditableExerciseSet } from '@/types/exercise';
+import type { SetTypeOption } from './exerciseSetTableModel';
 
-export const EXERCISE_SET_TYPE_OPTIONS: {
-  value: WorkoutSetType;
-  label: string;
-}[] = [
-  { value: 'WARMUP', label: 'Warmup' },
-  { value: 'NORMAL', label: 'Working' },
-  { value: 'BACKOFF', label: 'Backoff' },
-  { value: 'DROP', label: 'Drop' },
-  { value: 'AMRAP', label: 'AMRAP' },
+export const SET_TYPE_OPTIONS: SetTypeOption[] = [
+  { value: 'WARMUP', labelKey: 'setTable.setTypes.warmup' },
+  { value: 'NORMAL', labelKey: 'setTable.setTypes.working' },
+  { value: 'BACKOFF', labelKey: 'setTable.setTypes.backoff' },
+  { value: 'DROP', labelKey: 'setTable.setTypes.drop' },
+  { value: 'AMRAP', labelKey: 'setTable.setTypes.amrap' },
 ];
 
-export function formatExerciseSetSummary(sets: EditableExerciseSet[]): string {
-  return EXERCISE_SET_TYPE_OPTIONS.map(option => ({
-    label: option.label.toLocaleLowerCase(),
+const SET_TYPE_SUMMARY_KEYS: Record<
+  WorkoutSetType,
+  `setTable.setTypesSummary.${
+    | 'warmup'
+    | 'working'
+    | 'backoff'
+    | 'drop'
+    | 'amrap'}`
+> = {
+  WARMUP: 'setTable.setTypesSummary.warmup',
+  NORMAL: 'setTable.setTypesSummary.working',
+  BACKOFF: 'setTable.setTypesSummary.backoff',
+  DROP: 'setTable.setTypesSummary.drop',
+  AMRAP: 'setTable.setTypesSummary.amrap',
+};
+
+export function formatExerciseSetSummary(
+  t: TFunction,
+  sets: EditableExerciseSet[],
+): string {
+  return SET_TYPE_OPTIONS.map(option => ({
+    typeKey: SET_TYPE_SUMMARY_KEYS[option.value],
     count: sets.filter(set => set.setType === option.value).length,
   }))
     .filter(item => item.count > 0)
-    .map(item => `${item.count} ${item.label}`)
+    .map(item =>
+      t('setTable.summaryItem', { count: item.count, type: t(item.typeKey) }),
+    )
     .join(' · ');
 }

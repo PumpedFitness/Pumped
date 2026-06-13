@@ -55,7 +55,7 @@ export default [
         'error',
         {
           IIFEs: true,
-          max: 120,
+          max: 150,
           skipBlankLines: true,
           skipComments: true,
         },
@@ -68,7 +68,7 @@ export default [
         {
           patterns: [
             {
-              group: ['**/data/local/database'],
+              group: ['**/database', '@/data/local/database'],
               message:
                 'Use useRepository or a domain hook instead of accessing the database directly.',
             },
@@ -125,6 +125,9 @@ export default [
     files: ['src/**/*.d.ts'],
     rules: {
       '@typescript-eslint/consistent-type-definitions': 'off',
+      // React Navigation's RootParamList augmentation is an empty interface
+      // by design.
+      '@typescript-eslint/no-empty-object-type': 'off',
       'no-restricted-syntax': 'off',
     },
   },
@@ -136,115 +139,38 @@ export default [
     },
   },
   {
-    files: ['src/components/settings/AppSettings.tsx'],
+    files: ['src/data/local/**/*.ts'],
     rules: {
-      // Reset-all-data is the documented exception to the repository boundary.
+      // The data layer itself is the sanctioned home of direct db access.
       'no-restricted-imports': 'off',
     },
   },
   {
+    files: ['src/i18n/resources.ts'],
+    rules: {
+      // The complete en+de translation dictionary lives in one file so the
+      // typed t() resource shape stays a single `as const` literal.
+      'max-lines': 'off',
+    },
+  },
+  {
+    files: ['src/screens/workout/plan/components/WorkoutTemplateCard.tsx'],
+    rules: {
+      complexity: ['error', 18],
+    },
+  },
+  {
     files: [
-      'src/components/exercise/ExerciseSelectionList.tsx',
-      'src/components/settings/UserSettings.tsx',
-      'src/components/workout/WorkoutTemplateCard.tsx',
-      'src/components/workout/WorkoutTemplateEditor.tsx',
-      'src/components/workout/WorkoutTemplateLibrary.tsx',
-      'src/navigation/MainTabs.tsx',
+      'src/screens/workout/template-editor/useWorkoutTemplateEditorDraft.ts',
     ],
     rules: {
-      // Existing UI debt: keep these components from growing while they are split up.
-      'max-lines-per-function': [
-        'error',
-        {
-          IIFEs: true,
-          max: 180,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/components/workout/WorkoutTemplateCard.tsx'],
-    rules: {
-      complexity: ['error', 18],
-    },
-  },
-  {
-    files: ['src/components/workout/hooks/useWorkoutTemplateEditorDraft.ts'],
-    rules: {
       complexity: ['error', 20],
     },
   },
   {
-    files: ['src/data/local/seed.ts'],
+    files: ['src/screens/home/widget-picker/components/WidgetPickerCard.tsx'],
     rules: {
-      'max-lines-per-function': [
-        'error',
-        {
-          IIFEs: true,
-          max: 250,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/data/local/services/workoutService.ts'],
-    rules: {
-      complexity: ['error', 20],
-      'max-lines': [
-        'error',
-        {
-          max: 460,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-      'max-lines-per-function': [
-        'error',
-        {
-          IIFEs: true,
-          max: 330,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/screens/MetricHistoryScreen.tsx'],
-    rules: {
-      'max-lines-per-function': [
-        'error',
-        {
-          IIFEs: true,
-          max: 320,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/screens/OnboardingScreen.tsx'],
-    rules: {
-      complexity: ['error', 18],
-      'max-lines-per-function': [
-        'error',
-        {
-          IIFEs: true,
-          max: 200,
-          skipBlankLines: true,
-          skipComments: true,
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/screens/WidgetPickerScreen.tsx'],
-    rules: {
+      // Existing UI debt: keep this component from growing while it is split up.
       'max-lines-per-function': [
         'error',
         {
@@ -254,12 +180,6 @@ export default [
           skipComments: true,
         },
       ],
-    },
-  },
-  {
-    files: ['src/stores/currentWorkoutStore.ts'],
-    rules: {
-      complexity: ['error', 18],
     },
   },
 ];

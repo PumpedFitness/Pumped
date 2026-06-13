@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCurrentWorkout } from '../../../hooks/useCurrentWorkout';
-import type { RootStackParamList } from '../../../navigation/AppNavigator';
+import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { CurrentWorkoutOverlay } from './CurrentWorkoutOverlay';
 
 const ELAPSED_TIME_REFRESH_MS = 30_000;

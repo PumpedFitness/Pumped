@@ -8,7 +8,6 @@ import {
   type ListRenderItemInfo,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-import { colors } from '../../theme/tokens';
 
 type WheelPickerProps = {
   items: string[];
@@ -31,6 +30,8 @@ export function WheelPicker({
   width = 80,
 }: WheelPickerProps) {
   const listRef = useRef<FlatList>(null);
+  const isUserScrollingRef = useRef(false);
+  const userScrolledOffsetRef = useRef<number | null>(null);
   const padCount = Math.floor(visibleCount / 2);
   const paddedItems = [
     ...Array(padCount).fill(''),
@@ -39,19 +40,37 @@ export function WheelPicker({
   ];
 
   useEffect(() => {
-    if (listRef.current && selectedIndex >= 0) {
-      listRef.current.scrollToOffset({
-        offset: selectedIndex * itemHeight,
-        animated: false,
-      });
+    if (!listRef.current || selectedIndex < 0) {
+      return;
     }
+    // Don't fight an in-progress user scroll; onMomentumEnd reports the
+    // user's pick and any external correction re-runs this effect after.
+    if (isUserScrollingRef.current) {
+      return;
+    }
+    const targetOffset = selectedIndex * itemHeight;
+    // The list already rests at this offset from the user's own scroll.
+    if (userScrolledOffsetRef.current === targetOffset) {
+      return;
+    }
+    userScrolledOffsetRef.current = null;
+    listRef.current.scrollToOffset({
+      offset: targetOffset,
+      animated: false,
+    });
+  }, [selectedIndex, itemHeight]);
+
+  const onScrollBeginDrag = useCallback(() => {
+    isUserScrollingRef.current = true;
   }, []);
 
   const onMomentumEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      isUserScrollingRef.current = false;
       const y = e.nativeEvent.contentOffset.y;
       const index = Math.round(y / itemHeight);
       const clamped = Math.max(0, Math.min(index, items.length - 1));
+      userScrolledOffsetRef.current = clamped * itemHeight;
       if (clamped !== selectedIndex) {
         onChange(clamped);
       }
@@ -65,18 +84,19 @@ export function WheelPicker({
       const isSelected = realIndex === selectedIndex;
       return (
         <View
-          style={{
-            height: itemHeight,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
+          className="justify-center items-center"
+          style={{ height: itemHeight }}
         >
           <Text
-            style={{
-              fontSize: isSelected ? 18 : 15,
-              fontWeight: isSelected ? '600' : '400',
-              color: item === '' ? 'transparent' : isSelected ? colors.ink : colors.muted,
-            }}
+            className={`${
+              isSelected ? 'text-lg font-semibold' : 'text-[15px] font-normal'
+            } ${
+              item === ''
+                ? 'text-transparent'
+                : isSelected
+                ? 'text-foreground'
+                : 'text-muted'
+            }`}
           >
             {item || ' '}
           </Text>
@@ -92,15 +112,8 @@ export function WheelPicker({
   return (
     <View style={{ width, height: containerHeight }}>
       <View
-        style={{
-          position: 'absolute',
-          top: highlightTop,
-          left: 0,
-          right: 0,
-          height: itemHeight,
-          backgroundColor: colors.cardSunk,
-          borderRadius: 8,
-        }}
+        className="absolute left-0 right-0 bg-surface-sunk rounded-lg"
+        style={{ top: highlightTop, height: itemHeight }}
       />
       <FlatList
         ref={listRef}
@@ -110,6 +123,7 @@ export function WheelPicker({
         showsVerticalScrollIndicator={false}
         snapToInterval={itemHeight}
         decelerationRate="fast"
+        onScrollBeginDrag={onScrollBeginDrag}
         onMomentumScrollEnd={onMomentumEnd}
         nestedScrollEnabled={Platform.OS === 'android'}
         overScrollMode="never"

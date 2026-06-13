@@ -1,17 +1,20 @@
 import { Pressable, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 type CancelActionProps = {
   onClose: () => void;
 };
 
 export function CancelAction({ onClose }: CancelActionProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
       className="mt-5 min-h-11 items-center justify-center"
       onPress={onClose}
     >
-      <Text className="t-label text-text-muted">Cancel</Text>
+      <Text className="t-label text-text-muted">{t('common.cancel')}</Text>
     </Pressable>
   );
 }
@@ -28,6 +31,8 @@ export function ConfirmationActions({
   onClose,
   onConfirm,
 }: ConfirmationActionsProps) {
+  const { t } = useTranslation();
+
   return (
     <View className="mt-5 flex-row gap-3">
       <Pressable
@@ -35,7 +40,7 @@ export function ConfirmationActions({
         className="min-h-12 flex-1 items-center justify-center rounded-full border border-border-hairline bg-surface-card"
         onPress={onClose}
       >
-        <Text className="t-label">Cancel</Text>
+        <Text className="t-label">{t('common.cancel')}</Text>
       </Pressable>
       <Pressable
         accessibilityRole="button"

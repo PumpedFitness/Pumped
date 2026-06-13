@@ -1,4 +1,4 @@
-import type { WorkoutSetType } from '../data/local/enums';
+import type { WorkoutSetType } from '@/data/local/enums';
 
 export type ExerciseOption = {
   id: string;
@@ -17,6 +17,8 @@ export type ExerciseSelectionResult = {
 };
 
 export type EditableExerciseSet = {
+  /** Local-only identity for stable React keys; never persisted. */
+  id: string;
   setType: WorkoutSetType;
   targetReps: string;
   targetPercentage1Rm: string;

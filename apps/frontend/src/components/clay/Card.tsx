@@ -1,36 +1,27 @@
 import type { ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
-import { colors, radii, shadows } from '../../theme/tokens';
+import { shadows } from '@/theme/tokens';
 
 const SURFACES = {
-  card: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-  },
-  raised: {
-    backgroundColor: colors.moss,
-    ...shadows.raised,
-  },
-  sunk: {
-    backgroundColor: colors.cardSunk,
-    borderWidth: 1,
-    borderColor: colors.lineSoft,
-  },
-  float: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    ...shadows.card,
-  },
+  card: 'bg-surface-card border border-border-hairline',
+  raised: 'bg-moss',
+  sunk: 'bg-surface-sunk border border-border-soft',
+  float: 'bg-surface-card border border-border-hairline',
 } as const;
 
-const RADII: Record<string, number> = {
-  md: radii.md,
-  lg: radii.lg,
-  xl: radii.xl,
-  '2xl': radii['2xl'],
-};
+const SURFACE_SHADOWS = {
+  card: undefined,
+  raised: shadows.raised,
+  sunk: undefined,
+  float: shadows.card,
+} as const;
+
+const RADII = {
+  md: 'rounded-[18px]',
+  lg: 'rounded-[22px]',
+  xl: 'rounded-[28px]',
+  '2xl': 'rounded-[34px]',
+} as const;
 
 type CardProps = {
   children: ReactNode;
@@ -38,6 +29,7 @@ type CardProps = {
   radius?: 'md' | 'lg' | 'xl' | '2xl';
   pad?: number;
   style?: ViewStyle;
+  className?: string;
 };
 
 export function Card({
@@ -46,20 +38,12 @@ export function Card({
   radius = 'lg',
   pad = 18,
   style,
+  className = '',
 }: CardProps) {
-  const surface = SURFACES[variant];
-
   return (
     <View
-      style={[
-        surface,
-        {
-          borderRadius: RADII[radius] ?? radii.lg,
-          padding: pad,
-          overflow: 'hidden',
-        },
-        style,
-      ]}
+      className={`overflow-hidden ${SURFACES[variant]} ${RADII[radius]} ${className}`}
+      style={[SURFACE_SHADOWS[variant], { padding: pad }, style]}
     >
       {children}
     </View>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Portal } from 'heroui-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -8,9 +9,9 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { colors, motion, shadows } from '../../../theme/tokens';
-import { RingGauge } from '../../clay/RingGauge';
-import { ClayIcon } from '../../icons/ClayIcon';
+import { colors, motion, shadows } from '@/theme/tokens';
+import { RingGauge } from '@/components/clay/RingGauge';
+import { ClayIcon } from '@/components/icons/ClayIcon';
 import {
   formatWorkoutElapsedTime,
   getWorkoutOverlayProgress,
@@ -44,20 +45,18 @@ function WorkoutProgressButton({
   onExpand,
   onOpenWorkout,
 }: WorkoutProgressButtonProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
-        collapsed ? 'Expand workout overlay' : 'Open current workout'
+        collapsed
+          ? t('currentWorkout.overlay.expandA11y')
+          : t('currentWorkout.overlay.openA11y')
       }
       onPress={collapsed ? onExpand : onOpenWorkout}
-      style={({ pressed }) => ({
-        width: COLLAPSED_WIDTH,
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: pressed ? 'rgba(243, 238, 226, 0.08)' : 'transparent',
-      })}
+      className="w-[76px] h-full items-center justify-center active:bg-[rgba(243,238,226,0.08)]"
     >
       <RingGauge
         value={percentage}
@@ -67,14 +66,7 @@ function WorkoutProgressButton({
         fillColor={colors.accent}
         centerColor={colors.mossDeep}
       >
-        <Text
-          style={{
-            color: colors.cream,
-            fontSize: 14,
-            fontWeight: '700',
-            letterSpacing: -0.3,
-          }}
-        >
+        <Text className="text-cream text-sm font-bold tracking-[-0.3px]">
           {percentage}%
         </Text>
       </RingGauge>
@@ -99,82 +91,46 @@ function WorkoutDetails({
   currentExerciseName,
   onOpenWorkout,
 }: WorkoutDetailsProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Open current workout"
+      accessibilityLabel={t('currentWorkout.overlay.openA11y')}
       onPress={onOpenWorkout}
-      style={({ pressed }) => ({
-        flex: 1,
-        height: '100%',
-        justifyContent: 'center',
-        paddingLeft: 6,
-        opacity: pressed ? 0.72 : 1,
-      })}
+      className="flex-1 h-full justify-center pl-[6px] active:opacity-[0.72]"
     >
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 7,
-        }}
-      >
-        <View
-          style={{
-            width: 7,
-            height: 7,
-            borderRadius: 999,
-            backgroundColor: colors.accent,
-          }}
-        />
-        <Text
-          style={{
-            color: colors.creamDim,
-            fontSize: 10,
-            fontWeight: '700',
-            letterSpacing: 1.05,
-            textTransform: 'uppercase',
-          }}
-        >
-          Workout in progress
+      <View className="flex-row items-center gap-[7px]">
+        <View className="w-[7px] h-[7px] rounded-full bg-accent" />
+        <Text className="text-cream-dim text-[10px] font-bold tracking-[1.05px] uppercase">
+          {t('currentWorkout.inProgress')}
         </Text>
       </View>
       <Text
         numberOfLines={1}
-        style={{
-          marginTop: 7,
-          color: colors.cream,
-          fontSize: 18,
-          fontWeight: '700',
-          letterSpacing: -0.25,
-        }}
+        className="mt-[7px] text-cream text-lg font-bold tracking-[-0.25px]"
       >
         {workoutName}
       </Text>
       <Text
         numberOfLines={1}
-        style={{
-          marginTop: 5,
-          color: colors.creamDim,
-          fontSize: 12.5,
-          fontWeight: '500',
-        }}
+        className="mt-[5px] text-cream-dim text-[12.5px] font-medium"
       >
-        {completedSets} of {totalSets} sets
+        {t('currentWorkout.overlay.setsOf', {
+          completed: completedSets,
+          total: totalSets,
+        })}
         {'  ·  '}
         {elapsedTime}
       </Text>
       {currentExerciseName ? (
         <Text
           numberOfLines={1}
-          style={{
-            marginTop: 3,
-            color: colors.cream,
-            fontSize: 12.5,
-            fontWeight: '600',
-          }}
+          className="mt-[3px] text-cream text-[12.5px] font-semibold"
         >
-          Up next: {currentExerciseName}
+          {t('currentWorkout.overlay.upNext', {
+            exercise: currentExerciseName,
+          })}
         </Text>
       ) : null}
     </Pressable>
@@ -186,31 +142,15 @@ type CollapseButtonProps = {
 };
 
 function CollapseButton({ onCollapse }: CollapseButtonProps) {
+  const { t } = useTranslation();
+
   return (
-    <View
-      style={{
-        width: 48,
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderLeftColor: colors.lineOnMoss,
-        borderLeftWidth: 1,
-      }}
-    >
+    <View className="w-12 h-full items-center justify-center border-l border-l-border-on-moss">
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Collapse workout overlay"
+        accessibilityLabel={t('currentWorkout.overlay.collapseA11y')}
         onPress={onCollapse}
-        style={({ pressed }) => ({
-          width: 34,
-          height: 48,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 17,
-          backgroundColor: pressed
-            ? 'rgba(243, 238, 226, 0.13)'
-            : 'rgba(243, 238, 226, 0.07)',
-        })}
+        className="w-[34px] h-12 items-center justify-center rounded-[17px] bg-[rgba(243,238,226,0.07)] active:bg-[rgba(243,238,226,0.13)]"
       >
         <ClayIcon name="chevron" size={17} stroke={2} color={colors.creamDim} />
       </Pressable>
@@ -227,23 +167,26 @@ export function CurrentWorkoutOverlay({
   currentExerciseName,
   onOpenWorkout,
 }: CurrentWorkoutOverlayProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const cardWidth = Math.min(MAX_CARD_WIDTH, windowWidth - 20);
   const [collapsed, setCollapsed] = useState(false);
   const translateX = useSharedValue(cardWidth);
   const progress = getWorkoutOverlayProgress(completedSets, totalSets);
-  const elapsedTime = formatWorkoutElapsedTime(elapsedMinutes);
+  const elapsedTime = formatWorkoutElapsedTime(t, elapsedMinutes);
 
   useEffect(() => {
-    const target = visible
-      ? collapsed
-        ? cardWidth - COLLAPSED_WIDTH
-        : 0
-      : cardWidth;
+    if (!visible) {
+      // Nothing renders while hidden (the component returns null below), so
+      // an exit animation can never play — just park the card off-screen so
+      // the next show slides in from the edge.
+      translateX.value = cardWidth;
+      return;
+    }
 
-    translateX.value = withTiming(target, {
-      duration: visible ? motion.slow : motion.base,
+    translateX.value = withTiming(collapsed ? cardWidth - COLLAPSED_WIDTH : 0, {
+      duration: motion.slow,
       easing: Easing.out(Easing.cubic),
     });
   }, [cardWidth, collapsed, translateX, visible]);
@@ -260,16 +203,15 @@ export function CurrentWorkoutOverlay({
     <Portal name={PORTAL_NAME}>
       <View
         pointerEvents="box-none"
-        style={{
-          position: 'absolute',
-          top: insets.top + 68,
-          left: 0,
-          right: 0,
-          alignItems: 'flex-end',
-        }}
+        className="absolute left-0 right-0 items-end"
+        style={{ top: insets.top + 68 }}
       >
         <Animated.View
-          accessibilityLabel={`${workoutName}, ${progress.completedSets} of ${progress.totalSets} sets completed`}
+          accessibilityLabel={t('currentWorkout.overlay.progressA11y', {
+            name: workoutName,
+            completed: progress.completedSets,
+            total: progress.totalSets,
+          })}
           style={[
             {
               width: cardWidth,
@@ -281,20 +223,7 @@ export function CurrentWorkoutOverlay({
             animatedStyle,
           ]}
         >
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              overflow: 'hidden',
-              borderTopLeftRadius: 30,
-              borderBottomLeftRadius: 30,
-              backgroundColor: colors.moss,
-              borderColor: colors.lineOnMoss,
-              borderWidth: 1,
-              borderRightWidth: 0,
-            }}
-          >
+          <View className="flex-1 flex-row items-center overflow-hidden rounded-l-[30px] bg-moss border border-r-0 border-border-on-moss">
             <WorkoutProgressButton
               collapsed={collapsed}
               percentage={progress.percentage}

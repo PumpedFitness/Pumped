@@ -1,28 +1,26 @@
+// Pure in-memory state machine for the in-progress workout draft.
+// All DB reads/writes happen in useCurrentWorkout — never here.
+
 import { randomUUID } from 'expo-crypto';
 import { create, type StateCreator } from 'zustand';
-import { workoutService } from '../data/local/services';
-import { uniqueStrings } from '../utils/dedupe';
+import { i18n } from '@/i18n';
+import type { WorkoutTemplate } from '@/types/workout';
+import { uniqueStrings } from '@/utils/dedupe';
 import {
   createCurrentWorkoutExercise,
   createCurrentWorkoutSet,
   createTemplateSnapshot,
-  isCurrentWorkoutComplete,
   isCurrentWorkoutSetValid,
   normalizeCurrentWorkoutExercises,
   requireCurrentWorkout,
-  syncCurrentWorkoutTemplateStructure,
   updateCurrentWorkoutExercise,
   type CurrentWorkout,
   type UpdateCurrentWorkoutSetInput,
 } from './currentWorkoutModel';
 
-type FinishCurrentWorkoutInput = {
-  updateTemplate?: boolean;
-};
-
 type CurrentWorkoutState = {
   currentWorkout: CurrentWorkout | null;
-  startWorkout: (workoutTemplateId: string) => void;
+  startWorkout: (template: WorkoutTemplate) => void;
   updateSet: (
     exerciseId: string,
     setId: string,
@@ -34,7 +32,6 @@ type CurrentWorkoutState = {
   updateExercises: (exerciseIds: string[]) => void;
   removeExercise: (exerciseId: string) => void;
   discardWorkout: () => void;
-  finishWorkout: (input?: FinishCurrentWorkoutInput) => void;
 };
 
 type StoreSet = Parameters<StateCreator<CurrentWorkoutState>>[0];
@@ -43,18 +40,14 @@ type StoreGet = Parameters<StateCreator<CurrentWorkoutState>>[1];
 function startWorkout(
   setState: StoreSet,
   getState: StoreGet,
-  workoutTemplateId: string,
+  template: WorkoutTemplate,
 ) {
   if (getState().currentWorkout) {
-    throw new Error('A workout is already in progress');
-  }
-  const template = workoutService.getWorkoutTemplate(workoutTemplateId);
-  if (!template) {
-    throw new Error('Workout template not found');
+    throw new Error(i18n.t('errors.workoutAlreadyInProgress'));
   }
   const currentWorkout: CurrentWorkout = {
     id: randomUUID(),
-    workoutTemplateId,
+    workoutTemplateId: template.id,
     name: template.name,
     startedAt: Date.now(),
     exercises: createTemplateSnapshot(template),
@@ -215,46 +208,10 @@ function removeWorkoutExercise(
   });
 }
 
-function finishCurrentWorkout(
-  setState: StoreSet,
-  getState: StoreGet,
-  input?: FinishCurrentWorkoutInput,
-) {
-  const workout = requireCurrentWorkout(getState().currentWorkout);
-  if (!isCurrentWorkoutComplete(workout)) {
-    throw new Error('Complete every set before finishing the workout');
-  }
-  if (input?.updateTemplate) {
-    syncCurrentWorkoutTemplateStructure(workout);
-  }
-  workoutService.saveCompletedWorkout({
-    id: workout.id,
-    workoutTemplateId: workout.workoutTemplateId,
-    name: workout.name,
-    startedAt: workout.startedAt,
-    endedAt: Date.now(),
-    notes: null,
-    sets: workout.exercises.flatMap(exercise =>
-      exercise.sets.map(set => ({
-        exerciseId: exercise.exerciseId,
-        exercisePosition: exercise.position,
-        setPosition: set.position,
-        setType: set.setType,
-        reps: set.reps!,
-        weight: set.weight,
-        rpe: set.rpe,
-        performedAt: set.performedAt ?? Date.now(),
-      })),
-    ),
-  });
-  setState({ currentWorkout: null });
-}
-
 export const useCurrentWorkoutStore = create<CurrentWorkoutState>(
   (setState, getState) => ({
     currentWorkout: null,
-    startWorkout: workoutTemplateId =>
-      startWorkout(setState, getState, workoutTemplateId),
+    startWorkout: template => startWorkout(setState, getState, template),
     updateSet: (exerciseId, setId, values) =>
       updateWorkoutSet(setState, getState, exerciseId, setId, values),
     toggleSetDone: (exerciseId, setId) =>
@@ -267,6 +224,5 @@ export const useCurrentWorkoutStore = create<CurrentWorkoutState>(
     removeExercise: exerciseId =>
       removeWorkoutExercise(setState, getState, exerciseId),
     discardWorkout: () => setState({ currentWorkout: null }),
-    finishWorkout: input => finishCurrentWorkout(setState, getState, input),
   }),
 );

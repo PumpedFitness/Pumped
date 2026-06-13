@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
-import { colors } from '../../theme/tokens';
-import { SwipeToDelete } from '../clay/SwipeToDelete';
-import { ClayIcon } from '../icons/ClayIcon';
+import { colors } from '@/theme/tokens';
+import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
+import { ClayIcon } from '@/components/icons/ClayIcon';
 
 type ExerciseCardProps = {
   name: string;

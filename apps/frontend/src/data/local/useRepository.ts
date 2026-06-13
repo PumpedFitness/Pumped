@@ -6,8 +6,12 @@
 //   const session = sessions.getById(sessionId);
 //   sessions.create({ id: uuid(), name: 'Push Day', ... });
 //   sessions.deleteById(sessionId);
+//
+// Writes notify every mounted component reading the same table (see
+// tableVersions.ts). The returned object changes identity whenever the
+// table changes, so it is safe to use as a useMemo/useCallback dependency.
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import {
   eq,
   type SQL,
@@ -17,6 +21,7 @@ import {
 } from 'drizzle-orm';
 import type { SQLiteTable, SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import { db } from './database';
+import { notifyTableChanged, useTableVersion } from './tableVersions';
 
 type QueryOptions = {
   where?: SQL;
@@ -26,18 +31,20 @@ type QueryOptions = {
 };
 
 type Repository<T extends SQLiteTable> = {
-  /** Synchronous query — call in the render path. Re-runs on each render, SQLite is fast. */
+  /** Synchronous query — call in the render path. SQLite is fast. */
   query: (options?: QueryOptions) => InferSelectModel<T>[];
   /** Lookup a single row by primary key. */
   getById: (id: string) => InferSelectModel<T> | null;
-  /** Insert a row. Triggers a re-render so query() picks up the change. */
+  /** Insert a row. Re-renders every component reading this table. */
   create: (values: InferInsertModel<T>) => void;
-  /** Update a row by primary key. Triggers a re-render. */
+  /** Update a row by primary key. Re-renders every reader. */
   update: (id: string, values: Partial<InferInsertModel<T>>) => void;
-  /** Delete a row by primary key. Triggers a re-render. */
+  /** Delete a row by primary key. Re-renders every reader. */
   deleteById: (id: string) => void;
-  /** Force a re-render (e.g. after external writes). */
+  /** Notify all readers of this table (e.g. after external writes). */
   refresh: () => void;
+  /** Monotonic change counter for this table — usable as a memo dep. */
+  version: number;
 };
 
 function findPrimaryKey(table: SQLiteTable): SQLiteColumn {
@@ -49,70 +56,54 @@ function findPrimaryKey(table: SQLiteTable): SQLiteColumn {
 }
 
 export function useRepository<T extends SQLiteTable>(table: T): Repository<T> {
-  const [, setVersion] = useState(0);
-  const bump = useCallback(() => setVersion(v => v + 1), []);
-
+  const version = useTableVersion(table);
   const pk = useMemo(() => findPrimaryKey(table), [table]);
 
-  const query = useCallback(
-    (options?: QueryOptions): InferSelectModel<T>[] => {
-      let q = db.select().from(table) as any;
-      if (options?.where) q = q.where(options.where);
-      if (options?.orderBy) {
-        const ob = Array.isArray(options.orderBy)
-          ? options.orderBy
-          : [options.orderBy];
-        q = q.orderBy(...ob);
-      }
-      if (options?.limit) q = q.limit(options.limit);
-      if (options?.offset) q = q.offset(options.offset);
-      return q.all();
-    },
-    [table],
+  return useMemo(
+    () => ({
+      query: (options?: QueryOptions): InferSelectModel<T>[] => {
+        let q = db.select().from(table) as any;
+        if (options?.where) q = q.where(options.where);
+        if (options?.orderBy) {
+          const ob = Array.isArray(options.orderBy)
+            ? options.orderBy
+            : [options.orderBy];
+          q = q.orderBy(...ob);
+        }
+        if (options?.limit) q = q.limit(options.limit);
+        if (options?.offset) q = q.offset(options.offset);
+        return q.all();
+      },
+      getById: (id: string): InferSelectModel<T> | null => {
+        const row = db
+          .select()
+          .from(table)
+          .where(eq(pk, id as any))
+          .get();
+        return (row as InferSelectModel<T>) ?? null;
+      },
+      create: (values: InferInsertModel<T>): void => {
+        db.insert(table)
+          .values(values as any)
+          .run();
+        notifyTableChanged(table);
+      },
+      update: (id: string, values: Partial<InferInsertModel<T>>): void => {
+        db.update(table)
+          .set(values as any)
+          .where(eq(pk, id as any))
+          .run();
+        notifyTableChanged(table);
+      },
+      deleteById: (id: string): void => {
+        db.delete(table)
+          .where(eq(pk, id as any))
+          .run();
+        notifyTableChanged(table);
+      },
+      refresh: () => notifyTableChanged(table),
+      version,
+    }),
+    [table, pk, version],
   );
-
-  const getById = useCallback(
-    (id: string): InferSelectModel<T> | null => {
-      const row = db
-        .select()
-        .from(table)
-        .where(eq(pk, id as any))
-        .get();
-      return (row as InferSelectModel<T>) ?? null;
-    },
-    [table, pk],
-  );
-
-  const create = useCallback(
-    (values: InferInsertModel<T>): void => {
-      db.insert(table)
-        .values(values as any)
-        .run();
-      bump();
-    },
-    [table, bump],
-  );
-
-  const update = useCallback(
-    (id: string, values: Partial<InferInsertModel<T>>): void => {
-      db.update(table)
-        .set(values as any)
-        .where(eq(pk, id as any))
-        .run();
-      bump();
-    },
-    [table, pk, bump],
-  );
-
-  const deleteById = useCallback(
-    (id: string): void => {
-      db.delete(table)
-        .where(eq(pk, id as any))
-        .run();
-      bump();
-    },
-    [table, pk, bump],
-  );
-
-  return { query, getById, create, update, deleteById, refresh: bump };
 }

@@ -1,30 +1,18 @@
 import { Pressable, Text } from 'react-native';
-import { colors, radii } from '../../theme/tokens';
 
 type CTAButtonProps = {
   label: string;
   onPress: () => void;
+  className?: string;
 };
 
-export function CTAButton({ label, onPress }: CTAButtonProps) {
+export function CTAButton({ label, onPress, className = '' }: CTAButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => ({
-        backgroundColor: pressed ? '#B06A42' : colors.accent,
-        paddingVertical: 18,
-        borderRadius: radii.pill,
-        alignItems: 'center' as const,
-        transform: [{ scale: pressed ? 0.97 : 1 }],
-      })}
+      className={`py-[18px] rounded-full items-center bg-accent active:bg-[#B06A42] active:scale-[0.97] ${className}`}
     >
-      <Text
-        style={{
-          fontSize: 17,
-          fontWeight: '600',
-          color: colors.accentInk,
-        }}
-      >
+      <Text className="text-[17px] font-semibold text-accent-foreground">
         {label}
       </Text>
     </Pressable>

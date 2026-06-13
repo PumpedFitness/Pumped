@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Keyboard, Pressable, Text, View } from 'react-native';
-import { colors } from '../../../theme/tokens';
-import { SwipeToDelete } from '../../clay/SwipeToDelete';
-import { OptionSelectorSheet } from '../../forms/OptionSelectorSheet';
-import { OptionalSliderSheet } from '../../forms/OptionalSliderSheet';
-import { ClayIcon } from '../../icons/ClayIcon';
+import { useTranslation } from 'react-i18next';
+import { colors } from '@/theme/tokens';
+import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
+import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
+import { OptionalSliderSheet } from '@/components/forms/OptionalSliderSheet';
+import { ClayIcon } from '@/components/icons/ClayIcon';
 import {
   NumberInputCell,
   SetTypeCell,
@@ -39,6 +40,8 @@ type SetActionCellProps = {
 };
 
 function SetActionCell({ row, onToggleDone }: SetActionCellProps) {
+  const { t } = useTranslation();
+
   if (row.readOnly) {
     return null;
   }
@@ -47,9 +50,11 @@ function SetActionCell({ row, onToggleDone }: SetActionCellProps) {
     return (
       <Pressable
         accessibilityRole="checkbox"
-        accessibilityLabel={`Mark set ${row.index + 1} ${
-          row.isDone ? 'incomplete' : 'complete'
-        }`}
+        accessibilityLabel={
+          row.isDone
+            ? t('setTable.a11y.markSetIncomplete', { number: row.index + 1 })
+            : t('setTable.a11y.markSetComplete', { number: row.index + 1 })
+        }
         accessibilityState={{ checked: row.isDone }}
         className="h-10 w-8 items-center justify-center rounded-full active:bg-surface-card"
         onPress={onToggleDone}
@@ -74,7 +79,9 @@ function SetActionCell({ row, onToggleDone }: SetActionCellProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Remove set ${row.index + 1}`}
+      accessibilityLabel={t('setTable.a11y.removeSet', {
+        number: row.index + 1,
+      })}
       className="h-10 w-8 items-center justify-center rounded-full active:bg-surface-card"
       onPress={row.onRemove}
     >
@@ -87,6 +94,7 @@ export function ExerciseSetTableRow({
   row,
   setTypeOptions,
 }: ExerciseSetTableRowProps) {
+  const { t } = useTranslation();
   const [activeSliderFieldId, setActiveSliderFieldId] = useState<string | null>(
     null,
   );
@@ -99,9 +107,10 @@ export function ExerciseSetTableRow({
   const activeSliderField =
     sliderFields.find(field => field.id === activeSliderFieldId) ?? null;
   const sliderSheetField = activeSliderField ?? sliderFields[0];
-  const setTypeLabel =
-    setTypeOptions.find(option => option.value === row.setType)?.label ??
-    'Working';
+  const setTypeLabel = t(
+    setTypeOptions.find(option => option.value === row.setType)?.labelKey ??
+      'setTable.setTypes.working',
+  );
   const rowToneClassName =
     row.tone === 'completed'
       ? 'border-l-moss bg-sage/20'
@@ -120,7 +129,7 @@ export function ExerciseSetTableRow({
     >
       <SetPositionCell row={row} />
       <SetTypeCell
-        label={`Set ${row.index + 1} type`}
+        label={t('setTable.a11y.setType', { number: row.index + 1 })}
         value={setTypeLabel}
         onPress={
           row.readOnly ? undefined : () => setIsSetTypeSelectorOpen(true)
@@ -168,9 +177,12 @@ export function ExerciseSetTableRow({
       {!row.readOnly && isSetTypeSelectorOpen && (
         <OptionSelectorSheet
           visible
-          title={`Set ${row.index + 1} type`}
+          title={t('setTable.a11y.setType', { number: row.index + 1 })}
           value={row.setType}
-          options={setTypeOptions}
+          options={setTypeOptions.map(option => ({
+            value: option.value,
+            label: t(option.labelKey),
+          }))}
           onClose={() => setIsSetTypeSelectorOpen(false)}
           onChange={row.onSetTypeChange}
         />

@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Keyboard, Pressable, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { BottomSheet, Input, useBottomSheetAwareHandlers } from 'heroui-native';
-import { colors } from '../../theme/tokens';
-import { ClayIcon } from '../icons/ClayIcon';
+import { BottomSheet } from 'heroui-native';
+import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@/components/icons/ClayIcon';
+import { SearchInput } from './SearchInput';
+import { SelectableRow } from './SelectableRow';
 
 type LibraryItem = {
   id: string;
@@ -21,36 +24,6 @@ type LibraryPickerProps = {
   onCreate: (name: string) => string;
 };
 
-type SearchInputProps = {
-  title: string;
-  value: string;
-  onChangeText: (text: string) => void;
-};
-
-function SearchInput({ title, value, onChangeText }: SearchInputProps) {
-  const { onFocus, onBlur } = useBottomSheetAwareHandlers();
-
-  return (
-    <View className="relative">
-      <Input
-        accessibilityLabel={`Search ${title.toLowerCase()}`}
-        className="h-[48px] rounded-full border-border-hairline bg-surface-card pl-11 pr-4 text-foreground"
-        placeholder="Search or create..."
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={onFocus}
-        onBlur={onBlur}
-      />
-      <View
-        className="absolute left-3.5 top-0 h-[48px] items-center justify-center"
-        pointerEvents="none"
-      >
-        <ClayIcon name="search" size={17} color={colors.muted} />
-      </View>
-    </View>
-  );
-}
-
 function LibraryPickerContent({
   title,
   items,
@@ -60,14 +33,13 @@ function LibraryPickerContent({
   onChange,
   onCreate,
 }: Omit<LibraryPickerProps, 'visible'>) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLocaleLowerCase();
     if (!q) return items;
-    return items.filter(item =>
-      item.name.toLocaleLowerCase().includes(q),
-    );
+    return items.filter(item => item.name.toLocaleLowerCase().includes(q));
   }, [items, search]);
 
   const trimmed = search.trim();
@@ -120,9 +92,12 @@ function LibraryPickerContent({
     >
       <View className="absolute top-0 left-0 right-0 px-4 pt-3 z-10">
         <SearchInput
-          title={title}
+          accessibilityLabel={t('exerciseForm.pickers.searchA11y', { title })}
+          placeholder={t('exerciseForm.pickers.searchPlaceholder')}
           value={search}
           onChangeText={setSearch}
+          height={48}
+          sheetAware
         />
       </View>
 
@@ -131,36 +106,21 @@ function LibraryPickerContent({
         contentContainerClassName="gap-1 px-4 pt-3 pb-4"
         keyboardShouldPersistTaps="handled"
       >
-        {filtered.map(item => {
-          const selected = selectedIds.includes(item.id);
-          return (
-            <Pressable
-              key={item.id}
-              accessibilityRole={multiSelect ? 'checkbox' : 'radio'}
-              accessibilityState={{ selected }}
-              className={`min-h-12 flex-row items-center justify-between rounded-[14px] px-4 ${
-                selected ? 'bg-accent-soft' : 'bg-surface-card'
-              }`}
-              onPress={() => toggle(item.id)}
-            >
-              <Text
-                className={`t-label ${
-                  selected ? 'text-accent' : 'text-foreground'
-                }`}
-              >
-                {item.name}
-              </Text>
-              {selected && (
-                <ClayIcon name="check" size={18} color={colors.accent} />
-              )}
-            </Pressable>
-          );
-        })}
+        {filtered.map(item => (
+          <SelectableRow
+            key={item.id}
+            label={item.name}
+            selected={selectedIds.includes(item.id)}
+            accessibilityRole={multiSelect ? 'checkbox' : 'radio'}
+            className="min-h-12 rounded-[14px]"
+            onPress={() => toggle(item.id)}
+          />
+        ))}
 
         {filtered.length === 0 && !showCreate && (
           <View className="items-center py-6">
             <Text className="t-caption text-foreground-secondary">
-              No results
+              {t('common.noResults')}
             </Text>
           </View>
         )}
@@ -173,7 +133,7 @@ function LibraryPickerContent({
           >
             <ClayIcon name="plus" size={16} color={colors.accent} />
             <Text className="t-label text-accent">
-              Add "{trimmed}"
+              {t('exerciseForm.pickers.addNew', { name: trimmed })}
             </Text>
           </Pressable>
         )}
@@ -187,7 +147,9 @@ function LibraryPickerContent({
             onPress={handleClose}
           >
             <Text className="t-label font-bold text-accent-foreground">
-              Done ({selectedIds.length})
+              {t('exerciseForm.pickers.doneCount', {
+                count: selectedIds.length,
+              })}
             </Text>
           </Pressable>
         </View>

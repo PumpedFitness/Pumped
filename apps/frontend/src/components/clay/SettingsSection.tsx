@@ -1,27 +1,21 @@
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { Card } from './Card';
-import { colors, typography } from '../../theme/tokens';
 
 type SettingsSectionProps = {
   label: string;
   children: ReactNode;
+  className?: string;
 };
 
-export function SettingsSection({ label, children }: SettingsSectionProps) {
+export function SettingsSection({
+  label,
+  children,
+  className = '',
+}: SettingsSectionProps) {
   return (
-    <View style={{ marginBottom: 24 }}>
-      <Text
-        style={{
-          fontSize: typography.caption,
-          fontWeight: '600',
-          color: colors.muted,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-          marginBottom: 8,
-          marginLeft: 4,
-        }}
-      >
+    <View className={`mb-6 ${className}`}>
+      <Text className="text-[12.5px] font-semibold text-muted uppercase tracking-[0.5px] mb-2 ml-1">
         {label}
       </Text>
       <Card variant="card" radius="xl" pad={0}>

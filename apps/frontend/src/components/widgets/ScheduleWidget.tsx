@@ -1,62 +1,64 @@
 import { View, Text } from 'react-native';
-import { Card } from '../clay/Card';
-import { colors, typography } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import { Card } from '@/components/clay/Card';
 
 type ScheduleWidgetProps = {
   colSpan: number;
   width: number;
 };
 
-type DayEntry = {
-  label: string;
-  status: 'done' | 'today' | 'rest' | 'upcoming';
-};
+type DayStatus = 'done' | 'today' | 'rest' | 'upcoming';
 
-const DAYS: DayEntry[] = [
-  { label: 'Tu', status: 'done' },
-  { label: 'We', status: 'done' },
-  { label: 'Th', status: 'rest' },
-  { label: 'Fr', status: 'today' },
-  { label: 'Sa', status: 'upcoming' },
-  { label: 'Su', status: 'rest' },
-  { label: 'Mo', status: 'upcoming' },
+// Dummy: week starting Tuesday
+const DAY_STATUSES: DayStatus[] = [
+  'done',
+  'done',
+  'rest',
+  'today',
+  'upcoming',
+  'rest',
+  'upcoming',
 ];
 
-const DOT_COLORS: Record<DayEntry['status'], string> = {
-  done: colors.sage,
-  today: colors.accent,
-  rest: colors.muted,
-  upcoming: colors.ink2,
+// Jan 2 2024 is a Tuesday — used only to derive localized weekday labels
+function weekdayLabel(language: string, tuesdayOffset: number): string {
+  return new Date(2024, 0, 2 + tuesdayOffset)
+    .toLocaleDateString(language, { weekday: 'short' })
+    .slice(0, 2);
+}
+
+const DOT_CLASSES: Record<DayStatus, string> = {
+  done: 'bg-sage',
+  today: 'bg-accent',
+  rest: 'bg-muted',
+  upcoming: 'bg-text-secondary',
 };
 
 export function ScheduleWidget(_props: ScheduleWidgetProps) {
+  const { t, i18n } = useTranslation();
+
   return (
     <Card variant="card" radius="lg" pad={15}>
-      <Text style={{ fontSize: typography.caption, fontWeight: '600', color: colors.muted, marginBottom: 10 }}>
-        Schedule
+      <Text className="text-[12.5px] font-semibold text-muted mb-[10px]">
+        {t('widgets.schedule.title')}
       </Text>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        {DAYS.map((day, i) => {
-          const isToday = day.status === 'today';
+      <View className="flex-row justify-between">
+        {DAY_STATUSES.map((status, i) => {
+          const isToday = status === 'today';
           return (
-            <View key={i} style={{ alignItems: 'center', gap: 6 }}>
+            <View key={i} className="items-center gap-[6px]">
               <Text
-                style={{
-                  fontSize: typography.micro,
-                  fontWeight: isToday ? '700' : '500',
-                  color: isToday ? colors.accent : colors.muted,
-                }}
+                className={`text-[11px] ${
+                  isToday ? 'font-bold text-accent' : 'font-medium text-muted'
+                }`}
               >
-                {day.label}
+                {weekdayLabel(i18n.language, i)}
               </Text>
               <View
-                style={{
-                  width: isToday ? 10 : 8,
-                  height: isToday ? 10 : 8,
-                  borderRadius: 999,
-                  backgroundColor: DOT_COLORS[day.status],
-                }}
+                className={`rounded-full ${
+                  isToday ? 'w-[10px] h-[10px]' : 'w-2 h-2'
+                } ${DOT_CLASSES[status]}`}
               />
             </View>
           );

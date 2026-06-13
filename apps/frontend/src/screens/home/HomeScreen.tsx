@@ -1,82 +1,52 @@
-import { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { AppShell } from '../../components/AppShell';
-import { WidgetGrid } from '../../components/widgets/WidgetGrid';
-import { useHomescreenStore } from '../../stores/homescreenStore';
-import { colors, typography } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+import { AppShell } from '@/components/layout/AppShell';
+import { WidgetGrid } from '@/components/widgets/WidgetGrid';
+import { useHomescreenStore } from '@/stores/homescreenStore';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
-function getGreeting(): { timeLabel: string; greeting: string } {
-  const hour = new Date().getHours();
-  let timeLabel: string;
-  if (hour < 12) timeLabel = 'morning';
-  else if (hour < 17) timeLabel = 'afternoon';
-  else timeLabel = 'evening';
+function getDayGreeting(t: TFunction, language: string): string {
+  const now = new Date();
+  const hour = now.getHours();
+  let timeOfDay: string;
+  if (hour < 12) timeOfDay = t('home.timeOfDay.morning');
+  else if (hour < 17) timeOfDay = t('home.timeOfDay.afternoon');
+  else timeOfDay = t('home.timeOfDay.evening');
 
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-  const dayName = days[new Date().getDay()];
+  const day = now.toLocaleDateString(language, { weekday: 'long' });
 
-  return {
-    timeLabel: `${dayName} ${timeLabel}`,
-    greeting: "Let's move, Alex",
-  };
+  return t('home.dayGreeting', { day, timeOfDay });
 }
 
 export function HomeScreen() {
+  const { t, i18n } = useTranslation();
   const layout = useHomescreenStore(s => s.layout);
-  const initialize = useHomescreenStore(s => s.initialize);
+  const { profile } = useUserProfile();
 
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  const { timeLabel, greeting } = getGreeting();
+  const timeLabel = getDayGreeting(t, i18n.language);
+  const greeting = profile.name
+    ? t('home.greeting', { name: profile.name })
+    : t('home.greetingNoName');
 
   return (
     <AppShell showTabBar padTop={false}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerClassName="pb-6"
       >
         {/* Header */}
-        <View
-          style={{
-            paddingHorizontal: 20,
-            paddingTop: 16,
-            paddingBottom: 20,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: typography.caption,
-              color: colors.muted,
-              fontWeight: '500',
-              marginBottom: 4,
-            }}
-          >
+        <View className="px-5 pt-4 pb-5">
+          <Text className="text-[12.5px] text-muted font-medium mb-1">
             {timeLabel}
           </Text>
-          <Text
-            style={{
-              fontSize: typography.display,
-              fontWeight: '700',
-              color: colors.ink,
-              letterSpacing: -0.5,
-            }}
-          >
+          <Text className="text-[30px] font-bold text-foreground tracking-[-0.5px]">
             {greeting}
           </Text>
         </View>
 
         {/* Widget Grid */}
-        <View style={{ paddingHorizontal: 20 }}>
+        <View className="px-5">
           <WidgetGrid layout={layout} />
         </View>
       </ScrollView>

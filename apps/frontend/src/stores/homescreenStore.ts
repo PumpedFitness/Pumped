@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 import { randomUUID } from 'expo-crypto';
-import type { WidgetPlacement, WidgetType } from '../types/widget';
+import type { WidgetPlacement, WidgetType } from '@/types/widget';
 
 const storage = createMMKV({ id: 'homescreen-storage' });
 

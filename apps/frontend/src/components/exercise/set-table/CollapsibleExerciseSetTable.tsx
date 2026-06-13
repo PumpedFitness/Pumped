@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
-import { colors } from '../../../theme/tokens';
-import { ClayIcon } from '../../icons/ClayIcon';
+import { useTranslation } from 'react-i18next';
+import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@/components/icons/ClayIcon';
 import {
   buildTemplateSetTableRows,
   type CollapsibleExerciseSetTableProps,
@@ -18,7 +19,8 @@ export function CollapsibleExerciseSetTable({
   onChangeSet,
   onRemoveSet,
 }: CollapsibleExerciseSetTableProps) {
-  const rows = buildTemplateSetTableRows({
+  const { t } = useTranslation();
+  const rows = buildTemplateSetTableRows(t, {
     sets,
     setTypeOptions,
     addSetLabel,
@@ -43,10 +45,10 @@ export function CollapsibleExerciseSetTable({
         </View>
         <View className="flex-1">
           <Text className="t-label">
-            {sets.length} {sets.length === 1 ? 'set' : 'sets'}
+            {t('common.set', { count: sets.length })}
           </Text>
           <Text className="t-caption mt-0.5">
-            {expanded ? 'Hide prescriptions' : summary}
+            {expanded ? t('setTable.hidePrescriptions') : summary}
           </Text>
         </View>
         <ClayIcon
@@ -59,7 +61,12 @@ export function CollapsibleExerciseSetTable({
       {expanded && (
         <View className="border-t border-border-soft">
           <ExerciseSetTableContent
-            columns={['Type', 'Reps', '%', 'RPE']}
+            columns={[
+              t('setTable.columns.type'),
+              t('setTable.columns.reps'),
+              t('setTable.columns.percent'),
+              t('setTable.columns.rpe'),
+            ]}
             rows={rows}
             setTypeOptions={setTypeOptions}
             addSetLabel={addSetLabel}

@@ -9,124 +9,31 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../navigation/AppNavigator';
-import { randomUUID } from 'expo-crypto';
-import { useAuthStore } from '../../stores/authStore';
-import { useUserProfile } from '../../hooks/useUserProfile';
-import type { Gender, WeightUnit } from '../../data/local/schema/userProfile';
-import {
-  bodyWeightEntries,
-  bodyFatEntries,
-} from '../../data/local/schema/bodyMetrics';
-import { useRepository } from '../../data/local/useRepository';
-import { toKg } from '../../utils/units';
-import { colors, radii } from '../../theme/tokens';
-import { ClayIcon } from '../../components/icons/ClayIcon';
-import { StepDots } from '../../components/clay/StepDots';
-import { CTAButton } from '../../components/clay/CTAButton';
-import { WelcomeContent } from '../../components/onboarding/WelcomeContent';
-import { PreferencesContent } from '../../components/onboarding/PreferencesContent';
-import {
-  ProfileContent,
-  type ProfileFields,
-} from '../../components/onboarding/ProfileContent';
+import { useTranslation } from 'react-i18next';
+import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@/components/icons/ClayIcon';
+import { StepDots } from '@/components/clay/StepDots';
+import { CTAButton } from '@/components/clay/CTAButton';
+import { WelcomeContent } from './components/WelcomeContent';
+import { PreferencesContent } from './components/PreferencesContent';
+import { ProfileContent } from './components/ProfileContent';
+import { useOnboardingDraft } from './useOnboardingDraft';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TOTAL_STEPS = 3;
-const STEP_LABELS = ['Get started', 'Continue', "Let's go"];
+const STEP_LABEL_KEYS = [
+  'onboarding.steps.getStarted',
+  'onboarding.steps.continue',
+  'onboarding.steps.letsGo',
+] as const;
 
 export function OnboardingScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
-  const completeOnboarding = useAuthStore(s => s.completeOnboarding);
-  const { set: setProfile } = useUserProfile();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const weightRepo = useRepository(bodyWeightEntries);
-  const bodyFatRepo = useRepository(bodyFatEntries);
-
-  const [weightUnit, setWeightUnit] = useState('kg');
-  const [profileFields, setProfileFields] = useState<ProfileFields>({
-    name: '',
-    age: '',
-    gender: '',
-    height: '',
-    weight: '',
-    bodyFat: '',
-  });
-
-  const setField = useCallback(
-    <K extends keyof ProfileFields>(key: K, value: string) => {
-      setProfileFields(prev => ({ ...prev, [key]: value }));
-    },
-    [],
-  );
-
-  const finish = useCallback(() => {
-    const genderMap: Record<string, Gender> = {
-      Male: 'MALE',
-      Female: 'FEMALE',
-      Other: 'OTHER',
-    };
-
-    const profileData: Record<string, unknown> = {
-      weightUnit: weightUnit as WeightUnit,
-    };
-    if (profileFields.name) profileData.name = profileFields.name;
-    if (profileFields.gender) {
-      const g = genderMap[profileFields.gender];
-      if (g) profileData.gender = g;
-    }
-    if (profileFields.age) {
-      const age = parseInt(profileFields.age, 10);
-      if (!isNaN(age) && age > 0) {
-        const birthYear = new Date().getFullYear() - age;
-        profileData.birthdate = `${birthYear}-01-01`;
-      }
-    }
-    if (profileFields.height) {
-      const h = parseFloat(profileFields.height);
-      if (!isNaN(h) && h > 0) profileData.heightCm = h;
-    }
-
-    setProfile(profileData);
-
-    if (profileFields.weight) {
-      const w = parseFloat(profileFields.weight);
-      if (!isNaN(w) && w > 0) {
-        const valueKg = toKg(w, weightUnit as WeightUnit);
-        weightRepo.create({
-          id: randomUUID(),
-          value: valueKg,
-          recordedAt: Date.now(),
-        });
-      }
-    }
-    if (profileFields.bodyFat) {
-      const bf = parseFloat(profileFields.bodyFat);
-      if (!isNaN(bf) && bf > 0 && bf <= 100) {
-        bodyFatRepo.create({
-          id: randomUUID(),
-          value: bf,
-          recordedAt: Date.now(),
-        });
-      }
-    }
-
-    completeOnboarding();
-    navigation.replace('Main');
-  }, [
-    completeOnboarding,
-    navigation,
-    setProfile,
-    profileFields,
-    weightUnit,
-    weightRepo,
-    bodyFatRepo,
-  ]);
+  const { weightUnit, setWeightUnit, profileFields, setField, finish } =
+    useOnboardingDraft();
 
   const scrollToStep = useCallback((target: number) => {
     scrollRef.current?.scrollTo({ x: target * SCREEN_WIDTH, animated: true });
@@ -154,49 +61,23 @@ export function OnboardingScreen() {
   );
 
   return (
-    <View
-      style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}
-    >
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       {/* Top bar: back + skip */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-          height: 52,
-        }}
-      >
+      <View className="flex-row items-center justify-between px-4 h-[52px]">
         {step > 0 ? (
           <Pressable
             onPress={goBack}
-            style={({ pressed }) => ({
-              width: 40,
-              height: 40,
-              borderRadius: radii.pill,
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: pressed ? 0.6 : 1,
-            })}
+            className="w-10 h-10 rounded-full items-center justify-center active:opacity-60"
           >
             <ClayIcon name="back" size={22} color={colors.ink} />
           </Pressable>
         ) : (
-          <View style={{ width: 40 }} />
+          <View className="w-10" />
         )}
 
-        <Pressable
-          onPress={finish}
-          style={({ pressed }) => ({
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <Text
-            style={{ fontSize: 15, fontWeight: '500', color: colors.muted }}
-          >
-            Skip
+        <Pressable onPress={finish} className="py-2 px-3 active:opacity-50">
+          <Text className="text-[15px] font-medium text-muted">
+            {t('onboarding.skip')}
           </Text>
         </Pressable>
       </View>
@@ -209,7 +90,7 @@ export function OnboardingScreen() {
         scrollEventThrottle={16}
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={onScrollEnd}
-        style={{ flex: 1 }}
+        className="flex-1"
       >
         <View style={{ width: SCREEN_WIDTH }}>
           <WelcomeContent />
@@ -227,13 +108,10 @@ export function OnboardingScreen() {
 
       {/* Bottom: CTA + dots */}
       <View
-        style={{
-          paddingHorizontal: 24,
-          paddingBottom: insets.bottom + 12,
-          gap: 16,
-        }}
+        className="px-6 gap-4"
+        style={{ paddingBottom: insets.bottom + 12 }}
       >
-        <CTAButton label={STEP_LABELS[step]} onPress={goNext} />
+        <CTAButton label={t(STEP_LABEL_KEYS[step])} onPress={goNext} />
         <StepDots current={step} total={TOTAL_STEPS} />
       </View>
     </View>

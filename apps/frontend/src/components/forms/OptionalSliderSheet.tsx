@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { BottomSheet, Button, Slider } from 'heroui-native';
 
 export type OptionalSliderConfig = {
@@ -20,52 +21,8 @@ type OptionalSliderSheetProps = {
   onChange: (value: number | null) => void;
 };
 
-type OptionalSliderTriggerProps = {
-  label: string;
-  value: string;
-  emptyLabel?: string;
-  compact?: boolean;
-  onPress: () => void;
-};
-
 function getSliderValue(value: number | number[]): number {
   return Array.isArray(value) ? value[0] ?? 0 : value;
-}
-
-export function OptionalSliderTrigger({
-  label,
-  value,
-  emptyLabel = 'Optional',
-  compact = false,
-  onPress,
-}: OptionalSliderTriggerProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${label}: ${value || emptyLabel}`}
-      className={`flex-1 justify-center rounded-[14px] border border-border-hairline bg-surface-card active:bg-background ${
-        compact ? 'h-14 px-2 py-1.5' : 'min-h-16 px-3 py-2'
-      }`}
-      onPress={onPress}
-    >
-      <Text
-        className={`font-semibold text-muted ${
-          compact ? 'text-[9px]' : 'text-[11px]'
-        }`}
-        numberOfLines={1}
-      >
-        {label}
-      </Text>
-      <Text
-        className={`${compact ? 'mt-0.5 text-[12px]' : 'mt-1 text-[14px]'} ${
-          value ? 'text-foreground' : 'text-muted'
-        } font-bold tabular-nums`}
-        numberOfLines={1}
-      >
-        {value || emptyLabel}
-      </Text>
-    </Pressable>
-  );
 }
 
 export function OptionalSliderSheet({
@@ -75,6 +32,7 @@ export function OptionalSliderSheet({
   onClose,
   onChange,
 }: OptionalSliderSheetProps) {
+  const { t } = useTranslation();
   const [sliderValue, setSliderValue] = useState(value ?? config.defaultValue);
 
   useEffect(() => {
@@ -84,7 +42,12 @@ export function OptionalSliderSheet({
   }, [config.defaultValue, value, visible]);
 
   return (
-    <BottomSheet isOpen={visible} onOpenChange={open => { if (!open) onClose(); }}>
+    <BottomSheet
+      isOpen={visible}
+      onOpenChange={open => {
+        if (!open) onClose();
+      }}
+    >
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
         <BottomSheet.Content backgroundClassName="bg-background">
@@ -145,7 +108,7 @@ export function OptionalSliderSheet({
                 onClose();
               }}
             >
-              <Button.Label>Clear</Button.Label>
+              <Button.Label>{t('common.clear')}</Button.Label>
             </Button>
             <Button
               className="h-13 flex-1 rounded-full bg-accent"
@@ -156,7 +119,7 @@ export function OptionalSliderSheet({
               }}
             >
               <Button.Label className="font-bold text-accent-foreground">
-                Apply
+                {t('common.apply')}
               </Button.Label>
             </Button>
           </View>

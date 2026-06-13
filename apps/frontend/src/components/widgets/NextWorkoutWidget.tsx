@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
-import { Card } from '../clay/Card';
-import { ClayIcon } from '../icons/ClayIcon';
-import { colors, typography } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import { Card } from '@/components/clay/Card';
+import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@/theme/tokens';
 
 type NextWorkoutWidgetProps = {
   colSpan: number;
@@ -9,35 +10,28 @@ type NextWorkoutWidgetProps = {
 };
 
 export function NextWorkoutWidget(_props: NextWorkoutWidgetProps) {
+  const { t } = useTranslation();
+
   return (
     <Card variant="card" radius="2xl" pad={18}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 14,
-            backgroundColor: colors.accentSoft,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+      <View className="flex-row items-center gap-[14px]">
+        <View className="w-11 h-11 rounded-[14px] bg-accent-soft items-center justify-center">
           <ClayIcon name="dumbbell" size={22} color={colors.accent} />
         </View>
 
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: typography.caption, color: colors.muted, fontWeight: '500' }}>
-            Last session · Tuesday
+        <View className="flex-1">
+          <Text className="text-[12.5px] text-muted font-medium">
+            {t('widgets.lastSession.caption')}
           </Text>
-          <Text style={{ fontSize: typography.body, fontWeight: '700', color: colors.ink, marginTop: 2 }}>
-            Pull Day — 52 min
+          <Text className="text-[15px] font-bold text-foreground mt-[2px]">
+            {t('widgets.lastSession.title')}
           </Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <View className="flex-row items-center gap-1">
           <ClayIcon name="award" size={16} color={colors.sage} />
-          <Text style={{ fontSize: typography.label, fontWeight: '600', color: colors.sage }}>
-            2 PRs
+          <Text className="text-[13.5px] font-semibold text-sage">
+            {t('widgets.lastSession.prs', { count: 2 })}
           </Text>
         </View>
       </View>

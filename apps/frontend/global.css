@@ -116,6 +116,7 @@
   /* Text */
   --color-text-muted: var(--muted);
   --color-text-secondary: #54564A;
+  --color-foreground-secondary: #54564A;
   --color-text-on-raised: #F3EEE2;
   --color-text-on-raised-dim: rgba(243, 238, 226, 0.6);
 

@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { WheelPicker } from './WheelPicker';
 
 type DateWheelPickerProps = {
@@ -8,11 +9,6 @@ type DateWheelPickerProps = {
   minimumDate?: Date;
   maximumDate?: Date;
 };
-
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
 
 function daysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
@@ -24,8 +20,19 @@ export function DateWheelPicker({
   minimumDate,
   maximumDate,
 }: DateWheelPickerProps) {
+  const { i18n } = useTranslation();
   const minYear = minimumDate?.getFullYear() ?? 1900;
   const maxYear = maximumDate?.getFullYear() ?? new Date().getFullYear();
+
+  const months = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, m) =>
+        new Date(2024, m, 1).toLocaleDateString(i18n.language, {
+          month: 'short',
+        }),
+      ),
+    [i18n.language],
+  );
 
   const years = useMemo(() => {
     const arr: string[] = [];
@@ -56,9 +63,9 @@ export function DateWheelPicker({
   );
 
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4 }}>
+    <View className="flex-row justify-center gap-1">
       <WheelPicker
-        items={MONTHS}
+        items={months}
         selectedIndex={month}
         onChange={i => onChange(clampDate(year, i, day))}
         width={70}

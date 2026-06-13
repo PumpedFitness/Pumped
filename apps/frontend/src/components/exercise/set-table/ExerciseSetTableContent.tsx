@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
-import { colors } from '../../../theme/tokens';
-import { ClayIcon } from '../../icons/ClayIcon';
+import { useTranslation } from 'react-i18next';
+import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { SetTableRow, SetTypeOption } from './exerciseSetTableModel';
 import { ExerciseSetTableRow } from './ExerciseSetTableRow';
 
@@ -18,14 +19,16 @@ export function ExerciseSetTableContent({
   rows,
   setTypeOptions,
   actionColumnLabel,
-  addSetLabel = 'Add set',
+  addSetLabel,
   onAddSet,
 }: ExerciseSetTableContentProps) {
+  const { t } = useTranslation();
+
   return (
     <View className="px-1 pb-2">
       <View className="flex-row items-center gap-1.5 px-1 py-2">
         <Text className="w-6 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
-          Set
+          {t('setTable.columns.set')}
         </Text>
         {columns.map((column, index) => (
           <Text
@@ -59,7 +62,9 @@ export function ExerciseSetTableContent({
           onPress={onAddSet}
         >
           <ClayIcon name="plus" size={16} color={colors.accent} />
-          <Text className="t-label text-accent">{addSetLabel}</Text>
+          <Text className="t-label text-accent">
+            {addSetLabel ?? t('setTable.addSet')}
+          </Text>
         </Pressable>
       ) : null}
     </View>

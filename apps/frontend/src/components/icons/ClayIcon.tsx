@@ -70,8 +70,6 @@ const PATHS: Record<string, string[]> = {
 
 export type IconName = keyof typeof PATHS;
 
-export const ICON_NAMES = Object.keys(PATHS) as IconName[];
-
 type ClayIconProps = {
   name: IconName;
   size?: number;

@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
-import { colors } from '../../../theme/tokens';
-import { ClayIcon } from '../../icons/ClayIcon';
+import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { PopupOption } from './optionPopupModel';
 
 type OptionPopupListProps<T extends string> = {

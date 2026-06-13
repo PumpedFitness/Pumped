@@ -1,16 +1,33 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { View, Text } from 'react-native';
-import { WebView } from 'react-native-webview';
-import Animated, { useSharedValue, useAnimatedStyle, withDelay, withTiming, Easing } from 'react-native-reanimated';
-import { ClayIcon } from '../icons/ClayIcon';
-import { colors, typography, radii } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  withDelay,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+import { AnimatedView, StyledWebView } from '@/components/uniwind';
+import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@/theme/tokens';
 
 type ChartWidgetProps = {
   colSpan: number;
   width: number;
 };
 
-const CHART_HTML = `
+function buildChartHtml(language: string): string {
+  // Localized short month names injected into the chart's tick formatter
+  const months = JSON.stringify(
+    Array.from({ length: 12 }, (_, month) =>
+      new Date(2024, month, 1).toLocaleDateString(language, {
+        month: 'short',
+      }),
+    ),
+  );
+
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -57,11 +74,11 @@ const CHART_HTML = `
         tickMarkFormatter: function(time) {
           if (typeof time === 'string') {
             var parts = time.split('-');
-            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var months = ${months};
             return parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1];
           }
           if (time && time.year) {
-            var months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var months2 = ${months};
             return time.day + ' ' + months2[time.month - 1];
           }
           return '';
@@ -137,8 +154,14 @@ const CHART_HTML = `
 </body>
 </html>
 `;
+}
 
 export function ChartWidget(_props: ChartWidgetProps) {
+  const { t, i18n } = useTranslation();
+  const chartHtml = useMemo(
+    () => buildChartHtml(i18n.language),
+    [i18n.language],
+  );
   const chartOpacity = useSharedValue(0);
   const chartTranslateY = useSharedValue(8);
 
@@ -157,66 +180,28 @@ export function ChartWidget(_props: ChartWidgetProps) {
   }, [chartOpacity, chartTranslateY]);
 
   return (
-    <View
-      style={{
-        borderRadius: radii.lg,
-        overflow: 'hidden',
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: colors.line,
-      }}
-    >
+    <View className="rounded-[22px] overflow-hidden bg-surface-card border border-border-hairline">
       {/* Title row */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 15,
-          paddingTop: 14,
-          paddingBottom: 4,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View className="flex-row items-center justify-between px-[15px] pt-[14px] pb-1">
+        <View className="flex-row items-center gap-2">
           <ClayIcon name="trend" size={16} color={colors.sage} />
-          <Text
-            style={{
-              fontSize: typography.caption,
-              fontWeight: '600',
-              color: colors.muted,
-            }}
-          >
-            Volume Trend
+          <Text className="text-[12.5px] font-semibold text-muted">
+            {t('widgets.chart.title')}
           </Text>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
-          <Text
-            style={{
-              fontSize: typography.body,
-              fontWeight: '700',
-              color: colors.ink,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
+        <View className="flex-row items-baseline gap-1">
+          <Text className="text-[15px] font-bold text-foreground tabular-nums">
             24,840
           </Text>
-          <Text
-            style={{
-              fontSize: typography.micro,
-              fontWeight: '500',
-              color: colors.sage,
-            }}
-          >
-            +18%
-          </Text>
+          <Text className="text-[11px] font-medium text-sage">+18%</Text>
         </View>
       </View>
 
       {/* Chart with y-labels overlaid */}
-      <View style={{ height: 130, position: 'relative' }}>
-        <WebView
-          source={{ html: CHART_HTML }}
-          style={{ flex: 1, backgroundColor: 'transparent' }}
+      <View className="h-[130px] relative">
+        <StyledWebView
+          source={{ html: chartHtml }}
+          className="flex-1 bg-transparent"
           scrollEnabled={false}
           bounces={false}
           overScrollMode="never"
@@ -227,23 +212,20 @@ export function ChartWidget(_props: ChartWidgetProps) {
           onMessage={onMessage}
         />
         {/* Y-axis labels — fade in after the line draws past them */}
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              right: 8,
-              top: 6,
-              bottom: 20,
-              justifyContent: 'space-between',
-              pointerEvents: 'none',
-            },
-            chartAnimStyle,
-          ]}
+        <AnimatedView
+          className="absolute right-2 top-1.5 bottom-5 justify-between pointer-events-none"
+          style={chartAnimStyle}
         >
-          <Text style={{ fontSize: 11, fontWeight: '500', color: colors.ink2 }}>18k</Text>
-          <Text style={{ fontSize: 11, fontWeight: '500', color: colors.ink2 }}>16k</Text>
-          <Text style={{ fontSize: 11, fontWeight: '500', color: colors.ink2 }}>14k</Text>
-        </Animated.View>
+          <Text className="text-[11px] font-medium text-text-secondary">
+            18k
+          </Text>
+          <Text className="text-[11px] font-medium text-text-secondary">
+            16k
+          </Text>
+          <Text className="text-[11px] font-medium text-text-secondary">
+            14k
+          </Text>
+        </AnimatedView>
       </View>
     </View>
   );

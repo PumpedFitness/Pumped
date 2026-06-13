@@ -71,9 +71,4 @@ export async function changeAppLanguage(
   await i18n.changeLanguage(language);
 }
 
-export {
-  i18n,
-  languageLabels,
-  supportedLanguages,
-  type SupportedLanguage,
-};
+export { i18n, languageLabels, supportedLanguages, type SupportedLanguage };

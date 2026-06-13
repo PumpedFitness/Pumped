@@ -1,31 +1,35 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { colors, radii, shadows } from '../../theme/tokens';
+import { shadows } from '@/theme/tokens';
 
 const SIZES = {
-  sm: { height: 40, paddingHorizontal: 16, fontSize: 14 },
-  md: { height: 52, paddingHorizontal: 22, fontSize: 16 },
-  lg: { height: 56, paddingHorizontal: 24, fontSize: 16.5 },
+  sm: 'h-10 px-4',
+  md: 'h-[52px] px-[22px]',
+  lg: 'h-14 px-6',
+} as const;
+
+const TEXT_SIZES = {
+  sm: 'text-sm',
+  md: 'text-base',
+  lg: 'text-[16.5px]',
 } as const;
 
 const VARIANTS = {
-  primary: {
-    bg: colors.accent,
-    color: colors.accentInk,
-    shadow: shadows.accent,
-  },
-  secondary: {
-    bg: colors.moss,
-    color: colors.cream,
-    shadow: undefined,
-  },
-  ghost: {
-    bg: 'transparent',
-    color: colors.ink,
-    borderWidth: 1,
-    borderColor: colors.line,
-    shadow: undefined,
-  },
+  primary: 'bg-accent',
+  secondary: 'bg-moss',
+  ghost: 'bg-transparent border border-border-hairline',
+} as const;
+
+const TEXT_COLORS = {
+  primary: 'text-accent-foreground',
+  secondary: 'text-cream',
+  ghost: 'text-foreground',
+} as const;
+
+const VARIANT_SHADOWS = {
+  primary: shadows.accent,
+  secondary: undefined,
+  ghost: undefined,
 } as const;
 
 type ButtonProps = {
@@ -38,6 +42,7 @@ type ButtonProps = {
   block?: boolean;
   disabled?: boolean;
   onPress?: () => void;
+  className?: string;
 };
 
 export function Button({
@@ -50,42 +55,22 @@ export function Button({
   block = false,
   disabled = false,
   onPress,
+  className = '',
 }: ButtonProps) {
-  const s = SIZES[size];
-  const v = VARIANTS[variant];
-
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [
-        {
-          height: s.height,
-          paddingHorizontal: s.paddingHorizontal,
-          borderRadius: pill ? radii.pill : radii.md,
-          backgroundColor: v.bg,
-          opacity: disabled ? 0.5 : 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 9,
-          alignSelf: block ? 'stretch' : 'auto',
-          transform: [{ scale: pressed ? 0.96 : 1 }],
-        },
-        'borderWidth' in v && {
-          borderWidth: v.borderWidth,
-          borderColor: v.borderColor,
-        },
-        v.shadow,
-      ]}
+      className={`flex-row items-center justify-center gap-[9px] active:scale-[0.96] ${
+        SIZES[size]
+      } ${VARIANTS[variant]} ${pill ? 'rounded-full' : 'rounded-[18px]'} ${
+        block ? 'self-stretch' : 'self-auto'
+      } ${disabled ? 'opacity-50' : ''} ${className}`}
+      style={VARIANT_SHADOWS[variant]}
     >
       {icon && <View>{icon}</View>}
       <Text
-        style={{
-          fontSize: s.fontSize,
-          fontWeight: '600',
-          color: v.color,
-        }}
+        className={`font-semibold ${TEXT_SIZES[size]} ${TEXT_COLORS[variant]}`}
       >
         {children}
       </Text>

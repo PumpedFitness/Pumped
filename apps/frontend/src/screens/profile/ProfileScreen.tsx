@@ -1,31 +1,21 @@
 import { Text, ScrollView } from 'react-native';
-import { AppShell } from '../../components/AppShell';
-import { UserSettings } from '../../components/settings/UserSettings';
-import { AppSettings } from '../../components/settings/AppSettings';
-import { colors, typography } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
+import { AppShell } from '@/components/layout/AppShell';
+import { UserSettings } from './components/UserSettings';
+import { AppSettings } from './components/AppSettings';
 
 export function ProfileScreen() {
+  const { t } = useTranslation();
+
   return (
     <AppShell showTabBar>
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: 32,
-          paddingTop: 8,
-        }}
+        contentContainerClassName="px-5 pb-8 pt-2"
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text
-          style={{
-            fontSize: typography.display,
-            fontWeight: '700',
-            color: colors.ink,
-            letterSpacing: -0.6,
-            marginBottom: 24,
-          }}
-        >
-          Settings
+        <Text className="text-[30px] font-bold text-foreground tracking-[-0.6px] mb-6">
+          {t('profile.title')}
         </Text>
 
         <UserSettings />

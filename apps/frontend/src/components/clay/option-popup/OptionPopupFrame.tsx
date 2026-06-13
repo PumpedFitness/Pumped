@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 type OptionPopupFrameProps = {
   visible: boolean;
@@ -18,6 +19,8 @@ export function OptionPopupFrame({
   footer,
   onClose,
 }: OptionPopupFrameProps) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       animationType="fade"
@@ -31,7 +34,7 @@ export function OptionPopupFrame({
         className="flex-1 items-center justify-center px-5"
       >
         <Pressable
-          accessibilityLabel="Close popup"
+          accessibilityLabel={t('common.closePopup')}
           accessibilityRole="button"
           className="absolute inset-0 bg-black/60"
           onPress={onClose}

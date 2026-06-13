@@ -1,8 +1,9 @@
 import { randomUUID } from 'expo-crypto';
-import type { WorkoutSetType } from '../data/local/enums';
-import { workoutService } from '../data/local/services';
-import type { WorkoutTemplate } from '../types/workout';
-import { uniqueBy } from '../utils/dedupe';
+import { i18n } from '@/i18n';
+import type { WorkoutSetType } from '@/data/local/enums';
+import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
+import type { WorkoutTemplate } from '@/types/workout';
+import { uniqueBy } from '@/utils/dedupe';
 
 export type CurrentWorkoutSet = {
   id: string;
@@ -38,7 +39,7 @@ export type UpdateCurrentWorkoutSetInput = Partial<
   Pick<CurrentWorkoutSet, 'weight' | 'reps' | 'rpe' | 'setType'>
 >;
 
-export type CurrentWorkoutSetField = 'weight' | 'reps' | 'rpe';
+type CurrentWorkoutSetField = 'weight' | 'reps' | 'rpe';
 
 export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
   return {
@@ -116,7 +117,7 @@ export function requireCurrentWorkout(
   currentWorkout: CurrentWorkout | null,
 ): CurrentWorkout {
   if (!currentWorkout) {
-    throw new Error('No workout is in progress');
+    throw new Error(i18n.t('errors.noWorkoutInProgress'));
   }
   return currentWorkout;
 }
@@ -134,19 +135,20 @@ export function updateCurrentWorkoutExercise(
   };
 }
 
-export function syncCurrentWorkoutTemplateStructure(
+/**
+ * Builds the template save input that mirrors the live workout's structure
+ * back onto its source template. Pure — the caller loads and saves.
+ */
+export function buildTemplateSyncInput(
   workout: CurrentWorkout,
-): void {
-  const template = workoutService.getWorkoutTemplate(workout.workoutTemplateId);
-  if (!template) {
-    throw new Error('Workout template not found');
-  }
+  template: WorkoutTemplate,
+): SaveWorkoutTemplateInput {
   const sourceSets = new Map(
     template.exercises.flatMap(exercise =>
       exercise.sets.map(set => [set.id, set] as const),
     ),
   );
-  workoutService.saveWorkoutTemplate({
+  return {
     id: template.id,
     name: template.name,
     description: template.description,
@@ -169,11 +171,13 @@ export function syncCurrentWorkoutTemplateStructure(
         };
       }),
     })),
-  });
+  };
 }
 
-export function hasWorkoutStructureChanged(workout: CurrentWorkout): boolean {
-  const template = workoutService.getWorkoutTemplate(workout.workoutTemplateId);
+export function hasWorkoutStructureChanged(
+  workout: CurrentWorkout,
+  template: WorkoutTemplate | null,
+): boolean {
   if (!template || template.exercises.length !== workout.exercises.length) {
     return true;
   }

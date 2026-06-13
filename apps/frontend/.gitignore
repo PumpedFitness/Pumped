@@ -81,3 +81,4 @@ src/data/local/schema.enums.generated.ts
 src/data/api/generated.ts
 temp-introspect.db
 src/data/local/pulled/
+*.zip

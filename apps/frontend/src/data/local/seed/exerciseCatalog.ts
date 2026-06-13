@@ -1,6 +1,6 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import type { db } from '../database';
-import { exercises, exerciseTypes, muscleGroups } from '../schema';
+import type { db } from '@/data/local/database';
+import { exercises, exerciseTypes, muscleGroups } from '@/data/local/schema';
 import { EXERCISE_IDS, EXERCISE_TYPE_IDS, MUSCLE_GROUP_IDS } from './ids';
 
 type LocalDatabase = typeof db;
