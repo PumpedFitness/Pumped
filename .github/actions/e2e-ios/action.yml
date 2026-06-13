@@ -1,0 +1,66 @@
+name: E2E iOS (Maestro)
+description: >-
+  Download the simulator .app built by build-ios, boot a simulator, install it,
+  and run the Maestro flows against it.
+
+inputs:
+  artifact-name:
+    description: Name of the .app.zip artifact to download
+    required: false
+    default: ios-sim-app
+  app-id:
+    description: iOS bundle id to launch
+    required: false
+    default: org.reactjs.native.example.PumpedApp
+
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode 26 (match the build's simulator runtime)
+      shell: bash
+      run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+
+    - name: Download .app artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ github.workspace }}/ios-app
+
+    - name: Unpack .app
+      shell: bash
+      working-directory: ${{ github.workspace }}/ios-app
+      run: |
+        ditto -x -k PumpedApp-sim.app.zip .
+        ls -la
+
+    - name: Boot simulator & install app
+      shell: bash
+      run: |
+        # Device names vary by Xcode/runtime, so boot the first available iPhone.
+        UDID="$(xcrun simctl list devices available \
+          | awk -F '[()]' '/iPhone/ {print $2; exit}')"
+        if [ -z "$UDID" ]; then
+          echo "::error::No available iPhone simulator found"
+          xcrun simctl list devices available
+          exit 1
+        fi
+        echo "Booting simulator $UDID"
+        xcrun simctl boot "$UDID"
+        xcrun simctl bootstatus "$UDID" -b
+        xcrun simctl install "$UDID" "${{ github.workspace }}/ios-app/PumpedApp.app"
+
+    - name: Run Maestro flows
+      uses: ./.github/actions/run-maestro
+      with:
+        platform: ios
+        app-id: ${{ inputs.app-id }}
+        flows: apps/frontend/.maestro
+        output: e2e-report-ios
+
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: e2e-report-ios
+        path: e2e-report-ios
+        if-no-files-found: ignore

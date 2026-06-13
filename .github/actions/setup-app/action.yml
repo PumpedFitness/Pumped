@@ -12,6 +12,14 @@ runs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
 
+    - name: Cache Bun global package cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: bun-${{ runner.os }}-${{ hashFiles(format('{0}/bun.lock', inputs.working-directory)) }}
+        restore-keys: |
+          bun-${{ runner.os }}-
+
     - name: Install dependencies
       shell: bash
       run: bun install --frozen-lockfile

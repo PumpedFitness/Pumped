@@ -1,0 +1,16 @@
+name: Frontend unit tests
+description: Install deps and run the frontend Jest unit tests.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup app
+      uses: ./.github/actions/setup-app
+      with:
+        working-directory: apps/frontend
+
+    - name: Jest
+      shell: bash
+      working-directory: apps/frontend
+      # `test` is `jest --passWithNoTests`, so this is green until tests are added.
+      run: bun run test

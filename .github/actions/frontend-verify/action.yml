@@ -1,0 +1,20 @@
+name: Frontend verify
+description: Install deps, then typecheck and lint the frontend app.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup app
+      uses: ./.github/actions/setup-app
+      with:
+        working-directory: apps/frontend
+
+    - name: Typecheck
+      shell: bash
+      working-directory: apps/frontend
+      run: bun run typecheck
+
+    - name: Lint
+      shell: bash
+      working-directory: apps/frontend
+      run: bun run lint

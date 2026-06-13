@@ -1,0 +1,104 @@
+name: Build iOS (simulator)
+description: >-
+  Build the iOS app for the simulator (Release, unsigned) and upload the .app as
+  an artifact for the e2e stage. Caches CocoaPods + ccache and tames the
+  xcodebuild log via xcbeautify (raw log uploaded on failure).
+
+inputs:
+  artifact-name:
+    description: Name of the uploaded .app.zip artifact
+    required: false
+    default: ios-sim-app
+
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode 26 (Swift 6.2 — required by Expo/RN 0.85 prebuilt pods)
+      shell: bash
+      run: |
+        sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+        xcodebuild -version
+        # ccache + xcbeautify are preinstalled on the image; guard just in case.
+        command -v ccache >/dev/null || brew install ccache
+        command -v xcbeautify >/dev/null || brew install xcbeautify
+        ccache --version | head -1
+
+    - name: Setup app
+      uses: ./.github/actions/setup-app
+      with:
+        working-directory: apps/frontend
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v4
+      with:
+        path: |
+          apps/frontend/ios/Pods
+          ~/Library/Caches/CocoaPods
+        key: pods-${{ runner.os }}-${{ hashFiles('apps/frontend/ios/Podfile.lock') }}
+        restore-keys: |
+          pods-${{ runner.os }}-
+
+    - name: Cache ccache
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/.ccache
+        key: ccache-ios-${{ github.sha }}
+        restore-keys: |
+          ccache-ios-
+
+    - name: Install CocoaPods
+      shell: bash
+      working-directory: apps/frontend/ios
+      # USE_CCACHE=1 makes RN wire the Pods' CC/CXX/LD to its ccache wrappers.
+      env:
+        USE_CCACHE: '1'
+      run: pod install
+
+    - name: Build for simulator
+      shell: bash
+      working-directory: apps/frontend
+      env:
+        USE_CCACHE: '1'
+        CCACHE_DIR: ${{ github.workspace }}/.ccache
+        CCACHE_BASEDIR: ${{ github.workspace }}
+        CCACHE_MAXSIZE: 2G
+      run: |
+        set -o pipefail   # keep xcodebuild's real exit code through the pipe
+        ccache --zero-stats >/dev/null 2>&1 || true
+        NSUnbufferedIO=YES xcodebuild \
+          -workspace ios/PumpedApp.xcworkspace \
+          -scheme PumpedApp \
+          -configuration Release \
+          -sdk iphonesimulator \
+          -derivedDataPath ios/build \
+          COMPILER_INDEX_STORE_ENABLE=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          build \
+          2>&1 | tee xcodebuild.log | xcbeautify
+        echo "=== ccache stats ===" && ccache --show-stats || true
+
+    - name: Package .app
+      shell: bash
+      working-directory: apps/frontend
+      run: |
+        APP="ios/build/Build/Products/Release-iphonesimulator/PumpedApp.app"
+        [ -d "$APP" ] || { echo "::error::built .app not found at $APP"; exit 1; }
+        # ditto --keepParent preserves the PumpedApp.app bundle dir inside the zip.
+        ditto -c -k --sequesterRsrc --keepParent "$APP" PumpedApp-sim.app.zip
+        ls -lh PumpedApp-sim.app.zip
+
+    - name: Upload .app artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: apps/frontend/PumpedApp-sim.app.zip
+        retention-days: 14
+        if-no-files-found: error
+
+    - name: Upload raw xcodebuild log (on failure)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: xcodebuild-log
+        path: apps/frontend/xcodebuild.log
+        if-no-files-found: ignore

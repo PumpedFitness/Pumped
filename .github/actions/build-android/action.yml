@@ -1,0 +1,40 @@
+name: Build Android (APK)
+description: >-
+  Assemble a release APK (signed with the committed debug keystore, so it is
+  sideloadable and installs on an emulator) and upload it as an artifact.
+
+inputs:
+  artifact-name:
+    description: Name of the uploaded APK artifact
+    required: false
+    default: android-apk
+
+runs:
+  using: composite
+  steps:
+    - name: Setup app
+      uses: ./.github/actions/setup-app
+      with:
+        working-directory: apps/frontend
+
+    - name: Setup JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+        cache: gradle
+
+    - name: Assemble release APK
+      shell: bash
+      working-directory: apps/frontend/android
+      # The RN gradle plugin bundles the JS via `expo export:embed` (see
+      # android/app/build.gradle), which needs node + node_modules from setup-app.
+      run: ./gradlew assembleRelease --no-daemon --console=plain
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: apps/frontend/android/app/build/outputs/apk/release/*.apk
+        retention-days: 14
+        if-no-files-found: error

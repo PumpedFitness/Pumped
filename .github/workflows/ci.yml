@@ -13,21 +13,21 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Heavy native build + e2e stages only run on `main` and manual dispatch; PRs
+# stop after verify + unit tests. GitHub has no cross-job condition reuse, so
+# that gate is repeated inline on both build jobs below.
+
 jobs:
-  # ─── 1. Change detection (the 3 apps) ─────────────────────────────────────────
+  # ─── 1. Change detection ──────────────────────────────────────────────────
   changes:
     name: Detect changes
     runs-on: ubuntu-latest
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
       handover: ${{ steps.filter.outputs.handover }}
-      backend: ${{ steps.filter.outputs.backend }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Filter paths
-        id: filter
+      - uses: actions/checkout@v4
+      - id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
@@ -35,143 +35,96 @@ jobs:
               - 'apps/frontend/**'
             handover:
               - 'apps/handover/**'
-            backend:
-              - 'apps/backend/**'
-    # NOTE: `backend` is detected for completeness but has no test job below —
-    # it's Kotlin (no typecheck/eslint) and currently unused.
 
-  # ─── 2. Test the changed apps (typecheck · lint) ──────────────────────────────
-  test-frontend:
-    name: Test frontend (typecheck · lint)
+  # ─── 2. Frontend verify + unit tests (PRs stop here) ──────────────────────
+  frontend_verify:
+    name: Frontend · verify (lint · tsc)
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup app
-        uses: ./.github/actions/setup-app
-        with:
-          working-directory: apps/frontend
-      - name: Typecheck
-        run: bun run typecheck
-        working-directory: apps/frontend
-      - name: Lint
-        run: bun run lint
-        working-directory: apps/frontend
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/frontend-verify
 
-  test-handover:
-    name: Test handover (typecheck)
+  frontend_test:
+    name: Frontend · unit tests
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/frontend-unit-tests
+
+  # ─── 3. Build sideloadable apps in parallel (main + manual only) ──────────
+  frontend_build_ios:
+    name: Frontend · build iOS (simulator)
+    needs: [changes, frontend_verify, frontend_test]
+    if: >-
+      needs.changes.outputs.frontend == 'true' &&
+      (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-ios
+
+  frontend_build_android:
+    name: Frontend · build Android (APK)
+    needs: [changes, frontend_verify, frontend_test]
+    if: >-
+      needs.changes.outputs.frontend == 'true' &&
+      (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-android
+
+  # ─── 4. E2E the built apps in parallel (Maestro) ──────────────────────────
+  frontend_e2e_ios:
+    name: Frontend · e2e iOS
+    needs: frontend_build_ios
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/e2e-ios
+
+  frontend_e2e_android:
+    name: Frontend · e2e Android
+    needs: frontend_build_android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/e2e-android
+
+  # ─── 5. Handover worker (test always; deploy on main when e2e is green) ───
+  test_handover:
+    name: Handover · typecheck
     needs: changes
     if: needs.changes.outputs.handover == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup app
-        uses: ./.github/actions/setup-app
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-app
         with:
           working-directory: apps/handover
-      - name: Typecheck
-        run: bun run typecheck
+      - run: bun run typecheck
         working-directory: apps/handover
-      # The worker has no ESLint config yet — add one to lint it here too.
 
-  # ─── 3. Frontend E2E (Maestro on an iOS simulator) ────────────────────────────
-  # Runs whenever the frontend changed and its tests passed. iOS is built on a
-  # macOS runner (Release config bundles the JS, so no Metro). Needs Xcode 26
-  # (Swift 6.2): Expo/RN 0.85 ship prebuilt Swift packages pinned to tools
-  # version 6.2.0, which Xcode 16's Swift 6.1 cannot resolve (ExpoModulesJSI
-  # xcframework build → "Could not resolve package dependencies … installed
-  # version is 6.1.0"). `macos-latest` still maps to macOS 15 (default Xcode
-  # 16.4), so pin macos-26 and select Xcode 26 explicitly rather than trusting
-  # the image default. To cut macOS minutes, gate this on `github.ref` = main.
-  e2e:
-    name: E2E frontend (iOS)
-    needs: [changes, test-frontend]
-    if: needs.changes.outputs.frontend == 'true'
-    runs-on: macos-26
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Select Xcode 26 (Swift 6.2 — required by Expo/RN 0.85 prebuilt pods)
-        run: |
-          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
-          xcodebuild -version
-
-      - name: Setup app
-        uses: ./.github/actions/setup-app
-        with:
-          working-directory: apps/frontend
-
-      - name: Install CocoaPods
-        run: pod install
-        working-directory: apps/frontend/ios
-
-      - name: Build app for simulator
-        working-directory: apps/frontend
-        run: |
-          xcodebuild \
-            -workspace ios/PumpedApp.xcworkspace \
-            -scheme PumpedApp \
-            -configuration Release \
-            -sdk iphonesimulator \
-            -derivedDataPath ios/build \
-            CODE_SIGNING_ALLOWED=NO \
-            build
-
-      - name: Boot simulator & install app
-        working-directory: apps/frontend
-        run: |
-          # Device names vary by Xcode/runtime (Xcode 26 ships iPhone 16/17, not 15),
-          # so boot the first available iPhone rather than a hard-coded model.
-          UDID="$(xcrun simctl list devices available \
-            | awk -F '[()]' '/iPhone/ {print $2; exit}')"
-          if [ -z "$UDID" ]; then
-            echo "No available iPhone simulator found:"; xcrun simctl list devices available
-            exit 1
-          fi
-          echo "Booting simulator $UDID"
-          xcrun simctl boot "$UDID"
-          xcrun simctl bootstatus "$UDID" -b
-          xcrun simctl install "$UDID" \
-            "ios/build/Build/Products/Release-iphonesimulator/PumpedApp.app"
-
-      - name: Run Maestro flows
-        uses: ./.github/actions/run-maestro
-        with:
-          platform: ios
-          app-id: org.reactjs.native.example.PumpedApp
-          flows: apps/frontend/.maestro
-          output: e2e-report
-
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-report
-          path: e2e-report
-          if-no-files-found: ignore
-
-  # ─── 4. Deploy the handover worker (only if E2E is fine) ──────────────────────
-  # Deploys on main when the worker changed, its tests passed, and the frontend
-  # E2E either passed or didn't need to run (frontend unchanged).
-  deploy-handover:
-    name: Deploy handover worker
-    needs: [changes, test-handover, e2e]
+  deploy_handover:
+    name: Handover · deploy
+    needs: [changes, test_handover, frontend_e2e_ios, frontend_e2e_android]
+    # Deploy on main when the worker changed and its tests passed, provided the
+    # frontend e2e suites passed or didn't need to run (frontend unchanged).
     if: >-
       always() &&
       github.event_name != 'pull_request' &&
       github.ref == 'refs/heads/main' &&
       needs.changes.outputs.handover == 'true' &&
-      needs.test-handover.result == 'success' &&
-      (needs.e2e.result == 'success' || needs.e2e.result == 'skipped')
+      needs.test_handover.result == 'success' &&
+      (needs.frontend_e2e_ios.result == 'success' || needs.frontend_e2e_ios.result == 'skipped') &&
+      (needs.frontend_e2e_android.result == 'success' || needs.frontend_e2e_android.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Deploy
-        uses: ./.github/actions/deploy-handover
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-handover
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
