@@ -79,17 +79,26 @@ jobs:
 
   # ─── 3. Frontend E2E (Maestro on an iOS simulator) ────────────────────────────
   # Runs whenever the frontend changed and its tests passed. iOS is built on a
-  # macOS runner (Release config bundles the JS, so no Metro). ⚠️ Not yet
-  # validated in CI — the xcodebuild/scheme/simulator bits may need a tweak on
-  # the first real run. To cut macOS minutes, gate this on `github.ref` = main.
+  # macOS runner (Release config bundles the JS, so no Metro). Needs Xcode 26
+  # (Swift 6.2): Expo/RN 0.85 ship prebuilt Swift packages pinned to tools
+  # version 6.2.0, which Xcode 16's Swift 6.1 cannot resolve (ExpoModulesJSI
+  # xcframework build → "Could not resolve package dependencies … installed
+  # version is 6.1.0"). `macos-latest` still maps to macOS 15 (default Xcode
+  # 16.4), so pin macos-26 and select Xcode 26 explicitly rather than trusting
+  # the image default. To cut macOS minutes, gate this on `github.ref` = main.
   e2e:
     name: E2E frontend (iOS)
     needs: [changes, test-frontend]
     if: needs.changes.outputs.frontend == 'true'
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Select Xcode 26 (Swift 6.2 — required by Expo/RN 0.85 prebuilt pods)
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+          xcodebuild -version
 
       - name: Setup app
         uses: ./.github/actions/setup-app
@@ -115,8 +124,18 @@ jobs:
       - name: Boot simulator & install app
         working-directory: apps/frontend
         run: |
-          xcrun simctl boot "iPhone 15" || true
-          xcrun simctl install booted \
+          # Device names vary by Xcode/runtime (Xcode 26 ships iPhone 16/17, not 15),
+          # so boot the first available iPhone rather than a hard-coded model.
+          UDID="$(xcrun simctl list devices available \
+            | awk -F '[()]' '/iPhone/ {print $2; exit}')"
+          if [ -z "$UDID" ]; then
+            echo "No available iPhone simulator found:"; xcrun simctl list devices available
+            exit 1
+          fi
+          echo "Booting simulator $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" \
             "ios/build/Build/Products/Release-iphonesimulator/PumpedApp.app"
 
       - name: Run Maestro flows
