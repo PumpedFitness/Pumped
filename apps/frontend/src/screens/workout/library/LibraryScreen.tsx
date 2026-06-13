@@ -42,6 +42,8 @@ export function LibraryScreen() {
             accessibilityRole="button"
             className="h-10 w-10 items-center justify-center rounded-full bg-accent"
             onPress={() => navigation.navigate('CreateExercise')}
+            aria-label="Create new excercise"
+            testID="create_workout"
           >
             <ClayIcon name="plus" size={20} color={colors.cream} />
           </Pressable>

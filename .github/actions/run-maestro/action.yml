@@ -1,0 +1,36 @@
+name: Run Maestro flows
+description: >-
+  Install the maestro-runner CLI and run a folder of Maestro flows against an
+  already-booted device with the app installed.
+
+inputs:
+  platform:
+    description: Target platform — ios or android
+    required: true
+  app-id:
+    description: Bundle id / package name to launch (passed to the flows as APP_ID)
+    required: true
+  flows:
+    description: Path to the .maestro flows file or folder
+    required: true
+  output:
+    description: Directory to write the JUnit/HTML/Allure report into
+    required: false
+    default: e2e-report
+
+runs:
+  using: composite
+  steps:
+    - name: Install maestro-runner
+      shell: bash
+      run: |
+        curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash
+        echo "$HOME/.maestro-runner/bin" >> "$GITHUB_PATH"
+
+    - name: Run flows
+      shell: bash
+      run: |
+        maestro-runner --platform "${{ inputs.platform }}" test \
+          -e APP_ID="${{ inputs.app-id }}" \
+          --output "${{ inputs.output }}" --flatten \
+          "${{ inputs.flows }}"

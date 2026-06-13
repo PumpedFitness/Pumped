@@ -1,5 +1,0 @@
-/* Pumped — Webfonts
-   Hanken Grotesk (body) + Bricolage Grotesque (display) are the real brand
-   typefaces, served from Google Fonts. If you self-host for production,
-   replace this @import with local @font-face rules pointing at the binaries. */
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400..800;1,400..600&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap');

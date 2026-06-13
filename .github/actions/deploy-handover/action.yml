@@ -1,0 +1,25 @@
+name: Deploy handover worker
+description: Install dependencies and deploy the handover Cloudflare Worker with wrangler.
+
+inputs:
+  cloudflare-api-token:
+    description: Cloudflare API token with Workers deploy scope
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile
+      working-directory: apps/handover
+
+    - name: Deploy to Cloudflare Workers
+      shell: bash
+      run: bun run deploy
+      working-directory: apps/handover
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare-api-token }}

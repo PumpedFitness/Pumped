@@ -9,72 +9,150 @@ on:
 permissions:
   contents: read
 
-# Cancel superseded PR runs, but never cancel a main run mid-deploy.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # ─── TypeScript checks: typecheck · lint · formatting ─────────────────────────
-  checks:
-    name: Checks (typecheck · lint · format)
+  # ─── 1. Change detection (the 3 apps) ─────────────────────────────────────────
+  changes:
+    name: Detect changes
     runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      handover: ${{ steps.filter.outputs.handover }}
+      backend: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend/**'
+            handover:
+              - 'apps/handover/**'
+            backend:
+              - 'apps/backend/**'
+    # NOTE: `backend` is detected for completeness but has no test job below —
+    # it's Kotlin (no typecheck/eslint) and currently unused.
 
-      # Frontend (React Native) — full TS toolchain
-      - name: Install frontend deps
-        run: bun install --frozen-lockfile
-        working-directory: apps/frontend
-
-      - name: Typecheck frontend
+  # ─── 2. Test the changed apps (typecheck · lint) ──────────────────────────────
+  test-frontend:
+    name: Test frontend (typecheck · lint)
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup app
+        uses: ./.github/actions/setup-app
+        with:
+          working-directory: apps/frontend
+      - name: Typecheck
         run: bun run typecheck
         working-directory: apps/frontend
-
-      - name: Lint frontend
+      - name: Lint
         run: bun run lint
         working-directory: apps/frontend
 
-      - name: Check frontend formatting
-        run: bun run format:check
-        working-directory: apps/frontend
-
-      # Handover worker — typecheck before we deploy it
-      - name: Install handover deps
-        run: bun install --frozen-lockfile
-        working-directory: apps/handover
-
-      - name: Typecheck handover worker
-        run: bunx tsc --noEmit
-        working-directory: apps/handover
-
-  # ─── Deploy the handover worker to Cloudflare ─────────────────────────────────
-  deploy-handover:
-    name: Deploy handover worker
-    needs: checks
-    # Only deploy from main (push or manual dispatch) — never on pull requests.
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+  test-handover:
+    name: Test handover (typecheck)
+    needs: changes
+    if: needs.changes.outputs.handover == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Install handover deps
-        run: bun install --frozen-lockfile
+      - name: Setup app
+        uses: ./.github/actions/setup-app
+        with:
+          working-directory: apps/handover
+      - name: Typecheck
+        run: bun run typecheck
         working-directory: apps/handover
+      # The worker has no ESLint config yet — add one to lint it here too.
 
-      # Requires the CLOUDFLARE_API_TOKEN repo secret (Workers deploy scope).
-      # A single-account token infers the account automatically; if the token
-      # can reach multiple accounts, add `"account_id": "..."` to wrangler.jsonc.
-      - name: Deploy to Cloudflare Workers
-        run: bun run deploy
-        working-directory: apps/handover
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  # ─── 3. Frontend E2E (Maestro on an iOS simulator) ────────────────────────────
+  # Runs whenever the frontend changed and its tests passed. iOS is built on a
+  # macOS runner (Release config bundles the JS, so no Metro). ⚠️ Not yet
+  # validated in CI — the xcodebuild/scheme/simulator bits may need a tweak on
+  # the first real run. To cut macOS minutes, gate this on `github.ref` = main.
+  e2e:
+    name: E2E frontend (iOS)
+    needs: [changes, test-frontend]
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup app
+        uses: ./.github/actions/setup-app
+        with:
+          working-directory: apps/frontend
+
+      - name: Install CocoaPods
+        run: pod install
+        working-directory: apps/frontend/ios
+
+      - name: Build app for simulator
+        working-directory: apps/frontend
+        run: |
+          xcodebuild \
+            -workspace ios/PumpedApp.xcworkspace \
+            -scheme PumpedApp \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath ios/build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Boot simulator & install app
+        working-directory: apps/frontend
+        run: |
+          xcrun simctl boot "iPhone 15" || true
+          xcrun simctl install booted \
+            "ios/build/Build/Products/Release-iphonesimulator/PumpedApp.app"
+
+      - name: Run Maestro flows
+        uses: ./.github/actions/run-maestro
+        with:
+          platform: ios
+          app-id: org.reactjs.native.example.PumpedApp
+          flows: apps/frontend/.maestro
+          output: e2e-report
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e-report
+          if-no-files-found: ignore
+
+  # ─── 4. Deploy the handover worker (only if E2E is fine) ──────────────────────
+  # Deploys on main when the worker changed, its tests passed, and the frontend
+  # E2E either passed or didn't need to run (frontend unchanged).
+  deploy-handover:
+    name: Deploy handover worker
+    needs: [changes, test-handover, e2e]
+    if: >-
+      always() &&
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.handover == 'true' &&
+      needs.test-handover.result == 'success' &&
+      (needs.e2e.result == 'success' || needs.e2e.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy
+        uses: ./.github/actions/deploy-handover
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
