@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded PR runs, but never cancel a main run mid-deploy.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # ─── TypeScript checks: typecheck · lint · formatting ─────────────────────────
+  checks:
+    name: Checks (typecheck · lint · format)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      # Frontend (React Native) — full TS toolchain
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile
+        working-directory: apps/frontend
+
+      - name: Typecheck frontend
+        run: bun run typecheck
+        working-directory: apps/frontend
+
+      - name: Lint frontend
+        run: bun run lint
+        working-directory: apps/frontend
+
+      - name: Check frontend formatting
+        run: bun run format:check
+        working-directory: apps/frontend
+
+      # Handover worker — typecheck before we deploy it
+      - name: Install handover deps
+        run: bun install --frozen-lockfile
+        working-directory: apps/handover
+
+      - name: Typecheck handover worker
+        run: bunx tsc --noEmit
+        working-directory: apps/handover
+
+  # ─── Deploy the handover worker to Cloudflare ─────────────────────────────────
+  deploy-handover:
+    name: Deploy handover worker
+    needs: checks
+    # Only deploy from main (push or manual dispatch) — never on pull requests.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install handover deps
+        run: bun install --frozen-lockfile
+        working-directory: apps/handover
+
+      # Requires the CLOUDFLARE_API_TOKEN repo secret (Workers deploy scope).
+      # A single-account token infers the account automatically; if the token
+      # can reach multiple accounts, add `"account_id": "..."` to wrangler.jsonc.
+      - name: Deploy to Cloudflare Workers
+        run: bun run deploy
+        working-directory: apps/handover
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

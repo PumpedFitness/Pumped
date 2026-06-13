@@ -11,6 +11,8 @@
     "frontend:format": "bun --cwd=apps/frontend run format",
     "frontend:format:check": "bun --cwd=apps/frontend run format:check",
     "frontend:test": "bun --cwd=apps/frontend run test",
+    "frontend:e2e": "bun --cwd=apps/frontend run e2e",
+    "frontend:e2e:android": "bun --cwd=apps/frontend run e2e:android",
     "frontend:typecheck": "bun --cwd=apps/frontend run typecheck",
     "frontend:db:generate": "bun --cwd=apps/frontend run db:generate",
     "frontend:prepare": "bun --cwd=apps/frontend run dev:prepare",

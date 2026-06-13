@@ -221,3 +221,6 @@ Do not hand-roll a button/row/sheet/search/empty-state that already exists.
 - `bun run typecheck` · `bun run lint` · `bun run format`
 - `bun run ios` / `bun run android` / `bun run start`
 - `bun run db:generate` — drizzle migrations
+- `bun run e2e` / `e2e:android` — Maestro flows via `maestro-runner` (single
+  Go binary, no JVM); `.maestro/`, needs a booted device with the app installed
+  — see `.maestro/README.md`. CI: `.github/workflows/e2e.yml`.

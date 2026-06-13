@@ -82,3 +82,6 @@ src/data/api/generated.ts
 temp-introspect.db
 src/data/local/pulled/
 *.zip
+
+# Maestro / maestro-runner test reports
+reports/

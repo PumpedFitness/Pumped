@@ -1,0 +1,23 @@
+# Walks the bottom tab bar and asserts each tab's screen renders.
+# The tab buttons expose their label as an accessibilityLabel (Home, Plan,
+# Library, History, You); the asserted titles are the en strings from
+# src/i18n/resources.ts.
+appId: ${APP_ID}
+---
+- launchApp
+- assertVisible: 'RECOVERY' # Home
+
+- tapOn: 'Plan'
+- assertVisible: 'Workout templates'
+
+- tapOn: 'Library'
+- assertVisible: 'Exercise Library'
+
+- tapOn: 'History'
+- assertVisible: 'Workout history'
+
+- tapOn: 'You'
+- assertVisible: 'Settings'
+
+- tapOn: 'Home'
+- assertVisible: 'RECOVERY'

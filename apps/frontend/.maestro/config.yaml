@@ -1,0 +1,4 @@
+# Maestro test-suite config — https://maestro.mobile.dev
+# Runs every *.yaml flow in this folder (config.yaml is ignored automatically).
+flows:
+  - '*.yaml'
