@@ -12,6 +12,11 @@ inputs:
     description: iOS bundle id to launch
     required: false
     default: org.reactjs.native.example.PumpedApp
+  maestro-version:
+    description: maestro-runner version to install, or "latest". Pin it (matching
+      e2e-android) to keep the cache stable and e2e runs reproducible.
+    required: false
+    default: latest
 
 runs:
   using: composite
@@ -56,6 +61,7 @@ runs:
         app-id: ${{ inputs.app-id }}
         flows: apps/frontend/.maestro
         output: e2e-report-ios
+        maestro-version: ${{ inputs.maestro-version }}
 
     - name: Upload report
       if: always()
@@ -64,3 +70,4 @@ runs:
         name: e2e-report-ios
         path: e2e-report-ios
         if-no-files-found: ignore
+        retention-days: 7

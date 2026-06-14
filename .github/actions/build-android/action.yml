@@ -29,7 +29,12 @@ runs:
       working-directory: apps/frontend/android
       # The RN gradle plugin bundles the JS via `expo export:embed` (see
       # android/app/build.gradle), which needs node + node_modules from setup-app.
-      run: ./gradlew assembleRelease --no-daemon --console=plain
+      #
+      # CI only ever installs this APK on the x86_64 emulator (see e2e-android),
+      # so compile native code for that ABI alone instead of all four. This is an
+      # ephemeral -P override — gradle.properties keeps the full
+      # reactNativeArchitectures list for local dev / production builds.
+      run: ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon --console=plain
 
     - name: Upload APK
       uses: actions/upload-artifact@v4

@@ -16,6 +16,10 @@ inputs:
     description: Android emulator API level
     required: false
     default: "34"
+  maestro-version:
+    description: maestro-runner version to install, or "latest"
+    required: false
+    default: latest
 
 runs:
   using: composite
@@ -25,6 +29,15 @@ runs:
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ github.workspace }}/android-apk
+
+    # Restore the maestro-runner binary so the emulator script below skips the
+    # download. Saved at post-job; the install inside the emulator step is the
+    # cache-miss fallback.
+    - name: Cache maestro-runner
+      uses: actions/cache@v4
+      with:
+        path: ~/.maestro-runner
+        key: maestro-runner-${{ runner.os }}-${{ runner.arch }}-${{ inputs.maestro-version }}
 
     - name: Enable KVM (hardware accel for the emulator)
       shell: bash
@@ -49,7 +62,13 @@ runs:
           APK="$(ls "${{ github.workspace }}"/android-apk/*.apk | head -1)"
           echo "Installing $APK"
           adb install -r "$APK"
-          curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash
+          if [ ! -x "$HOME/.maestro-runner/bin/maestro-runner" ]; then
+            if [ "${{ inputs.maestro-version }}" = "latest" ]; then
+              curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash
+            else
+              curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash -s -- --version "${{ inputs.maestro-version }}"
+            fi
+          fi
           export PATH="$HOME/.maestro-runner/bin:$PATH"
           maestro-runner --platform android test \
             -e APP_ID="${{ inputs.app-id }}" \
@@ -63,3 +82,4 @@ runs:
         name: e2e-report-android
         path: e2e-report-android
         if-no-files-found: ignore
+        retention-days: 7
