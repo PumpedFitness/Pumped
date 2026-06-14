@@ -29,7 +29,6 @@ runs:
         working-directory: apps/frontend
 
     - name: Cache CocoaPods
-      id: pods-cache
       uses: actions/cache@v4
       with:
         path: |
@@ -51,13 +50,13 @@ runs:
           ccache-ios-main-
 
     - name: Install CocoaPods
-      # On an exact cache hit Pods/ is fully restored and in sync with
-      # Podfile.lock, so pod install is redundant. A restore-keys partial hit
-      # leaves cache-hit false, so we still run it. Xcode's
-      # `[CP] Check Pods Manifest.lock` phase is the backstop either way.
-      if: steps.pods-cache.outputs.cache-hit != 'true'
       shell: bash
       working-directory: apps/frontend/ios
+      # Always run — do NOT skip on a Pods cache hit. RN's pod install also runs
+      # codegen, emitting ios/build/generated/.../ReactCodegen/*-generated.mm,
+      # which lives OUTSIDE the cached Pods/ dir. Skipping it leaves those
+      # generated sources missing and xcodebuild fails with "Build input file
+      # cannot be found".
       # USE_CCACHE=1 makes RN wire the Pods' CC/CXX/LD to its ccache wrappers.
       env:
         USE_CCACHE: '1'
