@@ -56,24 +56,10 @@ runs:
         ram-size: 4096M
         disable-animations: true
         # Everything that needs the emulator must run inside this script — the
-        # emulator only lives for its duration.
-        script: |
-          set -e
-          APK="$(ls "${{ github.workspace }}"/android-apk/*.apk | head -1)"
-          echo "Installing $APK"
-          adb install -r "$APK"
-          if [ ! -x "$HOME/.maestro-runner/bin/maestro-runner" ]; then
-            if [ "${{ inputs.maestro-version }}" = "latest" ]; then
-              curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash
-            else
-              curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash -s -- --version "${{ inputs.maestro-version }}"
-            fi
-          fi
-          export PATH="$HOME/.maestro-runner/bin:$PATH"
-          maestro-runner --platform android test \
-            -e APP_ID="${{ inputs.app-id }}" \
-            --output e2e-report-android --flatten \
-            apps/frontend/.maestro
+        # emulator only lives for its duration. The runner executes the script
+        # line-by-line in separate shells (vars/`set -e` don't persist), so keep
+        # this to ONE line that runs a committed script in a single shell.
+        script: bash apps/frontend/scripts/e2e-android.sh "${{ inputs.app-id }}" "${{ inputs.maestro-version }}"
 
     - name: Upload report
       if: always()
