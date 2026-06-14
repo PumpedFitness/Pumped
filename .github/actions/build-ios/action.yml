@@ -28,16 +28,22 @@ runs:
       with:
         working-directory: apps/frontend
 
-    - name: Cache CocoaPods
+    - name: Cache CocoaPods + RN codegen
       id: pods-cache
       uses: actions/cache@v4
       with:
+        # RN's pod install also emits codegen sources to ios/build/generated
+        # (outside Pods/), which xcodebuild needs. Cache them together so the
+        # skip below is safe — both derive from Podfile.lock (no app-level
+        # codegenConfig). The `-codegen-` namespace forces a fresh cache that
+        # includes the generated dir, distinct from any old Pods-only entries.
         path: |
           apps/frontend/ios/Pods
+          apps/frontend/ios/build/generated
           ~/Library/Caches/CocoaPods
-        key: pods-${{ runner.os }}-${{ hashFiles('apps/frontend/ios/Podfile.lock') }}
+        key: pods-${{ runner.os }}-codegen-${{ hashFiles('apps/frontend/ios/Podfile.lock') }}
         restore-keys: |
-          pods-${{ runner.os }}-
+          pods-${{ runner.os }}-codegen-
 
     - name: Cache ccache
       uses: actions/cache@v4
@@ -51,17 +57,23 @@ runs:
           ccache-ios-main-
 
     - name: Install CocoaPods
-      # On an exact cache hit Pods/ is fully restored and in sync with
-      # Podfile.lock, so pod install is redundant. A restore-keys partial hit
-      # leaves cache-hit false, so we still run it. Xcode's
-      # `[CP] Check Pods Manifest.lock` phase is the backstop either way.
-      if: steps.pods-cache.outputs.cache-hit != 'true'
       shell: bash
       working-directory: apps/frontend/ios
       # USE_CCACHE=1 makes RN wire the Pods' CC/CXX/LD to its ccache wrappers.
       env:
         USE_CCACHE: '1'
-      run: pod install
+      # Skip pod install ONLY when the cache restored both Pods/ AND the RN
+      # codegen output (build/generated/ios/ReactCodegen/*-generated.mm). pod
+      # install emits that codegen outside Pods/, so a Pods-only restore would
+      # leave xcodebuild missing those sources. The dir check also self-heals a
+      # stale/partial cache by falling back to a full pod install.
+      run: |
+        if [ "${{ steps.pods-cache.outputs.cache-hit }}" = "true" ] \
+           && [ -d build/generated/ios/ReactCodegen ]; then
+          echo "Pods + RN codegen restored from cache — skipping pod install"
+        else
+          pod install
+        fi
 
     - name: Build for simulator
       shell: bash
