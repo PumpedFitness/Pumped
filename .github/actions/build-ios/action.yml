@@ -29,6 +29,7 @@ runs:
         working-directory: apps/frontend
 
     - name: Cache CocoaPods
+      id: pods-cache
       uses: actions/cache@v4
       with:
         path: |
@@ -42,11 +43,19 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ github.workspace }}/.ccache
-        key: ccache-ios-${{ github.sha }}
+        # Namespace by branch so a build restores its own branch's objects first
+        # (and falls back to main), instead of any branch grabbing any other's.
+        key: ccache-ios-${{ github.ref_name }}-${{ github.sha }}
         restore-keys: |
-          ccache-ios-
+          ccache-ios-${{ github.ref_name }}-
+          ccache-ios-main-
 
     - name: Install CocoaPods
+      # On an exact cache hit Pods/ is fully restored and in sync with
+      # Podfile.lock, so pod install is redundant. A restore-keys partial hit
+      # leaves cache-hit false, so we still run it. Xcode's
+      # `[CP] Check Pods Manifest.lock` phase is the backstop either way.
+      if: steps.pods-cache.outputs.cache-hit != 'true'
       shell: bash
       working-directory: apps/frontend/ios
       # USE_CCACHE=1 makes RN wire the Pods' CC/CXX/LD to its ccache wrappers.
@@ -84,7 +93,9 @@ runs:
         APP="ios/build/Build/Products/Release-iphonesimulator/PumpedApp.app"
         [ -d "$APP" ] || { echo "::error::built .app not found at $APP"; exit 1; }
         # ditto --keepParent preserves the PumpedApp.app bundle dir inside the zip.
-        ditto -c -k --sequesterRsrc --keepParent "$APP" PumpedApp-sim.app.zip
+        # --zlibCompressionLevel 9 shrinks the artifact while keeping the PKZip
+        # format that e2e-ios unpacks with `ditto -x -k`.
+        ditto -c -k --zlibCompressionLevel 9 --sequesterRsrc --keepParent "$APP" PumpedApp-sim.app.zip
         ls -lh PumpedApp-sim.app.zip
 
     - name: Upload .app artifact

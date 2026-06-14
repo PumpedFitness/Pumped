@@ -17,14 +17,34 @@ inputs:
     description: Directory to write the JUnit/HTML/Allure report into
     required: false
     default: e2e-report
+  maestro-version:
+    description: maestro-runner version to install, or "latest". Pin it to keep
+      the cache stable and the e2e runs reproducible.
+    required: false
+    default: latest
 
 runs:
   using: composite
   steps:
+    # The installer drops a single self-contained binary into ~/.maestro-runner
+    # (no JDK/Maestro-CLI underneath), so caching that dir skips the download.
+    - name: Cache maestro-runner
+      uses: actions/cache@v4
+      with:
+        path: ~/.maestro-runner
+        key: maestro-runner-${{ runner.os }}-${{ runner.arch }}-${{ inputs.maestro-version }}
+
     - name: Install maestro-runner
       shell: bash
       run: |
-        curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash
+        BIN="$HOME/.maestro-runner/bin/maestro-runner"
+        if [ -x "$BIN" ]; then
+          echo "maestro-runner restored from cache ($("$BIN" --version 2>/dev/null || echo present))"
+        elif [ "${{ inputs.maestro-version }}" = "latest" ]; then
+          curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash
+        else
+          curl -fsSL https://open.devicelab.dev/install/maestro-runner | bash -s -- --version "${{ inputs.maestro-version }}"
+        fi
         echo "$HOME/.maestro-runner/bin" >> "$GITHUB_PATH"
 
     - name: Run flows

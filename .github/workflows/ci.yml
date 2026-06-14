@@ -27,6 +27,11 @@ jobs:
       handover: ${{ steps.filter.outputs.handover }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # paths-filter diffs against the push's `before` SHA; the default
+          # shallow clone can't reach it and falls back to "everything changed",
+          # which would trigger the expensive native builds needlessly.
+          fetch-depth: 0
       - id: filter
         uses: dorny/paths-filter@v3
         with:

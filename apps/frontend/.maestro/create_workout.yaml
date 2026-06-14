@@ -1,21 +1,20 @@
-appId: org.reactjs.native.example.PumpedApp
+appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- tapOn: "Skip"
-- tapOn: "Library"
+- tapOn: 'Skip'
+- tapOn: 'Library'
 - waitForAnimationToEnd
-- assertVisible: "Exercise Library"
-- tapOn: 
-    id: "create_workout"
+- assertVisible: 'Exercise Library'
+- tapOn:
+    id: 'create_workout'
 
-- assertVisible: "New Exercise"
-- tapOn: "e.g. Barbell Bench Press"
-- inputText: "Test excercise"
+- assertVisible: 'New Exercise'
+- tapOn: 'e.g. Barbell Bench Press'
+- inputText: 'Test excercise'
 - tapOn:
     point: 74%,23%
-- tapOn: "Add Exercise"
-- tapOn: "Search name, muscle, or type"
-- inputText: "Test"
-- assertVisible: "Test excercise"
-
+- tapOn: 'Add Exercise'
+- tapOn: 'Search name, muscle, or type'
+- inputText: 'Test'
+- assertVisible: 'Test excercise'
