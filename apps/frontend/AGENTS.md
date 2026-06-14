@@ -11,6 +11,7 @@
 - React Navigation (native-stack + material-top-tabs)
 - Reanimated + Gesture Handler
 
+
 ## Data Layer
 
 **All domain data lives in SQLite via Drizzle.** Do NOT create Zustand/MMKV

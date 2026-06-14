@@ -5,6 +5,15 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      force_frontend:
+        description: 'Run frontend jobs even if paths-filter detects no frontend changes'
+        type: boolean
+        default: false
+      force_handover:
+        description: 'Run handover jobs even if paths-filter detects no handover changes'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -23,8 +32,10 @@ jobs:
     name: Detect changes
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      handover: ${{ steps.filter.outputs.handover }}
+      # OR in the manual-dispatch force flags so a workflow_dispatch run can
+      # opt a part back in even when paths-filter would have skipped it.
+      frontend: ${{ steps.filter.outputs.frontend == 'true' || inputs.force_frontend == true }}
+      handover: ${{ steps.filter.outputs.handover == 'true' || inputs.force_handover == true }}
     steps:
       - uses: actions/checkout@v4
         with:
