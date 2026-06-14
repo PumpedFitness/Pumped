@@ -54,7 +54,7 @@ runs:
         arch: x86_64
         profile: pixel_6
         ram-size: 4096M
-        disable-animations: true
+        disable-animations: false
         # Everything that needs the emulator must run inside this script — the
         # emulator only lives for its duration. The runner executes the script
         # line-by-line in separate shells (vars/`set -e` don't persist), so keep

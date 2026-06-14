@@ -1,0 +1,57 @@
+12:09:34.099900 [INFO] === Test execution started ===
+12:09:34.099961 [INFO] Output directory: reports/2026-06-14_12-09-34
+12:09:34.099972 [INFO] Platform: android
+12:09:34.099982 [INFO] Driver: uiautomator2
+12:09:34.102224 [INFO] Validated 1 flow(s)
+12:09:34.102264 [INFO] Single device execution mode
+12:09:34.102274 [INFO] Starting flow execution (parallel: false, devices: [])
+12:09:34.102282 [INFO] Creating driver for single device execution
+12:09:34.102291 [INFO] Auto-detecting Android device...
+12:09:34.508836 [INFO] Device info: google sdk_gphone16k_arm64, SDK 37, Serial emulator-5554, Emulator: true
+12:09:34.782045 [INFO] Starting UIAutomator2 server on device emulator-5554
+12:09:35.322656 [WARN] failed to remove default socket forward for /tmp/uia2-emulator-5554.sock: adb forward --remove localfilesystem:/tmp/uia2-emulator-5554.sock: exit status 1: adb: error: listener 'localfilesystem:/tmp/uia2-emulator-5554.sock' not found
+12:09:35.344967 [WARN] failed to remove adb forward for tcp:6790: adb forward --remove tcp:6790: exit status 1: adb: error: listener 'tcp:6790' not found
+12:09:37.532643 [INFO] Creating UIAutomator2 session with capabilities: Platform=Android, Device=sdk_gphone16k_arm64
+12:09:37.551213 [INFO] Session created successfully: a265b91a-a055-4fe0-b724-427a7286b4c0
+12:09:38.895093 [INFO] Driver created: android on google sdk_gphone16k_arm64
+12:09:38.907991 [INFO] === Starting flow: tab-navigation ===
+12:09:38.908019 [INFO] Flow file: apps/frontend/.maestro/tab-navigation.yaml
+12:09:38.908040 [INFO] Total steps: 12
+12:09:38.946561 [DEBUG] Executing step 0: launchApp
+12:09:41.621075 [DEBUG] Step 0 completed successfully (2674ms): launchApp
+12:09:41.623307 [DEBUG] Executing step 1: assertVisible: text="RECOVERY"
+12:09:41.624494 [DEBUG] Flutter: parallel search (text="RECOVERY", id="")
+12:09:42.003634 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:42.386965 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:42.933958 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:43.809525 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:44.405135 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:45.614375 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:46.002559 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:46.556976 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:47.322288 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:48.467398 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:49.677024 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:50.425928 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:51.196897 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:51.756921 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:52.525485 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:53.161343 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:53.915352 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:54.550917 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:55.203255 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:55.948864 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:56.671337 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:57.208701 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:57.800261 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:58.277223 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:58.897045 [DEBUG] Flutter fallback: failed to get trees: no Flutter VM service found
+12:09:59.065058 [ERROR] Step 1 failed (17441ms): assertVisible: text="RECOVERY" - Error: Element not visible: context deadline exceeded: no such element: An element could not be located on the page using the given search parameters (cause: context deadline exceeded: no such element: An element could not be located on the page using the given search parameters)
+12:10:00.136876 [INFO] === Flow completed: tab-navigation (status: failed, duration: 21228ms, passed: 1, failed: 1, skipped: 10) ===
+12:10:00.808482 [WARN] failed to remove default socket forward for /tmp/uia2-emulator-5554.sock: adb forward --remove localfilesystem:/tmp/uia2-emulator-5554.sock: exit status 1: adb: error: listener 'localfilesystem:/tmp/uia2-emulator-5554.sock' not found
+12:10:00.828785 [WARN] failed to remove adb forward for tcp:6790: adb forward --remove tcp:6790: exit status 1: adb: error: listener 'tcp:6790' not found
+12:10:00.828844 [INFO] Flow execution completed: 0 passed, 1 failed, 0 skipped
+12:10:00.829100 [INFO] Generating reports...
+12:10:00.831699 [INFO] Shutting down devices started by maestro-runner...
+12:10:00.831714 [INFO] Shutting down all tracked emulators
+12:10:00.831723 [INFO] Shutting down all tracked simulators

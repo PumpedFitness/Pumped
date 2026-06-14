@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "updateSeq": 9,
+  "status": "failed",
+  "startTime": "2026-06-14T12:09:38.90261+02:00",
+  "endTime": "2026-06-14T12:10:00.136904+02:00",
+  "lastUpdated": "2026-06-14T12:10:00.141045+02:00",
+  "device": {
+    "id": "emulator-5554",
+    "name": "google sdk_gphone16k_arm64",
+    "platform": "android",
+    "osVersion": "37",
+    "isSimulator": true
+  },
+  "app": {
+    "id": "${APP_ID}",
+    "version": "0.0.1"
+  },
+  "maestroRunner": {
+    "version": "1.1.17",
+    "driver": "uiautomator2"
+  },
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "running": 0,
+    "pending": 0
+  },
+  "flows": [
+    {
+      "index": 0,
+      "id": "flow-000",
+      "name": "tab-navigation",
+      "sourceFile": "apps/frontend/.maestro/tab-navigation.yaml",
+      "device": {
+        "id": "emulator-5554",
+        "name": "google sdk_gphone16k_arm64",
+        "platform": "android",
+        "osVersion": "37",
+        "isSimulator": true
+      },
+      "dataFile": "flows/flow-000.json",
+      "assetsDir": "assets/flow-000",
+      "status": "failed",
+      "updateSeq": 4,
+      "endTime": "2026-06-14T12:10:00.123203+02:00",
+      "duration": 21179,
+      "lastUpdated": "2026-06-14T12:10:00.131089+02:00",
+      "commands": {
+        "total": 12,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 10,
+        "running": 0,
+        "pending": 0
+      },
+      "attempts": 0,
+      "error": "Element not visible: context deadline exceeded: no such element: An element could not be located on the page using the given search parameters (cause: context deadline exceeded: no such element: An element could not be located on the page using the given search parameters)"
+    }
+  ]
+}
