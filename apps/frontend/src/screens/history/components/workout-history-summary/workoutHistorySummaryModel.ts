@@ -126,6 +126,7 @@ export function buildDailyVolume(
 
 export function buildMuscleFocus(
   workouts: WorkoutHistoryItem[],
+  limit = 4,
 ): MuscleFocus[] {
   const counts = new Map<string, number>();
   workouts.forEach(workout => {
@@ -142,7 +143,7 @@ export function buildMuscleFocus(
       share: total > 0 ? count / total : 0,
     }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-    .slice(0, 4);
+    .slice(0, limit);
 }
 
 export function formatCompact(value: number): string {
