@@ -5,19 +5,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 /**
  * AppShell — the screen-level wrapper for every Pumped screen.
  *
- * Handles safe-area insets and reserves bottom space for the floating
- * tab bar so content never renders behind it.
- *
  * Props:
- *  - `showTabBar` (default true): when true, the screen lives inside the
- *    native bottom-tab navigator, which already reserves its own space below
- *    the content — so no extra bottom padding is added. Pass false for
- *    fullscreen flows (modals, the active session) that own the full height
- *    and must clear the home-indicator inset themselves.
- *  - `padTop` (default true): apply safe-area top inset as padding.
+ *  - `showTabBar` (default true): the screen lives inside the native bottom-tab
+ *    navigator. Its content runs full-height *under* the translucent tab bar so
+ *    content blurs through the glass while scrolling; the screen's scroll
+ *    content adds a `<TabBarInsetSpacer/>` at the end so the last item still
+ *    clears the bar. Pass false for fullscreen flows (modals, the active
+ *    session) that own the full height and clear the home-indicator inset here.
+ *  - `padTop` (default false): apply the safe-area top inset.
  *  - `padHorizontal` (default 0): screen-gutter; design default is 20,
  *    but many screens manage their own horizontal padding per-section.
- *  - `style`: additional style overrides on the inner content container.
+ *  - `style`: additional style overrides on the content container.
  */
 
 type AppShellProps = {
@@ -38,9 +36,9 @@ export function AppShell({
   const insets = useSafeAreaInsets();
 
   const topPadding = padTop ? insets.top : 0;
-  // The native tab bar reserves its own space below tab screens, so they add no
-  // bottom padding; standalone screens still clear the home-indicator inset.
-  const bottomPadding = 65;
+  // Tab screens run under the bar and clear it via <TabBarInsetSpacer/>;
+  // standalone screens clear the home-indicator inset here.
+  const bottomPadding = showTabBar ? 0 : insets.bottom;
 
   return (
     <View

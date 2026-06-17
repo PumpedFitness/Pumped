@@ -10,6 +10,7 @@ import { Button } from 'heroui-native';
 import { EmptyState } from '@/components/clay/EmptyState';
 import { SearchInput } from '@/components/forms/SearchInput';
 import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { colors, motion } from '@/theme/tokens';
 
 type SearchableLibraryProps<T> = {
@@ -33,6 +34,12 @@ type SearchableLibraryProps<T> = {
   noMatchState?: ReactNode;
   /** Scrolls above the search row (e.g. a hero card or "browse" action). */
   header?: ReactNode;
+  /**
+   * Pinned chrome rendered above everything (e.g. a segmented control). Stays
+   * fixed while the list scrolls. Lives inside the ScrollView so the native tab
+   * bar can still detect it as the screen's first-descendant scroll view.
+   */
+  leadingHeader?: ReactNode;
   /** Keep the search row pinned while only the list scrolls. */
   stickySearch?: boolean;
   /** Vertical spacing between list rows. */
@@ -53,6 +60,7 @@ export function SearchableLibrary<T>({
   emptyState,
   noMatchState,
   header,
+  leadingHeader,
   stickySearch = false,
   itemGap = DEFAULT_ITEM_GAP,
 }: SearchableLibraryProps<T>) {
@@ -152,35 +160,36 @@ export function SearchableLibrary<T>({
       (noMatchState ?? defaultNoMatch)
     );
 
-  if (stickySearch) {
-    return (
-      <View className="flex-1">
-        {header ? <View className="px-5 pt-4">{header}</View> : null}
-        <View className="px-5 pt-4">{searchRow}</View>
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-5 pb-8 pt-4"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={{ gap: itemGap }}>{list}</View>
-        </ScrollView>
+  // Pinned chrome (segmented control and/or the search row) rendered as a single
+  // sticky header *inside* the ScrollView. Keeping it inside means the ScrollView
+  // stays the screen's first-descendant scroll view, which is what the native tab
+  // bar tracks to auto-inset content and to minimize on scroll.
+  const pinned =
+    leadingHeader || stickySearch ? (
+      <View className="gap-3 bg-background px-5 pt-4">
+        {leadingHeader}
+        {stickySearch ? searchRow : null}
       </View>
-    );
-  }
+    ) : null;
 
   return (
     <ScrollView
       className="flex-1"
-      contentContainerClassName="gap-6 px-5 pb-8 pt-4"
+      contentContainerClassName="pb-8"
+      stickyHeaderIndices={pinned ? [0] : undefined}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      {header}
-      <View style={{ gap: itemGap }}>
-        {searchRow}
-        {list}
+      {pinned}
+      <View className="gap-6 px-5 pt-4">
+        {header}
+        <View style={{ gap: itemGap }}>
+          {stickySearch ? null : searchRow}
+          {list}
+        </View>
       </View>
+
+      <TabBarInsetSpacer />
     </ScrollView>
   );
 }

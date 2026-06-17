@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { View } from 'react-native';
@@ -12,7 +12,11 @@ import type { WorkoutTemplate } from '@/types/workout';
 import { WorkoutTemplateCard } from './WorkoutTemplateCard';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
 
-export function WorkoutsLibrary() {
+type WorkoutsLibraryProps = {
+  leadingHeader?: ReactNode;
+};
+
+export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -76,6 +80,7 @@ export function WorkoutsLibrary() {
       createTestID="create_workout"
       onCreate={() => navigation.navigate('WorkoutTemplateEditor')}
       header={header}
+      leadingHeader={leadingHeader}
     />
   );
 }

@@ -139,6 +139,10 @@ export function MainTabs() {
             component={component}
             options={{
               tabBarLabel: t(labelKey),
+              // Keep the glass bar (with labels) fixed on scroll. The native bar
+              // only offers an all-or-nothing collapse-to-pill minimize, which
+              // we don't want, so disable it.
+              tabBarMinimizeBehavior: 'none',
               tabBarIcon: ({ focused }) =>
                 Platform.OS === 'ios'
                   ? { type: 'sfSymbol', name: focused ? sfFocused : sf }

@@ -1,6 +1,7 @@
 import { Text, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/AppShell';
+import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { UserSettings } from './components/UserSettings';
 import { AppSettings } from './components/AppSettings';
 
@@ -20,6 +21,8 @@ export function ProfileScreen() {
 
         <UserSettings />
         <AppSettings />
+
+        <TabBarInsetSpacer />
       </ScrollView>
     </AppShell>
   );

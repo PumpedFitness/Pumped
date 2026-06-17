@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
@@ -12,7 +13,11 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { ExerciseOption } from '@/types/exercise';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
 
-export function ExerciseLibrary() {
+type ExerciseLibraryProps = {
+  leadingHeader?: ReactNode;
+};
+
+export function ExerciseLibrary({ leadingHeader }: ExerciseLibraryProps) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const exerciseOptions = useExerciseOptions();
@@ -59,6 +64,7 @@ export function ExerciseLibrary() {
       renderItem={renderRow}
       namespace="library"
       emptyIconName="search"
+      leadingHeader={leadingHeader}
       stickySearch
       itemGap={8}
       createTestID="create_exercise"

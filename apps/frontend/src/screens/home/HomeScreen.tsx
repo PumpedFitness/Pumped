@@ -2,6 +2,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { AppShell } from '@/components/layout/AppShell';
+import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { useHomescreenStore } from '@/stores/homescreenStore';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -49,6 +50,8 @@ export function HomeScreen() {
         <View className="px-5">
           <WidgetGrid layout={layout} />
         </View>
+
+        <TabBarInsetSpacer />
       </ScrollView>
     </AppShell>
   );
