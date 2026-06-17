@@ -91,6 +91,7 @@ export function WorkoutTemplateEditorScreen({
         })
       }
       onSave={saveTemplate}
+      onOpenAdvancedSchedule={() => navigation.navigate('ScheduleEditor', {})}
       onRequestDelete={requestDelete}
     />
   );

@@ -15,6 +15,7 @@ type WorkoutTemplateScheduleSectionProps = {
   onModeChange: (mode: ScheduleMode) => void;
   onIntervalChange: (interval: number) => void;
   onToggleWeekday: (weekday: WorkoutWeekday) => void;
+  onOpenAdvancedSchedule: () => void;
 };
 
 const WEEKDAY_VALUES: WorkoutWeekday[] = [
@@ -34,6 +35,7 @@ export function WorkoutTemplateScheduleSection({
   onModeChange,
   onIntervalChange,
   onToggleWeekday,
+  onOpenAdvancedSchedule,
 }: WorkoutTemplateScheduleSectionProps) {
   const { t, i18n } = useTranslation();
 
@@ -142,6 +144,25 @@ export function WorkoutTemplateScheduleSection({
           )}
         </View>
       )}
+
+      <Pressable
+        accessibilityRole="button"
+        className="mt-1 flex-row items-center justify-between rounded-[18px] border border-border-hairline bg-surface-card px-4 py-3 active:bg-surface-sunk"
+        onPress={onOpenAdvancedSchedule}
+      >
+        <View className="flex-1 flex-row items-center gap-3">
+          <ClayIcon name="calendar" size={18} color={colors.accent} />
+          <View className="flex-1">
+            <Text className="t-label text-foreground">
+              {t('templateEditor.schedule.advancedCta')}
+            </Text>
+            <Text className="t-caption text-muted">
+              {t('templateEditor.schedule.advancedHint')}
+            </Text>
+          </View>
+        </View>
+        <ClayIcon name="chevron" size={18} color={colors.muted} />
+      </Pressable>
     </FormSection>
   );
 }

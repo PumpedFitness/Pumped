@@ -9,8 +9,8 @@ export {
   workoutTemplates,
   workoutTemplateExercises,
   workoutTemplateSets,
-  workoutTemplateScheduleWeekdays,
 } from './workoutTemplate';
+export { schedules, scheduleSlots } from './schedule';
 export { workoutSessions, performedSets } from './workoutSession';
 export { bodyWeightEntries, bodyFatEntries } from './bodyMetrics';
 export { userProfile, type Gender, type WeightUnit } from './userProfile';

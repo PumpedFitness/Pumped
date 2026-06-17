@@ -10,10 +10,20 @@ standalone (Go, **no JVM**) runner that runs Maestro YAML flows unchanged.
 | File | What it covers |
 |------|----------------|
 | `smoke.yaml`          | App launches and the Home tab renders. |
-| `tab-navigation.yaml` | Walks the bottom tab bar (Home · Plan · Library · History · You) and asserts each screen's title. |
+| `tab-navigation.yaml` | Walks the bottom tab bar (Home · Plan · Library · History · You) and asserts each screen renders. |
 
-Assertions match real on-screen strings (the `en` values in
-`src/i18n/resources.ts`) and the tab buttons' accessibility labels.
+Navigation is driven by **testIDs** (Android `resource-id` / iOS accessibility
+id), not visible text: tab buttons are `tab-<name>` and each tab's screen
+container is `screen-<name>` (home · plan · library · history · profile). These
+are auto-generated from the navigator's screen names in
+[`src/navigation/testIDs.ts`](../src/navigation/testIDs.ts) and applied in
+`AppBar` / `MainTabs`, so adding a tab needs no e2e wiring.
+
+Why not assert on visible text: several titles render with
+`text-transform: uppercase`, so the on-screen glyphs differ from the
+accessibility node's text value — UIAutomator2 then only matches via a slow,
+flaky case-insensitive regex. A testID matches the exact `resource-id` fast.
+In-screen content (form fields, buttons) is still matched by its real copy.
 
 ## The `appId` is parameterized
 

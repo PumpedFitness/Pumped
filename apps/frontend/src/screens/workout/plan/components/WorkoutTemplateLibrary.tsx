@@ -6,6 +6,7 @@ import { Button } from 'heroui-native';
 import type { WorkoutTemplateStatus } from '@/data/local/enums';
 import type { ExerciseOption } from '@/types/exercise';
 import type { WorkoutTemplate } from '@/types/workout';
+import type { Schedule } from '@/types/schedule';
 import { colors } from '@/theme/tokens';
 import { EmptyState } from '@/components/clay/EmptyState';
 import { OptionPill } from '@/components/forms/OptionPill';
@@ -46,6 +47,7 @@ const emptyStateIcon = (
 
 type WorkoutTemplateLibraryProps = {
   templates: WorkoutTemplate[];
+  basicSchedules: Map<string, Schedule>;
   exerciseOptions: ExerciseOption[];
   onCreateTemplate: () => void;
   onBrowsePremadeWorkouts: () => void;
@@ -59,6 +61,7 @@ type WorkoutTemplateLibraryProps = {
 
 export function WorkoutTemplateLibrary({
   templates,
+  basicSchedules,
   exerciseOptions,
   onCreateTemplate,
   onBrowsePremadeWorkouts,
@@ -170,6 +173,7 @@ export function WorkoutTemplateLibrary({
           <WorkoutTemplateCard
             key={template.id}
             template={template}
+            schedule={basicSchedules.get(template.id) ?? null}
             exerciseNames={exerciseNames}
             onStart={onStartTemplate}
             onEdit={onEditTemplate}

@@ -9,6 +9,7 @@ import { ExerciseSelectionScreen } from '@/screens/workout/exercise-selection/Ex
 import { CurrentWorkoutScreen } from '@/screens/workout/current-workout/CurrentWorkoutScreen';
 import { WorkoutPlaceholderScreen } from '@/screens/workout/placeholder/WorkoutPlaceholderScreen';
 import { WorkoutTemplateEditorScreen } from '@/screens/workout/template-editor/WorkoutTemplateEditorScreen';
+import { ScheduleEditorScreen } from '@/screens/workout/schedule-editor/ScheduleEditorScreen';
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
 import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/CompletedWorkoutScreen';
@@ -33,6 +34,7 @@ export type RootStackParamList = {
         exerciseSelection?: ExerciseSelectionResult;
       }
     | undefined;
+  ScheduleEditor: { scheduleId?: string } | undefined;
   CurrentWorkout:
     | {
         exerciseSelection?: ExerciseSelectionResult;
@@ -103,6 +105,11 @@ export function AppNavigator() {
         <Stack.Screen
           name="WorkoutTemplateEditor"
           component={WorkoutTemplateEditorScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="ScheduleEditor"
+          component={ScheduleEditorScreen}
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen

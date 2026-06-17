@@ -1,23 +1,36 @@
 # Walks the bottom tab bar and asserts each tab's screen renders.
-# The tab buttons expose their label as an accessibilityLabel (Home, Plan,
-# Library, History, You); the asserted titles are the en strings from
-# src/i18n/resources.ts.
+# Tabs and screens are matched by testID (Android resource-id), auto-generated
+# from the navigator's screen names — see src/navigation/testIDs.ts.
+# Buttons: tab-home / tab-plan / tab-library / tab-history / tab-profile.
+# Screens: screen-home / screen-plan / screen-library / screen-history /
+#          screen-profile.
 appId: ${APP_ID}
 ---
 - launchApp
-- assertVisible: 'RECOVERY' # Home
+- assertVisible:
+    id: 'screen-home'
 
-- tapOn: 'Plan'
-- assertVisible: 'Workout templates'
+- tapOn:
+    id: 'tab-plan'
+- assertVisible:
+    id: 'screen-plan'
 
-- tapOn: 'Library'
-- assertVisible: 'Exercise Library'
+- tapOn:
+    id: 'tab-library'
+- assertVisible:
+    id: 'screen-library'
 
-- tapOn: 'History'
-- assertVisible: 'Workout history'
+- tapOn:
+    id: 'tab-history'
+- assertVisible:
+    id: 'screen-history'
 
-- tapOn: 'You'
-- assertVisible: 'Settings'
+- tapOn:
+    id: 'tab-profile'
+- assertVisible:
+    id: 'screen-profile'
 
-- tapOn: 'Home'
-- assertVisible: 'RECOVERY'
+- tapOn:
+    id: 'tab-home'
+- assertVisible:
+    id: 'screen-home'

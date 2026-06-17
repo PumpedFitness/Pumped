@@ -1,9 +1,7 @@
 import type {
-  WorkoutScheduleType,
   WorkoutSetType,
   WorkoutTemplateColor,
   WorkoutTemplateStatus,
-  WorkoutWeekday,
 } from '@/data/local/enums';
 
 export type WorkoutTemplateSet = {
@@ -24,12 +22,6 @@ export type WorkoutTemplateExercise = {
   sets: WorkoutTemplateSet[];
 };
 
-type WorkoutTemplateSchedule = {
-  type: WorkoutScheduleType;
-  interval: number;
-  weekdays: WorkoutWeekday[];
-};
-
 export type WorkoutTemplate = {
   id: string;
   userId: string;
@@ -37,7 +29,6 @@ export type WorkoutTemplate = {
   description: string | null;
   status: WorkoutTemplateStatus;
   color: WorkoutTemplateColor;
-  schedule: WorkoutTemplateSchedule | null;
   exercises: WorkoutTemplateExercise[];
   createdAt: number;
   updatedAt: number;
