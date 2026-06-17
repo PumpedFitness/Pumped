@@ -40,7 +40,7 @@ export function AppShell({
   const topPadding = padTop ? insets.top : 0;
   // The native tab bar reserves its own space below tab screens, so they add no
   // bottom padding; standalone screens still clear the home-indicator inset.
-  const bottomPadding = showTabBar ? 0 : insets.bottom;
+  const bottomPadding = 65;
 
   return (
     <View
