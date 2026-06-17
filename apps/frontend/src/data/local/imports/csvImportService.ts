@@ -1,5 +1,5 @@
 import { randomUUID } from 'expo-crypto';
-import { asc, desc, eq, type InferSelectModel } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { i18n } from '@/i18n';
 import type { WorkoutSetType } from '@/data/local/enums';
 import { db } from '@/data/local/database';
@@ -176,7 +176,7 @@ function parseImportedSet(
   const workoutStartedAt = parseTimestamp(getCsvValue(row, aliases.startedAt));
   const reps = parseNumber(getCsvValue(row, aliases.reps));
 
-  if (!exerciseName || workoutStartedAt === null || !reps || reps < 1) {
+  if (!exerciseName || workoutStartedAt === null || !reps || reps < 0) {
     return null;
   }
 
@@ -397,10 +397,12 @@ export function listImportBatches(): ImportBatch[] {
 
 export function revertImport(importId: number): void {
   db.transaction(tx => {
-    const importedExerciseIds = tx
+    const untouchedImportedExerciseIds = tx
       .select({ id: exercises.id })
       .from(exercises)
-      .where(eq(exercises.importId, importId))
+      .where(
+        and(eq(exercises.importId, importId), isNull(exercises.importEditedAt)),
+      )
       .all();
 
     tx.delete(performedSets).where(eq(performedSets.importId, importId)).run();
@@ -408,7 +410,7 @@ export function revertImport(importId: number): void {
       .where(eq(workoutSessions.importId, importId))
       .run();
 
-    for (const exercise of importedExerciseIds) {
+    for (const exercise of untouchedImportedExerciseIds) {
       const usedBySets = tx
         .select({ id: performedSets.id })
         .from(performedSets)

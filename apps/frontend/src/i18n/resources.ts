@@ -592,7 +592,7 @@ export const resources = {
         alerts: {
           revertTitle: 'Revert import #{{id}}?',
           revertBody:
-            'This deletes the workouts, sets, and exercises created by this import. This cannot be undone.',
+            'This deletes the workouts and sets from this import. Exercises are only deleted if they were not edited or reused elsewhere. This cannot be undone.',
           revertedTitle: 'Import reverted',
           revertedBody: 'Import #{{id}} was removed.',
         },
@@ -1226,7 +1226,7 @@ export const resources = {
         alerts: {
           revertTitle: 'Import #{{id}} rückgängig machen?',
           revertBody:
-            'Dadurch werden die Workouts, Sätze und Übungen gelöscht, die durch diesen Import erstellt wurden. Das kann nicht rückgängig gemacht werden.',
+            'Dadurch werden die Workouts und Sätze aus diesem Import gelöscht. Übungen werden nur gelöscht, wenn sie nicht bearbeitet oder anderswo weiterverwendet wurden. Das kann nicht rückgängig gemacht werden.',
           revertedTitle: 'Import rückgängig gemacht',
           revertedBody: 'Import #{{id}} wurde entfernt.',
         },

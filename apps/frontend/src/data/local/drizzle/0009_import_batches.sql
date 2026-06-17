@@ -8,11 +8,11 @@ CREATE TABLE `import_batch` (
 	`rows_skipped` integer NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE `exercise` ADD COLUMN `import_id` integer REFERENCES `import_batch`(`id`) ON UPDATE no action ON DELETE set null;
+ALTER TABLE `exercise` ADD COLUMN `import_id` integer;
 --> statement-breakpoint
-ALTER TABLE `workout_session` ADD COLUMN `import_id` integer REFERENCES `import_batch`(`id`) ON UPDATE no action ON DELETE set null;
+ALTER TABLE `workout_session` ADD COLUMN `import_id` integer;
 --> statement-breakpoint
-ALTER TABLE `performed_set` ADD COLUMN `import_id` integer REFERENCES `import_batch`(`id`) ON UPDATE no action ON DELETE set null;
+ALTER TABLE `performed_set` ADD COLUMN `import_id` integer;
 --> statement-breakpoint
 CREATE INDEX `idx_exercise_import` ON `exercise` (`import_id`);
 --> statement-breakpoint

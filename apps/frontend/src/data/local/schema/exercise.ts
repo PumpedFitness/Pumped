@@ -1,6 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { jsonArray } from './columns';
-import { importBatches } from './importBatch';
 
 export const exercises = sqliteTable('exercise', {
   id: text('id').primaryKey().notNull(),
@@ -10,7 +9,6 @@ export const exercises = sqliteTable('exercise', {
   picture: text('picture'),
   muscleGroups: jsonArray<string>()('muscle_groups').notNull(),
   createdAt: integer('created_at').notNull(),
-  importId: integer('import_id').references(() => importBatches.id, {
-    onDelete: 'set null',
-  }),
+  importId: integer('import_id'),
+  importEditedAt: integer('import_edited_at'),
 });
