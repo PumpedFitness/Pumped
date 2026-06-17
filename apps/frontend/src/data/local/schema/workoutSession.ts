@@ -22,6 +22,7 @@ export const workoutSessions = sqliteTable(
     startedAt: integer('started_at').notNull(),
     endedAt: integer('ended_at'),
     notes: text('notes'),
+    importId: integer('import_id'),
   },
   table => [index('idx_sessions_user_date').on(table.userId, table.startedAt)],
 );
@@ -40,7 +41,8 @@ export const performedSets = sqliteTable(
     reps: integer('reps').notNull(),
     weight: real('weight'),
     rpe: real('rpe'),
-    performedAt: integer('performed_at').notNull(),
+    performedAt: integer('performed_at'),
+    importId: integer('import_id'),
   },
   table => [
     index('idx_performed_sets_session_position').on(

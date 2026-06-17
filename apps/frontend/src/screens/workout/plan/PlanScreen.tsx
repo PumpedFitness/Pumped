@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert, ScrollView } from 'react-native';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppView } from '@/components/layout/AppView';
 import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';

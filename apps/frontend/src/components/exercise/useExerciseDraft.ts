@@ -14,6 +14,8 @@ export type ExerciseToEdit = {
   typeId: string | null;
   picture: string | null;
   muscleGroups: string[];
+  importId?: number | null;
+  importEditedAt?: number | null;
 };
 
 export function useExerciseDraft(
@@ -76,6 +78,10 @@ export function useExerciseDraft(
         typeId,
         picture,
         muscleGroups: muscleGroupIds,
+        importEditedAt:
+          exercise.importId !== null && exercise.importId !== undefined
+            ? Date.now()
+            : exercise.importEditedAt,
       });
       onSaved(exercise.id);
     } else {

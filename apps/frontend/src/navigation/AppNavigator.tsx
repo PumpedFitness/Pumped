@@ -13,6 +13,8 @@ import { ScheduleEditorScreen } from '@/screens/workout/schedule-editor/Schedule
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
 import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/CompletedWorkoutScreen';
+import { CsvImportScreen } from '@/screens/profile/csv-import/CsvImportScreen';
+import { ImportHistoryScreen } from '@/screens/profile/import-history/ImportHistoryScreen';
 import { useAuthStore } from '@/stores/authStore';
 import { colors } from '@/theme/tokens';
 import type { ExerciseSelectionResult } from '@/types/exercise';
@@ -45,6 +47,8 @@ export type RootStackParamList = {
   CreateExercise: undefined;
   EditExercise: { exerciseId: string };
   WorkoutPlaceholder: undefined;
+  CsvImport: undefined;
+  ImportHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -131,6 +135,16 @@ export function AppNavigator() {
         <Stack.Screen
           name="WorkoutPlaceholder"
           component={WorkoutPlaceholderScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="CsvImport"
+          component={CsvImportScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="ImportHistory"
+          component={ImportHistoryScreen}
           options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>

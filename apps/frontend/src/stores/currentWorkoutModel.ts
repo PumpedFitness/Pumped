@@ -207,7 +207,7 @@ export function isCurrentWorkoutSetFieldValid(
     return set.weight !== null && set.weight >= 0;
   }
   if (field === 'reps') {
-    return set.reps !== null && Number.isInteger(set.reps) && set.reps >= 1;
+    return set.reps !== null && Number.isInteger(set.reps) && set.reps >= 0;
   }
   return set.rpe === null || (set.rpe >= 1 && set.rpe <= 10);
 }

@@ -42,6 +42,7 @@ export type WorkoutSession = {
   startedAt: number;
   endedAt: number | null;
   notes: string | null;
+  importId: number | null;
 };
 
 export type PerformedSet = {
@@ -54,7 +55,8 @@ export type PerformedSet = {
   reps: number;
   weight: number | null;
   rpe: number | null;
-  performedAt: number;
+  performedAt: number | null;
+  importId: number | null;
 };
 
 export type WorkoutSessionDetails = WorkoutSession & {

@@ -9,4 +9,6 @@ export const exercises = sqliteTable('exercise', {
   picture: text('picture'),
   muscleGroups: jsonArray<string>()('muscle_groups').notNull(),
   createdAt: integer('created_at').notNull(),
+  importId: integer('import_id'),
+  importEditedAt: integer('import_edited_at'),
 });
