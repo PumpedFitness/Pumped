@@ -13,8 +13,8 @@ import type {
 import { enumText } from './columns';
 
 // Scheduling no longer lives on the template — it moved to the `schedule` /
-// `schedule_slot` tables (see schema/schedule.ts). A template's inline "basic"
-// schedule is a BASIC schedule row whose ownerTemplateId points back here.
+// `schedule_slot` tables (see schema/schedule.ts). Templates are pure workout
+// definitions; Schedules reference them by id.
 export const workoutTemplates = sqliteTable('workout_template', {
   id: text('id').primaryKey().notNull(),
   userId: text('user_id').notNull(),

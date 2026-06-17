@@ -3,7 +3,7 @@
 // subscribers so every mounted reader re-renders.
 
 import { randomUUID } from 'expo-crypto';
-import { and, asc, eq, ne } from 'drizzle-orm';
+import { asc, eq, ne } from 'drizzle-orm';
 import { db } from '@/data/local/database';
 import { notifyTableChanged } from '@/data/local/tableVersions';
 import { schedules, scheduleSlots } from '@/data/local/schema';
@@ -41,12 +41,10 @@ export function getSchedule(scheduleId: string): Schedule | null {
     id: row.id,
     userId: row.userId,
     name: row.name,
-    kind: row.kind,
     recurrenceType: row.recurrenceType,
     periodLength: row.periodLength,
     anchorDay: row.anchorDay,
     isActive: row.isActive,
-    ownerTemplateId: row.ownerTemplateId,
     slots,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -61,22 +59,6 @@ export function listSchedules(): Schedule[] {
     .all()
     .map(row => getSchedule(row.id))
     .filter((schedule): schedule is Schedule => schedule !== null);
-}
-
-export function getBasicScheduleForTemplate(
-  templateId: string,
-): Schedule | null {
-  const row = db
-    .select({ id: schedules.id })
-    .from(schedules)
-    .where(
-      and(
-        eq(schedules.kind, 'BASIC'),
-        eq(schedules.ownerTemplateId, templateId),
-      ),
-    )
-    .get();
-  return row ? getSchedule(row.id) : null;
 }
 
 type Tx = Parameters<Parameters<(typeof db)['transaction']>[0]>[0];
@@ -109,7 +91,7 @@ export function saveSchedule(input: SaveScheduleInput): Schedule {
   const scheduleId = input.id ?? randomUUID();
   const now = Date.now();
   const anchorDay = input.anchorDay ?? localDayIndex();
-  const isActive = input.kind === 'ADVANCED' ? input.isActive ?? false : false;
+  const isActive = input.isActive ?? false;
 
   db.transaction(tx => {
     const existing = tx
@@ -120,12 +102,10 @@ export function saveSchedule(input: SaveScheduleInput): Schedule {
 
     const shared = {
       name: input.name,
-      kind: input.kind,
       recurrenceType: input.recurrenceType,
       periodLength: input.periodLength,
       anchorDay,
       isActive,
-      ownerTemplateId: input.ownerTemplateId ?? null,
       updatedAt: now,
     };
 
@@ -145,13 +125,11 @@ export function saveSchedule(input: SaveScheduleInput): Schedule {
         .run();
     }
 
-    // At most one ADVANCED schedule is active at a time.
+    // At most one schedule is active at a time.
     if (isActive) {
       tx.update(schedules)
         .set({ isActive: false })
-        .where(
-          and(eq(schedules.kind, 'ADVANCED'), ne(schedules.id, scheduleId)),
-        )
+        .where(ne(schedules.id, scheduleId))
         .run();
     }
 
@@ -165,10 +143,7 @@ export function saveSchedule(input: SaveScheduleInput): Schedule {
 export function setActiveSchedule(scheduleId: string, active: boolean): void {
   db.transaction(tx => {
     if (active) {
-      tx.update(schedules)
-        .set({ isActive: false })
-        .where(eq(schedules.kind, 'ADVANCED'))
-        .run();
+      tx.update(schedules).set({ isActive: false }).run();
     }
     tx.update(schedules)
       .set({ isActive: active })
@@ -181,19 +156,5 @@ export function setActiveSchedule(scheduleId: string, active: boolean): void {
 export function deleteSchedule(scheduleId: string): void {
   db.delete(schedules).where(eq(schedules.id, scheduleId)).run();
   // Slots cascade via FK.
-  notifyTableChanged(schedules, scheduleSlots);
-}
-
-// Removes the inline BASIC schedule a template owns (used when the user sets the
-// template's schedule back to "flexible").
-export function deleteBasicScheduleForTemplate(templateId: string): void {
-  db.delete(schedules)
-    .where(
-      and(
-        eq(schedules.kind, 'BASIC'),
-        eq(schedules.ownerTemplateId, templateId),
-      ),
-    )
-    .run();
   notifyTableChanged(schedules, scheduleSlots);
 }

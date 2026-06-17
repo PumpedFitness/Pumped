@@ -66,6 +66,9 @@ const PATHS: Record<string, string[]> = {
   ],
   ruler: ['M3 5v14h4V5H3Z', 'M7 8h3M7 12h5M7 16h3'],
   warning: ['M12 3 2 21h20L12 3Z', 'M12 10v4M12 17h.01'],
+  star: [
+    'M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.7l5.9-.9L12 3.5Z',
+  ],
 };
 
 export type IconName = keyof typeof PATHS;

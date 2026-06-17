@@ -1,67 +1,47 @@
-import { useRef, type ReactNode } from 'react';
-import Swipeable, {
-  type SwipeableMethods,
-} from 'react-native-gesture-handler/ReanimatedSwipeable';
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  interpolate,
-  useAnimatedStyle,
-  type SharedValue,
-} from 'react-native-reanimated';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { AnimatedView } from '@/components/uniwind';
+  SwipeTo,
+  type SwipeActionHandler,
+  type SwipeActionResult,
+} from '@/components/clay/SwipeTo';
+
+// Kept backward-compatible: these alias the generic <SwipeTo> action types so
+// existing importers (ExerciseCard, exerciseSetTableModel) keep compiling.
+export type DeleteResult = SwipeActionResult;
+export type DeleteHandler = SwipeActionHandler;
 
 type SwipeToDeleteProps = {
   children: ReactNode;
-  onDelete: () => void;
+  /**
+   * Removes the row. May delete synchronously (return void/true) or defer to a
+   * confirmation and resolve `false` when cancelled — in which case the row
+   * springs back instead of being removed.
+   */
+  onDelete: DeleteHandler;
   borderRadius?: number;
 };
 
-type RightActionProps = {
-  prog: SharedValue<number>;
-  drag: SharedValue<number>;
-};
-
-function RightAction({ prog }: RightActionProps) {
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(prog.value, [0, 0.5, 1], [0, 0.8, 1], 'clamp'),
-  }));
-
-  return (
-    <AnimatedView className="flex-1 justify-center items-center bg-danger">
-      <AnimatedView style={animatedStyle}>
-        <ClayIcon name="trash" size={22} color="#fff" />
-      </AnimatedView>
-    </AnimatedView>
-  );
-}
-
+// Thin preset over <SwipeTo>: swipe-from-right, danger fill, trash icon,
+// "Delete" subtitle. Commits the row removal via onDelete.
 export function SwipeToDelete({
   children,
   onDelete,
   borderRadius = 0,
 }: SwipeToDeleteProps) {
-  const swipeableRef = useRef<SwipeableMethods>(null);
-
-  const handleOpen = () => {
-    swipeableRef.current?.reset();
-    onDelete();
-  };
+  const { t } = useTranslation();
 
   return (
-    <Swipeable
-      ref={swipeableRef}
-      friction={2}
-      rightThreshold={120}
-      overshootFriction={8}
-      enableTrackpadTwoFingerGesture
-      dragOffsetFromRightEdge={20}
-      containerStyle={{ borderRadius }}
-      onSwipeableOpen={handleOpen}
-      renderRightActions={(prog, drag) => (
-        <RightAction prog={prog} drag={drag} />
-      )}
+    <SwipeTo
+      right={{
+        action: onDelete,
+        color: 'danger',
+        icon: 'trash',
+        subtitle: t('common.delete'),
+      }}
+      borderRadius={borderRadius}
     >
       {children}
-    </Swipeable>
+    </SwipeTo>
   );
 }

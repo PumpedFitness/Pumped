@@ -1,36 +1,30 @@
-# Walks the bottom tab bar and asserts each tab's screen renders.
-# Tabs and screens are matched by testID (Android resource-id), auto-generated
-# from the navigator's screen names — see src/navigation/testIDs.ts.
-# Buttons: tab-home / tab-plan / tab-library / tab-history / tab-profile.
-# Screens: screen-home / screen-plan / screen-library / screen-history /
-#          screen-profile.
+# Walks the native bottom tab bar and asserts each tab's screen renders.
+# The bar is the OS-native tab bar (@react-navigation/bottom-tabs/unstable), whose
+# items expose no RN testID — so tabs are tapped by their visible label text,
+# while screens are still matched by testID (screen-*, see src/navigation/testIDs.ts).
+# Labels: Home / Schedule / Library / History / User (the Profile tab reads "User").
 appId: ${APP_ID}
 ---
 - launchApp
 - assertVisible:
     id: 'screen-home'
 
-- tapOn:
-    id: 'tab-plan'
+- tapOn: 'Schedule'
 - assertVisible:
-    id: 'screen-plan'
+    id: 'screen-schedule'
 
-- tapOn:
-    id: 'tab-library'
+- tapOn: 'Library'
 - assertVisible:
     id: 'screen-library'
 
-- tapOn:
-    id: 'tab-history'
+- tapOn: 'History'
 - assertVisible:
     id: 'screen-history'
 
-- tapOn:
-    id: 'tab-profile'
+- tapOn: 'User'
 - assertVisible:
     id: 'screen-profile'
 
-- tapOn:
-    id: 'tab-home'
+- tapOn: 'Home'
 - assertVisible:
     id: 'screen-home'

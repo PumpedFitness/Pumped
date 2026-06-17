@@ -3,8 +3,8 @@ appId: ${APP_ID}
 - launchApp:
     clearState: true
 - tapOn: 'Skip'
-- tapOn:
-    id: 'tab-library'
+# Native tab bar items expose no testID — tap by the visible label instead.
+- tapOn: 'Library'
 - waitForAnimationToEnd
 - assertVisible:
     id: 'screen-library'

@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { CompositeScreenProps } from '@react-navigation/native';
-import type { MaterialTopTabScreenProps } from '@react-navigation/material-top-tabs';
+import type { NativeBottomTabScreenProps } from '@react-navigation/bottom-tabs/unstable';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppShell } from '@/components/layout/AppShell';
+import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { SearchInput } from '@/components/forms/SearchInput';
 import { WorkoutHistoryList } from './components/WorkoutHistoryList';
 import { WorkoutHistorySummary } from './components/workout-history-summary';
@@ -14,7 +15,7 @@ import type { MainTabParamList } from '@/navigation/MainTabs';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type HistoryScreenProps = CompositeScreenProps<
-  MaterialTopTabScreenProps<MainTabParamList, 'History'>,
+  NativeBottomTabScreenProps<MainTabParamList, 'History'>,
   NativeStackScreenProps<RootStackParamList>
 >;
 
@@ -74,6 +75,8 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
             navigation.navigate('CompletedWorkout', { workoutId })
           }
         />
+
+        <TabBarInsetSpacer />
       </ScrollView>
     </AppShell>
   );

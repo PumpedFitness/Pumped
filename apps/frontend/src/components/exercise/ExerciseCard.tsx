@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { colors } from '@/theme/tokens';
-import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
+import {
+  SwipeToDelete,
+  type DeleteHandler,
+} from '@/components/clay/SwipeToDelete';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 
 type ExerciseCardProps = {
   name: string;
   description: string;
   children: ReactNode;
-  onRemove?: () => void;
+  onRemove?: DeleteHandler;
 };
 
 export function ExerciseCard({

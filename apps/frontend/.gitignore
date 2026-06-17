@@ -85,3 +85,4 @@ src/data/local/pulled/
 
 # Maestro / maestro-runner test reports
 reports/
+.features/

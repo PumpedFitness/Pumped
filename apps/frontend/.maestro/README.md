@@ -10,11 +10,11 @@ standalone (Go, **no JVM**) runner that runs Maestro YAML flows unchanged.
 | File | What it covers |
 |------|----------------|
 | `smoke.yaml`          | App launches and the Home tab renders. |
-| `tab-navigation.yaml` | Walks the bottom tab bar (Home · Plan · Library · History · You) and asserts each screen renders. |
+| `tab-navigation.yaml` | Walks the bottom tab bar (Home · Schedule · Library · History · User) and asserts each screen renders. |
 
 Navigation is driven by **testIDs** (Android `resource-id` / iOS accessibility
 id), not visible text: tab buttons are `tab-<name>` and each tab's screen
-container is `screen-<name>` (home · plan · library · history · profile). These
+container is `screen-<name>` (home · schedule · library · history · profile). These
 are auto-generated from the navigator's screen names in
 [`src/navigation/testIDs.ts`](../src/navigation/testIDs.ts) and applied in
 `AppBar` / `MainTabs`, so adding a tab needs no e2e wiring.

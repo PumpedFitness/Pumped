@@ -1,6 +1,11 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/theme/tokens';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from 'react-native-reanimated';
+import { colors, motion } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { SetTableRow, SetTypeOption } from './exerciseSetTableModel';
 import { ExerciseSetTableRow } from './ExerciseSetTableRow';
@@ -48,11 +53,16 @@ export function ExerciseSetTableContent({
       </View>
 
       {rows.map(row => (
-        <ExerciseSetTableRow
+        // Layout animation: a removed set fades out and the rows below slide up
+        // smoothly instead of snapping into place.
+        <Animated.View
           key={row.key}
-          row={row}
-          setTypeOptions={setTypeOptions}
-        />
+          layout={LinearTransition.duration(motion.base)}
+          entering={FadeIn.duration(motion.fast)}
+          exiting={FadeOut.duration(motion.fast)}
+        >
+          <ExerciseSetTableRow row={row} setTypeOptions={setTypeOptions} />
+        </Animated.View>
       ))}
 
       {onAddSet ? (

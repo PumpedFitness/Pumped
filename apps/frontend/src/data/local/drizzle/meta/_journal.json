@@ -85,6 +85,13 @@
       "when": 1781708400000,
       "tag": "0011_import_edited_at",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1781712000000,
+      "tag": "0012_collapse_schedule_kind",
+      "breakpoints": true
     }
   ]
 }

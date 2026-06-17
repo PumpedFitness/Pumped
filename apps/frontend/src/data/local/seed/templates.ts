@@ -1,5 +1,5 @@
 import type { InferInsertModel } from 'drizzle-orm';
-import type { WorkoutSetType, WorkoutWeekday } from '@/data/local/enums';
+import type { WorkoutSetType } from '@/data/local/enums';
 import type { db } from '@/data/local/database';
 import {
   schedules,
@@ -8,7 +8,11 @@ import {
   workoutTemplateSets,
   workoutTemplates,
 } from '@/data/local/schema';
-import { localDayIndex } from '@/data/local/schedules/scheduleResolution';
+import {
+  localDayIndex,
+  startOfWeek,
+  weekdayMon0,
+} from '@/data/local/schedules/scheduleResolution';
 import { EXERCISE_IDS, LOCAL_USER_ID, sampleId, TEMPLATE_IDS } from './ids';
 
 type LocalDatabase = typeof db;
@@ -33,27 +37,11 @@ type ExerciseSpec = {
   sets: SetSpec[];
 };
 
-// The template's inline (BASIC) schedule, expressed the way the editor does.
-type ScheduleSpec =
-  | { recurrence: 'CYCLE'; periodLength: number }
-  | { recurrence: 'WEEKLY'; periodLength: number; weekdays: WorkoutWeekday[] };
-
 type TemplateSpec = Omit<
   TemplateInsert,
   'createdAt' | 'updatedAt' | 'userId'
 > & {
-  schedule?: ScheduleSpec;
   exercises: ExerciseSpec[];
-};
-
-const WEEKDAY_OFFSET: Record<WorkoutWeekday, number> = {
-  MONDAY: 0,
-  TUESDAY: 1,
-  WEDNESDAY: 2,
-  THURSDAY: 3,
-  FRIDAY: 4,
-  SATURDAY: 5,
-  SUNDAY: 6,
 };
 
 const normalSets = (count: number, reps: number, rpe = 8): SetSpec[] =>
@@ -66,11 +54,6 @@ const TEMPLATES: TemplateSpec[] = [
     description: 'Bench and overhead press strength session.',
     status: 'ACTIVE',
     color: 'TERRACOTTA',
-    schedule: {
-      recurrence: 'WEEKLY',
-      periodLength: 1,
-      weekdays: ['MONDAY', 'THURSDAY'],
-    },
     exercises: [
       templateExercise('bench', EXERCISE_IDS.benchPress, '3 x 6-8 at RPE 8', [
         { type: 'WARMUP', reps: 10, percentage: 50 },
@@ -96,7 +79,6 @@ const TEMPLATES: TemplateSpec[] = [
     description: 'Simple squat, row, and trunk session every three days.',
     status: 'ACTIVE',
     color: 'SAGE',
-    schedule: { recurrence: 'CYCLE', periodLength: 3 },
     exercises: [
       templateExercise(
         'squat',
@@ -123,7 +105,6 @@ const TEMPLATES: TemplateSpec[] = [
     description: 'Deadlift technique followed by back and biceps volume.',
     status: 'ACTIVE',
     color: 'MOSS',
-    schedule: { recurrence: 'WEEKLY', periodLength: 1, weekdays: ['TUESDAY'] },
     exercises: [
       templateExercise('deadlift', EXERCISE_IDS.deadlift, '3 x 5 at RPE 7-8', [
         { type: 'WARMUP', reps: 5, percentage: 55 },
@@ -147,7 +128,6 @@ const TEMPLATES: TemplateSpec[] = [
     description: 'Squat, hinge, leg press, and calves.',
     status: 'ACTIVE',
     color: 'HONEY',
-    schedule: { recurrence: 'WEEKLY', periodLength: 1, weekdays: ['FRIDAY'] },
     exercises: [
       templateExercise(
         'lower-squat',
@@ -215,98 +195,63 @@ function templateExercise(
 }
 
 function buildTemplateRows(now: number): TemplateInsert[] {
-  return TEMPLATES.map(
-    ({ schedule: _schedule, exercises: _exercises, ...row }) => ({
-      ...row,
-      userId: LOCAL_USER_ID,
-      createdAt: now,
-      updatedAt: now,
-    }),
-  );
-}
-
-// One BASIC schedule per template that has an inline schedule, plus a demo
-// ADVANCED two-week rotation (left inactive so seeded basics still drive
-// "today" until the user activates it).
-const ADVANCED_DEMO_ID = sampleId('schedule-upper-lower');
-
-function buildScheduleRows(now: number): ScheduleInsert[] {
-  const anchorDay = localDayIndex(now);
-  const basics: ScheduleInsert[] = TEMPLATES.filter(
-    template => template.schedule,
-  ).map(template => ({
-    id: `${template.id}:basic`,
+  return TEMPLATES.map(({ exercises: _exercises, ...row }) => ({
+    ...row,
     userId: LOCAL_USER_ID,
-    name: template.name,
-    kind: 'BASIC',
-    recurrenceType: template.schedule!.recurrence,
-    periodLength: template.schedule!.periodLength,
-    anchorDay,
-    isActive: false,
-    ownerTemplateId: template.id,
     createdAt: now,
     updatedAt: now,
   }));
-
-  basics.push({
-    id: ADVANCED_DEMO_ID,
-    userId: LOCAL_USER_ID,
-    name: 'Upper / Lower (2-week)',
-    kind: 'ADVANCED',
-    recurrenceType: 'WEEKLY',
-    periodLength: 2,
-    anchorDay,
-    isActive: false,
-    ownerTemplateId: null,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  return basics;
 }
 
-function buildScheduleSlotRows(): ScheduleSlotInsert[] {
-  const basicSlots: ScheduleSlotInsert[] = TEMPLATES.filter(
-    template => template.schedule,
-  ).flatMap(template => {
-    const scheduleId = `${template.id}:basic`;
-    const spec = template.schedule!;
-    if (spec.recurrence === 'CYCLE') {
-      return [
-        {
-          id: `${scheduleId}:slot-0`,
-          scheduleId,
-          dayOffset: 0,
-          position: 0,
-          workoutTemplateId: template.id,
-        },
-      ];
-    }
-    return spec.weekdays.map((weekday, index) => ({
-      id: `${scheduleId}:slot-${index}`,
-      scheduleId,
-      dayOffset: WEEKDAY_OFFSET[weekday],
-      position: 0,
-      workoutTemplateId: template.id,
-    }));
-  });
+// A demo two-week rotation, active by default and anchored to the current week
+// (week A = this calendar week) so the home widget and Schedule tab show a real
+// program — including today's workout — on a fresh install.
+const DEMO_SCHEDULE_ID = sampleId('schedule-upper-lower');
 
-  // Demo rotation: week A = Push (Mon) / Pull (Thu), week B = Lower (Mon) /
-  // Full Body (Thu). dayOffset = weekIndex * 7 + weekday.
-  const demoSlots: ScheduleSlotInsert[] = [
-    { dayOffset: 0, workoutTemplateId: TEMPLATE_IDS.push },
-    { dayOffset: 3, workoutTemplateId: TEMPLATE_IDS.pull },
-    { dayOffset: 7, workoutTemplateId: TEMPLATE_IDS.lower },
-    { dayOffset: 10, workoutTemplateId: TEMPLATE_IDS.fullBody },
-  ].map((slot, index) => ({
-    id: `${ADVANCED_DEMO_ID}:slot-${index}`,
-    scheduleId: ADVANCED_DEMO_ID,
+function buildScheduleRows(now: number): ScheduleInsert[] {
+  return [
+    {
+      id: DEMO_SCHEDULE_ID,
+      userId: LOCAL_USER_ID,
+      name: 'Upper / Lower (2-week)',
+      recurrenceType: 'WEEKLY',
+      periodLength: 2,
+      // Week 0 of the rotation = the current local week.
+      anchorDay: startOfWeek(localDayIndex(now)),
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
+
+function buildScheduleSlotRows(now: number): ScheduleSlotInsert[] {
+  const t = TEMPLATE_IDS;
+  // dayOffset = weekIndex * 7 + weekday (Mon=0 … Sun=6). Wed/Sat/Sun are rest.
+  const slots: { dayOffset: number; workoutTemplateId: string }[] = [
+    { dayOffset: 0, workoutTemplateId: t.push }, // Week A · Mon
+    { dayOffset: 1, workoutTemplateId: t.pull }, // Week A · Tue
+    { dayOffset: 3, workoutTemplateId: t.lower }, // Week A · Thu
+    { dayOffset: 4, workoutTemplateId: t.fullBody }, // Week A · Fri
+    { dayOffset: 7, workoutTemplateId: t.lower }, // Week B · Mon
+    { dayOffset: 8, workoutTemplateId: t.push }, // Week B · Tue
+    { dayOffset: 10, workoutTemplateId: t.pull }, // Week B · Thu
+    { dayOffset: 11, workoutTemplateId: t.fullBody }, // Week B · Fri
+  ];
+
+  // Guarantee a fresh install surfaces a workout today, whatever the weekday.
+  const todayOffset = weekdayMon0(localDayIndex(now));
+  if (!slots.some(slot => slot.dayOffset === todayOffset)) {
+    slots.push({ dayOffset: todayOffset, workoutTemplateId: t.push });
+  }
+
+  return slots.map((slot, index) => ({
+    id: `${DEMO_SCHEDULE_ID}:slot-${index}`,
+    scheduleId: DEMO_SCHEDULE_ID,
     dayOffset: slot.dayOffset,
     position: 0,
     workoutTemplateId: slot.workoutTemplateId,
   }));
-
-  return [...basicSlots, ...demoSlots];
 }
 
 function buildExerciseRows(): TemplateExerciseInsert[] {
@@ -395,7 +340,7 @@ export function seedWorkoutTemplates(
     .run();
   database
     .insert(scheduleSlots)
-    .values(buildScheduleSlotRows())
+    .values(buildScheduleSlotRows(now))
     .onConflictDoNothing()
     .run();
 }

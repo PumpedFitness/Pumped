@@ -11,6 +11,7 @@ type EditableRowProps = {
   divider?: boolean;
   onSave: (value: string) => void;
   className?: string;
+  testID?: string;
 };
 
 export function EditableRow({
@@ -22,6 +23,7 @@ export function EditableRow({
   divider = false,
   onSave,
   className = '',
+  testID,
 }: EditableRowProps) {
   const inputRef = useRef<TextInput>(null);
   const [editing, setEditing] = useState(false);
@@ -39,7 +41,7 @@ export function EditableRow({
   };
 
   return (
-    <Pressable onPress={startEdit}>
+    <Pressable testID={testID} onPress={startEdit}>
       <View
         className={`flex-row items-center gap-[13px] py-[14px] px-4 ${
           divider ? 'border-t border-border-hairline' : ''
