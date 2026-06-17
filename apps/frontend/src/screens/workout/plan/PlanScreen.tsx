@@ -1,14 +1,52 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert, ScrollView } from 'react-native';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppView } from '@/components/layout/AppView';
+import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
+import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import { WorkoutTemplateLibrary } from './components/WorkoutTemplateLibrary';
 import type { WorkoutTemplateStatus } from '@/data/local/enums';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { WorkoutTemplate } from '@/types/workout';
+
+type InProgressWorkoutPopupProps = {
+  visible: boolean;
+  workoutName: string;
+  onClose: () => void;
+  onOpenWorkout: () => void;
+};
+
+function InProgressWorkoutPopup({
+  visible,
+  workoutName,
+  onClose,
+  onOpenWorkout,
+}: InProgressWorkoutPopupProps) {
+  const { t } = useTranslation();
+
+  return (
+    <OptionPopupFrame
+      visible={visible}
+      title={t('plan.alerts.inProgressTitle')}
+      text={t('plan.alerts.inProgressBody', { name: workoutName })}
+      footer={
+        <ConfirmationActions
+          confirmLabel={t('plan.alerts.openWorkout')}
+          disabled={false}
+          onClose={onClose}
+          onConfirm={onOpenWorkout}
+        />
+      }
+      onClose={onClose}
+    >
+      {null}
+    </OptionPopupFrame>
+  );
+}
 
 export function PlanScreen() {
   const { t } = useTranslation();
@@ -17,6 +55,7 @@ export function PlanScreen() {
   const { templates, exerciseOptions, updateTemplateStatus } =
     useWorkoutTemplates();
   const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
+  const [inProgressPopupVisible, setInProgressPopupVisible] = useState(false);
 
   const openCreate = () => {
     navigation.navigate('WorkoutTemplateEditor');
@@ -30,17 +69,7 @@ export function PlanScreen() {
 
   const startTemplate = (template: WorkoutTemplate) => {
     if (currentWorkout) {
-      Alert.alert(
-        t('plan.alerts.inProgressTitle'),
-        t('plan.alerts.inProgressBody', { name: currentWorkout.name }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('plan.alerts.openWorkout'),
-            onPress: () => navigation.navigate('CurrentWorkout'),
-          },
-        ],
-      );
+      setInProgressPopupVisible(true);
       return;
     }
 
@@ -90,6 +119,15 @@ export function PlanScreen() {
           onStatusChange={handleStatusChange}
         />
       </ScrollView>
+      <InProgressWorkoutPopup
+        visible={inProgressPopupVisible}
+        workoutName={currentWorkout?.name ?? ''}
+        onClose={() => setInProgressPopupVisible(false)}
+        onOpenWorkout={() => {
+          setInProgressPopupVisible(false);
+          navigation.navigate('CurrentWorkout');
+        }}
+      />
     </AppView>
   );
 }
