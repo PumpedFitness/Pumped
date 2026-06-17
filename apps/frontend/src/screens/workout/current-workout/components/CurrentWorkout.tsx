@@ -18,6 +18,8 @@ import {
   ExerciseSetTable,
 } from '@/components/exercise/set-table';
 import { OptionPopup, type PopupOption } from '@/components/clay/option-popup';
+import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
+import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 
 type CurrentWorkoutProps = {
@@ -164,6 +166,39 @@ type CurrentWorkoutFooterProps = {
   discardWorkout: () => void;
 };
 
+type DiscardWorkoutPopupProps = {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+};
+
+function DiscardWorkoutPopup({
+  visible,
+  onClose,
+  onConfirm,
+}: DiscardWorkoutPopupProps) {
+  const { t } = useTranslation();
+
+  return (
+    <OptionPopupFrame
+      visible={visible}
+      title={t('currentWorkout.alerts.discardTitle')}
+      text={t('currentWorkout.alerts.discardBody')}
+      footer={
+        <ConfirmationActions
+          confirmLabel={t('currentWorkout.alerts.discard')}
+          disabled={false}
+          onClose={onClose}
+          onConfirm={onConfirm}
+        />
+      }
+      onClose={onClose}
+    >
+      {null}
+    </OptionPopupFrame>
+  );
+}
+
 function CurrentWorkoutFooter({
   canFinish,
   shouldPromptForTemplate,
@@ -173,6 +208,7 @@ function CurrentWorkoutFooter({
 }: CurrentWorkoutFooterProps) {
   const { t } = useTranslation();
   const [templatePopupVisible, setTemplatePopupVisible] = useState(false);
+  const [discardPopupVisible, setDiscardPopupVisible] = useState(false);
 
   const templateFinishOptions: PopupOption<TemplateFinishChoice>[] = [
     {
@@ -202,22 +238,10 @@ function CurrentWorkoutFooter({
     completeWorkout(t, navigation, finishWorkout, choice === 'update');
   };
 
-  const requestDiscard = () =>
-    Alert.alert(
-      t('currentWorkout.alerts.discardTitle'),
-      t('currentWorkout.alerts.discardBody'),
-      [
-        { text: t('currentWorkout.alerts.keepWorkout'), style: 'cancel' },
-        {
-          text: t('currentWorkout.alerts.discard'),
-          style: 'destructive',
-          onPress: () => {
-            discardWorkout();
-            navigation.goBack();
-          },
-        },
-      ],
-    );
+  const confirmDiscard = () => {
+    discardWorkout();
+    navigation.goBack();
+  };
 
   return (
     <>
@@ -226,7 +250,7 @@ function CurrentWorkoutFooter({
           accessibilityRole="button"
           accessibilityLabel={t('currentWorkout.discardA11y')}
           className="h-12 w-12 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
-          onPress={requestDiscard}
+          onPress={() => setDiscardPopupVisible(true)}
         >
           <ClayIcon name="trash" size={19} color={colors.muted} />
         </Pressable>
@@ -263,6 +287,11 @@ function CurrentWorkoutFooter({
         options={templateFinishOptions}
         onClose={() => setTemplatePopupVisible(false)}
         onSelect={finishWithTemplateChoice}
+      />
+      <DiscardWorkoutPopup
+        visible={discardPopupVisible}
+        onClose={() => setDiscardPopupVisible(false)}
+        onConfirm={confirmDiscard}
       />
     </>
   );
