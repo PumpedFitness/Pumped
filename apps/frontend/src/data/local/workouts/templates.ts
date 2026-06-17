@@ -18,19 +18,13 @@ import type {
 import { db } from '@/data/local/database';
 import { notifyTableChanged } from '@/data/local/tableVersions';
 import {
+  schedules,
+  scheduleSlots,
   workoutTemplateExercises,
-  workoutTemplateScheduleWeekdays,
   workoutTemplateSets,
   workoutTemplates,
 } from '@/data/local/schema';
-import {
-  LOCAL_USER_ID,
-  requireText,
-  validateSchedule,
-  type WorkoutTemplateScheduleInput,
-} from './validation';
-
-export type { WorkoutTemplateScheduleInput };
+import { LOCAL_USER_ID, requireText } from './validation';
 
 export type WorkoutTemplateSetInput = {
   setType: WorkoutSetType;
@@ -52,7 +46,6 @@ export type SaveWorkoutTemplateInput = {
   description?: string | null;
   status?: WorkoutTemplateStatus;
   color?: WorkoutTemplateColor;
-  schedule?: WorkoutTemplateScheduleInput | null;
   exercises: WorkoutTemplateExerciseInput[];
 };
 
@@ -134,18 +127,6 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
     };
   });
 
-  const weekdays = template.scheduleType
-    ? db
-        .select({ weekday: workoutTemplateScheduleWeekdays.weekday })
-        .from(workoutTemplateScheduleWeekdays)
-        .where(
-          eq(workoutTemplateScheduleWeekdays.workoutTemplateId, template.id),
-        )
-        .orderBy(asc(workoutTemplateScheduleWeekdays.weekday))
-        .all()
-        .map(row => row.weekday)
-    : [];
-
   return {
     id: template.id,
     userId: template.userId,
@@ -153,14 +134,6 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
     description: template.description,
     status: template.status,
     color: template.color,
-    schedule:
-      template.scheduleType && template.scheduleInterval
-        ? {
-            type: template.scheduleType,
-            interval: template.scheduleInterval,
-            weekdays,
-          }
-        : null,
     exercises,
     createdAt: template.createdAt,
     updatedAt: template.updatedAt,
@@ -183,14 +156,11 @@ function upsertTemplateRow(
   tx: Tx,
   templateId: string,
   input: SaveWorkoutTemplateInput,
-  schedule: WorkoutTemplateScheduleInput | null,
   now: number,
 ): void {
   const shared = {
     name: requireText(input.name, i18n.t('errors.fields.templateName')),
     description: input.description ?? null,
-    scheduleType: schedule?.type ?? null,
-    scheduleInterval: schedule?.interval ?? null,
     updatedAt: now,
   };
   const existing = tx
@@ -225,26 +195,11 @@ function upsertTemplateRow(
 function replaceTemplateChildren(
   tx: Tx,
   templateId: string,
-  schedule: WorkoutTemplateScheduleInput | null,
   exercises: WorkoutTemplateExerciseInput[],
 ): void {
-  tx.delete(workoutTemplateScheduleWeekdays)
-    .where(eq(workoutTemplateScheduleWeekdays.workoutTemplateId, templateId))
-    .run();
   tx.delete(workoutTemplateExercises)
     .where(eq(workoutTemplateExercises.workoutTemplateId, templateId))
     .run();
-
-  if (schedule?.type === 'WEEKS') {
-    tx.insert(workoutTemplateScheduleWeekdays)
-      .values(
-        (schedule.weekdays ?? []).map(weekday => ({
-          workoutTemplateId: templateId,
-          weekday,
-        })),
-      )
-      .run();
-  }
 
   exercises.forEach((exercise, exercisePosition) => {
     const exerciseRowId = randomUUID();
@@ -282,22 +237,20 @@ export function saveWorkoutTemplate(
 ): WorkoutTemplate {
   const templateId = input.id ?? randomUUID();
   const now = Date.now();
-  const schedule = validateSchedule(input.schedule);
   const validatedExercises = input.exercises.map(exercise => ({
     ...exercise,
     sets: exercise.sets.map(validateTemplateSet),
   }));
 
   db.transaction(tx => {
-    upsertTemplateRow(tx, templateId, input, schedule, now);
-    replaceTemplateChildren(tx, templateId, schedule, validatedExercises);
+    upsertTemplateRow(tx, templateId, input, now);
+    replaceTemplateChildren(tx, templateId, validatedExercises);
   });
 
   notifyTableChanged(
     workoutTemplates,
     workoutTemplateExercises,
     workoutTemplateSets,
-    workoutTemplateScheduleWeekdays,
   );
 
   return getWorkoutTemplate(templateId)!;
@@ -322,11 +275,12 @@ export function deleteWorkoutTemplate(templateId: string): void {
   assertTemplateExists(templateId);
   db.delete(workoutTemplates).where(eq(workoutTemplates.id, templateId)).run();
 
-  // Children cascade via FK.
+  // Children (exercises, sets, owned schedules + slots) cascade via FK.
   notifyTableChanged(
     workoutTemplates,
     workoutTemplateExercises,
     workoutTemplateSets,
-    workoutTemplateScheduleWeekdays,
+    schedules,
+    scheduleSlots,
   );
 }

@@ -8,10 +8,11 @@ import {
   bodyWeightEntries,
   exercises,
   performedSets,
+  scheduleSlots,
+  schedules,
   userProfile,
   workoutSessions,
   workoutTemplateExercises,
-  workoutTemplateScheduleWeekdays,
   workoutTemplateSets,
   workoutTemplates,
 } from './schema';
@@ -20,8 +21,9 @@ export function resetAllData(): void {
   // FK-safe order: children before parents.
   db.delete(performedSets).run();
   db.delete(workoutSessions).run();
+  db.delete(scheduleSlots).run();
+  db.delete(schedules).run();
   db.delete(workoutTemplateSets).run();
-  db.delete(workoutTemplateScheduleWeekdays).run();
   db.delete(workoutTemplateExercises).run();
   db.delete(workoutTemplates).run();
   db.delete(exercises).run();
@@ -32,8 +34,9 @@ export function resetAllData(): void {
   notifyTableChanged(
     performedSets,
     workoutSessions,
+    scheduleSlots,
+    schedules,
     workoutTemplateSets,
-    workoutTemplateScheduleWeekdays,
     workoutTemplateExercises,
     workoutTemplates,
     exercises,

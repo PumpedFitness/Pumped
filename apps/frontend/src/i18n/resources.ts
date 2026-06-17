@@ -202,6 +202,16 @@ export const resources = {
           noMatchBody: 'Try another search or choose a different status.',
           createCta: 'Create template',
         },
+        schedules: {
+          title: 'Schedules',
+          create: 'New',
+          createA11y: 'Create schedule',
+          editA11y: 'Edit {{name}}',
+          empty: {
+            title: 'No schedules yet',
+            body: 'Build a multi-workout program across weeks or a day cycle.',
+          },
+        },
         schedule: {
           none: 'No schedule',
           everyDay: 'Every day',
@@ -247,6 +257,8 @@ export const resources = {
           everyFewDays: 'Every few days',
           weekly: 'Weekly',
           repeatInterval: 'Repeat interval',
+          advancedCta: 'Advanced schedule',
+          advancedHint: 'Build a multi-workout program',
         },
         appearance: {
           colorTitle: 'Template color',
@@ -287,6 +299,50 @@ export const resources = {
           deleteBody:
             'This removes the template and its planned exercises. Completed workouts stay in your history.',
           deleteFailedTitle: 'Could not delete template',
+        },
+      },
+      schedule: {
+        newTitle: 'New schedule',
+        editTitle: 'Edit schedule',
+        namePlaceholder: 'Schedule name',
+        restDay: 'Rest day',
+        active: 'Active',
+        activate: 'Activate',
+        deactivate: 'Deactivate',
+        rotationLength: 'Rotation length',
+        periodWeeks_one: '{{count}} week',
+        periodWeeks_other: '{{count}} weeks',
+        periodDays_one: '{{count}} day',
+        periodDays_other: '{{count}} days',
+        decreaseLength: 'Shorten rotation',
+        increaseLength: 'Lengthen rotation',
+        weekLabel: 'Week {{number}}',
+        dayLabel: 'Day {{number}}',
+        pickWorkout: 'Choose a workout',
+        activeProgram: 'Active program',
+        activeProgramHint: 'Drive your calendar from this schedule.',
+        saveCta: 'Save schedule',
+        deleteCta: 'Delete schedule',
+        mode: {
+          weekly: 'Weekly',
+          cycle: 'Day cycle',
+        },
+        summary: {
+          weeks_one: '{{count}}-week rotation',
+          weeks_other: '{{count}}-week rotation',
+          days_one: '{{count}}-day cycle',
+          days_other: '{{count}}-day cycle',
+          workouts_one: '{{count}} workout',
+          workouts_other: '{{count}} workouts',
+        },
+        errors: {
+          nameRequired: 'Give this schedule a name.',
+          saveFailed: 'The schedule could not be saved.',
+        },
+        alerts: {
+          deleteTitle: 'Delete {{name}}?',
+          deleteBody: 'This removes the schedule. Your workouts stay intact.',
+          deleteFailedTitle: 'Could not delete schedule',
         },
       },
       setTable: {
@@ -573,11 +629,14 @@ export const resources = {
         fields: {
           templateName: 'Template name',
           workoutName: 'Workout name',
+          scheduleName: 'Schedule name',
         },
         scheduleIntervalPositive:
           'Schedule interval must be a positive integer',
         dayScheduleNoWeekdays: 'Day schedules cannot define weekdays',
         weekScheduleNeedsWeekday: 'Week schedules require at least one weekday',
+        scheduleSlotOutOfRange: 'A scheduled day falls outside the rotation',
+        scheduleSlotWorkoutRequired: 'Each scheduled day needs a workout',
         targetRepsPositive: 'Target reps must be a positive whole number',
         percentageRange: 'Percentage of 1RM must be between 0 and 100',
         rpeRange: 'Target RPE must be between 1 and 10',
@@ -781,6 +840,16 @@ export const resources = {
             'Versuche eine andere Suche oder wähle einen anderen Status.',
           createCta: 'Vorlage erstellen',
         },
+        schedules: {
+          title: 'Zeitpläne',
+          create: 'Neu',
+          createA11y: 'Zeitplan erstellen',
+          editA11y: '{{name}} bearbeiten',
+          empty: {
+            title: 'Noch keine Zeitpläne',
+            body: 'Erstelle ein Programm mit mehreren Workouts über Wochen oder einen Tageszyklus.',
+          },
+        },
         schedule: {
           none: 'Kein Zeitplan',
           everyDay: 'Jeden Tag',
@@ -826,6 +895,8 @@ export const resources = {
           everyFewDays: 'Alle paar Tage',
           weekly: 'Wöchentlich',
           repeatInterval: 'Wiederholungsintervall',
+          advancedCta: 'Erweiterter Zeitplan',
+          advancedHint: 'Erstelle ein Programm mit mehreren Workouts',
         },
         appearance: {
           colorTitle: 'Vorlagenfarbe',
@@ -868,6 +939,51 @@ export const resources = {
           deleteBody:
             'Das entfernt die Vorlage und ihre geplanten Übungen. Abgeschlossene Workouts bleiben in deinem Verlauf.',
           deleteFailedTitle: 'Vorlage konnte nicht gelöscht werden',
+        },
+      },
+      schedule: {
+        newTitle: 'Neuer Zeitplan',
+        editTitle: 'Zeitplan bearbeiten',
+        namePlaceholder: 'Name des Zeitplans',
+        restDay: 'Ruhetag',
+        active: 'Aktiv',
+        activate: 'Aktivieren',
+        deactivate: 'Deaktivieren',
+        rotationLength: 'Rotationslänge',
+        periodWeeks_one: '{{count}} Woche',
+        periodWeeks_other: '{{count}} Wochen',
+        periodDays_one: '{{count}} Tag',
+        periodDays_other: '{{count}} Tage',
+        decreaseLength: 'Rotation verkürzen',
+        increaseLength: 'Rotation verlängern',
+        weekLabel: 'Woche {{number}}',
+        dayLabel: 'Tag {{number}}',
+        pickWorkout: 'Workout auswählen',
+        activeProgram: 'Aktives Programm',
+        activeProgramHint: 'Steuere deinen Kalender über diesen Zeitplan.',
+        saveCta: 'Zeitplan speichern',
+        deleteCta: 'Zeitplan löschen',
+        mode: {
+          weekly: 'Wöchentlich',
+          cycle: 'Tageszyklus',
+        },
+        summary: {
+          weeks_one: '{{count}}-Wochen-Rotation',
+          weeks_other: '{{count}}-Wochen-Rotation',
+          days_one: '{{count}}-Tage-Zyklus',
+          days_other: '{{count}}-Tage-Zyklus',
+          workouts_one: '{{count}} Workout',
+          workouts_other: '{{count}} Workouts',
+        },
+        errors: {
+          nameRequired: 'Gib diesem Zeitplan einen Namen.',
+          saveFailed: 'Der Zeitplan konnte nicht gespeichert werden.',
+        },
+        alerts: {
+          deleteTitle: '{{name}} löschen?',
+          deleteBody:
+            'Das entfernt den Zeitplan. Deine Workouts bleiben erhalten.',
+          deleteFailedTitle: 'Zeitplan konnte nicht gelöscht werden',
         },
       },
       setTable: {
@@ -1162,6 +1278,7 @@ export const resources = {
         fields: {
           templateName: 'Name der Vorlage',
           workoutName: 'Name des Workouts',
+          scheduleName: 'Name des Zeitplans',
         },
         scheduleIntervalPositive:
           'Das Zeitplan-Intervall muss eine positive ganze Zahl sein',
@@ -1169,6 +1286,9 @@ export const resources = {
           'Tageszeitpläne können keine Wochentage festlegen',
         weekScheduleNeedsWeekday:
           'Wochenzeitpläne benötigen mindestens einen Wochentag',
+        scheduleSlotOutOfRange:
+          'Ein geplanter Tag liegt außerhalb der Rotation',
+        scheduleSlotWorkoutRequired: 'Jeder geplante Tag braucht ein Workout',
         targetRepsPositive:
           'Zielwiederholungen müssen eine positive ganze Zahl sein',
         percentageRange:

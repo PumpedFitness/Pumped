@@ -8,6 +8,7 @@ import m0004 from './0004_smiling_norman_osborn.sql';
 import m0005 from './0005_romantic_nehzno.sql';
 import m0006 from './0006_lean_storm.sql';
 import m0007 from './0007_exercise_types_muscle_groups.sql';
+import m0008 from './0008_advanced_schedules.sql';
 
 export default {
   journal,
@@ -20,5 +21,6 @@ export default {
     m0005,
     m0006,
     m0007,
+    m0008,
   },
 };

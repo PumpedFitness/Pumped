@@ -57,6 +57,13 @@
       "when": 1780900000000,
       "tag": "0007_exercise_types_muscle_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1781000000000,
+      "tag": "0008_advanced_schedules",
+      "breakpoints": true
     }
   ]
 }

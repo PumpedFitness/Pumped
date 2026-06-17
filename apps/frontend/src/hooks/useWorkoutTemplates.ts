@@ -11,7 +11,6 @@ import { useTableQuery } from '@/data/local/tableVersions';
 import {
   workoutSessions,
   workoutTemplateExercises,
-  workoutTemplateScheduleWeekdays,
   workoutTemplateSets,
   workoutTemplates,
 } from '@/data/local/schema';
@@ -34,12 +33,7 @@ type UseWorkoutTemplatesResult = {
 
 export function useWorkoutTemplates(): UseWorkoutTemplatesResult {
   const templates = useTableQuery(
-    [
-      workoutTemplates,
-      workoutTemplateExercises,
-      workoutTemplateSets,
-      workoutTemplateScheduleWeekdays,
-    ],
+    [workoutTemplates, workoutTemplateExercises, workoutTemplateSets],
     () => listWorkoutTemplates(),
   );
   const sessions = useTableQuery([workoutSessions], () =>

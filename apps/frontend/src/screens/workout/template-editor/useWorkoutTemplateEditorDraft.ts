@@ -1,32 +1,51 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { randomUUID } from 'expo-crypto';
-import type { WorkoutWeekday } from '@/data/local/enums';
-import type {
-  workoutTemplateScheduleWeekdays,
-  workoutTemplates,
-} from '@/data/local/schema/workoutTemplate';
+import type { WorkoutScheduleType, WorkoutWeekday } from '@/data/local/enums';
+import type { workoutTemplates } from '@/data/local/schema/workoutTemplate';
 import type {
   SaveWorkoutTemplateInput,
   WorkoutTemplateExerciseInput,
 } from '@/data/local/workouts/templates';
+import {
+  deleteBasicScheduleForTemplate,
+  getBasicScheduleForTemplate,
+  saveSchedule,
+} from '@/data/local/schedules/schedules';
 import type {
   EditableExercise,
   EditableExerciseSet,
   ExerciseOption,
 } from '@/types/exercise';
+import type { Schedule, SaveScheduleInput } from '@/types/schedule';
 import type { WorkoutTemplate } from '@/types/workout';
 
 type WorkoutTemplateRow = typeof workoutTemplates.$inferSelect;
-type WorkoutTemplateScheduleWeekdayRow =
-  typeof workoutTemplateScheduleWeekdays.$inferSelect;
 
-export type ScheduleMode =
-  | 'NONE'
-  | NonNullable<WorkoutTemplateRow['scheduleType']>;
+export type ScheduleMode = 'NONE' | WorkoutScheduleType;
 
 type DraftSet = EditableExerciseSet;
 export type DraftExercise = EditableExercise;
+
+const WEEKDAY_ORDER: WorkoutWeekday[] = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+];
+
+const WEEKDAY_OFFSET: Record<WorkoutWeekday, number> = {
+  MONDAY: 0,
+  TUESDAY: 1,
+  WEDNESDAY: 2,
+  THURSDAY: 3,
+  FRIDAY: 4,
+  SATURDAY: 5,
+  SUNDAY: 6,
+};
 
 type WorkoutTemplateEditorDraft = {
   name: string;
@@ -35,7 +54,10 @@ type WorkoutTemplateEditorDraft = {
   color: WorkoutTemplateRow['color'];
   scheduleMode: ScheduleMode;
   scheduleInterval: number;
-  weekdays: WorkoutTemplateScheduleWeekdayRow['weekday'][];
+  weekdays: WorkoutWeekday[];
+  // Carried so an edited basic schedule updates in place (preserving its anchor).
+  basicScheduleId: string | null;
+  basicAnchorDay: number | null;
   exercises: DraftExercise[];
   error: string | null;
 };
@@ -43,7 +65,7 @@ type WorkoutTemplateEditorDraft = {
 type UseWorkoutTemplateEditorDraftOptions = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
-  onSave: (input: SaveWorkoutTemplateInput) => void;
+  onSave: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
   onSaved: () => void;
 };
 
@@ -59,17 +81,39 @@ export function createDraftSet(
   };
 }
 
+function scheduleModeFor(schedule: Schedule | null): ScheduleMode {
+  if (!schedule) {
+    return 'NONE';
+  }
+  return schedule.recurrenceType === 'CYCLE' ? 'DAYS' : 'WEEKS';
+}
+
+function weekdaysFor(schedule: Schedule | null): WorkoutWeekday[] {
+  if (!schedule || schedule.recurrenceType !== 'WEEKLY') {
+    return [];
+  }
+  return [...new Set(schedule.slots.map(slot => slot.dayOffset % 7))]
+    .sort((a, b) => a - b)
+    .map(offset => WEEKDAY_ORDER[offset]);
+}
+
 function createInitialDraft(
   template: WorkoutTemplate | null,
 ): WorkoutTemplateEditorDraft {
+  const basicSchedule = template
+    ? getBasicScheduleForTemplate(template.id)
+    : null;
+
   return {
     name: template?.name ?? '',
     description: template?.description ?? '',
     status: template?.status ?? 'ACTIVE',
     color: template?.color ?? 'TERRACOTTA',
-    scheduleMode: template?.schedule?.type ?? 'NONE',
-    scheduleInterval: template?.schedule?.interval ?? 1,
-    weekdays: template?.schedule?.weekdays ?? [],
+    scheduleMode: scheduleModeFor(basicSchedule),
+    scheduleInterval: basicSchedule?.periodLength ?? 1,
+    weekdays: weekdaysFor(basicSchedule),
+    basicScheduleId: basicSchedule?.id ?? null,
+    basicAnchorDay: basicSchedule?.anchorDay ?? null,
     exercises:
       template?.exercises.map(exercise => ({
         exerciseId: exercise.exerciseId,
@@ -127,16 +171,34 @@ function buildSaveInput(
     description: draft.description.trim() || null,
     status: draft.status,
     color: draft.color,
-    schedule:
-      draft.scheduleMode === 'NONE'
-        ? null
-        : {
-            type: draft.scheduleMode,
-            interval: draft.scheduleInterval,
-            weekdays:
-              draft.scheduleMode === 'WEEKS' ? draft.weekdays : undefined,
-          },
     exercises: draft.exercises.map(buildExerciseInput),
+  };
+}
+
+// Translates the inline schedule controls into a BASIC schedule for the saved
+// template (or null when the user chose "flexible").
+function buildBasicScheduleInput(
+  draft: WorkoutTemplateEditorDraft,
+  template: WorkoutTemplate,
+): SaveScheduleInput | null {
+  if (draft.scheduleMode === 'NONE') {
+    return null;
+  }
+  const isWeekly = draft.scheduleMode === 'WEEKS';
+  return {
+    id: draft.basicScheduleId ?? undefined,
+    name: template.name,
+    kind: 'BASIC',
+    recurrenceType: isWeekly ? 'WEEKLY' : 'CYCLE',
+    periodLength: draft.scheduleInterval,
+    anchorDay: draft.basicAnchorDay ?? undefined,
+    ownerTemplateId: template.id,
+    slots: isWeekly
+      ? draft.weekdays.map(weekday => ({
+          dayOffset: WEEKDAY_OFFSET[weekday],
+          workoutTemplateId: template.id,
+        }))
+      : [{ dayOffset: 0, workoutTemplateId: template.id }],
   };
 }
 
@@ -241,7 +303,13 @@ export function useWorkoutTemplateEditorDraft({
     }
 
     try {
-      onSave(buildSaveInput(draft, template?.id));
+      const saved = onSave(buildSaveInput(draft, template?.id));
+      const scheduleInput = buildBasicScheduleInput(draft, saved);
+      if (scheduleInput) {
+        saveSchedule(scheduleInput);
+      } else {
+        deleteBasicScheduleForTemplate(saved.id);
+      }
       onSaved();
     } catch (error) {
       setDraft(current => ({
