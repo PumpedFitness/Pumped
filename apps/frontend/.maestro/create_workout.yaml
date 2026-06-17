@@ -3,9 +3,11 @@ appId: ${APP_ID}
 - launchApp:
     clearState: true
 - tapOn: 'Skip'
-- tapOn: 'Library'
+- tapOn:
+    id: 'tab-library'
 - waitForAnimationToEnd
-- assertVisible: 'Exercise Library'
+- assertVisible:
+    id: 'screen-library'
 - tapOn:
     id: 'create_workout'
 

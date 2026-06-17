@@ -9,6 +9,7 @@ import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
 import { AnimatedView } from '@/components/uniwind';
 import { colors, shadows } from '@/theme/tokens';
 import type { MainTabParamList } from './MainTabs';
+import { tabTestID } from './testIDs';
 
 type TabLabelKey =
   | 'tabs.home'
@@ -93,6 +94,7 @@ export function AppBar({ state, navigation }: AppBarProps) {
         return (
           <Pressable
             key={tab.name}
+            testID={tabTestID(tab.name)}
             accessibilityLabel={t(tab.labelKey)}
             onPress={() => navigation.navigate(tab.name)}
             onLayout={e => {
