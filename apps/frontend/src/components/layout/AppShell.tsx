@@ -9,17 +9,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * tab bar so content never renders behind it.
  *
  * Props:
- *  - `showTabBar` (default true): when true, adds bottom padding to
- *    clear the floating nav (64 + 8 gutter + inset). Pass false for
- *    fullscreen flows like the active session.
+ *  - `showTabBar` (default true): when true, the screen lives inside the
+ *    native bottom-tab navigator, which already reserves its own space below
+ *    the content — so no extra bottom padding is added. Pass false for
+ *    fullscreen flows (modals, the active session) that own the full height
+ *    and must clear the home-indicator inset themselves.
  *  - `padTop` (default true): apply safe-area top inset as padding.
  *  - `padHorizontal` (default 0): screen-gutter; design default is 20,
  *    but many screens manage their own horizontal padding per-section.
  *  - `style`: additional style overrides on the inner content container.
  */
-
-const TAB_BAR_HEIGHT = 64;
-const TAB_BAR_GUTTER = 8;
 
 type AppShellProps = {
   children: ReactNode;
@@ -32,16 +31,16 @@ type AppShellProps = {
 export function AppShell({
   children,
   showTabBar = true,
-  padTop = true,
+  padTop = false,
   padHorizontal = 0,
   style,
 }: AppShellProps) {
   const insets = useSafeAreaInsets();
 
   const topPadding = padTop ? insets.top : 0;
-  const bottomPadding = showTabBar
-    ? insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_GUTTER + 16 // 16 extra breathing room
-    : insets.bottom;
+  // The native tab bar reserves its own space below tab screens, so they add no
+  // bottom padding; standalone screens still clear the home-indicator inset.
+  const bottomPadding = showTabBar ? 0 : insets.bottom;
 
   return (
     <View

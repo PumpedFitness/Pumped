@@ -15,7 +15,6 @@ import type { Schedule, SaveScheduleInput } from '@/types/schedule';
 
 type UseSchedulesResult = {
   schedules: Schedule[];
-  advancedSchedules: Schedule[];
   activeSchedule: Schedule | null;
   today: number;
   todayTemplateIds: string[];
@@ -29,13 +28,9 @@ export function useSchedules(): UseSchedulesResult {
     listSchedules(),
   );
 
-  const advancedSchedules = useMemo(
-    () => allSchedules.filter(schedule => schedule.kind === 'ADVANCED'),
-    [allSchedules],
-  );
   const activeSchedule = useMemo(
-    () => advancedSchedules.find(schedule => schedule.isActive) ?? null,
-    [advancedSchedules],
+    () => allSchedules.find(schedule => schedule.isActive) ?? null,
+    [allSchedules],
   );
 
   const today = localDayIndex();
@@ -60,7 +55,6 @@ export function useSchedules(): UseSchedulesResult {
 
   return {
     schedules: allSchedules,
-    advancedSchedules,
     activeSchedule,
     today,
     todayTemplateIds,

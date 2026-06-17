@@ -18,8 +18,8 @@ type NumberInputCellProps = {
   onChange: (value: number | null) => void;
 };
 
-type SliderValueCellProps = {
-  field: Extract<SetField, { inputMethod: 'slider' }>;
+type WheelValueCellProps = {
+  field: Extract<SetField, { inputMethod: 'wheel' }>;
   hasError?: boolean;
   onPress?: () => void;
 };
@@ -169,11 +169,11 @@ function EditableNumberInputCell({
   );
 }
 
-export function SliderValueCell({
+export function WheelValueCell({
   field,
   hasError = false,
   onPress,
-}: SliderValueCellProps) {
+}: WheelValueCellProps) {
   const value = formatSetNumber(field.value);
 
   if (!onPress) {

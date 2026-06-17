@@ -4,6 +4,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { randomUUID } from 'expo-crypto';
 import { useAuthStore } from '@/stores/authStore';
+import { useTourStore } from '@/stores/tourStore';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { Gender, WeightUnit } from '@/data/local/schema/userProfile';
 import {
@@ -41,6 +42,7 @@ function buildProfileData(
 
 export function useOnboardingDraft() {
   const completeOnboarding = useAuthStore(s => s.completeOnboarding);
+  const startTour = useTourStore(s => s.startTour);
   const { set: setProfile } = useUserProfile();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -91,8 +93,12 @@ export function useOnboardingDraft() {
 
     completeOnboarding();
     navigation.replace('Main');
+    // Kick off the one-time guided tour now that Main is mounting. startTour is
+    // a no-op once the tour has been seen, so it never retriggers on relaunch.
+    startTour();
   }, [
     completeOnboarding,
+    startTour,
     navigation,
     setProfile,
     profileFields,

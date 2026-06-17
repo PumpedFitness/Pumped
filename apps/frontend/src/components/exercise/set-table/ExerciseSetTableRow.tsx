@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { colors } from '@/theme/tokens';
 import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
 import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
-import { OptionalSliderSheet } from '@/components/forms/OptionalSliderSheet';
+import { OptionalWheelPickerSheet } from '@/components/forms/OptionalWheelPickerSheet';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import {
   NumberInputCell,
   SetTypeCell,
-  SliderValueCell,
+  WheelValueCell,
 } from './ExerciseSetTableCells';
 import type {
   SetField,
@@ -83,7 +83,9 @@ function SetActionCell({ row, onToggleDone }: SetActionCellProps) {
         number: row.index + 1,
       })}
       className="h-10 w-8 items-center justify-center rounded-full active:bg-surface-card"
-      onPress={row.onRemove}
+      onPress={() => {
+        void row.onRemove();
+      }}
     >
       <ClayIcon name="trash" size={15} color={colors.danger} />
     </Pressable>
@@ -95,18 +97,18 @@ export function ExerciseSetTableRow({
   setTypeOptions,
 }: ExerciseSetTableRowProps) {
   const { t } = useTranslation();
-  const [activeSliderFieldId, setActiveSliderFieldId] = useState<string | null>(
+  const [activeWheelFieldId, setActiveWheelFieldId] = useState<string | null>(
     null,
   );
   const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [isSetTypeSelectorOpen, setIsSetTypeSelectorOpen] = useState(false);
-  const sliderFields = row.fields.filter(
-    (field): field is Extract<SetField, { inputMethod: 'slider' }> =>
-      field.inputMethod === 'slider',
+  const wheelFields = row.fields.filter(
+    (field): field is Extract<SetField, { inputMethod: 'wheel' }> =>
+      field.inputMethod === 'wheel',
   );
-  const activeSliderField =
-    sliderFields.find(field => field.id === activeSliderFieldId) ?? null;
-  const sliderSheetField = activeSliderField ?? sliderFields[0];
+  const activeWheelField =
+    wheelFields.find(field => field.id === activeWheelFieldId) ?? null;
+  const wheelSheetField = activeWheelField ?? wheelFields[0];
   const setTypeLabel = t(
     setTypeOptions.find(option => option.value === row.setType)?.labelKey ??
       'setTable.setTypes.working',
@@ -147,7 +149,7 @@ export function ExerciseSetTableRow({
             onChange={value => row.onFieldChange(field.id, value)}
           />
         ) : (
-          <SliderValueCell
+          <WheelValueCell
             key={field.id}
             field={field}
             hasError={showValidationErrors && field.isValid === false}
@@ -156,7 +158,7 @@ export function ExerciseSetTableRow({
                 ? undefined
                 : () => {
                     Keyboard.dismiss();
-                    setActiveSliderFieldId(field.id);
+                    setActiveWheelFieldId(field.id);
                   }
             }
           />
@@ -187,15 +189,15 @@ export function ExerciseSetTableRow({
           onChange={row.onSetTypeChange}
         />
       )}
-      {!row.readOnly && sliderSheetField && (
-        <OptionalSliderSheet
-          visible={activeSliderField !== null}
-          value={activeSliderField?.value ?? null}
-          config={sliderSheetField.sliderConfig}
-          onClose={() => setActiveSliderFieldId(null)}
+      {!row.readOnly && wheelSheetField && (
+        <OptionalWheelPickerSheet
+          visible={activeWheelField !== null}
+          value={activeWheelField?.value ?? null}
+          config={wheelSheetField.wheelConfig}
+          onClose={() => setActiveWheelFieldId(null)}
           onChange={value => {
-            if (activeSliderField) {
-              row.onFieldChange(activeSliderField.id, value);
+            if (activeWheelField) {
+              row.onFieldChange(activeWheelField.id, value);
             }
           }}
         />

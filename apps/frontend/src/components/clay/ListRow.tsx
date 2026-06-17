@@ -10,6 +10,7 @@ type ListRowProps = {
   paddingVertical?: number;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 };
 
 export function ListRow({
@@ -21,9 +22,13 @@ export function ListRow({
   paddingVertical = 14,
   onPress,
   className = '',
+  testID,
 }: ListRowProps) {
   const content = (
     <View
+      // When there's no Pressable wrapper, the View is the root and carries the
+      // testID; otherwise the Pressable below owns it.
+      testID={onPress ? undefined : testID}
       className={`flex-row items-center gap-[13px] px-4 ${
         divider ? 'border-t border-border-hairline' : ''
       } ${className}`}
@@ -43,7 +48,11 @@ export function ListRow({
   );
 
   if (onPress) {
-    return <Pressable onPress={onPress}>{content}</Pressable>;
+    return (
+      <Pressable testID={testID} onPress={onPress}>
+        {content}
+      </Pressable>
+    );
   }
 
   return content;

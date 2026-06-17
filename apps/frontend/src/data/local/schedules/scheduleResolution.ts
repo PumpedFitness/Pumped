@@ -56,21 +56,14 @@ export function templateIdsForDay(
     .map(slot => slot.workoutTemplateId);
 }
 
-// Today's workouts. An active ADVANCED schedule takes over entirely; otherwise
-// the union of all BASIC schedules landing on the day.
+// Today's workouts come from the single active schedule (if any).
 export function resolveDay(
   schedules: Schedule[],
   dayIndex: number,
 ): ResolvedDay {
-  const activeAdvanced = schedules.find(
-    schedule => schedule.kind === 'ADVANCED' && schedule.isActive,
-  );
-  const sources = activeAdvanced
-    ? [activeAdvanced]
-    : schedules.filter(schedule => schedule.kind === 'BASIC');
-
-  const templateIds = sources.flatMap(schedule =>
-    templateIdsForDay(schedule, dayIndex),
-  );
-  return { dayIndex, templateIds: [...new Set(templateIds)] };
+  const active = schedules.find(schedule => schedule.isActive);
+  return {
+    dayIndex,
+    templateIds: active ? templateIdsForDay(active, dayIndex) : [],
+  };
 }

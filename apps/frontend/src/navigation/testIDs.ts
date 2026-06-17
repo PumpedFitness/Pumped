@@ -1,21 +1,20 @@
-// Stable testIDs for the bottom tab bar and tab screens, consumed by the
-// Maestro e2e flows (apps/frontend/.maestro/*.yaml).
+// Stable testIDs for the tab screens, consumed by the Maestro e2e flows
+// (apps/frontend/.maestro/*.yaml).
 //
-// They are DERIVED from the navigator's screen names rather than hand-written,
-// so adding a tab in MainTabs/AppBar needs no extra wiring — the button and the
-// screen container both pick up matching ids automatically.
+// The bottom bar is the OS-native tab bar (@react-navigation/bottom-tabs/unstable),
+// whose items expose no RN testID — e2e taps tabs by their visible label text.
+// Each tab SCREEN is still wrapped (see MainTabs) with a derived id so it picks
+// up a matching `resource-id` automatically.
 //
-// Why testIDs instead of asserting on visible text: several titles render with
-// `text-transform: uppercase`, so the on-screen glyphs differ from the
-// accessibility node's text value. UIAutomator2 (Android) then only matches via
-// a slow, flaky case-insensitive regex over the whole tree. A testID maps to a
-// stable Android `resource-id` and matches exactly and fast.
+// Why testIDs instead of asserting on visible text for screens: several titles
+// render with `text-transform: uppercase`, so the on-screen glyphs differ from
+// the accessibility node's text value. UIAutomator2 (Android) then only matches
+// via a slow, flaky case-insensitive regex over the whole tree. A testID maps to
+// a stable Android `resource-id` and matches exactly and fast.
 
 import type { MainTabParamList } from './MainTabs';
 
 type TabName = keyof MainTabParamList;
-
-export const tabTestID = (name: TabName): string => `tab-${name.toLowerCase()}`;
 
 export const screenTestID = (name: TabName): string =>
   `screen-${name.toLowerCase()}`;

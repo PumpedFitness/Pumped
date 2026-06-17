@@ -1,4 +1,4 @@
-import type { ScheduleKind, ScheduleRecurrenceType } from '@/data/local/enums';
+import type { ScheduleRecurrenceType } from '@/data/local/enums';
 
 export type ScheduleSlot = {
   id: string;
@@ -11,12 +11,10 @@ export type Schedule = {
   id: string;
   userId: string;
   name: string;
-  kind: ScheduleKind;
   recurrenceType: ScheduleRecurrenceType;
   periodLength: number;
   anchorDay: number;
   isActive: boolean;
-  ownerTemplateId: string | null;
   slots: ScheduleSlot[];
   createdAt: number;
   updatedAt: number;
@@ -31,12 +29,10 @@ export type ScheduleSlotInput = {
 export type SaveScheduleInput = {
   id?: string;
   name: string;
-  kind: ScheduleKind;
   recurrenceType: ScheduleRecurrenceType;
   periodLength: number;
   anchorDay?: number;
   isActive?: boolean;
-  ownerTemplateId?: string | null;
   slots: ScheduleSlotInput[];
 };
 

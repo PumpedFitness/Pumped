@@ -43,6 +43,7 @@ type ButtonProps = {
   disabled?: boolean;
   onPress?: () => void;
   className?: string;
+  testID?: string;
 };
 
 export function Button({
@@ -56,9 +57,11 @@ export function Button({
   disabled = false,
   onPress,
   className = '',
+  testID,
 }: ButtonProps) {
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       className={`flex-row items-center justify-center gap-[9px] active:scale-[0.96] ${

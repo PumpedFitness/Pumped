@@ -1,25 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Portal } from 'heroui-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import { colors, motion, shadows } from '@/theme/tokens';
+import { GestureDetector } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+import { colors, shadows } from '@/theme/tokens';
 import { RingGauge } from '@/components/clay/RingGauge';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import {
   formatWorkoutElapsedTime,
   getWorkoutOverlayProgress,
 } from './currentWorkoutOverlayModel';
+import {
+  CARD_HEIGHT,
+  MAX_CARD_WIDTH,
+  useDraggableOverlay,
+} from './useDraggableOverlay';
 
-const COLLAPSED_WIDTH = 76;
-const MAX_CARD_WIDTH = 354;
-const CARD_HEIGHT = 126;
 const PORTAL_NAME = 'current-workout-overlay';
 
 export type CurrentWorkoutOverlayProps = {
@@ -79,6 +77,7 @@ type WorkoutDetailsProps = {
   completedSets: number;
   totalSets: number;
   elapsedTime: string;
+  side: number;
   currentExerciseName?: string;
   onOpenWorkout?: () => void;
 };
@@ -88,6 +87,7 @@ function WorkoutDetails({
   completedSets,
   totalSets,
   elapsedTime,
+  side,
   currentExerciseName,
   onOpenWorkout,
 }: WorkoutDetailsProps) {
@@ -98,7 +98,9 @@ function WorkoutDetails({
       accessibilityRole="button"
       accessibilityLabel={t('currentWorkout.overlay.openA11y')}
       onPress={onOpenWorkout}
-      className="flex-1 h-full justify-center pl-[6px] active:opacity-[0.72]"
+      className={`flex-1 h-full justify-center active:opacity-[0.72] ${
+        side === 1 ? 'pr-[6px]' : 'pl-[6px]'
+      }`}
     >
       <View className="flex-row items-center gap-[7px]">
         <View className="w-[7px] h-[7px] rounded-full bg-accent" />
@@ -138,21 +140,31 @@ function WorkoutDetails({
 }
 
 type CollapseButtonProps = {
+  side: number;
   onCollapse: () => void;
 };
 
-function CollapseButton({ onCollapse }: CollapseButtonProps) {
+function CollapseButton({ side, onCollapse }: CollapseButtonProps) {
   const { t } = useTranslation();
 
   return (
-    <View className="w-12 h-full items-center justify-center border-l border-l-border-on-moss">
+    <View
+      className={`w-12 h-full items-center justify-center ${
+        side === 1
+          ? 'border-r border-r-border-on-moss'
+          : 'border-l border-l-border-on-moss'
+      }`}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('currentWorkout.overlay.collapseA11y')}
         onPress={onCollapse}
         className="w-[34px] h-12 items-center justify-center rounded-[17px] bg-[rgba(243,238,226,0.07)] active:bg-[rgba(243,238,226,0.13)]"
       >
-        <ClayIcon name="chevron" size={17} stroke={2} color={colors.creamDim} />
+        {/* Chevron points toward the edge the card collapses into. */}
+        <View style={{ transform: [{ scaleX: side === 1 ? -1 : 1 }] }}>
+          <ClayIcon name="chevron" size={17} stroke={2} color={colors.creamDim} />
+        </View>
       </Pressable>
     </View>
   );
@@ -172,28 +184,15 @@ export function CurrentWorkoutOverlay({
   const { width: windowWidth } = useWindowDimensions();
   const cardWidth = Math.min(MAX_CARD_WIDTH, windowWidth - 20);
   const [collapsed, setCollapsed] = useState(false);
-  const translateX = useSharedValue(cardWidth);
+
   const progress = getWorkoutOverlayProgress(completedSets, totalSets);
   const elapsedTime = formatWorkoutElapsedTime(t, elapsedMinutes);
 
-  useEffect(() => {
-    if (!visible) {
-      // Nothing renders while hidden (the component returns null below), so
-      // an exit animation can never play — just park the card off-screen so
-      // the next show slides in from the edge.
-      translateX.value = cardWidth;
-      return;
-    }
-
-    translateX.value = withTiming(collapsed ? cardWidth - COLLAPSED_WIDTH : 0, {
-      duration: motion.slow,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [cardWidth, collapsed, translateX, visible]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
+  const { gesture, animatedStyle, side } = useDraggableOverlay({
+    visible,
+    collapsed,
+    cardWidth,
+  });
 
   if (!visible) {
     return null;
@@ -203,44 +202,61 @@ export function CurrentWorkoutOverlay({
     <Portal name={PORTAL_NAME}>
       <View
         pointerEvents="box-none"
-        className="absolute left-0 right-0 items-end"
-        style={{ top: insets.top + 68 }}
+        className="absolute left-0 right-0"
+        style={{
+          top: insets.top + 68,
+          alignItems: side === 1 ? 'flex-start' : 'flex-end',
+        }}
       >
-        <Animated.View
-          accessibilityLabel={t('currentWorkout.overlay.progressA11y', {
-            name: workoutName,
-            completed: progress.completedSets,
-            total: progress.totalSets,
-          })}
-          style={[
-            {
-              width: cardWidth,
-              height: CARD_HEIGHT,
-              borderTopLeftRadius: 30,
-              borderBottomLeftRadius: 30,
-            },
-            shadows.raised,
-            animatedStyle,
-          ]}
-        >
-          <View className="flex-1 flex-row items-center overflow-hidden rounded-l-[30px] bg-moss border border-r-0 border-border-on-moss">
-            <WorkoutProgressButton
-              collapsed={collapsed}
-              percentage={progress.percentage}
-              onExpand={() => setCollapsed(false)}
-              onOpenWorkout={onOpenWorkout}
-            />
-            <WorkoutDetails
-              workoutName={workoutName}
-              completedSets={progress.completedSets}
-              totalSets={progress.totalSets}
-              elapsedTime={elapsedTime}
-              currentExerciseName={currentExerciseName}
-              onOpenWorkout={onOpenWorkout}
-            />
-            <CollapseButton onCollapse={() => setCollapsed(true)} />
-          </View>
-        </Animated.View>
+        <GestureDetector gesture={gesture}>
+          <Animated.View
+            accessibilityLabel={t('currentWorkout.overlay.progressA11y', {
+              name: workoutName,
+              completed: progress.completedSets,
+              total: progress.totalSets,
+            })}
+            style={[
+              {
+                width: cardWidth,
+                height: CARD_HEIGHT,
+                borderTopLeftRadius: side === 1 ? 0 : 30,
+                borderBottomLeftRadius: side === 1 ? 0 : 30,
+                borderTopRightRadius: side === 1 ? 30 : 0,
+                borderBottomRightRadius: side === 1 ? 30 : 0,
+              },
+              shadows.raised,
+              animatedStyle,
+            ]}
+          >
+            <View
+              // Mirror the row when docked left so the progress ring always
+              // hugs the outer screen edge (and stays visible when collapsed).
+              style={{ flexDirection: side === 1 ? 'row-reverse' : 'row' }}
+              className={`flex-1 items-center overflow-hidden bg-moss border border-border-on-moss ${
+                side === 1
+                  ? 'rounded-r-[30px] border-l-0'
+                  : 'rounded-l-[30px] border-r-0'
+              }`}
+            >
+              <WorkoutProgressButton
+                collapsed={collapsed}
+                percentage={progress.percentage}
+                onExpand={() => setCollapsed(false)}
+                onOpenWorkout={onOpenWorkout}
+              />
+              <WorkoutDetails
+                workoutName={workoutName}
+                completedSets={progress.completedSets}
+                totalSets={progress.totalSets}
+                elapsedTime={elapsedTime}
+                side={side}
+                currentExerciseName={currentExerciseName}
+                onOpenWorkout={onOpenWorkout}
+              />
+              <CollapseButton side={side} onCollapse={() => setCollapsed(true)} />
+            </View>
+          </Animated.View>
+        </GestureDetector>
       </View>
     </Portal>
   );

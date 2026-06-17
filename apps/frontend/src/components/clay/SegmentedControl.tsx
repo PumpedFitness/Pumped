@@ -11,6 +11,7 @@ type SegmentedControlProps = {
   value: string;
   onChange?: (value: string) => void;
   className?: string;
+  testID?: string;
 };
 
 export function SegmentedControl({
@@ -18,6 +19,7 @@ export function SegmentedControl({
   value,
   onChange,
   className = '',
+  testID,
 }: SegmentedControlProps) {
   const [containerWidth, setContainerWidth] = useState(0);
   const n = options.length || 1;
@@ -51,6 +53,7 @@ export function SegmentedControl({
 
   return (
     <View
+      testID={testID}
       onLayout={onLayout}
       className={`flex-row p-[3px] bg-surface-sunk rounded-full border border-border-soft ${className}`}
     >

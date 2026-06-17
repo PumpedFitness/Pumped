@@ -1,5 +1,5 @@
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import type { ScheduleKind, ScheduleRecurrenceType } from '@/data/local/enums';
+import type { ScheduleRecurrenceType } from '@/data/local/enums';
 import { enumText } from './columns';
 import { workoutTemplates } from './workoutTemplate';
 
@@ -10,30 +10,19 @@ import { workoutTemplates } from './workoutTemplate';
 // `anchorDay` is a local-midnight day index (days since the 1970 epoch computed
 // from the device's local calendar date) pinning rotation index 0 to the
 // calendar. Local time — never UTC — is the source of truth for day boundaries.
-export const schedules = sqliteTable(
-  'schedule',
-  {
-    id: text('id').primaryKey().notNull(),
-    userId: text('user_id').notNull(),
-    name: text('name').notNull(),
-    kind: enumText<ScheduleKind>()('kind').notNull(),
-    recurrenceType:
-      enumText<ScheduleRecurrenceType>()('recurrence_type').notNull(),
-    periodLength: integer('period_length').notNull(),
-    anchorDay: integer('anchor_day').notNull(),
-    isActive: integer('is_active', { mode: 'boolean' })
-      .notNull()
-      .default(false),
-    // Set for BASIC schedules — the single template they belong to.
-    ownerTemplateId: text('owner_template_id').references(
-      () => workoutTemplates.id,
-      { onDelete: 'cascade' },
-    ),
-    createdAt: integer('created_at').notNull(),
-    updatedAt: integer('updated_at').notNull(),
-  },
-  table => [index('idx_schedule_owner').on(table.ownerTemplateId)],
-);
+// At most one schedule is active at a time; the active one drives "today".
+export const schedules = sqliteTable('schedule', {
+  id: text('id').primaryKey().notNull(),
+  userId: text('user_id').notNull(),
+  name: text('name').notNull(),
+  recurrenceType:
+    enumText<ScheduleRecurrenceType>()('recurrence_type').notNull(),
+  periodLength: integer('period_length').notNull(),
+  anchorDay: integer('anchor_day').notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});
 
 export const scheduleSlots = sqliteTable(
   'schedule_slot',

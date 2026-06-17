@@ -19,9 +19,7 @@ export function validateScheduleInput(
   if (!Number.isInteger(input.periodLength) || input.periodLength < 1) {
     throw new Error(i18n.t('errors.scheduleIntervalPositive'));
   }
-  if (input.kind === 'ADVANCED') {
-    requireText(input.name, i18n.t('errors.fields.scheduleName'));
-  }
+  requireText(input.name, i18n.t('errors.fields.scheduleName'));
 
   const maxOffset =
     input.recurrenceType === 'WEEKLY'

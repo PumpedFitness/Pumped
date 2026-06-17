@@ -20,6 +20,7 @@ export const resources = {
         delete: 'Delete',
         remove: 'Remove',
         edit: 'Edit',
+        favorite: 'Favorite',
         ok: 'OK',
         clear: 'Clear',
         apply: 'Apply',
@@ -51,10 +52,42 @@ export const resources = {
       },
       tabs: {
         home: 'Home',
-        plan: 'Plan',
+        schedule: 'Schedule',
         library: 'Library',
         history: 'History',
-        you: 'You',
+        user: 'User',
+      },
+      tour: {
+        next: 'Next',
+        skip: 'Skip',
+        gotIt: 'Got it!',
+        steps: {
+          home: {
+            title: 'Your home base',
+            description:
+              'See your dashboard at a glance — recent activity, quick stats and the widgets you care about. Tap a widget to dive deeper.',
+          },
+          plan: {
+            title: 'Plan your training',
+            description:
+              'Schedule your week and start a workout in a tap. This is where every session begins.',
+          },
+          library: {
+            title: 'Your workout library',
+            description:
+              'Build and manage your workout templates and exercises. Everything you create lives here, ready to reuse.',
+          },
+          history: {
+            title: 'Look back & celebrate',
+            description:
+              'Every completed workout is logged here. Revisit past sessions and watch your progress add up over time.',
+          },
+          profile: {
+            title: 'Make it yours',
+            description:
+              'Update your profile, units and preferences any time. You are all set — go crush your first workout!',
+          },
+        },
       },
       onboarding: {
         skip: 'Skip',
@@ -166,68 +199,43 @@ export const resources = {
         addWidget: 'Add Widget',
       },
       plan: {
-        title: 'Workout templates',
         browseWorkouts: 'Browse workouts',
         searchPlaceholder: 'Search templates or exercises',
         searchA11y: 'Search workout templates',
         createA11y: 'Create workout template',
-        filters: {
-          active: 'Active {{count}}',
-          inactive: 'Inactive {{count}}',
-          archived: 'Archived {{count}}',
-          all: 'All {{count}}',
-        },
         status: {
           active: 'Active',
           inactive: 'Inactive',
           archived: 'Archived',
         },
         card: {
-          startA11y: 'Start {{name}}',
           fallbackExercise: 'Exercise',
           noExercisesYet: 'No exercises yet',
           morePreview: '+{{count}}',
-          edit: 'Edit',
-          restore: 'Restore',
-          deactivate: 'Deactivate',
-          activate: 'Activate',
-          archive: 'Archive',
-          actionA11y: '{{action}} {{name}}',
+          editA11y: 'Edit {{name}}',
         },
         empty: {
-          noneTitle: 'No templates yet',
-          noneBody:
-            'Create one workout you can adjust and repeat whenever you train.',
-          noMatchTitle: 'No matching templates',
-          noMatchBody: 'Try another search or choose a different status.',
+          title: 'No templates yet',
+          body: 'Create one workout you can adjust and repeat whenever you train.',
           createCta: 'Create template',
         },
+        noMatch: {
+          title: 'No matching templates',
+          body: 'Try another search or choose a different status.',
+        },
         schedules: {
-          title: 'Schedules',
-          create: 'New',
           createA11y: 'Create schedule',
           editA11y: 'Edit {{name}}',
+          searchPlaceholder: 'Search schedules',
+          searchA11y: 'Search schedules',
           empty: {
             title: 'No schedules yet',
             body: 'Build a multi-workout program across weeks or a day cycle.',
+            createCta: 'Create schedule',
           },
-        },
-        schedule: {
-          none: 'No schedule',
-          everyDay: 'Every day',
-          everyNDays_one: 'Every day',
-          everyNDays_other: 'Every {{count}} days',
-          everyWeek: 'Every week',
-          everyNWeeks_one: 'Every week',
-          everyNWeeks_other: 'Every {{count}} weeks',
-          weekdayShort: {
-            monday: 'Mon',
-            tuesday: 'Tue',
-            wednesday: 'Wed',
-            thursday: 'Thu',
-            friday: 'Fri',
-            saturday: 'Sat',
-            sunday: 'Sun',
+          noMatch: {
+            title: 'No matching schedules',
+            body: 'Try another search to find the schedule you want.',
           },
         },
         alerts: {
@@ -236,7 +244,6 @@ export const resources = {
             'Finish or discard {{name}} before starting another workout.',
           openWorkout: 'Open workout',
           startFailedTitle: 'Could not start workout',
-          updateFailedTitle: 'Could not update template',
         },
       },
       templateEditor: {
@@ -250,15 +257,6 @@ export const resources = {
           title: 'Template details',
           namePlaceholder: 'Template name',
           descriptionPlaceholder: 'A short description',
-        },
-        schedule: {
-          title: 'Schedule',
-          flexible: 'Flexible',
-          everyFewDays: 'Every few days',
-          weekly: 'Weekly',
-          repeatInterval: 'Repeat interval',
-          advancedCta: 'Advanced schedule',
-          advancedHint: 'Build a multi-workout program',
         },
         appearance: {
           colorTitle: 'Template color',
@@ -291,7 +289,6 @@ export const resources = {
         deleteCta: 'Delete template',
         errors: {
           nameRequired: 'Give this template a name.',
-          weekdayRequired: 'Choose at least one training day.',
           saveFailed: 'The template could not be saved.',
         },
         alerts: {
@@ -306,6 +303,14 @@ export const resources = {
         editTitle: 'Edit schedule',
         namePlaceholder: 'Schedule name',
         restDay: 'Rest day',
+        today: {
+          eyebrow: 'Active program',
+          todayIs: 'Today: {{name}}',
+          restToday: 'Today is a rest day',
+          start: "Start today's workout",
+          noneTitle: 'No active schedule',
+          noneBody: 'Activate a schedule below to plan your week.',
+        },
         active: 'Active',
         activate: 'Activate',
         deactivate: 'Deactivate',
@@ -462,13 +467,21 @@ export const resources = {
         },
       },
       library: {
-        title: 'Exercise Library',
         searchA11y: 'Search exercises',
         searchPlaceholder: 'Search name, muscle, or type',
+        createA11y: 'Create exercise',
+        segments: {
+          workouts: 'Workouts',
+          exercises: 'Exercises',
+        },
         empty: {
           title: 'No exercises found',
           body: 'Try another search, or create a new exercise.',
           createCta: 'Create Exercise',
+        },
+        noMatch: {
+          title: 'No matching exercises',
+          body: 'Try another search to find the exercise you want.',
         },
       },
       exerciseForm: {
@@ -680,8 +693,6 @@ export const resources = {
         },
         scheduleIntervalPositive:
           'Schedule interval must be a positive integer',
-        dayScheduleNoWeekdays: 'Day schedules cannot define weekdays',
-        weekScheduleNeedsWeekday: 'Week schedules require at least one weekday',
         scheduleSlotOutOfRange: 'A scheduled day falls outside the rotation',
         scheduleSlotWorkoutRequired: 'Each scheduled day needs a workout',
         targetRepsPositive: 'Target reps must be a positive whole number',
@@ -701,6 +712,7 @@ export const resources = {
         delete: 'Löschen',
         remove: 'Entfernen',
         edit: 'Bearbeiten',
+        favorite: 'Favorit',
         ok: 'OK',
         clear: 'Zurücksetzen',
         apply: 'Übernehmen',
@@ -732,10 +744,42 @@ export const resources = {
       },
       tabs: {
         home: 'Home',
-        plan: 'Plan',
+        schedule: 'Plan',
         library: 'Bibliothek',
         history: 'Verlauf',
-        you: 'Du',
+        user: 'Profil',
+      },
+      tour: {
+        next: 'Weiter',
+        skip: 'Überspringen',
+        gotIt: 'Los geht’s!',
+        steps: {
+          home: {
+            title: 'Deine Startseite',
+            description:
+              'Dein Dashboard auf einen Blick — letzte Aktivitäten, schnelle Statistiken und die Widgets, die dir wichtig sind. Tippe ein Widget an, um mehr zu sehen.',
+          },
+          plan: {
+            title: 'Plane dein Training',
+            description:
+              'Plane deine Woche und starte ein Workout mit einem Tipp. Hier beginnt jede Einheit.',
+          },
+          library: {
+            title: 'Deine Trainings-Bibliothek',
+            description:
+              'Erstelle und verwalte deine Trainingsvorlagen und Übungen. Alles, was du anlegst, findest du hier wieder.',
+          },
+          history: {
+            title: 'Zurückblicken & feiern',
+            description:
+              'Jedes abgeschlossene Workout wird hier festgehalten. Schau dir vergangene Einheiten an und sieh deinen Fortschritt wachsen.',
+          },
+          profile: {
+            title: 'Mach es zu deinem',
+            description:
+              'Passe dein Profil, Einheiten und Einstellungen jederzeit an. Alles bereit — leg los mit deinem ersten Workout!',
+          },
+        },
       },
       onboarding: {
         skip: 'Überspringen',
@@ -850,69 +894,43 @@ export const resources = {
         addWidget: 'Widget hinzufügen',
       },
       plan: {
-        title: 'Workout-Vorlagen',
         browseWorkouts: 'Workouts entdecken',
         searchPlaceholder: 'Vorlagen oder Übungen suchen',
         searchA11y: 'Workout-Vorlagen durchsuchen',
         createA11y: 'Workout-Vorlage erstellen',
-        filters: {
-          active: 'Aktiv {{count}}',
-          inactive: 'Inaktiv {{count}}',
-          archived: 'Archiviert {{count}}',
-          all: 'Alle {{count}}',
-        },
         status: {
           active: 'Aktiv',
           inactive: 'Inaktiv',
           archived: 'Archiviert',
         },
         card: {
-          startA11y: '{{name}} starten',
           fallbackExercise: 'Übung',
           noExercisesYet: 'Noch keine Übungen',
           morePreview: '+{{count}}',
-          edit: 'Bearbeiten',
-          restore: 'Wiederherstellen',
-          deactivate: 'Deaktivieren',
-          activate: 'Aktivieren',
-          archive: 'Archivieren',
-          actionA11y: '{{action}}: {{name}}',
+          editA11y: '{{name}} bearbeiten',
         },
         empty: {
-          noneTitle: 'Noch keine Vorlagen',
-          noneBody:
-            'Erstelle ein Workout, das du anpassen und bei jedem Training wiederholen kannst.',
-          noMatchTitle: 'Keine passenden Vorlagen',
-          noMatchBody:
-            'Versuche eine andere Suche oder wähle einen anderen Status.',
+          title: 'Noch keine Vorlagen',
+          body: 'Erstelle ein Workout, das du anpassen und bei jedem Training wiederholen kannst.',
           createCta: 'Vorlage erstellen',
         },
+        noMatch: {
+          title: 'Keine passenden Vorlagen',
+          body: 'Versuche eine andere Suche oder wähle einen anderen Status.',
+        },
         schedules: {
-          title: 'Zeitpläne',
-          create: 'Neu',
           createA11y: 'Zeitplan erstellen',
           editA11y: '{{name}} bearbeiten',
+          searchPlaceholder: 'Zeitpläne suchen',
+          searchA11y: 'Zeitpläne durchsuchen',
           empty: {
             title: 'Noch keine Zeitpläne',
             body: 'Erstelle ein Programm mit mehreren Workouts über Wochen oder einen Tageszyklus.',
+            createCta: 'Zeitplan erstellen',
           },
-        },
-        schedule: {
-          none: 'Kein Zeitplan',
-          everyDay: 'Jeden Tag',
-          everyNDays_one: 'Jeden Tag',
-          everyNDays_other: 'Alle {{count}} Tage',
-          everyWeek: 'Jede Woche',
-          everyNWeeks_one: 'Jede Woche',
-          everyNWeeks_other: 'Alle {{count}} Wochen',
-          weekdayShort: {
-            monday: 'Mo',
-            tuesday: 'Di',
-            wednesday: 'Mi',
-            thursday: 'Do',
-            friday: 'Fr',
-            saturday: 'Sa',
-            sunday: 'So',
+          noMatch: {
+            title: 'Keine passenden Zeitpläne',
+            body: 'Versuche eine andere Suche, um den gewünschten Zeitplan zu finden.',
           },
         },
         alerts: {
@@ -921,7 +939,6 @@ export const resources = {
             'Beende oder verwirf {{name}}, bevor du ein anderes Workout startest.',
           openWorkout: 'Workout öffnen',
           startFailedTitle: 'Workout konnte nicht gestartet werden',
-          updateFailedTitle: 'Vorlage konnte nicht aktualisiert werden',
         },
       },
       templateEditor: {
@@ -935,15 +952,6 @@ export const resources = {
           title: 'Vorlagendetails',
           namePlaceholder: 'Name der Vorlage',
           descriptionPlaceholder: 'Eine kurze Beschreibung',
-        },
-        schedule: {
-          title: 'Zeitplan',
-          flexible: 'Flexibel',
-          everyFewDays: 'Alle paar Tage',
-          weekly: 'Wöchentlich',
-          repeatInterval: 'Wiederholungsintervall',
-          advancedCta: 'Erweiterter Zeitplan',
-          advancedHint: 'Erstelle ein Programm mit mehreren Workouts',
         },
         appearance: {
           colorTitle: 'Vorlagenfarbe',
@@ -978,7 +986,6 @@ export const resources = {
         deleteCta: 'Vorlage löschen',
         errors: {
           nameRequired: 'Gib dieser Vorlage einen Namen.',
-          weekdayRequired: 'Wähle mindestens einen Trainingstag.',
           saveFailed: 'Die Vorlage konnte nicht gespeichert werden.',
         },
         alerts: {
@@ -993,6 +1000,14 @@ export const resources = {
         editTitle: 'Zeitplan bearbeiten',
         namePlaceholder: 'Name des Zeitplans',
         restDay: 'Ruhetag',
+        today: {
+          eyebrow: 'Aktives Programm',
+          todayIs: 'Heute: {{name}}',
+          restToday: 'Heute ist ein Ruhetag',
+          start: 'Heutiges Workout starten',
+          noneTitle: 'Kein aktiver Zeitplan',
+          noneBody: 'Aktiviere unten einen Zeitplan, um deine Woche zu planen.',
+        },
         active: 'Aktiv',
         activate: 'Aktivieren',
         deactivate: 'Deaktivieren',
@@ -1154,13 +1169,21 @@ export const resources = {
         },
       },
       library: {
-        title: 'Übungsbibliothek',
         searchA11y: 'Übungen durchsuchen',
         searchPlaceholder: 'Nach Name, Muskel oder Typ suchen',
+        createA11y: 'Übung erstellen',
+        segments: {
+          workouts: 'Workouts',
+          exercises: 'Übungen',
+        },
         empty: {
           title: 'Keine Übungen gefunden',
           body: 'Versuche eine andere Suche oder erstelle eine neue Übung.',
           createCta: 'Übung erstellen',
+        },
+        noMatch: {
+          title: 'Keine passenden Übungen',
+          body: 'Versuche eine andere Suche, um die gewünschte Übung zu finden.',
         },
       },
       exerciseForm: {
@@ -1376,10 +1399,6 @@ export const resources = {
         },
         scheduleIntervalPositive:
           'Das Zeitplan-Intervall muss eine positive ganze Zahl sein',
-        dayScheduleNoWeekdays:
-          'Tageszeitpläne können keine Wochentage festlegen',
-        weekScheduleNeedsWeekday:
-          'Wochenzeitpläne benötigen mindestens einen Wochentag',
         scheduleSlotOutOfRange:
           'Ein geplanter Tag liegt außerhalb der Rotation',
         scheduleSlotWorkoutRequired: 'Jeder geplante Tag braucht ein Workout',

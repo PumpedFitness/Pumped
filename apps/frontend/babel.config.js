@@ -24,6 +24,21 @@ module.exports = {
       },
     ],
     ['inline-import', { extensions: ['.sql'] }],
+    // Auto-derive Maestro `testID`s from the visible text of interactive clay
+    // primitives (see babel-plugins/auto-test-id.js). Explicit `testID`s win.
+    [
+      require.resolve('./babel-plugins/auto-test-id'),
+      {
+        components: [
+          'Button',
+          'CTAButton',
+          'ListRow',
+          'EditableRow',
+          'SegmentedControl',
+        ],
+        labelProps: ['label'],
+      },
+    ],
     // react-native-reanimated/plugin must remain last.
     'react-native-reanimated/plugin',
   ],

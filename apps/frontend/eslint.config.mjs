@@ -10,6 +10,7 @@ export default [
       'src/data/local/schema.generated.ts',
       'src/data/local/schema.enums.generated.ts',
       'scripts/',
+      'babel-plugins/',
       'design_handoff_pumped*/',
       'node_modules/',
       'android/',

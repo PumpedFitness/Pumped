@@ -217,6 +217,29 @@ Do not hand-roll a button/row/sheet/search/empty-state that already exists.
   per-file overrides — split the component instead.
 - Zero `eslint-disable` comments in src/ — keep it that way.
 
+## Auto testIDs for Maestro (`babel-plugins/auto-test-id.js`)
+
+A compile-time Babel plugin auto-injects a `testID` onto a small allowlist of
+interactive clay primitives — currently `Button`, `CTAButton`, `ListRow`,
+`EditableRow`, `SegmentedControl` (configured in `babel.config.js`, runs before
+the reanimated plugin). The id is derived from the element's **static visible
+text**, snake_cased:
+
+- `<Button>Save Profile</Button>` → `testID="save_profile"`
+- nested text works too: `<Button><Text>Save Profile</Text></Button>` → same
+- string `label` props count: `<CTAButton label="Save Profile" />` → same
+
+It's idempotent and conservative:
+
+- An explicit `testID` on the element is **never** overwritten — that's how you
+  opt out or override: `<Button testID="my_id">…</Button>`.
+- If the text is dynamic (`<Button>{label}</Button>`, a `t(...)` call, etc.) no
+  id is derived — add an explicit `testID` for those.
+
+The allowlisted primitives forward `testID` to their root native element, so the
+derived id reaches the rendered tree. Proof/spec lives in
+`babel-plugins/__tests__/auto-test-id.test.js` (and `scripts/check-auto-test-id.js`).
+
 ## Commands (from `apps/frontend/`)
 
 - `bun run typecheck` · `bun run lint` · `bun run format`
