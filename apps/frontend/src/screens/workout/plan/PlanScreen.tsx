@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert, ScrollView } from 'react-native';
@@ -7,11 +8,14 @@ import { AppView } from '@/components/layout/AppView';
 import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
 import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import { WorkoutTemplateLibrary } from './components/WorkoutTemplateLibrary';
+import { SchedulesSection } from './components/SchedulesSection';
 import type { WorkoutTemplateStatus } from '@/data/local/enums';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
+import { useSchedules } from '@/hooks/useSchedules';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { WorkoutTemplate } from '@/types/workout';
+import type { Schedule } from '@/types/schedule';
 
 type InProgressWorkoutPopupProps = {
   visible: boolean;
@@ -54,8 +58,31 @@ export function PlanScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { templates, exerciseOptions, updateTemplateStatus } =
     useWorkoutTemplates();
+  const { schedules, advancedSchedules, setActive } = useSchedules();
   const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
   const [inProgressPopupVisible, setInProgressPopupVisible] = useState(false);
+
+  const basicSchedules = useMemo(() => {
+    const map = new Map<string, Schedule>();
+    for (const schedule of schedules) {
+      if (schedule.kind === 'BASIC' && schedule.ownerTemplateId) {
+        map.set(schedule.ownerTemplateId, schedule);
+      }
+    }
+    return map;
+  }, [schedules]);
+
+  const openSchedule = (schedule: Schedule) => {
+    navigation.navigate('ScheduleEditor', { scheduleId: schedule.id });
+  };
+
+  const createSchedule = () => {
+    navigation.navigate('ScheduleEditor', {});
+  };
+
+  const toggleScheduleActive = (schedule: Schedule) => {
+    setActive(schedule.id, !schedule.isActive);
+  };
 
   const openCreate = () => {
     navigation.navigate('WorkoutTemplateEditor');
@@ -111,12 +138,19 @@ export function PlanScreen() {
       >
         <WorkoutTemplateLibrary
           templates={templates}
+          basicSchedules={basicSchedules}
           exerciseOptions={exerciseOptions}
           onCreateTemplate={openCreate}
           onBrowsePremadeWorkouts={browsePremadeWorkouts}
           onStartTemplate={startTemplate}
           onEditTemplate={openEdit}
           onStatusChange={handleStatusChange}
+        />
+        <SchedulesSection
+          schedules={advancedSchedules}
+          onCreate={createSchedule}
+          onEdit={openSchedule}
+          onToggleActive={toggleScheduleActive}
         />
       </ScrollView>
       <InProgressWorkoutPopup

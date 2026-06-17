@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { WorkoutTemplateStatus } from '@/data/local/enums';
 import type { WorkoutTemplate } from '@/types/workout';
+import type { Schedule } from '@/types/schedule';
 import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import {
@@ -13,6 +14,7 @@ import {
 
 type WorkoutTemplateCardProps = {
   template: WorkoutTemplate;
+  schedule: Schedule | null;
   exerciseNames: Map<string, string>;
   onStart: (template: WorkoutTemplate) => void;
   onEdit: (template: WorkoutTemplate) => void;
@@ -47,6 +49,7 @@ function getPrimaryActionLabel(
 
 export function WorkoutTemplateCard({
   template,
+  schedule,
   exerciseNames,
   onStart,
   onEdit,
@@ -115,8 +118,7 @@ export function WorkoutTemplateCard({
               </View>
             </View>
             <Text className="t-caption mt-1">
-              {template.description ||
-                formatTemplateSchedule(t, template.schedule)}
+              {template.description || formatTemplateSchedule(t, schedule)}
             </Text>
           </View>
 

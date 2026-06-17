@@ -27,7 +27,8 @@ type WorkoutTemplateEditorProps = {
   exerciseSelection?: ExerciseSelectionResult;
   onClose: () => void;
   onChooseExercises: (selectedExerciseIds: string[]) => void;
-  onSave: (input: SaveWorkoutTemplateInput) => void;
+  onSave: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
+  onOpenAdvancedSchedule: () => void;
   onRequestDelete: (template: WorkoutTemplate) => void;
 };
 
@@ -38,6 +39,7 @@ export function WorkoutTemplateEditor({
   onClose,
   onChooseExercises,
   onSave,
+  onOpenAdvancedSchedule,
   onRequestDelete,
 }: WorkoutTemplateEditorProps) {
   const { t } = useTranslation();
@@ -106,6 +108,7 @@ export function WorkoutTemplateEditor({
               updateDraft({ scheduleInterval })
             }
             onToggleWeekday={toggleWeekday}
+            onOpenAdvancedSchedule={onOpenAdvancedSchedule}
           />
           <WorkoutTemplateAppearanceSection
             color={draft.color}

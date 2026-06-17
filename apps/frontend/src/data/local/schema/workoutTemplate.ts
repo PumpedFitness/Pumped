@@ -1,20 +1,20 @@
 import {
   index,
-  primaryKey,
   sqliteTable,
   text,
   integer,
   real,
 } from 'drizzle-orm/sqlite-core';
 import type {
-  WorkoutScheduleType,
   WorkoutSetType,
   WorkoutTemplateColor,
   WorkoutTemplateStatus,
-  WorkoutWeekday,
 } from '@/data/local/enums';
 import { enumText } from './columns';
 
+// Scheduling no longer lives on the template — it moved to the `schedule` /
+// `schedule_slot` tables (see schema/schedule.ts). A template's inline "basic"
+// schedule is a BASIC schedule row whose ownerTemplateId points back here.
 export const workoutTemplates = sqliteTable('workout_template', {
   id: text('id').primaryKey().notNull(),
   userId: text('user_id').notNull(),
@@ -26,8 +26,6 @@ export const workoutTemplates = sqliteTable('workout_template', {
   color: enumText<WorkoutTemplateColor>()('color')
     .notNull()
     .default('TERRACOTTA'),
-  scheduleType: enumText<WorkoutScheduleType>()('schedule_type'),
-  scheduleInterval: integer('schedule_interval'),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
@@ -70,21 +68,5 @@ export const workoutTemplateSets = sqliteTable(
       table.workoutTemplateExerciseId,
       table.position,
     ),
-  ],
-);
-
-export const workoutTemplateScheduleWeekdays = sqliteTable(
-  'workout_template_schedule_weekday',
-  {
-    workoutTemplateId: text('workout_template_id')
-      .notNull()
-      .references(() => workoutTemplates.id, { onDelete: 'cascade' }),
-    weekday: enumText<WorkoutWeekday>()('weekday').notNull(),
-  },
-  table => [
-    primaryKey({
-      columns: [table.workoutTemplateId, table.weekday],
-      name: 'workout_template_schedule_weekday_pk',
-    }),
   ],
 );

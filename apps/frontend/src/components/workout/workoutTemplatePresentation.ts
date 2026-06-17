@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { WorkoutTemplateColor, WorkoutWeekday } from '@/data/local/enums';
 import type { WorkoutTemplate } from '@/types/workout';
+import type { Schedule } from '@/types/schedule';
 
 type WorkoutTemplateColorLabelKey =
   | 'templateEditor.appearance.colors.terracotta'
@@ -84,27 +85,39 @@ export function countTemplateSets(template: WorkoutTemplate): number {
   );
 }
 
+const WEEKDAY_ORDER: WorkoutWeekday[] = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+];
+
 export function formatTemplateSchedule(
   t: TFunction,
-  schedule: WorkoutTemplate['schedule'],
+  schedule: Schedule | null,
 ): string {
-  if (!schedule) {
+  if (!schedule || schedule.slots.length === 0) {
     return t('plan.schedule.none');
   }
 
-  if (schedule.type === 'DAYS') {
-    return schedule.interval === 1
+  if (schedule.recurrenceType === 'CYCLE') {
+    return schedule.periodLength === 1
       ? t('plan.schedule.everyDay')
-      : t('plan.schedule.everyNDays', { count: schedule.interval });
+      : t('plan.schedule.everyNDays', { count: schedule.periodLength });
   }
 
-  const days = schedule.weekdays
-    .map(weekday => t(WEEKDAY_LABEL_KEYS[weekday]))
-    .join(', ');
+  // WEEKLY: surface the first-week weekdays the schedule lands on.
+  const weekdays = [...new Set(schedule.slots.map(slot => slot.dayOffset % 7))]
+    .sort((a, b) => a - b)
+    .map(offset => t(WEEKDAY_LABEL_KEYS[WEEKDAY_ORDER[offset]]));
+  const days = weekdays.join(', ');
   const interval: string =
-    schedule.interval === 1
+    schedule.periodLength === 1
       ? t('plan.schedule.everyWeek')
-      : t('plan.schedule.everyNWeeks', { count: schedule.interval });
+      : t('plan.schedule.everyNWeeks', { count: schedule.periodLength });
 
   return `${interval} · ${days}`;
 }

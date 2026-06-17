@@ -1,15 +1,9 @@
 // Pure validation rules for workout data. No DB access.
 
 import { i18n } from '@/i18n';
-import type { WorkoutScheduleType, WorkoutWeekday } from '@/data/local/enums';
+import type { SaveScheduleInput } from '@/types/schedule';
 
 export const LOCAL_USER_ID = 'local';
-
-export type WorkoutTemplateScheduleInput = {
-  type: WorkoutScheduleType;
-  interval: number;
-  weekdays?: WorkoutWeekday[];
-};
 
 export function requireText(value: string, field: string): string {
   const normalized = value.trim();
@@ -19,23 +13,32 @@ export function requireText(value: string, field: string): string {
   return normalized;
 }
 
-export function validateSchedule(
-  schedule: WorkoutTemplateScheduleInput | null | undefined,
-): WorkoutTemplateScheduleInput | null {
-  if (!schedule) {
-    return null;
-  }
-  if (!Number.isInteger(schedule.interval) || schedule.interval < 1) {
+export function validateScheduleInput(
+  input: SaveScheduleInput,
+): SaveScheduleInput {
+  if (!Number.isInteger(input.periodLength) || input.periodLength < 1) {
     throw new Error(i18n.t('errors.scheduleIntervalPositive'));
   }
-
-  const weekdays = [...new Set(schedule.weekdays ?? [])];
-  if (schedule.type === 'DAYS' && weekdays.length > 0) {
-    throw new Error(i18n.t('errors.dayScheduleNoWeekdays'));
-  }
-  if (schedule.type === 'WEEKS' && weekdays.length === 0) {
-    throw new Error(i18n.t('errors.weekScheduleNeedsWeekday'));
+  if (input.kind === 'ADVANCED') {
+    requireText(input.name, i18n.t('errors.fields.scheduleName'));
   }
 
-  return { ...schedule, weekdays };
+  const maxOffset =
+    input.recurrenceType === 'WEEKLY'
+      ? input.periodLength * 7
+      : input.periodLength;
+  for (const slot of input.slots) {
+    if (
+      !Number.isInteger(slot.dayOffset) ||
+      slot.dayOffset < 0 ||
+      slot.dayOffset >= maxOffset
+    ) {
+      throw new Error(i18n.t('errors.scheduleSlotOutOfRange'));
+    }
+    if (!slot.workoutTemplateId) {
+      throw new Error(i18n.t('errors.scheduleSlotWorkoutRequired'));
+    }
+  }
+
+  return input;
 }

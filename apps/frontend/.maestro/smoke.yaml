@@ -1,8 +1,9 @@
 # Smoke test: the app launches and the Home tab renders.
 # Assumes onboarding is already complete on the target device (launchApp does
 # NOT clear state, so the persisted authStore.hasOnboarded flag is kept).
+# Matched by testID (Android resource-id) — see src/navigation/testIDs.ts.
 appId: ${APP_ID}
 ---
 - launchApp
-# The default home layout always renders the Recovery widget.
-- assertVisible: 'RECOVERY'
+- assertVisible:
+    id: 'screen-home'

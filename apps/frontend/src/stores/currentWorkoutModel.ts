@@ -154,7 +154,6 @@ export function buildTemplateSyncInput(
     description: template.description,
     status: template.status,
     color: template.color,
-    schedule: template.schedule,
     exercises: workout.exercises.map(exercise => ({
       exerciseId: exercise.exerciseId,
       goal: exercise.goal,
