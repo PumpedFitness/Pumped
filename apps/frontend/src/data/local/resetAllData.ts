@@ -7,6 +7,7 @@ import {
   bodyFatEntries,
   bodyWeightEntries,
   exercises,
+  importBatches,
   performedSets,
   userProfile,
   workoutSessions,
@@ -28,6 +29,7 @@ export function resetAllData(): void {
   db.delete(bodyWeightEntries).run();
   db.delete(bodyFatEntries).run();
   db.delete(userProfile).run();
+  db.delete(importBatches).run();
 
   notifyTableChanged(
     performedSets,
@@ -40,5 +42,6 @@ export function resetAllData(): void {
     bodyWeightEntries,
     bodyFatEntries,
     userProfile,
+    importBatches,
   );
 }

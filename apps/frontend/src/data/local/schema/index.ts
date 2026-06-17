@@ -3,6 +3,7 @@
 
 export { exercises } from './exercise';
 export { exerciseTypes } from './exerciseType';
+export { importBatches } from './importBatch';
 export { muscleGroups } from './muscleGroup';
 export {
   workoutTemplates,

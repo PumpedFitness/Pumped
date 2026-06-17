@@ -126,6 +126,19 @@ export function AppSettings() {
       {/* ── Data ─────────────────────────────── */}
       <SettingsSection label={t('profile.sections.data')}>
         <ListRow
+          icon={<ClayIcon name="arrowUp" size={18} color={colors.accent} />}
+          label={t('profile.importCsv')}
+          trailing={chevron}
+          onPress={() => navigation.navigate('CsvImport')}
+        />
+        <ListRow
+          icon={<ClayIcon name="archive" size={18} color={colors.accent} />}
+          label={t('profile.importHistory')}
+          trailing={chevron}
+          divider
+          onPress={() => navigation.navigate('ImportHistory')}
+        />
+        <ListRow
           icon={<ClayIcon name="warning" size={18} color={colors.danger} />}
           label={
             <Text className="text-[15px] font-medium text-danger">
@@ -133,6 +146,7 @@ export function AppSettings() {
             </Text>
           }
           trailing={chevron}
+          divider
           onPress={handleResetAll}
         />
 

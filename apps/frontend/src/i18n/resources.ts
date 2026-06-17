@@ -534,6 +534,8 @@ export const resources = {
         bodyFat: 'Body Fat',
         units: 'Units',
         birthdateSheetTitle: 'Birthdate',
+        importCsv: 'Import CSV',
+        importHistory: 'Import history',
         resetAllData: 'Reset all data',
         uuidPlaceholder: 'Enter uuid',
         alerts: {
@@ -548,6 +550,51 @@ export const resources = {
           importSuccessBody: 'Data imported successfully',
           importErrorTitle: 'Error',
           importErrorBody: 'Failed to import data with status {{code}}',
+        },
+      },
+      csvImport: {
+        title: 'Import CSV',
+        backA11y: 'Back to settings',
+        heading: 'Import from Hevy',
+        body: 'Choose a Hevy CSV export to import completed workouts into your local history.',
+        selectCsv: 'Select CSV file',
+        importing: 'Importing...',
+        defaults: {
+          workoutName: 'Imported workout',
+        },
+        hevy: {
+          name: 'Hevy',
+          description:
+            'Supports Hevy exports with title, start_time, end_time, exercise_title, set_index, set_type, weight_kg, reps, and rpe.',
+        },
+        alerts: {
+          successTitle: 'CSV imported',
+          successBody:
+            'Import #{{importId}} added {{workoutsImported}} workouts and {{setsImported}} sets. Created {{exercisesCreated}} exercises. Skipped {{rowsSkipped}} rows.',
+          errorTitle: 'Could not import CSV',
+        },
+        errors: {
+          noImportableRows:
+            'No importable Hevy workout rows were found. Check the CSV headers and values.',
+        },
+      },
+      importHistory: {
+        title: 'Import history',
+        backA11y: 'Back to settings',
+        heading: 'Revert imports',
+        body: 'Each CSV import is tracked as a batch so you can remove it later.',
+        emptyTitle: 'No imports yet',
+        emptyBody: 'Imported Hevy CSV files will appear here.',
+        importNumber: 'Import #{{id}}',
+        summary:
+          '{{workouts}} workouts · {{sets}} sets · {{exercises}} exercises created · {{skipped}} rows skipped',
+        revert: 'Revert import',
+        alerts: {
+          revertTitle: 'Revert import #{{id}}?',
+          revertBody:
+            'This deletes the workouts, sets, and exercises created by this import. This cannot be undone.',
+          revertedTitle: 'Import reverted',
+          revertedBody: 'Import #{{id}} was removed.',
         },
       },
       metrics: {
@@ -1121,6 +1168,8 @@ export const resources = {
         bodyFat: 'Körperfett',
         units: 'Einheiten',
         birthdateSheetTitle: 'Geburtsdatum',
+        importCsv: 'CSV importieren',
+        importHistory: 'Importverlauf',
         resetAllData: 'Alle Daten zurücksetzen',
         uuidPlaceholder: 'UUID eingeben',
         alerts: {
@@ -1135,6 +1184,51 @@ export const resources = {
           importSuccessBody: 'Daten erfolgreich importiert',
           importErrorTitle: 'Fehler',
           importErrorBody: 'Datenimport fehlgeschlagen mit Status {{code}}',
+        },
+      },
+      csvImport: {
+        title: 'CSV importieren',
+        backA11y: 'Zurück zu den Einstellungen',
+        heading: 'Aus Hevy importieren',
+        body: 'Wähle einen Hevy-CSV-Export aus, um abgeschlossene Workouts in deinen lokalen Verlauf zu importieren.',
+        selectCsv: 'CSV-Datei auswählen',
+        importing: 'Importiere...',
+        defaults: {
+          workoutName: 'Importiertes Workout',
+        },
+        hevy: {
+          name: 'Hevy',
+          description:
+            'Unterstützt Hevy-Exporte mit title, start_time, end_time, exercise_title, set_index, set_type, weight_kg, reps und rpe.',
+        },
+        alerts: {
+          successTitle: 'CSV importiert',
+          successBody:
+            'Import #{{importId}} hat {{workoutsImported}} Workouts und {{setsImported}} Sätze hinzugefügt. {{exercisesCreated}} Übungen erstellt. {{rowsSkipped}} Zeilen übersprungen.',
+          errorTitle: 'CSV konnte nicht importiert werden',
+        },
+        errors: {
+          noImportableRows:
+            'Es wurden keine importierbaren Hevy-Workout-Zeilen gefunden. Prüfe die CSV-Spalten und Werte.',
+        },
+      },
+      importHistory: {
+        title: 'Importverlauf',
+        backA11y: 'Zurück zu den Einstellungen',
+        heading: 'Importe rückgängig machen',
+        body: 'Jeder CSV-Import wird als Batch gespeichert, damit du ihn später entfernen kannst.',
+        emptyTitle: 'Noch keine Importe',
+        emptyBody: 'Importierte Hevy-CSV-Dateien erscheinen hier.',
+        importNumber: 'Import #{{id}}',
+        summary:
+          '{{workouts}} Workouts · {{sets}} Sätze · {{exercises}} Übungen erstellt · {{skipped}} Zeilen übersprungen',
+        revert: 'Import rückgängig machen',
+        alerts: {
+          revertTitle: 'Import #{{id}} rückgängig machen?',
+          revertBody:
+            'Dadurch werden die Workouts, Sätze und Übungen gelöscht, die durch diesen Import erstellt wurden. Das kann nicht rückgängig gemacht werden.',
+          revertedTitle: 'Import rückgängig gemacht',
+          revertedBody: 'Import #{{id}} wurde entfernt.',
         },
       },
       metrics: {

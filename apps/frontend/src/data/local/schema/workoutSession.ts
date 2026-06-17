@@ -7,6 +7,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import type { WorkoutSetType } from '@/data/local/enums';
 import { enumText } from './columns';
+import { importBatches } from './importBatch';
 import { workoutTemplates } from './workoutTemplate';
 
 export const workoutSessions = sqliteTable(
@@ -22,6 +23,9 @@ export const workoutSessions = sqliteTable(
     startedAt: integer('started_at').notNull(),
     endedAt: integer('ended_at'),
     notes: text('notes'),
+    importId: integer('import_id').references(() => importBatches.id, {
+      onDelete: 'set null',
+    }),
   },
   table => [index('idx_sessions_user_date').on(table.userId, table.startedAt)],
 );
@@ -40,7 +44,10 @@ export const performedSets = sqliteTable(
     reps: integer('reps').notNull(),
     weight: real('weight'),
     rpe: real('rpe'),
-    performedAt: integer('performed_at').notNull(),
+    performedAt: integer('performed_at'),
+    importId: integer('import_id').references(() => importBatches.id, {
+      onDelete: 'set null',
+    }),
   },
   table => [
     index('idx_performed_sets_session_position').on(
