@@ -24,7 +24,9 @@ export type CsvImportResult = {
 
 export type ImportBatch = InferSelectModel<typeof importBatches>;
 
-type AliasSet = {
+export type CsvImportSource = 'hevy';
+
+export type AliasSet = {
   workoutName: string[];
   startedAt: string[];
   endedAt: string[];
@@ -37,7 +39,8 @@ type AliasSet = {
   workoutNotes: string[];
 };
 
-type CsvImportAdapter = {
+export type CsvImportAdapter = {
+  source: CsvImportSource;
   aliases: AliasSet;
 };
 
@@ -66,18 +69,21 @@ type ImportSessionDraft = {
 
 type Tx = Parameters<Parameters<(typeof db)['transaction']>[0]>[0];
 
-const HEVY_IMPORT_ADAPTER: CsvImportAdapter = {
-  aliases: {
-    workoutName: ['title'],
-    startedAt: ['start_time'],
-    endedAt: ['end_time'],
-    exerciseName: ['exercise_title'],
-    setPosition: ['set_index'],
-    setType: ['set_type'],
-    reps: ['reps'],
-    weight: ['weight_kg'],
-    rpe: ['rpe'],
-    workoutNotes: ['description'],
+export const CSV_IMPORT_ADAPTERS: Record<CsvImportSource, CsvImportAdapter> = {
+  hevy: {
+    source: 'hevy',
+    aliases: {
+      workoutName: ['title'],
+      startedAt: ['start_time'],
+      endedAt: ['end_time'],
+      exerciseName: ['exercise_title'],
+      setPosition: ['set_index'],
+      setType: ['set_type'],
+      reps: ['reps'],
+      weight: ['weight_kg'],
+      rpe: ['rpe'],
+      workoutNotes: ['description'],
+    },
   },
 };
 
@@ -330,10 +336,13 @@ function writeImportedSessions(
   return setCount;
 }
 
-export function importHevyCsv(csv: string): CsvImportResult {
+export function importCSV(
+  csv: string,
+  adapter: CsvImportAdapter,
+): CsvImportResult {
   const parsed = parseCsv(csv);
   const importedSets = parsed.rows
-    .map((row, index) => parseImportedSet(row, HEVY_IMPORT_ADAPTER, index))
+    .map((row, index) => parseImportedSet(row, adapter, index))
     .filter((set): set is ImportedSetDraft => set !== null);
 
   if (parsed.rows.length === 0 || importedSets.length === 0) {
@@ -351,7 +360,7 @@ export function importHevyCsv(csv: string): CsvImportResult {
     const batch = tx
       .insert(importBatches)
       .values({
-        source: 'hevy',
+        source: adapter.source,
         importedAt: now,
         workoutsImported: sessions.length,
         setsImported: importedSets.length,

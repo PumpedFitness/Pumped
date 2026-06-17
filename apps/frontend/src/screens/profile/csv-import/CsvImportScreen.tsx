@@ -10,7 +10,10 @@ import { Button } from '@/components/clay/Button';
 import { Card } from '@/components/clay/Card';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { importHevyCsv } from '@/data/local/imports/csvImportService';
+import {
+  CSV_IMPORT_ADAPTERS,
+  importCSV,
+} from '@/data/local/imports/csvImportService';
 import { colors } from '@/theme/tokens';
 
 type CsvImportScreenProps = NativeStackScreenProps<
@@ -38,7 +41,7 @@ export function CsvImportScreen({ navigation }: CsvImportScreenProps) {
       const csv = await FileSystem.readAsStringAsync(picked.assets[0].uri, {
         encoding: FileSystem.EncodingType.UTF8,
       });
-      const result = importHevyCsv(csv);
+      const result = importCSV(csv, CSV_IMPORT_ADAPTERS.hevy);
 
       Alert.alert(
         t('csvImport.alerts.successTitle'),
