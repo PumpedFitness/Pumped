@@ -136,7 +136,7 @@ export function buildRepsSliderConfig(t: TFunction): OptionalSliderConfig {
   return {
     title: t('setTable.sliders.reps.title'),
     description: t('setTable.sliders.reps.description'),
-    minValue: 1,
+    minValue: 0,
     maxValue: 30,
     step: 1,
     defaultValue: 8,

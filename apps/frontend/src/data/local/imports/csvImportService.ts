@@ -176,7 +176,7 @@ function parseImportedSet(
   const workoutStartedAt = parseTimestamp(getCsvValue(row, aliases.startedAt));
   const reps = parseNumber(getCsvValue(row, aliases.reps));
 
-  if (!exerciseName || workoutStartedAt === null || !reps || reps < 0) {
+  if (!exerciseName || workoutStartedAt === null || reps === null || reps < 0) {
     return null;
   }
 
