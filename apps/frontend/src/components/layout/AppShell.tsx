@@ -36,8 +36,9 @@ export function AppShell({
   const insets = useSafeAreaInsets();
 
   const topPadding = padTop ? insets.top : 0;
-  // Tab screens run under the bar and clear it via <TabBarInsetSpacer/>;
-  // standalone screens clear the home-indicator inset here.
+  // Tab screens add no bottom padding: iOS runs content under the translucent
+  // bar and clears it via <TabBarInsetSpacer/>, while Android's Material bar
+  // reserves its own space. Standalone screens clear the home-indicator inset.
   const bottomPadding = showTabBar ? 0 : insets.bottom;
 
   return (

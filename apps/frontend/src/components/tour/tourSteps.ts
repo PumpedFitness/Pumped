@@ -1,4 +1,4 @@
-import type { MainTabParamList } from '@/navigation/MainTabs';
+import type { MainTabParamList } from '@/navigation/mainTabsShared';
 
 type StepId = 'home' | 'plan' | 'library' | 'history' | 'profile';
 

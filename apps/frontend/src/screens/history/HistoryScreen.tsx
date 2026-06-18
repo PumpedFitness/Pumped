@@ -11,7 +11,7 @@ import { WorkoutHistoryList } from './components/WorkoutHistoryList';
 import { WorkoutHistorySummary } from './components/workout-history-summary';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
-import type { MainTabParamList } from '@/navigation/MainTabs';
+import type { MainTabParamList } from '@/navigation/mainTabsShared';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 type HistoryScreenProps = CompositeScreenProps<

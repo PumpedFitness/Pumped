@@ -1,4 +1,4 @@
-import type { ViewStyle } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-screens/experimental';
 
 /**
@@ -6,12 +6,18 @@ import { SafeAreaView } from 'react-native-screens/experimental';
  * bottom-tab navigator, includes the floating tab bar's height (read natively,
  * not hardcoded).
  *
- * Place it as the last child of a tab screen's scroll content. The screen's
- * ScrollView runs full-height under the translucent bar (so content blurs
- * through the glass as it scrolls past), while this spacer ensures the last item
- * still scrolls clear of the bar.
+ * Place it as the last child of a tab screen's scroll content. On iOS the
+ * screen's ScrollView runs full-height under the translucent bar (so content
+ * blurs through the glass as it scrolls past), while this spacer ensures the
+ * last item still scrolls clear of the bar.
+ *
+ * iOS-only: Android uses an opaque Material bar that reserves its own space
+ * (see `AppShell`), so no spacer is needed there.
  */
 export function TabBarInsetSpacer() {
+  if (Platform.OS !== 'ios') {
+    return null;
+  }
   return <SafeAreaView edges={EDGES} style={SPACER_STYLE} />;
 }
 
