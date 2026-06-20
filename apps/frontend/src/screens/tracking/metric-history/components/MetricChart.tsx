@@ -20,6 +20,7 @@ type MetricChartProps = {
   lineColor?: string;
   areaTopColor?: string;
   areaBottomColor?: string;
+  yAxisUnit?: string;
 };
 
 function buildMonthLabels(language: string): string[] {
@@ -34,9 +35,11 @@ function buildChartHtml(
   areaTopColor: string,
   areaBottomColor: string,
   monthLabels: string[],
+  yAxisUnit: string,
 ): string {
   const serialized = JSON.stringify(data);
   const serializedMonths = JSON.stringify(monthLabels);
+  const serializedUnit = JSON.stringify(yAxisUnit);
   return `
 <!DOCTYPE html>
 <html>
@@ -76,7 +79,12 @@ function buildChartHtml(
         horzLines: { color: 'rgba(52, 54, 44, 0.06)', style: 2 },
       },
       leftPriceScale: { visible: false },
-      rightPriceScale: { visible: false },
+      rightPriceScale: {
+        visible: true,
+        borderVisible: false,
+        textColor: '#928E7E',
+        scaleMargins: { top: 0.18, bottom: 0.18 },
+      },
       timeScale: {
         visible: true,
         borderVisible: false,
@@ -112,6 +120,16 @@ function buildChartHtml(
       crosshairMarkerVisible: false,
       priceLineVisible: false,
       lastValueVisible: false,
+      priceFormat: {
+        type: 'custom',
+        formatter: function(price) {
+          var unit = ${serializedUnit};
+          var value = Math.abs(price) >= 100
+            ? Math.round(price).toLocaleString()
+            : Math.round(price * 10) / 10;
+          return unit ? value + ' ' + unit : '' + value;
+        },
+      },
     });
 
     var data = ${serialized};
@@ -133,6 +151,7 @@ export function MetricChart({
   lineColor = '#46583C',
   areaTopColor = 'rgba(70, 88, 60, 0.35)',
   areaBottomColor = 'rgba(70, 88, 60, 0.0)',
+  yAxisUnit = '',
 }: MetricChartProps) {
   const { i18n } = useTranslation();
   const opacity = useSharedValue(0);
@@ -154,6 +173,7 @@ export function MetricChart({
     areaTopColor,
     areaBottomColor,
     buildMonthLabels(i18n.language),
+    yAxisUnit,
   );
 
   if (data.length < 2) {
