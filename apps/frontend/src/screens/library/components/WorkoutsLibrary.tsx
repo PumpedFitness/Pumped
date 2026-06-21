@@ -1,12 +1,13 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View } from 'react-native';
+import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { useUndoToast } from '@/components/feedback/UndoToast';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
+import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -36,16 +37,13 @@ function templateToInput(template: WorkoutTemplate): SaveWorkoutTemplateInput {
   };
 }
 
-type WorkoutsLibraryProps = {
-  leadingHeader?: ReactNode;
-};
-
-export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
+export function WorkoutsLibrary() {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { templates, exerciseOptions, deleteTemplate, saveTemplate } =
     useWorkoutTemplates();
+  const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
   const { isFavorite, toggleFavorite } = useLocalFavorites();
   const { showUndo } = useUndoToast();
 
@@ -71,17 +69,41 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
     navigation.navigate('WorkoutTemplateEditor', { templateId: template.id });
   };
 
-  const header = (
-    <View className="flex-row items-center justify-end">
-      <Button
-        className="h-10 rounded-full px-4"
-        variant="ghost"
-        feedbackVariant="scale"
-        onPress={() => navigation.navigate('WorkoutPlaceholder')}
-      >
-        <Button.Label>{t('plan.browseWorkouts')}</Button.Label>
-      </Button>
-    </View>
+  const startTemplate = (template: WorkoutTemplate) => {
+    if (currentWorkout) {
+      Alert.alert(
+        t('plan.alerts.inProgressTitle'),
+        t('plan.alerts.inProgressBody', { name: currentWorkout.name }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('plan.alerts.openWorkout'),
+            onPress: () => navigation.navigate('CurrentWorkout'),
+          },
+        ],
+      );
+      return;
+    }
+    try {
+      startTemplateWorkout(template.id);
+      navigation.navigate('CurrentWorkout');
+    } catch (error) {
+      Alert.alert(
+        t('plan.alerts.startFailedTitle'),
+        error instanceof Error ? error.message : t('common.tryAgain'),
+      );
+    }
+  };
+
+  const browseWorkoutsAction = (
+    <Button
+      className="mt-1 rounded-full"
+      variant="secondary"
+      feedbackVariant="scale"
+      onPress={() => navigation.navigate('WorkoutPlaceholder')}
+    >
+      <Button.Label>{t('plan.browseWorkouts')}</Button.Label>
+    </Button>
   );
 
   return (
@@ -108,6 +130,7 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
             template={template}
             exerciseNames={exerciseNames}
             onEdit={openEdit}
+            onStart={startTemplate}
           />
         </LibrarySwipeRow>
       )}
@@ -115,8 +138,8 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
       emptyIconName="dumbbell"
       createTestID="create_workout"
       onCreate={() => navigation.navigate('WorkoutTemplateEditor')}
-      header={header}
-      leadingHeader={leadingHeader}
+      noMatchAction={browseWorkoutsAction}
+      searchFooter={browseWorkoutsAction}
     />
   );
 }

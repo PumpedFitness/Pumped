@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Button } from 'heroui-native';
 import type { WorkoutTemplate } from '@/types/workout';
 import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
@@ -12,12 +13,14 @@ type WorkoutTemplateCardProps = {
   template: WorkoutTemplate;
   exerciseNames: Map<string, string>;
   onEdit: (template: WorkoutTemplate) => void;
+  onStart: (template: WorkoutTemplate) => void;
 };
 
 export function WorkoutTemplateCard({
   template,
   exerciseNames,
   onEdit,
+  onStart,
 }: WorkoutTemplateCardProps) {
   const { t } = useTranslation();
   const preview = template.exercises
@@ -57,7 +60,30 @@ export function WorkoutTemplateCard({
           ) : null}
         </View>
 
-        <ClayIcon name="chevron" size={18} color={colors.muted} />
+        <View className="flex-row gap-2">
+          <Button
+            accessibilityLabel={t('plan.card.editA11y', {
+              name: template.name,
+            })}
+            className="h-10 w-10 rounded-full p-0"
+            variant="secondary"
+            feedbackVariant="scale"
+            onPress={() => onEdit(template)}
+          >
+            <ClayIcon name="edit" size={17} color={colors.ink} />
+          </Button>
+
+          <Button
+            accessibilityLabel={t('plan.card.startA11y', {
+              name: template.name,
+            })}
+            className="h-10 w-10 rounded-full bg-accent p-0"
+            feedbackVariant="scale"
+            onPress={() => onStart(template)}
+          >
+            <ClayIcon name="play" size={17} color={colors.accentInk} />
+          </Button>
+        </View>
       </View>
 
       <View className="mt-4 flex-row gap-2">

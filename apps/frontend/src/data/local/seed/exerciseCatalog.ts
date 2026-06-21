@@ -1,4 +1,8 @@
 import type { InferInsertModel } from 'drizzle-orm';
+import {
+  BODY_HIGHLIGHTER_MUSCLE_GROUPS,
+  type MuscleGroupBodyPartKey,
+} from '@/components/body';
 import type { db } from '@/data/local/database';
 import { exercises, exerciseTypes, muscleGroups } from '@/data/local/schema';
 import { EXERCISE_IDS, EXERCISE_TYPE_IDS, MUSCLE_GROUP_IDS } from './ids';
@@ -12,20 +16,10 @@ const EXERCISE_TYPES = [
   { id: EXERCISE_TYPE_IDS.bodyweight, name: 'Bodyweight' },
 ];
 
-const MUSCLE_GROUPS = [
-  { id: MUSCLE_GROUP_IDS.chest, name: 'Chest' },
-  { id: MUSCLE_GROUP_IDS.back, name: 'Back' },
-  { id: MUSCLE_GROUP_IDS.shoulders, name: 'Shoulders' },
-  { id: MUSCLE_GROUP_IDS.biceps, name: 'Biceps' },
-  { id: MUSCLE_GROUP_IDS.triceps, name: 'Triceps' },
-  { id: MUSCLE_GROUP_IDS.abs, name: 'Abs' },
-  { id: MUSCLE_GROUP_IDS.quads, name: 'Quads' },
-  { id: MUSCLE_GROUP_IDS.hamstrings, name: 'Hamstrings' },
-  { id: MUSCLE_GROUP_IDS.glutes, name: 'Glutes' },
-  { id: MUSCLE_GROUP_IDS.calves, name: 'Calves' },
-  { id: MUSCLE_GROUP_IDS.forearms, name: 'Forearms' },
-  { id: MUSCLE_GROUP_IDS.traps, name: 'Traps' },
-];
+const MUSCLE_GROUPS = BODY_HIGHLIGHTER_MUSCLE_GROUPS.map(group => ({
+  id: group.id,
+  name: group.name,
+}));
 
 const EXERCISES: Omit<ExerciseInsert, 'createdAt'>[] = [
   exercise('benchPress', 'Barbell Bench Press', 'Flat barbell press.', [
@@ -122,7 +116,7 @@ function exercise(
   id: keyof typeof EXERCISE_IDS,
   name: string,
   description: string,
-  groups: (keyof typeof MUSCLE_GROUP_IDS)[],
+  groups: MuscleGroupBodyPartKey[],
   typeId: string | null = null,
 ): Omit<ExerciseInsert, 'createdAt'> {
   return {

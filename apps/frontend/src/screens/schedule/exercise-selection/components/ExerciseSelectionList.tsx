@@ -77,6 +77,7 @@ export function ExerciseSelectionList({
           </View>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t('library.createA11y')}
             className="h-10 w-10 items-center justify-center rounded-full bg-accent"
             onPress={onCreateExercise}
           >

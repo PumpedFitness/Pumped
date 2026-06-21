@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/theme/tokens';
 import {
   SwipeToDelete,
@@ -14,6 +14,8 @@ type ExerciseCardProps = {
   headerAccessory?: ReactNode;
   /** 0–1 completion shown as a progress bar under the description. */
   progress?: number;
+  openAccessibilityLabel?: string;
+  onOpen?: () => void;
   onRemove?: DeleteHandler;
 };
 
@@ -23,6 +25,8 @@ export function ExerciseCard({
   children,
   headerAccessory,
   progress,
+  openAccessibilityLabel,
+  onOpen,
   onRemove,
 }: ExerciseCardProps) {
   const content = (
@@ -39,13 +43,30 @@ export function ExerciseCard({
               <View
                 className="h-full rounded-full bg-accent"
                 style={{
-                  width: `${Math.round(Math.max(0, Math.min(1, progress)) * 100)}%`,
+                  width: `${Math.round(
+                    Math.max(0, Math.min(1, progress)) * 100,
+                  )}%`,
                 }}
               />
             </View>
           ) : null}
         </View>
-        {headerAccessory}
+        {onOpen || headerAccessory ? (
+          <View className="flex-row items-center gap-1">
+            {onOpen ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={openAccessibilityLabel}
+                hitSlop={8}
+                className="h-10 w-9 items-center justify-center rounded-full active:bg-surface-card"
+                onPress={onOpen}
+              >
+                <ClayIcon name="chevron" size={17} color={colors.muted} />
+              </Pressable>
+            ) : null}
+            {headerAccessory}
+          </View>
+        ) : null}
       </View>
 
       {children}

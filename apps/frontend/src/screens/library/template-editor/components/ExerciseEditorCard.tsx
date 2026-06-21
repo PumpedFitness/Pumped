@@ -16,7 +16,8 @@ export function ExerciseEditorCard({
   dragHandle,
 }: ExerciseEditorCardProps) {
   const { t } = useTranslation();
-  const { editExercise, removeExercise } = useTemplateEditor();
+  const { editExercise, openExerciseOverview, removeExercise } =
+    useTemplateEditor();
 
   return (
     <ExerciseCard
@@ -25,6 +26,10 @@ export function ExerciseEditorCard({
         exercise.type?.name ?? t('templateEditor.exercises.cardDescription')
       }
       headerAccessory={dragHandle}
+      openAccessibilityLabel={t('exerciseOverview.openA11y', {
+        name: exercise.name,
+      })}
+      onOpen={() => openExerciseOverview(exercise)}
       onRemove={() => removeExercise(exercise.exerciseId)}
     >
       {exercise.goal ? (

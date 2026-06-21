@@ -208,8 +208,8 @@ export const resources = {
       },
       plan: {
         browseWorkouts: 'Browse workouts',
-        searchPlaceholder: 'Search templates or exercises',
-        searchA11y: 'Search workout templates',
+        searchPlaceholder: 'Search by name or exercise',
+        searchA11y: 'Search workout templates by name or exercise',
         createA11y: 'Create workout template',
         status: {
           active: 'Active',
@@ -221,6 +221,7 @@ export const resources = {
           noExercisesYet: 'No exercises yet',
           morePreview: '+{{count}}',
           editA11y: 'Edit {{name}}',
+          startA11y: 'Start {{name}}',
         },
         empty: {
           title: 'No templates yet',
@@ -229,7 +230,7 @@ export const resources = {
         },
         noMatch: {
           title: 'No matching templates',
-          body: 'Try another search or choose a different status.',
+          body: 'Try another name or exercise, or browse premade workouts.',
         },
         schedules: {
           createA11y: 'Create schedule',
@@ -575,6 +576,7 @@ export const resources = {
           typeTitle: 'Exercise Type',
           muscleGroupsTitle: 'Muscle Groups',
           searchPlaceholder: 'Search or create...',
+          searchOnlyPlaceholder: 'Search...',
           searchA11y: 'Search {{title}}',
           addNew: 'Add "{{name}}"',
           doneCount: 'Done ({{count}})',
@@ -583,6 +585,7 @@ export const resources = {
       exerciseOverview: {
         backA11y: 'Back to exercise library',
         editA11y: 'Edit exercise',
+        openA11y: 'Open {{name}} exercise overview',
         noType: 'No type',
         noMuscleGroups: 'No muscle groups',
         details: {
@@ -1025,8 +1028,8 @@ export const resources = {
       },
       plan: {
         browseWorkouts: 'Workouts entdecken',
-        searchPlaceholder: 'Vorlagen oder Übungen suchen',
-        searchA11y: 'Workout-Vorlagen durchsuchen',
+        searchPlaceholder: 'Nach Name oder Übung suchen',
+        searchA11y: 'Workout-Vorlagen nach Name oder Übung durchsuchen',
         createA11y: 'Workout-Vorlage erstellen',
         status: {
           active: 'Aktiv',
@@ -1038,6 +1041,7 @@ export const resources = {
           noExercisesYet: 'Noch keine Übungen',
           morePreview: '+{{count}}',
           editA11y: '{{name}} bearbeiten',
+          startA11y: '{{name}} starten',
         },
         empty: {
           title: 'Noch keine Vorlagen',
@@ -1046,7 +1050,7 @@ export const resources = {
         },
         noMatch: {
           title: 'Keine passenden Vorlagen',
-          body: 'Versuche eine andere Suche oder wähle einen anderen Status.',
+          body: 'Versuche einen anderen Namen oder eine andere Übung, oder entdecke vorgefertigte Workouts.',
         },
         schedules: {
           createA11y: 'Zeitplan erstellen',
@@ -1191,7 +1195,8 @@ export const resources = {
         iconLabel: 'Symbol',
         fieldsLabel: 'Erfasste Felder',
         addField: 'Feld hinzufügen',
-        emptyFields: 'Füge ein Feld hinzu, um Werte wie Wdh. oder Gewicht zu erfassen.',
+        emptyFields:
+          'Füge ein Feld hinzu, um Werte wie Wdh. oder Gewicht zu erfassen.',
         deleteSetType: 'Satztyp löschen',
         fieldSheet: {
           addTitle: 'Feld hinzufügen',
@@ -1399,6 +1404,7 @@ export const resources = {
           typeTitle: 'Übungstyp',
           muscleGroupsTitle: 'Muskelgruppen',
           searchPlaceholder: 'Suchen oder erstellen...',
+          searchOnlyPlaceholder: 'Suchen...',
           searchA11y: '{{title}} durchsuchen',
           addNew: '„{{name}}“ hinzufügen',
           doneCount: 'Fertig ({{count}})',
@@ -1407,6 +1413,7 @@ export const resources = {
       exerciseOverview: {
         backA11y: 'Zurück zur Übungsbibliothek',
         editA11y: 'Übung bearbeiten',
+        openA11y: 'Übersicht für {{name}} öffnen',
         noType: 'Kein Typ',
         noMuscleGroups: 'Keine Muskelgruppen',
         details: {

@@ -10,6 +10,7 @@ export type TemplateEditorContextValue = {
   exercises: EditorExercise[];
   chooseExercises: () => void;
   editExercise: (exercise: EditorExercise) => void;
+  openExerciseOverview: (exercise: EditorExercise) => void;
   reorderExercises: (from: number, to: number) => void;
   removeExercise: (exerciseId: string) => void;
 };

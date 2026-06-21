@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { AppShell } from '@/components/layout/AppShell';
 import { SegmentedControl } from '@/components/clay/SegmentedControl';
+import { motion } from '@/theme/tokens';
 import { WorkoutsLibrary } from './components/WorkoutsLibrary';
 import { ExerciseLibrary } from './components/ExerciseLibrary';
 import { SetTypeLibrary } from './set-type-library/SetTypeLibrary';
@@ -12,9 +15,6 @@ export function LibraryScreen() {
   const { t } = useTranslation();
   const [segment, setSegment] = useState<LibrarySegment>('workouts');
 
-  // Rendered as the library's pinned `leadingHeader` (inside the list's
-  // ScrollView) so the ScrollView stays the screen's first descendant — which is
-  // what the native tab bar tracks to inset content and minimize on scroll.
   const segmentedControl = (
     <SegmentedControl
       options={[
@@ -29,13 +29,21 @@ export function LibraryScreen() {
 
   return (
     <AppShell showTabBar>
-      {segment === 'workouts' ? (
-        <WorkoutsLibrary leadingHeader={segmentedControl} />
-      ) : segment === 'exercises' ? (
-        <ExerciseLibrary leadingHeader={segmentedControl} />
-      ) : (
-        <SetTypeLibrary leadingHeader={segmentedControl} />
-      )}
+      <View className="bg-background px-5 pt-4">{segmentedControl}</View>
+      <Animated.View
+        key={segment}
+        className="flex-1"
+        entering={FadeIn.duration(motion.fast)}
+        exiting={FadeOut.duration(motion.fast)}
+      >
+        {segment === 'workouts' ? (
+          <WorkoutsLibrary />
+        ) : segment === 'exercises' ? (
+          <ExerciseLibrary />
+        ) : (
+          <SetTypeLibrary />
+        )}
+      </Animated.View>
     </AppShell>
   );
 }

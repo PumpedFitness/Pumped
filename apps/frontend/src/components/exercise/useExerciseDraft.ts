@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { randomUUID } from 'expo-crypto';
 import * as ImagePicker from 'expo-image-picker';
 import { asc } from 'drizzle-orm';
+import { BODY_HIGHLIGHTER_MUSCLE_GROUPS } from '@/components/body';
 import { useRepository } from '@/data/local/useRepository';
-import { exercises, exerciseTypes, muscleGroups } from '@/data/local/schema';
+import { exercises, exerciseTypes } from '@/data/local/schema';
 
 export type ExerciseToEdit = {
   id: string;
@@ -25,7 +26,6 @@ export function useExerciseDraft(
   const { t } = useTranslation();
   const exerciseRepo = useRepository(exercises);
   const typeRepo = useRepository(exerciseTypes);
-  const mgRepo = useRepository(muscleGroups);
 
   const [name, setName] = useState(exercise?.name ?? '');
   const [description, setDescription] = useState(exercise?.description ?? '');
@@ -38,12 +38,12 @@ export function useExerciseDraft(
   );
 
   const allTypes = typeRepo.query({ orderBy: asc(exerciseTypes.name) });
-  const allMuscleGroups = mgRepo.query({ orderBy: asc(muscleGroups.name) });
+  const allMuscleGroups = BODY_HIGHLIGHTER_MUSCLE_GROUPS;
 
   const selectedType = allTypes.find(t => t.id === typeId);
   const selectedMgNames = muscleGroupIds
     .map(id => allMuscleGroups.find(mg => mg.id === id)?.name)
-    .filter((n): n is string => n != null);
+    .filter(name => name != null);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -60,12 +60,6 @@ export function useExerciseDraft(
   const handleCreateType = (typeName: string): string => {
     const id = randomUUID();
     typeRepo.create({ id, name: typeName, createdAt: Date.now() });
-    return id;
-  };
-
-  const handleCreateMuscleGroup = (mgName: string): string => {
-    const id = randomUUID();
-    mgRepo.create({ id, name: mgName, createdAt: Date.now() });
     return id;
   };
 
@@ -136,7 +130,6 @@ export function useExerciseDraft(
     selectedMgNames,
     pickImage,
     handleCreateType,
-    handleCreateMuscleGroup,
     handleSave,
     handleDelete,
   };

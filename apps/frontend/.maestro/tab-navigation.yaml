@@ -8,6 +8,10 @@ appId: ${APP_ID}
 - launchApp
 - assertVisible:
     id: 'screen-home'
+# Dismiss the React Native dev warning banner if it is present. Its transparent
+# parent view covers the tab hit area and can make tab taps no-op.
+- tapOn:
+    point: 92%,92%
 
 - tapOn: 'Schedule'
 - assertVisible:

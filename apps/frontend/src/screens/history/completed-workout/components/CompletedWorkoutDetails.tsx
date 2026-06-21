@@ -1,5 +1,7 @@
 import { ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import {
@@ -12,6 +14,7 @@ import { ExerciseCard } from '@/components/exercise/ExerciseCard';
 import { ExerciseSetTable } from '@/components/exercise/set-table';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { ClayIcon } from '@/components/icons/ClayIcon';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { colors } from '@/theme/tokens';
 
 type CompletedWorkoutDetailsProps = {
@@ -84,6 +87,8 @@ export function CompletedWorkoutDetails({
   weightUnit,
 }: CompletedWorkoutDetailsProps) {
   const { t, i18n } = useTranslation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const workout = useWorkoutSession(workoutId);
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
@@ -160,6 +165,19 @@ export function CompletedWorkoutDetails({
             key={exercise.key}
             name={option?.name ?? t('common.unknownExercise')}
             description={description}
+            openAccessibilityLabel={
+              option
+                ? t('exerciseOverview.openA11y', { name: option.name })
+                : undefined
+            }
+            onOpen={
+              option
+                ? () =>
+                    navigation.navigate('EditExercise', {
+                      exerciseId: exercise.exerciseId,
+                    })
+                : undefined
+            }
           >
             <ExerciseSetTable
               readOnly
