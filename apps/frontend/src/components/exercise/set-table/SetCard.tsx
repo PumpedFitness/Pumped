@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import { Keyboard, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
+import * as Haptics from 'expo-haptics';
 import { colors } from '@/theme/tokens';
 import { SwipeTo, type SwipeAction } from '@/components/clay/SwipeTo';
 import { LibraryPicker } from '@/components/forms/LibraryPicker';
@@ -228,20 +229,29 @@ function SetCardSheets({
   );
 }
 
+// Best-effort error haptic when a set can't be completed (missing inputs).
+function fireErrorHaptic() {
+  try {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(
+      () => {},
+    );
+  } catch {
+    // expo-haptics native module unavailable until the app is rebuilt.
+  }
+}
+
 // Left swipe (drag right) finishes the set; right swipe (drag left) deletes it.
 // Finish is non-destructive: the action returns false so the row springs back
 // and re-renders in the new done state instead of sliding away.
 function buildSwipeActions(
   card: SetCardModel,
   t: TFunction,
-  onValidationChange: (showErrors: boolean) => void,
+  onFinish: () => void,
 ): { left?: SwipeAction; right?: SwipeAction } {
   const left: SwipeAction | undefined = card.onToggleDone
     ? {
         action: () => {
-          if (card.onToggleDone) {
-            onValidationChange(!card.onToggleDone());
-          }
+          onFinish();
           return false;
         },
         color: card.isDone ? 'warning' : 'moss',
@@ -306,10 +316,22 @@ export function SetCard({ card, setTypeOptions, onCreateSetType }: SetCardProps)
     : null;
   const cells = restField ? [...card.fields, restField] : card.fields;
 
+  // Try to mark the set done; on failure show the missing inputs + buzz.
+  const attemptDone = () => {
+    if (!card.onToggleDone) {
+      return;
+    }
+    const ok = card.onToggleDone();
+    setShowValidation(!ok);
+    if (!ok) {
+      fireErrorHaptic();
+    }
+  };
+
   const { left: finishAction, right: removeAction } = buildSwipeActions(
     card,
     t,
-    setShowValidation,
+    attemptDone,
   );
 
   const containerClass = card.isDone
@@ -323,11 +345,7 @@ export function SetCard({ card, setTypeOptions, onCreateSetType }: SetCardProps)
       <SetCardHeader
         card={card}
         onOpenSetTypePicker={() => setIsSetTypePickerOpen(true)}
-        onToggleDone={() => {
-          if (card.onToggleDone) {
-            setShowValidation(!card.onToggleDone());
-          }
-        }}
+        onToggleDone={attemptDone}
       />
       <SetCardFields
         cells={cells}

@@ -9,6 +9,7 @@ import { formatSetNumber, type SetCardField } from './exerciseSetTableModel';
 
 type SetFieldCellProps = {
   field: SetCardField;
+  /** True when completion was attempted and this field is still missing/invalid. */
   hasError: boolean;
   /** Show the "required to finish" marker (active workout only). */
   showRequired: boolean;
@@ -37,13 +38,17 @@ type CellLabelProps = {
   /** Required & still unfilled → accent dot; required & filled → moss dot. */
   required: boolean;
   satisfied: boolean;
+  hasError: boolean;
 };
 
-function CellLabel({ label, required, satisfied }: CellLabelProps) {
+function CellLabel({ label, required, satisfied, hasError }: CellLabelProps) {
+  const dotClass = hasError ? 'bg-danger' : satisfied ? 'bg-moss' : 'bg-accent';
   return (
     <View className="mb-1.5 flex-row items-center gap-1">
       <Text
-        className="text-[9px] font-semibold uppercase tracking-[0.6px] text-muted"
+        className={`text-[9px] font-semibold uppercase tracking-[0.6px] ${
+          hasError ? 'text-danger' : 'text-muted'
+        }`}
         numberOfLines={1}
       >
         {label}
@@ -51,28 +56,37 @@ function CellLabel({ label, required, satisfied }: CellLabelProps) {
       {required ? (
         <View
           accessibilityLabel="required"
-          className={`h-1.5 w-1.5 rounded-full ${
-            satisfied ? 'bg-moss' : 'bg-accent'
-          }`}
+          className={`h-1.5 w-1.5 rounded-full ${dotClass}`}
         />
       ) : null}
     </View>
   );
 }
 
-function CellShell({ children }: { children: ReactNode }) {
-  return <View className="flex-1 px-3 py-2.5">{children}</View>;
+function CellShell({
+  hasError,
+  children,
+}: {
+  hasError: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <View className={`flex-1 px-3 py-2.5 ${hasError ? 'bg-danger/10' : ''}`}>
+      {children}
+    </View>
+  );
 }
 
 type BooleanCellProps = {
   field: Extract<SetCardField, { kind: 'boolean' }>;
   label: ReactNode;
+  hasError: boolean;
 };
 
-function BooleanFieldCell({ field, label }: BooleanCellProps) {
+function BooleanFieldCell({ field, label, hasError }: BooleanCellProps) {
   const { t } = useTranslation();
   return (
-    <CellShell>
+    <CellShell hasError={hasError}>
       {label}
       <Pressable
         accessibilityRole="switch"
@@ -102,11 +116,12 @@ function BooleanFieldCell({ field, label }: BooleanCellProps) {
 type TextCellProps = {
   field: Extract<SetCardField, { kind: 'text' }>;
   label: ReactNode;
+  hasError: boolean;
 };
 
-function TextFieldCell({ field, label }: TextCellProps) {
+function TextFieldCell({ field, label, hasError }: TextCellProps) {
   return (
-    <CellShell>
+    <CellShell hasError={hasError}>
       {label}
       {field.readOnly ? (
         <Text
@@ -120,7 +135,7 @@ function TextFieldCell({ field, label }: TextCellProps) {
           accessibilityLabel={field.label}
           className="text-[15px] font-semibold text-foreground"
           placeholder="–"
-          placeholderTextColor={colors.muted}
+          placeholderTextColor={hasError ? colors.danger : colors.muted}
           value={field.value}
           onChangeText={field.onChange}
         />
@@ -137,7 +152,7 @@ type NumberCellProps = {
 
 function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
   return (
-    <CellShell>
+    <CellShell hasError={hasError}>
       {label}
       <View className="flex-row items-baseline gap-1">
         {field.readOnly ? (
@@ -154,7 +169,11 @@ function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
           />
         )}
         {field.unit ? (
-          <Text className="text-[11px] font-semibold text-muted">
+          <Text
+            className={`text-[11px] font-semibold ${
+              hasError ? 'text-danger' : 'text-muted'
+            }`}
+          >
             {field.unit}
           </Text>
         ) : null}
@@ -179,7 +198,7 @@ function ButtonFieldCell({
   onPress,
 }: ButtonCellProps) {
   return (
-    <CellShell>
+    <CellShell hasError={hasError}>
       {label}
       <ValueButton
         accessibilityLabel={accessibilityLabel}
@@ -203,14 +222,15 @@ export function SetFieldCell({
       label={field.label}
       required={showRequired && field.required}
       satisfied={field.isValid !== false}
+      hasError={hasError}
     />
   );
 
   if (field.kind === 'boolean') {
-    return <BooleanFieldCell field={field} label={label} />;
+    return <BooleanFieldCell field={field} label={label} hasError={hasError} />;
   }
   if (field.kind === 'text') {
-    return <TextFieldCell field={field} label={label} />;
+    return <TextFieldCell field={field} label={label} hasError={hasError} />;
   }
   if (field.kind === 'range') {
     return (
