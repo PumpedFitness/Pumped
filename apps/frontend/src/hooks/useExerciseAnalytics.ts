@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { eq } from 'drizzle-orm';
 import { performedSets, workoutSessions } from '@/data/local/schema';
 import { useRepository } from '@/data/local/useRepository';
+import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
 import { useWorkoutHistory } from './useWorkoutHistory';
 import type { PerformedSet } from '@/types/workout';
 
@@ -84,7 +85,8 @@ function buildChartData(
     if (!session || session.endedAt === null) return;
 
     const key = dateKey(session.startedAt);
-    const weight = set.weight ?? 0;
+    const { weight: rawWeight, reps } = resolveSetWeightReps(set);
+    const weight = rawWeight ?? 0;
     const next = daily.get(key) ?? {
       volume: 0,
       topWeight: 0,
@@ -92,13 +94,13 @@ function buildChartData(
       maxReps: 0,
     };
 
-    next.volume += weight * set.reps;
+    next.volume += weight * reps;
     next.topWeight = Math.max(next.topWeight, weight);
-    next.maxReps = Math.max(next.maxReps, set.reps);
-    if (weight > 0 && set.reps > 0) {
+    next.maxReps = Math.max(next.maxReps, reps);
+    if (weight > 0 && reps > 0) {
       next.estimated1Rm = Math.max(
         next.estimated1Rm,
-        estimateOneRepMax(weight, set.reps),
+        estimateOneRepMax(weight, reps),
       );
     }
 
@@ -135,20 +137,24 @@ function buildHistory(
 
       if (sets.length === 0) return null;
 
+      const resolved = sets.map(resolveSetWeightReps);
+      const volumeKg = resolved.reduce(
+        (total, value) => total + (value.weight ?? 0) * value.reps,
+        0,
+      );
+      const topWeightKg = resolved.reduce<number | null>((top, value) => {
+        if (value.weight == null) return top;
+        return top == null ? value.weight : Math.max(top, value.weight);
+      }, null);
+
       return {
         workoutId: workout.id,
         workoutName: workout.name,
         startedAt: workout.startedAt,
         endedAt: workout.endedAt,
         setCount: sets.length,
-        volumeKg: sets.reduce(
-          (total, set) => total + (set.weight ?? 0) * set.reps,
-          0,
-        ),
-        topWeightKg: sets.reduce<number | null>((top, set) => {
-          if (set.weight == null) return top;
-          return top == null ? set.weight : Math.max(top, set.weight);
-        }, null),
+        volumeKg,
+        topWeightKg,
         sets,
       };
     })
@@ -172,19 +178,19 @@ function buildDerivedPrs(history: ExerciseHistoryEntry[]): ExerciseDerivedPr[] {
 
   history.forEach(entry => {
     entry.sets.forEach(set => {
-      const weightKg = set.weight ?? null;
+      const { weight: weightKg, reps } = resolveSetWeightReps(set);
       const achievedAt = set.performedAt ?? entry.startedAt;
       const base = {
         weightKg,
-        reps: set.reps,
+        reps,
         achievedAt,
         workoutName: entry.workoutName,
       };
 
-      if (weightKg != null && weightKg > 0 && set.reps > 0) {
+      if (weightKg != null && weightKg > 0 && reps > 0) {
         records.volumeSet = betterPr(records.volumeSet ?? null, {
           kind: 'volumeSet',
-          value: roundMetric(weightKg * set.reps),
+          value: roundMetric(weightKg * reps),
           ...base,
         });
         records.topWeight = betterPr(records.topWeight ?? null, {
@@ -194,15 +200,15 @@ function buildDerivedPrs(history: ExerciseHistoryEntry[]): ExerciseDerivedPr[] {
         });
         records.estimated1Rm = betterPr(records.estimated1Rm ?? null, {
           kind: 'estimated1Rm',
-          value: roundMetric(estimateOneRepMax(weightKg, set.reps)),
+          value: roundMetric(estimateOneRepMax(weightKg, reps)),
           ...base,
         });
       }
 
-      if (set.reps > 0) {
+      if (reps > 0) {
         records.maxReps = betterPr(records.maxReps ?? null, {
           kind: 'maxReps',
-          value: set.reps,
+          value: reps,
           ...base,
         });
       }

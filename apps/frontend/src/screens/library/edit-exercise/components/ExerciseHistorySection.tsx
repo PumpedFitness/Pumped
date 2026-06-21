@@ -1,10 +1,8 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/clay/Card';
-import {
-  ExerciseSetTable,
-  SET_TYPE_OPTIONS,
-} from '@/components/exercise/set-table';
+import { ExerciseSetTable } from '@/components/exercise/set-table';
+import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { ExerciseHistoryEntry } from '@/hooks/useExerciseAnalytics';
@@ -53,6 +51,7 @@ export function ExerciseHistorySection({
   onOpenWorkout,
 }: ExerciseHistorySectionProps) {
   const { t, i18n } = useTranslation();
+  const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
 
   return (
     <Card>
@@ -112,7 +111,8 @@ export function ExerciseHistorySection({
               <ExerciseSetTable
                 readOnly
                 sets={entry.sets}
-                setTypeOptions={SET_TYPE_OPTIONS}
+                setTypeOptions={setTypeOptions}
+                setTypesById={setTypesById}
                 weightUnit={weightUnit}
               />
             </View>

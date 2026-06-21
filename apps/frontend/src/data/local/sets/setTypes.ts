@@ -12,7 +12,9 @@ import {
   builtInSetTypeLabelKey,
 } from '@/data/local/builtins';
 import { deriveSetTypeColor } from '@/data/local/sets/setTypeColor';
+import { getNumberValue } from '@/data/local/sets/fieldValues';
 import type { SetTypeFieldDef, SetTypeWithFields } from '@/types/setType';
+import type { PerformedSet } from '@/types/workout';
 
 type SetTypeRow = typeof setTypes.$inferSelect;
 type SetTypeFieldRow = typeof setTypeFields.$inferSelect;
@@ -91,6 +93,25 @@ function getSetTypeFieldRows(setTypeId: string): SetTypeFieldRow[] {
     .where(eq(setTypeFields.setTypeId, setTypeId))
     .orderBy(asc(setTypeFields.position))
     .all();
+}
+
+/** Resolve a set's weight + reps from its type fields (first `amount`-unit
+ *  field × first plain-count number field) for volume/analytics. */
+export function resolveSetWeightReps(
+  set: Pick<PerformedSet, 'setType' | 'fieldValues'>,
+): { weight: number | null; reps: number } {
+  const fields = getSetTypeFieldDefs(set.setType);
+  const weightField = fields.find(field => field.unit === 'amount');
+  const repsField = fields.find(
+    field => field.dataType === 'number' && field.unit === null,
+  );
+  return {
+    weight: weightField
+      ? getNumberValue(set.fieldValues, weightField.id)
+      : null,
+    reps:
+      (repsField ? getNumberValue(set.fieldValues, repsField.id) : null) ?? 0,
+  };
 }
 
 export function listSetTypesWithFields(): SetTypeWithFields[] {
