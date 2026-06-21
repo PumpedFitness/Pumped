@@ -331,6 +331,25 @@ export const resources = {
           discard: 'Discard',
         },
       },
+      progression: {
+        title: 'Progression',
+        modes: {
+          auto: 'Auto Progression',
+          manual: 'Manual',
+          none: 'No Progression',
+        },
+        helper: {
+          auto: 'The app suggests the next target based on your last performance.',
+          manual: 'Use the manual target settings already available for this exercise.',
+          none: 'Only show what you performed last time.',
+        },
+        suggestion: {
+          suggested: 'Suggested: {{target}}',
+          lastTime: 'Last time: {{target}}',
+          noPreviousSets: 'No previous sets',
+          noManualTarget: 'No manual target set',
+        },
+      },
       setField: {
         builtin: {
           weight: 'Weight',
@@ -1175,6 +1194,26 @@ export const resources = {
             'Du hast ungespeicherte Änderungen. Beim Verlassen gehen sie verloren.',
           keepEditing: 'Weiter bearbeiten',
           discard: 'Verwerfen',
+        },
+      },
+      progression: {
+        title: 'Progression',
+        modes: {
+          auto: 'Automatische Progression',
+          manual: 'Manuell',
+          none: 'Keine Progression',
+        },
+        helper: {
+          auto: 'Die App schlägt das nächste Ziel anhand deiner letzten Leistung vor.',
+          manual:
+            'Verwende die manuellen Zieleinstellungen, die für diese Übung schon verfügbar sind.',
+          none: 'Zeige nur, was du beim letzten Mal geschafft hast.',
+        },
+        suggestion: {
+          suggested: 'Vorschlag: {{target}}',
+          lastTime: 'Letztes Mal: {{target}}',
+          noPreviousSets: 'Keine vorherigen Sätze',
+          noManualTarget: 'Kein manuelles Ziel gesetzt',
         },
       },
       setField: {

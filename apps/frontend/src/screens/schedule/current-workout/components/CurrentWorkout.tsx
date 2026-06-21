@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button } from 'heroui-native';
+import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
+import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import { useAppSettingsStore } from '@/stores/appSettingsStore';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { CurrentWorkoutExercise } from '@/stores/currentWorkoutModel';
@@ -25,6 +27,11 @@ type CurrentWorkoutProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'CurrentWorkout'>;
   exerciseSelection?: ExerciseSelectionResult;
   onChooseExercises: (selectedExerciseIds: string[]) => void;
+};
+
+export type LastPerformedSet = {
+  weightKg?: number;
+  reps?: number;
 };
 
 type EmptyWorkoutProps = {
@@ -100,6 +107,7 @@ export function CurrentWorkout({
     createSetType,
   } = useSetTypeLibrary();
   const { profile } = useUserProfile();
+  const { workouts } = useWorkoutHistory();
   const rest = useRestTimer();
   const restTimerFullscreen = useAppSettingsStore(
     state => state.restTimerFullscreen,
@@ -128,6 +136,30 @@ export function CurrentWorkout({
     () => new Map(exerciseOptions.map(option => [option.id, option] as const)),
     [exerciseOptions],
   );
+  const lastSetsByExerciseId = useMemo(() => {
+    const result = new Map<string, LastPerformedSet[]>();
+    workouts.forEach(workout => {
+      workout.sets.forEach(set => {
+        if (result.has(set.exerciseId)) {
+          return;
+        }
+        const exerciseSets = workout.sets.filter(
+          candidate => candidate.exerciseId === set.exerciseId,
+        );
+        result.set(
+          set.exerciseId,
+          exerciseSets.map(candidate => {
+            const { weight, reps } = resolveSetWeightReps(candidate);
+            return {
+              weightKg: weight ?? undefined,
+              reps: reps || undefined,
+            };
+          }),
+        );
+      });
+    });
+    return result;
+  }, [workouts]);
 
   useEffect(() => {
     if (!currentWorkout) {
@@ -180,6 +212,7 @@ export function CurrentWorkout({
         <SessionExerciseList
           exercises={currentWorkout.exercises}
           optionById={optionById}
+          lastSetsByExerciseId={lastSetsByExerciseId}
           setTypeOptions={setTypeOptions}
           setTypesById={setTypesById}
           weightUnit={profile.weightUnit}

@@ -52,6 +52,7 @@ function createInitialDraft(
         color: exercise.color,
         goal: exercise.goal ?? '',
         notes: exercise.notes,
+        progressionMode: exercise.progressionMode,
         sets: exercise.sets.map(set => ({
           id: randomUUID(),
           setType: set.setType,
@@ -70,6 +71,7 @@ function createDraftExercise(exerciseId: string): DraftExercise {
     color: null,
     goal: '',
     notes: null,
+    progressionMode: undefined,
     sets: [createDraftSet(), createDraftSet(), createDraftSet()],
   };
 }
@@ -83,6 +85,7 @@ function buildExerciseInput(
     color: exercise.color,
     goal: exercise.goal.trim() || null,
     notes: exercise.notes,
+    progressionMode: exercise.progressionMode,
     sets: exercise.sets.map(set => ({
       setType: set.setType,
       restSeconds: set.restSeconds,

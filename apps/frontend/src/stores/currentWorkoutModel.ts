@@ -2,7 +2,11 @@ import { randomUUID } from 'expo-crypto';
 import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
-import type { SetFieldValue, WorkoutTemplate } from '@/types/workout';
+import type {
+  SetFieldValue,
+  WorkoutTemplate,
+  WorkoutTemplateExercise,
+} from '@/types/workout';
 import type { SetTypeFieldDef } from '@/types/setType';
 import {
   isSetComplete,
@@ -25,6 +29,7 @@ export type CurrentWorkoutSet = {
 export type CurrentWorkoutExercise = {
   id: string;
   sourceTemplateExerciseId: string | null;
+  sourceTemplateExercise: WorkoutTemplateExercise | null;
   exerciseId: string;
   position: number;
   /** Resolved accent color (own, else the workout color). Never null here. */
@@ -82,6 +87,7 @@ export function createCurrentWorkoutExercise(
   return {
     id: randomUUID(),
     sourceTemplateExerciseId: null,
+    sourceTemplateExercise: null,
     exerciseId,
     position,
     color,
@@ -102,6 +108,7 @@ export function createTemplateSnapshot(
     exercise => ({
       id: randomUUID(),
       sourceTemplateExerciseId: exercise.id,
+      sourceTemplateExercise: exercise,
       exerciseId: exercise.exerciseId,
       position: exercise.position,
       color: resolveExerciseColor(exercise.color, template.color),
@@ -186,6 +193,7 @@ export function buildTemplateSyncInput(
         color: exercise.color,
         goal: exercise.goal,
         notes: exercise.notes,
+        progressionMode: sourceExercise?.progressionMode,
         sets: exercise.sets.map(set => {
           const source = set.sourceTemplateSetId
             ? sourceSets.get(set.sourceTemplateSetId)
@@ -244,7 +252,8 @@ export function isCurrentWorkoutComplete(
   return (
     sets.length > 0 &&
     sets.every(
-      set => set.isDone && isCurrentWorkoutSetValid(set, resolveFields(set.setType)),
+      set =>
+        set.isDone && isCurrentWorkoutSetValid(set, resolveFields(set.setType)),
     )
   );
 }

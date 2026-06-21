@@ -16,6 +16,7 @@ import m0012 from './0012_collapse_schedule_kind.sql';
 import m0013 from './0013_sets_fields_set_types.sql';
 import m0014 from './0014_settype_fields.sql';
 import m0015 from './0015_template_exercise_color.sql';
+import m0016 from './0016_progression_mode.sql';
 
 export default {
   journal,
@@ -36,5 +37,6 @@ export default {
     m0013,
     m0014,
     m0015,
+    m0016,
   },
 };
