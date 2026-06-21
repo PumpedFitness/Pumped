@@ -136,6 +136,13 @@ export function useTemplateEditorController({
     [navigation, route.key, draft.exercises],
   );
 
+  const openExerciseOverview = useCallback(
+    (exercise: EditorExercise) => {
+      navigation.navigate('EditExercise', { exerciseId: exercise.exerciseId });
+    },
+    [navigation],
+  );
+
   const requestDelete = useCallback(() => {
     if (!template) {
       return;
@@ -169,6 +176,7 @@ export function useTemplateEditorController({
       exercises,
       chooseExercises,
       editExercise,
+      openExerciseOverview,
       reorderExercises,
       removeExercise,
     }),
@@ -176,6 +184,7 @@ export function useTemplateEditorController({
       exercises,
       chooseExercises,
       editExercise,
+      openExerciseOverview,
       reorderExercises,
       removeExercise,
     ],

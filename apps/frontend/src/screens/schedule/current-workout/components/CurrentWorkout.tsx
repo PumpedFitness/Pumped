@@ -336,36 +336,48 @@ export function CurrentWorkout({
 
         {currentWorkout.exercises.map(exercise => {
           const doneCount = exercise.sets.filter(set => set.isDone).length;
+          const exerciseName =
+            exerciseNames.get(exercise.exerciseId) ??
+            t('plan.card.fallbackExercise');
           return (
-          <ExerciseCard
-            key={exercise.id}
-            name={
-              exerciseNames.get(exercise.exerciseId) ??
-              t('plan.card.fallbackExercise')
-            }
-            description={t('currentWorkout.setsDone', {
-              done: doneCount,
-              total: exercise.sets.length,
-            })}
-            progress={
-              exercise.sets.length ? doneCount / exercise.sets.length : 0
-            }
-            onRemove={() => requestRemoveExercise(t, exercise, removeExercise)}
-          >
-            <ExerciseSetTable
-              sets={exercise.sets}
-              setTypeOptions={setTypeOptions}
-              setTypesById={setTypesById}
-              weightUnit={profile.weightUnit}
-              onCreateSetType={createSetType}
-              onAddSet={() => addSet(exercise.id)}
-              onChangeSet={(setId, values) =>
-                updateSet(exercise.id, setId, values)
+            <ExerciseCard
+              key={exercise.id}
+              name={exerciseName}
+              description={t('currentWorkout.setsDone', {
+                done: doneCount,
+                total: exercise.sets.length,
+              })}
+              progress={
+                exercise.sets.length ? doneCount / exercise.sets.length : 0
               }
-              onToggleSetDone={setId => toggleSetDone(exercise.id, setId)}
-              onRemoveSet={set => requestRemoveSet(t, exercise, set, removeSet)}
-            />
-          </ExerciseCard>
+              openAccessibilityLabel={t('exerciseOverview.openA11y', {
+                name: exerciseName,
+              })}
+              onOpen={() =>
+                navigation.navigate('EditExercise', {
+                  exerciseId: exercise.exerciseId,
+                })
+              }
+              onRemove={() =>
+                requestRemoveExercise(t, exercise, removeExercise)
+              }
+            >
+              <ExerciseSetTable
+                sets={exercise.sets}
+                setTypeOptions={setTypeOptions}
+                setTypesById={setTypesById}
+                weightUnit={profile.weightUnit}
+                onCreateSetType={createSetType}
+                onAddSet={() => addSet(exercise.id)}
+                onChangeSet={(setId, values) =>
+                  updateSet(exercise.id, setId, values)
+                }
+                onToggleSetDone={setId => toggleSetDone(exercise.id, setId)}
+                onRemoveSet={set =>
+                  requestRemoveSet(t, exercise, set, removeSet)
+                }
+              />
+            </ExerciseCard>
           );
         })}
 

@@ -584,6 +584,7 @@ export const resources = {
       exerciseOverview: {
         backA11y: 'Back to exercise library',
         editA11y: 'Edit exercise',
+        openA11y: 'Open {{name}} exercise overview',
         noType: 'No type',
         noMuscleGroups: 'No muscle groups',
         details: {
@@ -1410,6 +1411,7 @@ export const resources = {
       exerciseOverview: {
         backA11y: 'Zurück zur Übungsbibliothek',
         editA11y: 'Übung bearbeiten',
+        openA11y: 'Übersicht für {{name}} öffnen',
         noType: 'Kein Typ',
         noMuscleGroups: 'Keine Muskelgruppen',
         details: {
