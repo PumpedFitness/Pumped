@@ -8,18 +8,60 @@ import { SettingsSection } from '@/components/clay/SettingsSection';
 import { ListRow } from '@/components/clay/ListRow';
 import { SegmentedControl } from '@/components/clay/SegmentedControl';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useAuthStore } from '@/stores/authStore';
+import {
+  type FirstDayOfWeek,
+  useAppSettingsStore,
+} from '@/stores/appSettingsStore';
 import { resetAllData } from '@/data/local/resetAllData';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { colors } from '@/theme/tokens';
 import { useHandover } from '@/hooks/useHandover';
 import { Input } from 'heroui-native';
 import { Button } from '@/components/clay/Button';
+import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 const chevron = <ClayIcon name="chevron" size={16} color={colors.muted} />;
+
+function FirstDayOfWeekSetting() {
+  const { t } = useTranslation();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const firstDayOfWeek = useAppSettingsStore(state => state.firstDayOfWeek);
+  const setFirstDayOfWeek = useAppSettingsStore(
+    state => state.setFirstDayOfWeek,
+  );
+
+  const options: { value: FirstDayOfWeek; label: string }[] = [
+    { value: 'sunday', label: t('settings.weekStartsOn.sunday') },
+    { value: 'monday', label: t('settings.weekStartsOn.monday') },
+  ];
+  const selectedLabel =
+    options.find(option => option.value === firstDayOfWeek)?.label ??
+    options[0].label;
+
+  return (
+    <>
+      <ListRow
+        icon={<ClayIcon name="calendar" size={18} color={colors.accent} />}
+        label={t('settings.weekStartsOn.label')}
+        detail={selectedLabel}
+        trailing={chevron}
+        divider
+        onPress={() => setSheetOpen(true)}
+      />
+      <OptionSelectorSheet
+        visible={sheetOpen}
+        title={t('settings.weekStartsOn.label')}
+        value={firstDayOfWeek}
+        options={options}
+        onClose={() => setSheetOpen(false)}
+        onChange={setFirstDayOfWeek}
+      />
+    </>
+  );
+}
 
 export function AppSettings() {
   const { t } = useTranslation();
@@ -30,9 +72,10 @@ export function AppSettings() {
 
   const { receive } = useHandover();
 
-  const { profile, set } = useUserProfile();
   const { discardWorkout } = useCurrentWorkout();
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
+  const weightUnit = useAppSettingsStore(state => state.weightUnit);
+  const setWeightUnit = useAppSettingsStore(state => state.setWeightUnit);
 
   const handleResetAll = useCallback(() => {
     Alert.alert(t('profile.alerts.resetTitle'), t('profile.alerts.resetBody'), [
@@ -104,8 +147,8 @@ export function AppSettings() {
                   { value: 'kg', label: 'kg' },
                   { value: 'lbs', label: 'lbs' },
                 ]}
-                value={profile.weightUnit}
-                onChange={v => set({ weightUnit: v as WeightUnit })}
+                value={weightUnit}
+                onChange={value => setWeightUnit(value as WeightUnit)}
               />
             </View>
           }
@@ -121,6 +164,7 @@ export function AppSettings() {
             </View>
           }
         />
+        <FirstDayOfWeekSetting />
       </SettingsSection>
 
       {/* ── Data ─────────────────────────────── */}

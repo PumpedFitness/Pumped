@@ -1,11 +1,19 @@
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
+import {
+  firstDayOfWeekToIndex,
+  type FirstDayOfWeek,
+} from '@/stores/appSettingsStore';
+
+const DAYS_PER_WEEK = 7;
+const SUNDAY_REFERENCE_DATE = new Date(2024, 0, 7);
 
 type ActivityDay = {
   date: Date;
   key: string;
   active: boolean;
-  inMonth: boolean;
 };
+
+type ActivityWeek = Array<ActivityDay | null>;
 
 type DailyVolume = {
   key: string;
@@ -33,6 +41,18 @@ function dateKey(date: Date): string {
     String(date.getMonth() + 1).padStart(2, '0'),
     String(date.getDate()).padStart(2, '0'),
   ].join('-');
+}
+
+function makeEmptyWeek(): ActivityWeek {
+  return Array<ActivityDay | null>(DAYS_PER_WEEK).fill(null);
+}
+
+function getMonthDateCount(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+}
+
+function getCalendarWeekdayIndex(date: Date, weekStartsOn: number): number {
+  return (date.getDay() - weekStartsOn + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 }
 
 export function getMonthSummary(
@@ -68,37 +88,48 @@ export function getMonthSummary(
   };
 }
 
-export function buildMonthDays(
+export function buildMonthWeeks(
   workouts: WorkoutHistoryItem[],
+  firstDayOfWeek: FirstDayOfWeek,
   now = new Date(),
-): ActivityDay[] {
+): ActivityWeek[] {
   const activeDates = new Set(
     workouts.map(workout => dateKey(new Date(workout.startedAt))),
   );
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const gridStart = new Date(monthStart);
-  const mondayOffset = (monthStart.getDay() + 6) % 7;
-  gridStart.setDate(gridStart.getDate() - mondayOffset);
+  const weekStartsOn = firstDayOfWeekToIndex(firstDayOfWeek);
+  const weeks: ActivityWeek[] = [makeEmptyWeek()];
+  const daysInMonth = getMonthDateCount(now);
 
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(gridStart);
-    date.setDate(gridStart.getDate() + index);
-    return {
+  for (let dayOfMonth = 1; dayOfMonth <= daysInMonth; dayOfMonth += 1) {
+    const date = new Date(now.getFullYear(), now.getMonth(), dayOfMonth);
+    const weekdayIndex = getCalendarWeekdayIndex(date, weekStartsOn);
+
+    if (dayOfMonth > 1 && weekdayIndex === 0) {
+      weeks.push(makeEmptyWeek());
+    }
+
+    const key = dateKey(date);
+    const weekIndex = weeks.length - 1;
+    weeks[weekIndex][weekdayIndex] = {
       date,
-      key: dateKey(date),
-      active: activeDates.has(dateKey(date)),
-      inMonth: date.getMonth() === now.getMonth(),
+      key,
+      active: activeDates.has(key),
     };
-  });
+  }
+
+  return weeks;
 }
 
-export function buildWeekdayLabels(language: string): string[] {
-  // 2024-01-01 is a Monday; the calendar grid starts on Monday.
-  return Array.from({ length: 7 }, (_, index) =>
-    new Date(2024, 0, 1 + index).toLocaleDateString(language, {
-      weekday: 'narrow',
-    }),
-  );
+export function buildWeekdayLabels(
+  language: string,
+  firstDayOfWeek: FirstDayOfWeek,
+): string[] {
+  const weekStartsOn = firstDayOfWeekToIndex(firstDayOfWeek);
+  return Array.from({ length: DAYS_PER_WEEK }, (_, index) => {
+    const date = new Date(SUNDAY_REFERENCE_DATE);
+    date.setDate(SUNDAY_REFERENCE_DATE.getDate() + weekStartsOn + index);
+    return date.toLocaleDateString(language, { weekday: 'narrow' });
+  });
 }
 
 export function buildDailyVolume(
@@ -112,9 +143,9 @@ export function buildDailyVolume(
     volumeByDate.set(key, (volumeByDate.get(key) ?? 0) + workout.totalVolumeKg);
   });
 
-  return Array.from({ length: 7 }, (_, index) => {
+  return Array.from({ length: DAYS_PER_WEEK }, (_, index) => {
     const date = new Date(now);
-    date.setDate(now.getDate() - (6 - index));
+    date.setDate(now.getDate() - (DAYS_PER_WEEK - 1 - index));
     const key = dateKey(date);
     return {
       key,

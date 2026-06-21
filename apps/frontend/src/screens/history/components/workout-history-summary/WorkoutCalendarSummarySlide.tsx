@@ -1,9 +1,10 @@
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
+import { useAppSettingsStore } from '@/stores/appSettingsStore';
 import { SummarySlideHeader } from './SummarySlideHeader';
 import {
-  buildMonthDays,
+  buildMonthWeeks,
   buildWeekdayLabels,
   getMonthSummary,
 } from './workoutHistorySummaryModel';
@@ -16,9 +17,10 @@ export function WorkoutCalendarSummarySlide({
   workouts,
 }: WorkoutCalendarSummarySlideProps) {
   const { t, i18n } = useTranslation();
+  const firstDayOfWeek = useAppSettingsStore(state => state.firstDayOfWeek);
   const summary = getMonthSummary(workouts, i18n.language);
-  const calendarDays = buildMonthDays(workouts);
-  const weekdayLabels = buildWeekdayLabels(i18n.language);
+  const calendarWeeks = buildMonthWeeks(workouts, firstDayOfWeek);
+  const weekdayLabels = buildWeekdayLabels(i18n.language, firstDayOfWeek);
 
   return (
     <View className="flex-1 gap-4 p-5" collapsable={false}>
@@ -56,25 +58,27 @@ export function WorkoutCalendarSummarySlide({
             </Text>
           ))}
         </View>
-        <View className="flex-row flex-wrap">
-          {calendarDays.map(day => (
-            <View
-              key={day.key}
-              className="h-7 w-[14.2857%] items-center justify-center"
-            >
-              <View
-                className={`h-6 w-6 items-center justify-center rounded-full ${
-                  day.active ? 'bg-accent' : ''
-                }`}
-              >
-                <Text
-                  className={`text-[10px] font-semibold tabular-nums ${
-                    day.inMonth ? 'text-cream' : 'text-cream/20'
-                  }`}
+        <View className="gap-1">
+          {calendarWeeks.map((week, weekIndex) => (
+            <View key={weekIndex} className="flex-row">
+              {week.map((day, dayIndex) => (
+                <View
+                  key={day?.key ?? `${weekIndex}-${dayIndex}`}
+                  className="h-7 flex-1 items-center justify-center"
                 >
-                  {day.date.getDate()}
-                </Text>
-              </View>
+                  {day ? (
+                    <View
+                      className={`h-6 w-6 items-center justify-center rounded-full ${
+                        day.active ? 'bg-accent' : ''
+                      }`}
+                    >
+                      <Text className="text-[10px] font-semibold tabular-nums text-cream">
+                        {day.date.getDate()}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
             </View>
           ))}
         </View>

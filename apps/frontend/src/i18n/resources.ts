@@ -50,6 +50,11 @@ export const resources = {
       },
       settings: {
         language: 'Language',
+        weekStartsOn: {
+          label: 'First day of week',
+          sunday: 'Sunday',
+          monday: 'Monday',
+        },
       },
       tabs: {
         home: 'Home',
@@ -795,6 +800,11 @@ export const resources = {
       },
       settings: {
         language: 'Sprache',
+        weekStartsOn: {
+          label: 'Erster Wochentag',
+          sunday: 'Sonntag',
+          monday: 'Montag',
+        },
       },
       tabs: {
         home: 'Home',
