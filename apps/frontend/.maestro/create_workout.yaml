@@ -3,20 +3,36 @@ appId: ${APP_ID}
 - launchApp:
     clearState: true
 - tapOn: 'Skip'
+# Dismiss the React Native dev warning banner if it is present. Its transparent
+# parent view covers the tab hit area after onboarding and blocks tab taps.
+- tapOn:
+    point: 92%,92%
 # Native tab bar items expose no testID — tap by the visible label instead.
 - tapOn: 'Library'
 - waitForAnimationToEnd
 - assertVisible:
-    id: 'screen-library'
+    id: 'create_workout'
 - tapOn:
     id: 'create_workout'
 
+- assertVisible: 'New template'
+- tapOn: 'Template name'
+- inputText: 'Maestro Workout'
+- hideKeyboard
+- tapOn: 'Choose exercises'
+- assertVisible: 'Exercise Library'
+- tapOn: 'Create exercise'
 - assertVisible: 'New Exercise'
 - tapOn: 'e.g. Barbell Bench Press'
-- inputText: 'Test excercise'
-- tapOn:
-    point: 74%,23%
+- inputText: 'Maestro Exercise'
+- hideKeyboard
 - tapOn: 'Add Exercise'
+- assertVisible: 'Exercise Library'
 - tapOn: 'Search name, muscle, or type'
-- inputText: 'Test'
-- assertVisible: 'Test excercise'
+- inputText: 'Maestro'
+- assertVisible: 'Maestro Exercise'
+- tapOn: 'Maestro Exercise'
+- tapOn: 'Use 1 exercise'
+- assertVisible: 'Maestro Exercise'
+- tapOn: 'Save template'
+- assertVisible: 'Maestro Workout'
