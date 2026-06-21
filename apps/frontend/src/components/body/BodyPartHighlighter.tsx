@@ -91,6 +91,39 @@ export const MUSCLE_GROUP_BODY_PARTS = {
 
 export type MuscleGroupBodyPartKey = keyof typeof MUSCLE_GROUP_BODY_PARTS;
 
+const MUSCLE_GROUP_LABELS = {
+  abs: 'Abs',
+  back: 'Back',
+  biceps: 'Biceps',
+  calves: 'Calves',
+  chest: 'Chest',
+  forearms: 'Forearms',
+  glutes: 'Glutes',
+  hamstrings: 'Hamstrings',
+  quads: 'Quads',
+  shoulders: 'Shoulders',
+  traps: 'Traps',
+  triceps: 'Triceps',
+} as const satisfies Record<MuscleGroupBodyPartKey, string>;
+
+export const BODY_HIGHLIGHTER_MUSCLE_GROUPS = Object.keys(
+  MUSCLE_GROUP_BODY_PARTS,
+).map(key => {
+  const muscleGroupKey = key as MuscleGroupBodyPartKey;
+
+  return {
+    id: `default-mg-${muscleGroupKey}`,
+    key: muscleGroupKey,
+    name: MUSCLE_GROUP_LABELS[muscleGroupKey],
+    bodyParts: MUSCLE_GROUP_BODY_PARTS[muscleGroupKey],
+  };
+}) satisfies ReadonlyArray<{
+  id: string;
+  key: MuscleGroupBodyPartKey;
+  name: string;
+  bodyParts: ReadonlyArray<BodyHighlighterPart>;
+}>;
+
 function normalizeIntensity(
   intensity: number | undefined,
   paletteSize: number,

@@ -164,7 +164,6 @@ export function ExerciseForm({
     selectedMgNames,
     pickImage,
     handleCreateType,
-    handleCreateMuscleGroup,
     handleSave,
     handleDelete,
   } = useExerciseDraft(exercise, onSaved);
@@ -295,7 +294,6 @@ export function ExerciseForm({
         multiSelect
         onClose={() => setMgPickerVisible(false)}
         onChange={setMuscleGroupIds}
-        onCreate={handleCreateMuscleGroup}
       />
     </View>
   );

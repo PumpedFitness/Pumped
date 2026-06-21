@@ -16,12 +16,12 @@ type LibraryItem = {
 type LibraryPickerProps = {
   visible: boolean;
   title: string;
-  items: LibraryItem[];
+  items: ReadonlyArray<LibraryItem>;
   selectedIds: string[];
   multiSelect?: boolean;
   onClose: () => void;
   onChange: (selectedIds: string[]) => void;
-  onCreate: (name: string) => string;
+  onCreate?: (name: string) => string;
 };
 
 function LibraryPickerContent({
@@ -46,7 +46,7 @@ function LibraryPickerContent({
   const exactMatch = items.some(
     item => item.name.toLocaleLowerCase() === trimmed.toLocaleLowerCase(),
   );
-  const showCreate = trimmed.length > 0 && !exactMatch;
+  const showCreate = !!onCreate && trimmed.length > 0 && !exactMatch;
 
   const toggle = (id: string) => {
     if (multiSelect) {
@@ -62,6 +62,8 @@ function LibraryPickerContent({
   };
 
   const handleCreate = () => {
+    if (!onCreate) return;
+
     const newId = onCreate(trimmed);
     if (multiSelect) {
       onChange([...selectedIds, newId]);
@@ -93,7 +95,11 @@ function LibraryPickerContent({
       <View className="absolute top-0 left-0 right-0 px-4 pt-3 z-10">
         <SearchInput
           accessibilityLabel={t('exerciseForm.pickers.searchA11y', { title })}
-          placeholder={t('exerciseForm.pickers.searchPlaceholder')}
+          placeholder={t(
+            onCreate
+              ? 'exerciseForm.pickers.searchPlaceholder'
+              : 'exerciseForm.pickers.searchOnlyPlaceholder',
+          )}
           value={search}
           onChangeText={setSearch}
           height={48}

@@ -575,6 +575,7 @@ export const resources = {
           typeTitle: 'Exercise Type',
           muscleGroupsTitle: 'Muscle Groups',
           searchPlaceholder: 'Search or create...',
+          searchOnlyPlaceholder: 'Search...',
           searchA11y: 'Search {{title}}',
           addNew: 'Add "{{name}}"',
           doneCount: 'Done ({{count}})',
@@ -1191,7 +1192,8 @@ export const resources = {
         iconLabel: 'Symbol',
         fieldsLabel: 'Erfasste Felder',
         addField: 'Feld hinzufügen',
-        emptyFields: 'Füge ein Feld hinzu, um Werte wie Wdh. oder Gewicht zu erfassen.',
+        emptyFields:
+          'Füge ein Feld hinzu, um Werte wie Wdh. oder Gewicht zu erfassen.',
         deleteSetType: 'Satztyp löschen',
         fieldSheet: {
           addTitle: 'Feld hinzufügen',
@@ -1399,6 +1401,7 @@ export const resources = {
           typeTitle: 'Übungstyp',
           muscleGroupsTitle: 'Muskelgruppen',
           searchPlaceholder: 'Suchen oder erstellen...',
+          searchOnlyPlaceholder: 'Suchen...',
           searchA11y: '{{title}} durchsuchen',
           addNew: '„{{name}}“ hinzufügen',
           doneCount: 'Fertig ({{count}})',
