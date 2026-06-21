@@ -1,7 +1,6 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
@@ -36,11 +35,7 @@ function templateToInput(template: WorkoutTemplate): SaveWorkoutTemplateInput {
   };
 }
 
-type WorkoutsLibraryProps = {
-  leadingHeader?: ReactNode;
-};
-
-export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
+export function WorkoutsLibrary() {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -71,17 +66,15 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
     navigation.navigate('WorkoutTemplateEditor', { templateId: template.id });
   };
 
-  const header = (
-    <View className="flex-row items-center justify-end">
-      <Button
-        className="h-10 rounded-full px-4"
-        variant="ghost"
-        feedbackVariant="scale"
-        onPress={() => navigation.navigate('WorkoutPlaceholder')}
-      >
-        <Button.Label>{t('plan.browseWorkouts')}</Button.Label>
-      </Button>
-    </View>
+  const browseWorkoutsAction = (
+    <Button
+      className="mt-1 rounded-full"
+      variant="secondary"
+      feedbackVariant="scale"
+      onPress={() => navigation.navigate('WorkoutPlaceholder')}
+    >
+      <Button.Label>{t('plan.browseWorkouts')}</Button.Label>
+    </Button>
   );
 
   return (
@@ -115,8 +108,8 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
       emptyIconName="dumbbell"
       createTestID="create_workout"
       onCreate={() => navigation.navigate('WorkoutTemplateEditor')}
-      header={header}
-      leadingHeader={leadingHeader}
+      noMatchAction={browseWorkoutsAction}
+      searchFooter={browseWorkoutsAction}
     />
   );
 }

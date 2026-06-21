@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, Pressable, type LayoutChangeEvent } from 'react-native';
-import { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { motion } from '@/theme/tokens';
 import { AnimatedView } from '@/components/uniwind';
 
@@ -34,17 +39,29 @@ export function SegmentedControl({
   // Must stay in sync with the p-[3px] / top-[3px] / bottom-[3px] classes below.
   const padding = 3;
   const segmentWidth = (containerWidth - padding * 2) / n;
+  const thumbTranslateX = useSharedValue(padding);
+  const thumbWidth = useSharedValue(0);
+
+  useEffect(() => {
+    if (containerWidth <= 0) {
+      return;
+    }
+
+    const timing = {
+      duration: motion.base,
+      easing: Easing.bezier(0.22, 0.61, 0.36, 1),
+    };
+    thumbTranslateX.value = withTiming(padding + idx * segmentWidth, timing);
+    thumbWidth.value = withTiming(segmentWidth, timing);
+  }, [containerWidth, idx, segmentWidth, thumbTranslateX, thumbWidth]);
 
   const thumbStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateX: withTiming(padding + idx * segmentWidth, {
-          duration: motion.base,
-          easing: Easing.bezier(0.22, 0.61, 0.36, 1),
-        }),
+        translateX: thumbTranslateX.value,
       },
     ],
-    width: segmentWidth,
+    width: thumbWidth.value,
   }));
 
   const onLayout = (e: LayoutChangeEvent) => {

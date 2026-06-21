@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -10,10 +9,6 @@ import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import type { SetTypeWithFields } from '@/types/setType';
-
-type SetTypeLibraryProps = {
-  leadingHeader?: ReactNode;
-};
 
 type SetTypeRowProps = {
   type: SetTypeWithFields;
@@ -59,7 +54,7 @@ function SetTypeRow({ type, onPress }: SetTypeRowProps) {
   );
 }
 
-export function SetTypeLibrary({ leadingHeader }: SetTypeLibraryProps) {
+export function SetTypeLibrary() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { items, deleteSetType } = useSetTypeLibrary();
@@ -73,7 +68,9 @@ export function SetTypeLibrary({ leadingHeader }: SetTypeLibraryProps) {
     return type.isBuiltIn ? (
       row
     ) : (
-      <SwipeToDelete onDelete={() => deleteSetType(type.id)}>{row}</SwipeToDelete>
+      <SwipeToDelete onDelete={() => deleteSetType(type.id)}>
+        {row}
+      </SwipeToDelete>
     );
   };
 
@@ -87,7 +84,6 @@ export function SetTypeLibrary({ leadingHeader }: SetTypeLibraryProps) {
       renderItem={renderRow}
       namespace="setTypeLibrary"
       emptyIconName="dumbbell"
-      leadingHeader={leadingHeader}
       stickySearch
       itemGap={8}
       createTestID="create_set_type"

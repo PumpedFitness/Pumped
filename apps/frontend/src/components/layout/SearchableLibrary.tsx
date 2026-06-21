@@ -33,14 +33,12 @@ type SearchableLibraryProps<T> = {
   emptyState?: ReactNode;
   /** Override the default "search excluded everything" state. */
   noMatchState?: ReactNode;
+  /** Optional action rendered in the default no-match state. */
+  noMatchAction?: ReactNode;
+  /** Optional footer rendered below filtered results while a search is active. */
+  searchFooter?: ReactNode;
   /** Scrolls above the search row (e.g. a hero card or "browse" action). */
   header?: ReactNode;
-  /**
-   * Pinned chrome rendered above everything (e.g. a segmented control). Stays
-   * fixed while the list scrolls. Lives inside the ScrollView so the native tab
-   * bar can still detect it as the screen's first-descendant scroll view.
-   */
-  leadingHeader?: ReactNode;
   /** Keep the search row pinned while only the list scrolls. */
   stickySearch?: boolean;
   /** Vertical spacing between list rows. */
@@ -60,13 +58,15 @@ export function SearchableLibrary<T>({
   emptyIconName = 'search',
   emptyState,
   noMatchState,
+  noMatchAction,
+  searchFooter,
   header,
-  leadingHeader,
   stickySearch = false,
   itemGap = DEFAULT_ITEM_GAP,
 }: SearchableLibraryProps<T>) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
+  const isSearching = searchQuery.trim().length > 0;
 
   // The namespace is a runtime value, so each composed key is asserted valid.
   const tk = (sub: string): string => t(`${namespace}.${sub}` as never);
@@ -116,6 +116,7 @@ export function SearchableLibrary<T>({
       bodyClassName="max-w-64"
       title={tk('noMatch.title')}
       body={tk('noMatch.body')}
+      action={noMatchAction}
     />
   );
 
@@ -143,39 +144,36 @@ export function SearchableLibrary<T>({
 
   const list =
     filtered.length > 0
-      ? filtered.map(item => (
-          // One fluid removal: a deleted row keeps sliding off to the left
-          // (continuing the swipe), while the siblings glide up to close the gap
-          // over the same window — so the swipe, the slide-off, and the collapse
-          // read as a single motion. Durations/easing are matched on purpose.
-          <Animated.View
-            key={keyExtractor(item)}
-            layout={LinearTransition.duration(motion.base).easing(
-              Easing.inOut(Easing.cubic),
-            )}
-            entering={FadeIn.duration(motion.fast)}
-            exiting={SlideOutLeft.duration(motion.base).easing(
-              Easing.in(Easing.cubic),
-            )}
-          >
-            {renderItem(item)}
-          </Animated.View>
-        ))
+      ? [
+          ...filtered.map(item => (
+            // One fluid removal: a deleted row keeps sliding off to the left
+            // (continuing the swipe), while the siblings glide up to close the gap
+            // over the same window — so the swipe, the slide-off, and the collapse
+            // read as a single motion. Durations/easing are matched on purpose.
+            <Animated.View
+              key={keyExtractor(item)}
+              layout={LinearTransition.duration(motion.base).easing(
+                Easing.inOut(Easing.cubic),
+              )}
+              entering={FadeIn.duration(motion.fast)}
+              exiting={SlideOutLeft.duration(motion.base).easing(
+                Easing.in(Easing.cubic),
+              )}
+            >
+              {renderItem(item)}
+            </Animated.View>
+          )),
+          isSearching && searchFooter ? (
+            <View key="search-footer">{searchFooter}</View>
+          ) : null,
+        ]
       : items.length === 0
       ? emptyState ?? defaultEmpty
       : noMatchState ?? defaultNoMatch;
 
-  // Pinned chrome (segmented control and/or the search row) rendered as a single
-  // sticky header *inside* the ScrollView. Keeping it inside means the ScrollView
-  // stays the screen's first-descendant scroll view, which is what the native tab
-  // bar tracks to auto-inset content and to minimize on scroll.
-  const pinned =
-    leadingHeader || stickySearch ? (
-      <View className="gap-3 bg-background px-5 pt-4">
-        {leadingHeader}
-        {stickySearch ? searchRow : null}
-      </View>
-    ) : null;
+  const pinned = stickySearch ? (
+    <View className="bg-background px-5 pt-4">{searchRow}</View>
+  ) : null;
 
   return (
     <ScrollView

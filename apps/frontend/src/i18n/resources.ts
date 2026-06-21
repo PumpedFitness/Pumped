@@ -208,8 +208,8 @@ export const resources = {
       },
       plan: {
         browseWorkouts: 'Browse workouts',
-        searchPlaceholder: 'Search templates or exercises',
-        searchA11y: 'Search workout templates',
+        searchPlaceholder: 'Search by name or exercise',
+        searchA11y: 'Search workout templates by name or exercise',
         createA11y: 'Create workout template',
         status: {
           active: 'Active',
@@ -229,7 +229,7 @@ export const resources = {
         },
         noMatch: {
           title: 'No matching templates',
-          body: 'Try another search or choose a different status.',
+          body: 'Try another name or exercise, or browse premade workouts.',
         },
         schedules: {
           createA11y: 'Create schedule',
@@ -1026,8 +1026,8 @@ export const resources = {
       },
       plan: {
         browseWorkouts: 'Workouts entdecken',
-        searchPlaceholder: 'Vorlagen oder Übungen suchen',
-        searchA11y: 'Workout-Vorlagen durchsuchen',
+        searchPlaceholder: 'Nach Name oder Übung suchen',
+        searchA11y: 'Workout-Vorlagen nach Name oder Übung durchsuchen',
         createA11y: 'Workout-Vorlage erstellen',
         status: {
           active: 'Aktiv',
@@ -1047,7 +1047,7 @@ export const resources = {
         },
         noMatch: {
           title: 'Keine passenden Vorlagen',
-          body: 'Versuche eine andere Suche oder wähle einen anderen Status.',
+          body: 'Versuche einen anderen Namen oder eine andere Übung, oder entdecke vorgefertigte Workouts.',
         },
         schedules: {
           createA11y: 'Zeitplan erstellen',
