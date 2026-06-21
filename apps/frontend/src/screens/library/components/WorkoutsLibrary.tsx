@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { useUndoToast } from '@/components/feedback/UndoToast';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
+import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -41,6 +43,7 @@ export function WorkoutsLibrary() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { templates, exerciseOptions, deleteTemplate, saveTemplate } =
     useWorkoutTemplates();
+  const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
   const { isFavorite, toggleFavorite } = useLocalFavorites();
   const { showUndo } = useUndoToast();
 
@@ -64,6 +67,32 @@ export function WorkoutsLibrary() {
 
   const openEdit = (template: WorkoutTemplate) => {
     navigation.navigate('WorkoutTemplateEditor', { templateId: template.id });
+  };
+
+  const startTemplate = (template: WorkoutTemplate) => {
+    if (currentWorkout) {
+      Alert.alert(
+        t('plan.alerts.inProgressTitle'),
+        t('plan.alerts.inProgressBody', { name: currentWorkout.name }),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('plan.alerts.openWorkout'),
+            onPress: () => navigation.navigate('CurrentWorkout'),
+          },
+        ],
+      );
+      return;
+    }
+    try {
+      startTemplateWorkout(template.id);
+      navigation.navigate('CurrentWorkout');
+    } catch (error) {
+      Alert.alert(
+        t('plan.alerts.startFailedTitle'),
+        error instanceof Error ? error.message : t('common.tryAgain'),
+      );
+    }
   };
 
   const browseWorkoutsAction = (
@@ -101,6 +130,7 @@ export function WorkoutsLibrary() {
             template={template}
             exerciseNames={exerciseNames}
             onEdit={openEdit}
+            onStart={startTemplate}
           />
         </LibrarySwipeRow>
       )}

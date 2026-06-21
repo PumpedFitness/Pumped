@@ -221,6 +221,7 @@ export const resources = {
           noExercisesYet: 'No exercises yet',
           morePreview: '+{{count}}',
           editA11y: 'Edit {{name}}',
+          startA11y: 'Start {{name}}',
         },
         empty: {
           title: 'No templates yet',
@@ -1040,6 +1041,7 @@ export const resources = {
           noExercisesYet: 'Noch keine Übungen',
           morePreview: '+{{count}}',
           editA11y: '{{name}} bearbeiten',
+          startA11y: '{{name}} starten',
         },
         empty: {
           title: 'Noch keine Vorlagen',
