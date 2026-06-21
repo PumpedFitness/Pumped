@@ -1,62 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput } from 'react-native';
 import { colors } from '@/theme/tokens';
-import { formatSetNumber, type SetField } from './exerciseSetTableModel';
+import { formatSetNumber } from './exerciseSetTableModel';
 
-type SetTypeCellProps = {
-  label: string;
-  value: string;
-  onPress?: () => void;
-};
-
-type NumberInputCellProps = {
-  label: string;
+type EditableNumberInputProps = {
+  accessibilityLabel: string;
   value: number | null;
   allowDecimal: boolean;
   hasError?: boolean;
-  readOnly?: boolean;
   onChange: (value: number | null) => void;
 };
 
-type WheelValueCellProps = {
-  field: Extract<SetField, { inputMethod: 'wheel' }>;
+type ValueButtonProps = {
+  accessibilityLabel: string;
+  display: string;
   hasError?: boolean;
   onPress?: () => void;
 };
-
-export function SetTypeCell({ label, value, onPress }: SetTypeCellProps) {
-  if (!onPress) {
-    return (
-      <Text
-        accessibilityLabel={`${label}: ${value || '-'}`}
-        className={`h-10 flex-1 py-3 pl-1 text-left text-[12px] font-bold ${
-          value ? 'text-foreground' : 'text-muted'
-        }`}
-        numberOfLines={1}
-      >
-        {value || '-'}
-      </Text>
-    );
-  }
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${label}: ${value || '-'}`}
-      className="h-10 flex-1 justify-center rounded-[10px] px-1 active:bg-surface-card"
-      onPress={onPress}
-    >
-      <Text
-        className={`text-left text-[12px] font-bold ${
-          value ? 'text-foreground' : 'text-muted'
-        }`}
-        numberOfLines={1}
-      >
-        {value || '-'}
-      </Text>
-    </Pressable>
-  );
-}
 
 function parseInputValue(value: string, allowDecimal: boolean): number | null {
   const normalized = value.trim().replace(',', '.');
@@ -71,48 +31,14 @@ function parseInputValue(value: string, allowDecimal: boolean): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function NumberInputCell({
-  label,
-  value,
-  allowDecimal,
-  hasError = false,
-  readOnly = false,
-  onChange,
-}: NumberInputCellProps) {
-  if (readOnly) {
-    const formattedValue = formatSetNumber(value);
-
-    return (
-      <Text
-        accessibilityLabel={`${label}: ${formattedValue || '-'}`}
-        className={`h-10 flex-1 py-3 text-center text-[12px] font-bold tabular-nums ${
-          formattedValue ? 'text-foreground' : 'text-muted'
-        }`}
-        numberOfLines={1}
-      >
-        {formattedValue || '-'}
-      </Text>
-    );
-  }
-
-  return (
-    <EditableNumberInputCell
-      label={label}
-      value={value}
-      allowDecimal={allowDecimal}
-      hasError={hasError}
-      onChange={onChange}
-    />
-  );
-}
-
-function EditableNumberInputCell({
-  label,
+/** Inline keyboard-entry number input sized for a set-card chip body. */
+export function EditableNumberInput({
+  accessibilityLabel,
   value,
   allowDecimal,
   hasError = false,
   onChange,
-}: NumberInputCellProps) {
+}: EditableNumberInputProps) {
   const [draft, setDraft] = useState(() => formatSetNumber(value));
   const isFocused = useRef(false);
 
@@ -141,14 +67,12 @@ function EditableNumberInputCell({
 
   return (
     <TextInput
-      accessibilityLabel={label}
-      className={`h-10 flex-1 rounded-[10px] border px-1 text-center text-[12px] font-bold tabular-nums ${
-        hasError
-          ? 'border-danger bg-danger/10 text-danger'
-          : 'border-transparent text-foreground'
+      accessibilityLabel={accessibilityLabel}
+      className={`min-w-12 text-[17px] font-bold tabular-nums ${
+        hasError ? 'text-danger' : 'text-foreground'
       }`}
       keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
-      placeholder="-"
+      placeholder="–"
       placeholderTextColor={hasError ? colors.danger : colors.muted}
       returnKeyType="done"
       selectTextOnFocus
@@ -169,23 +93,25 @@ function EditableNumberInputCell({
   );
 }
 
-export function WheelValueCell({
-  field,
+/** Tappable value (opens a wheel / range sheet), or static text when read-only. */
+export function ValueButton({
+  accessibilityLabel,
+  display,
   hasError = false,
   onPress,
-}: WheelValueCellProps) {
-  const value = formatSetNumber(field.value);
+}: ValueButtonProps) {
+  const textClass = `text-[17px] font-bold tabular-nums ${
+    hasError ? 'text-danger' : display ? 'text-foreground' : 'text-muted'
+  }`;
 
   if (!onPress) {
     return (
       <Text
-        accessibilityLabel={`${field.accessibilityLabel}: ${value || '-'}`}
-        className={`h-10 flex-1 py-3 text-center text-[12px] font-bold tabular-nums ${
-          value ? 'text-foreground' : 'text-muted'
-        }`}
+        accessibilityLabel={`${accessibilityLabel}: ${display || '-'}`}
+        className={textClass}
         numberOfLines={1}
       >
-        {value || '-'}
+        {display || '–'}
       </Text>
     );
   }
@@ -193,21 +119,12 @@ export function WheelValueCell({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${field.accessibilityLabel}: ${value || '-'}`}
-      className={`h-10 flex-1 justify-center rounded-[10px] border px-1 ${
-        hasError
-          ? 'border-danger bg-danger/10'
-          : 'border-transparent active:bg-surface-card'
-      }`}
+      accessibilityLabel={`${accessibilityLabel}: ${display || '-'}`}
+      hitSlop={6}
       onPress={onPress}
     >
-      <Text
-        className={`text-center text-[12px] font-bold tabular-nums ${
-          hasError ? 'text-danger' : value ? 'text-foreground' : 'text-muted'
-        }`}
-        numberOfLines={1}
-      >
-        {value || '-'}
+      <Text className={textClass} numberOfLines={1}>
+        {display || '–'}
       </Text>
     </Pressable>
   );

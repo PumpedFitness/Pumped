@@ -1,72 +1,74 @@
-import { useState, type ComponentProps } from 'react';
-import { Input } from 'heroui-native';
+import type { ReactNode } from 'react';
+import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { EditableExercise, EditableExerciseSet } from '@/types/exercise';
+import { Button } from 'heroui-native';
 import { ExerciseCard } from '@/components/exercise/ExerciseCard';
-import { CollapsibleExerciseSetTable } from '@/components/exercise/set-table';
-
-type SetTypeOptions = ComponentProps<
-  typeof CollapsibleExerciseSetTable
->['setTypeOptions'];
+import { useTemplateEditor } from '@/screens/library/template-editor/templateEditorContext';
+import type { EditorExercise } from '@/screens/library/template-editor/useEditorExercises';
 
 type ExerciseEditorCardProps = {
-  exercise: EditableExercise;
-  name: string;
-  description?: string;
-  goalPlaceholder?: string;
-  addSetLabel?: string;
-  setTypeOptions: SetTypeOptions;
-  setSummary: string;
-  onGoalChange: (goal: string) => void;
-  onSetChange: (setIndex: number, set: EditableExerciseSet) => void;
-  onAddSet: () => void;
-  onRemoveSet: (setIndex: number) => void;
-  onRemove: () => void;
+  exercise: EditorExercise;
+  dragHandle?: ReactNode;
 };
 
 export function ExerciseEditorCard({
   exercise,
-  name,
-  description,
-  goalPlaceholder,
-  addSetLabel,
-  setTypeOptions,
-  setSummary,
-  onGoalChange,
-  onSetChange,
-  onAddSet,
-  onRemoveSet,
-  onRemove,
+  dragHandle,
 }: ExerciseEditorCardProps) {
   const { t } = useTranslation();
-  const [setsExpanded, setSetsExpanded] = useState(false);
+  const { editExercise, removeExercise } = useTemplateEditor();
 
   return (
     <ExerciseCard
-      name={name}
-      description={description ?? t('templateEditor.exercises.cardDescription')}
-      onRemove={onRemove}
+      name={exercise.name}
+      description={
+        exercise.type?.name ?? t('templateEditor.exercises.cardDescription')
+      }
+      headerAccessory={dragHandle}
+      onRemove={() => removeExercise(exercise.exerciseId)}
     >
-      <Input
-        className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
-        placeholder={
-          goalPlaceholder ?? t('templateEditor.exercises.goalPlaceholder')
-        }
-        value={exercise.goal}
-        onChangeText={onGoalChange}
-      />
+      {exercise.goal ? (
+        <Text className="t-caption text-foreground-secondary">
+          {exercise.goal}
+        </Text>
+      ) : null}
 
-      <CollapsibleExerciseSetTable
-        sets={exercise.sets}
-        setTypeOptions={setTypeOptions}
-        summary={setSummary}
-        expanded={setsExpanded}
-        addSetLabel={addSetLabel ?? t('setTable.addSet')}
-        onToggle={() => setSetsExpanded(current => !current)}
-        onAddSet={onAddSet}
-        onChangeSet={onSetChange}
-        onRemoveSet={onRemoveSet}
-      />
+      <View className="gap-2 rounded-[16px] border border-border-soft bg-surface-sunk p-3">
+        <Text className="t-label">
+          {t('common.set', { count: exercise.setViews.length })}
+        </Text>
+
+        {exercise.setViews.length > 0 ? (
+          exercise.setViews.map((view, index) => (
+            <View key={view.id} className="flex-row items-center gap-2">
+              <Text className="w-5 text-center text-[12px] font-bold tabular-nums text-muted">
+                {index + 1}
+              </Text>
+              <Text className="t-label w-20" numberOfLines={1}>
+                {view.typeLabel}
+              </Text>
+              <Text
+                className="t-caption flex-1 text-foreground-secondary"
+                numberOfLines={1}
+              >
+                {view.detail || '—'}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text className="t-caption text-muted">
+            {t('templateEditor.exercises.noSets')}
+          </Text>
+        )}
+      </View>
+
+      <Button
+        variant="secondary"
+        feedbackVariant="scale"
+        onPress={() => editExercise(exercise)}
+      >
+        <Button.Label>{t('templateEditor.exercises.edit')}</Button.Label>
+      </Button>
     </ExerciseCard>
   );
 }

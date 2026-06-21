@@ -5,6 +5,9 @@ export { exercises } from './exercise';
 export { exerciseTypes } from './exerciseType';
 export { importBatches } from './importBatch';
 export { muscleGroups } from './muscleGroup';
+export { setTypes } from './setType';
+export { setTypeFields } from './setTypeField';
+export { workoutExerciseTypes } from './workoutExerciseType';
 export {
   workoutTemplates,
   workoutTemplateExercises,

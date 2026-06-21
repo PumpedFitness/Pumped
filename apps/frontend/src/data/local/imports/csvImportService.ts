@@ -2,6 +2,7 @@ import { randomUUID } from 'expo-crypto';
 import { and, asc, desc, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { i18n } from '@/i18n';
 import type { WorkoutSetType } from '@/data/local/enums';
+import { buildBuiltInFieldValues } from '@/data/local/builtins';
 import { db } from '@/data/local/database';
 import {
   exercises,
@@ -164,10 +165,14 @@ function parseTimestamp(value: string): number | null {
 function normalizeSetType(value: string): WorkoutSetType {
   const normalized = value.toLowerCase().replace(/[^a-z]/g, '');
   if (normalized.includes('warm')) return 'WARMUP';
-  if (normalized.includes('back')) return 'BACKOFF';
-  if (normalized.includes('drop')) return 'DROP';
-  if (normalized.includes('amrap') || normalized.includes('failure')) {
-    return 'AMRAP';
+  if (
+    normalized.includes('max') ||
+    normalized.includes('amrap') ||
+    normalized.includes('failure') ||
+    normalized.includes('drop') ||
+    normalized.includes('top')
+  ) {
+    return 'MAX_EFFORT';
   }
   return 'NORMAL';
 }
@@ -320,9 +325,8 @@ function writeImportedSessions(
             ? Math.max(0, Math.round(set.setPosition))
             : fallbackPosition,
         setType: set.setType,
-        reps: set.reps,
-        weight: set.weight ?? null,
-        rpe: set.rpe ?? null,
+        restSeconds: null,
+        fieldValues: buildBuiltInFieldValues(set.setType, set),
         performedAt: null,
         importId,
       };

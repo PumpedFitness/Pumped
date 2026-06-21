@@ -4,9 +4,27 @@ import {
 } from '@/data/local/workouts/sessions';
 import { useTableQuery } from '@/data/local/tableVersions';
 import { performedSets, workoutSessions } from '@/data/local/schema';
+import { getSetTypeFieldDefs } from '@/data/local/sets/setTypes';
+import { getNumberValue } from '@/data/local/sets/fieldValues';
 import type { ExerciseOption } from '@/types/exercise';
-import type { WorkoutSessionDetails } from '@/types/workout';
+import type { PerformedSet, WorkoutSessionDetails } from '@/types/workout';
 import { useExerciseOptions } from './useExerciseOptions';
+
+// Volume = weight × reps, resolved generically from the set type's fields: the
+// first weight (`amount` unit) field times the first plain-count number field.
+function performedSetVolume(set: PerformedSet): number {
+  const fields = getSetTypeFieldDefs(set.setType);
+  const weightField = fields.find(field => field.unit === 'amount');
+  const repsField = fields.find(
+    field => field.dataType === 'number' && field.unit === null,
+  );
+  if (!weightField || !repsField) {
+    return 0;
+  }
+  const weight = getNumberValue(set.fieldValues, weightField.id) ?? 0;
+  const reps = getNumberValue(set.fieldValues, repsField.id) ?? 0;
+  return weight * reps;
+}
 
 export type WorkoutHistoryItem = WorkoutSessionDetails & {
   durationMinutes: number;
@@ -48,7 +66,7 @@ function buildWorkoutHistoryItem(
     exerciseNames,
     muscleGroupNames,
     totalVolumeKg: session.sets.reduce(
-      (total, set) => total + (set.weight ?? 0) * set.reps,
+      (total, set) => total + performedSetVolume(set),
       0,
     ),
   };

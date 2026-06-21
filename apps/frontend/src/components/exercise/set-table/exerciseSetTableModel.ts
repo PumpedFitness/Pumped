@@ -1,171 +1,151 @@
 import type { TFunction } from 'i18next';
-import type { WorkoutSetType } from '@/data/local/enums';
+import type { SetTypeId } from '@/data/local/enums';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
-import {
-  isCurrentWorkoutSetFieldValid,
-  type CurrentWorkoutSet,
-  type UpdateCurrentWorkoutSetInput,
+import type {
+  CurrentWorkoutSet,
+  UpdateCurrentWorkoutSetInput,
 } from '@/stores/currentWorkoutModel';
 import type { EditableExerciseSet } from '@/types/exercise';
-import type { PerformedSet } from '@/types/workout';
+import type { PerformedSet, SetFieldRange, SetFieldValue } from '@/types/workout';
+import type {
+  SetTypeColorName,
+  SetTypeFieldDef,
+  SetTypeWithFields,
+} from '@/types/setType';
 import { displayWeight } from '@/utils/units';
+import {
+  getBoolValue,
+  getFieldValue,
+  getNumberValue,
+  getRangeValue,
+  getTextValue,
+  isFieldValueValid,
+  reconcileValuesForType,
+  setBoolValue,
+  setNumberValue,
+  setRangeValue,
+  setTextValue,
+  type FieldValueMode,
+} from '@/data/local/sets/fieldValues';
 import type { OptionalWheelPickerConfig } from '@/components/forms/OptionalWheelPickerSheet';
 import type {
   DeleteHandler,
   DeleteResult,
 } from '@/components/clay/SwipeToDelete';
 
+/** A selectable set type — label resolved upstream (i18n or custom name). */
 export type SetTypeOption = {
-  value: WorkoutSetType;
-  labelKey: `setTable.setTypes.${
-    | 'warmup'
-    | 'working'
-    | 'backoff'
-    | 'drop'
-    | 'amrap'}`;
+  value: SetTypeId;
+  label: string;
 };
 
-type BaseExerciseSetTableProps = {
+/** Everything the set tables need to resolve a set's type into fields/labels. */
+type SetTypeContext = {
   setTypeOptions: SetTypeOption[];
+  setTypesById: Map<string, SetTypeWithFields>;
+  weightUnit: WeightUnit;
+};
+
+type BaseTableProps = SetTypeContext & {
   addSetLabel?: string;
   onAddSet: () => void;
 };
 
-export type CollapsibleExerciseSetTableProps = BaseExerciseSetTableProps & {
+export type TemplateSetTableProps = BaseTableProps & {
   sets: EditableExerciseSet[];
-  summary: string;
-  expanded: boolean;
-  onToggle: () => void;
   onChangeSet: (index: number, set: EditableExerciseSet) => void;
   onRemoveSet: (index: number) => void;
+  onDuplicateSet: () => void;
+  onCreateSetType?: (name: string) => string;
 };
 
-type EditableExerciseSetTableProps = BaseExerciseSetTableProps & {
+type EditableExerciseSetTableProps = BaseTableProps & {
   readOnly?: false;
   sets: CurrentWorkoutSet[];
   onChangeSet: (setId: string, values: UpdateCurrentWorkoutSetInput) => void;
   onToggleSetDone: (setId: string) => boolean;
   onRemoveSet: (set: CurrentWorkoutSet) => DeleteResult;
+  onCreateSetType: (name: string) => string;
 };
 
 type ReadOnlyExerciseSet = Pick<
   PerformedSet,
-  'id' | 'setType' | 'weight' | 'reps' | 'rpe'
+  'id' | 'setType' | 'restSeconds' | 'fieldValues'
 >;
 
-type ReadOnlyExerciseSetTableProps = {
+type ReadOnlyExerciseSetTableProps = SetTypeContext & {
   readOnly: true;
   sets: ReadOnlyExerciseSet[];
-  setTypeOptions: SetTypeOption[];
-  weightUnit: WeightUnit;
 };
 
 export type ExerciseSetTableProps =
   | EditableExerciseSetTableProps
   | ReadOnlyExerciseSetTableProps;
 
-type BaseSetField = {
+type BaseCardField = {
   id: string;
-  accessibilityLabel: string;
-  value: number | null;
+  label: string;
+  /** Unit suffix to display (e.g. "kg", "%", "s"); empty for unit-less. */
+  unit: string;
   isValid?: boolean;
+  /** Whether a value is required to complete the set (drives the marker). */
+  required: boolean;
+  readOnly: boolean;
 };
 
-export type SetField =
-  | (BaseSetField & {
-      inputMethod: 'keyboard';
+/** A single editable/displayable value on a set card, by data type. */
+export type SetCardField =
+  | (BaseCardField & {
+      kind: 'number';
+      value: number | null;
+      input: 'keyboard' | 'wheel';
       allowDecimal: boolean;
+      wheelConfig?: OptionalWheelPickerConfig;
+      onChange: (value: number | null) => void;
     })
-  | (BaseSetField & {
-      inputMethod: 'wheel';
+  | (BaseCardField & {
+      kind: 'boolean';
+      value: boolean;
+      onChange: (value: boolean) => void;
+    })
+  | (BaseCardField & {
+      kind: 'text';
+      value: string;
+      onChange: (value: string) => void;
+    })
+  | (BaseCardField & {
+      kind: 'range';
+      range: SetFieldRange | null;
       wheelConfig: OptionalWheelPickerConfig;
+      onChange: (value: SetFieldRange | null) => void;
     });
 
-export type SetTableRow = {
+export type SetCardRest = {
+  value: number | null;
+  readOnly: boolean;
+  onChange: (value: number | null) => void;
+};
+
+export type SetCardModel = {
   key: string;
   index: number;
-  setType: WorkoutSetType;
-  fields: [SetField, SetField, SetField];
-  readOnly?: boolean;
-  tone?: 'default' | 'completed';
+  setType: SetTypeId;
+  setTypeLabel: string;
+  setTypeIcon: string | null;
+  setTypeColor: SetTypeColorName;
+  fields: SetCardField[];
+  /** Universal per-set rest chip; null only when read-only with no rest. */
+  rest: SetCardRest | null;
+  tone: 'default' | 'completed';
   isDone?: boolean;
+  /** The active set to log next (first not-done) — shows the "NOW" badge. */
+  isCurrent: boolean;
   canRemove: boolean;
-  onSetTypeChange: (setType: WorkoutSetType) => void;
-  onFieldChange: (fieldId: string, value: number | null) => void;
+  readOnly: boolean;
+  onSetTypeChange: (setType: SetTypeId) => void;
   onToggleDone?: () => boolean;
   onRemove: DeleteHandler;
 };
-
-export function buildTargetRepsWheelConfig(
-  t: TFunction,
-): OptionalWheelPickerConfig {
-  return {
-    title: t('setTable.sliders.targetReps.title'),
-    description: t('setTable.sliders.targetReps.description'),
-    minValue: 1,
-    maxValue: 30,
-    step: 1,
-    defaultValue: 8,
-    formatValue: value => t('setTable.sliders.repsValue', { count: value }),
-  };
-}
-
-export function buildPercentageWheelConfig(
-  t: TFunction,
-): OptionalWheelPickerConfig {
-  return {
-    title: t('setTable.sliders.percentage.title'),
-    description: t('setTable.sliders.percentage.description'),
-    minValue: 5,
-    maxValue: 100,
-    step: 2.5,
-    defaultValue: 70,
-    formatValue: value => t('setTable.sliders.percentValue', { value }),
-  };
-}
-
-export function buildTargetRpeWheelConfig(
-  t: TFunction,
-): OptionalWheelPickerConfig {
-  return {
-    title: t('setTable.sliders.targetRpe.title'),
-    description: t('setTable.sliders.targetRpe.description'),
-    minValue: 1,
-    maxValue: 10,
-    step: 0.5,
-    defaultValue: 8,
-    formatValue: value => t('setTable.sliders.rpeValue', { value }),
-  };
-}
-
-export function buildRepsWheelConfig(t: TFunction): OptionalWheelPickerConfig {
-  return {
-    title: t('setTable.sliders.reps.title'),
-    description: t('setTable.sliders.reps.description'),
-    minValue: 0,
-    maxValue: 30,
-    step: 1,
-    defaultValue: 8,
-    formatValue: value => t('setTable.sliders.repsValue', { count: value }),
-  };
-}
-
-export function buildRpeWheelConfig(t: TFunction): OptionalWheelPickerConfig {
-  return {
-    title: t('setTable.sliders.rpe.title'),
-    description: t('setTable.sliders.rpe.description'),
-    minValue: 6,
-    maxValue: 10,
-    step: 0.5,
-    defaultValue: 8,
-    formatValue: value => t('setTable.sliders.rpeValue', { value }),
-  };
-}
-
-function parseOptionalNumber(value: string): number | null {
-  const normalized = value.trim().replace(',', '.');
-  return normalized ? Number(normalized) : null;
-}
 
 export function formatSetNumber(value: number | null): string {
   if (value === null) {
@@ -174,159 +154,259 @@ export function formatSetNumber(value: number | null): string {
   return Number.isInteger(value) ? value.toString() : value.toFixed(1);
 }
 
-function updateTemplateField(
-  set: EditableExerciseSet,
-  fieldId: string,
-  value: number | null,
-): EditableExerciseSet {
-  const formattedValue = formatSetNumber(value);
-  if (fieldId === 'reps') {
-    return { ...set, targetReps: formattedValue };
+function unitSuffix(
+  unit: SetTypeFieldDef['unit'],
+  weightUnit: WeightUnit,
+): string {
+  if (unit === 'amount') {
+    return weightUnit;
   }
-  if (fieldId === 'percentage') {
-    return { ...set, targetPercentage1Rm: formattedValue };
+  if (unit === 'percentage') {
+    return '%';
   }
-  return { ...set, targetRpe: formattedValue };
+  if (unit === 'seconds') {
+    return 's';
+  }
+  return '';
 }
 
-export function buildTemplateSetTableRows(
+function isBoundedNumber(config: SetTypeFieldDef['config']): boolean {
+  return config.min != null && config.max != null && config.step != null;
+}
+
+function buildWheelConfig(
   t: TFunction,
-  props: CollapsibleExerciseSetTableProps,
-): SetTableRow[] {
-  const targetRepsConfig = buildTargetRepsWheelConfig(t);
-  const percentageConfig = buildPercentageWheelConfig(t);
-  const targetRpeConfig = buildTargetRpeWheelConfig(t);
-
-  return props.sets.map((set, index) => ({
-    key: set.id,
-    index,
-    setType: set.setType,
-    fields: [
-      {
-        id: 'reps',
-        accessibilityLabel: t('setTable.a11y.setTargetReps', {
-          number: index + 1,
-        }),
-        value: parseOptionalNumber(set.targetReps),
-        inputMethod: 'wheel',
-        wheelConfig: targetRepsConfig,
-      },
-      {
-        id: 'percentage',
-        accessibilityLabel: t('setTable.a11y.setPercentage', {
-          number: index + 1,
-        }),
-        value: parseOptionalNumber(set.targetPercentage1Rm),
-        inputMethod: 'wheel',
-        wheelConfig: percentageConfig,
-      },
-      {
-        id: 'rpe',
-        accessibilityLabel: t('setTable.a11y.setTargetRpe', {
-          number: index + 1,
-        }),
-        value: parseOptionalNumber(set.targetRpe),
-        inputMethod: 'wheel',
-        wheelConfig: targetRpeConfig,
-      },
-    ],
-    canRemove: props.sets.length > 1,
-    onSetTypeChange: setType => props.onChangeSet(index, { ...set, setType }),
-    onFieldChange: (fieldId, value) =>
-      props.onChangeSet(index, updateTemplateField(set, fieldId, value)),
-    onRemove: () => props.onRemoveSet(index),
-  }));
+  field: SetTypeFieldDef,
+  unit: string,
+): OptionalWheelPickerConfig {
+  const { config } = field;
+  const formatValue = (value: number) =>
+    unit
+      ? t('setTable.wheel.valueWithUnit', {
+          value: formatSetNumber(value),
+          unit,
+        })
+      : formatSetNumber(value);
+  return {
+    title: field.name,
+    description: t('setTable.wheel.description'),
+    minValue: config.min ?? 0,
+    maxValue: config.max ?? 100,
+    step: config.step ?? 1,
+    defaultValue: config.defaultValue ?? config.min ?? 0,
+    formatValue,
+  };
 }
 
-export function buildWorkoutSetTableRows(
+type FieldBuildOptions = {
+  mode: FieldValueMode;
+  readOnly: boolean;
+  weightUnit: WeightUnit;
+  t: TFunction;
+  onChange: (next: SetFieldValue[]) => void;
+};
+
+function buildCardField(
+  field: SetTypeFieldDef,
+  values: SetFieldValue[],
+  options: FieldBuildOptions,
+): SetCardField {
+  const { mode, readOnly, weightUnit, t, onChange } = options;
+  const unit = unitSuffix(field.unit, weightUnit);
+  const base = {
+    id: field.id,
+    label: field.name,
+    unit,
+    isValid: isFieldValueValid(field, getFieldValue(values, field.id), mode),
+    required: field.config.required ?? false,
+    readOnly,
+  };
+
+  const numberField = (): SetCardField => {
+    let value = getNumberValue(values, field.id);
+    // History shows logged weights in the user's unit.
+    if (readOnly && field.unit === 'amount' && value != null) {
+      value = displayWeight(value, weightUnit);
+    }
+    return {
+      ...base,
+      kind: 'number',
+      value,
+      input: isBoundedNumber(field.config) ? 'wheel' : 'keyboard',
+      allowDecimal: (field.config.decimals ?? 0) > 0,
+      wheelConfig: isBoundedNumber(field.config)
+        ? buildWheelConfig(t, field, unit)
+        : undefined,
+      onChange: next => onChange(setNumberValue(values, field.id, next)),
+    };
+  };
+
+  switch (field.dataType) {
+    case 'number':
+      return numberField();
+    case 'boolean':
+      return {
+        ...base,
+        kind: 'boolean',
+        value: getBoolValue(values, field.id),
+        onChange: next => onChange(setBoolValue(values, field.id, next)),
+      };
+    case 'text':
+      return {
+        ...base,
+        kind: 'text',
+        value: getTextValue(values, field.id),
+        onChange: next => onChange(setTextValue(values, field.id, next)),
+      };
+    case 'range':
+      // A session logs a single number against the planned range.
+      if (mode === 'actual') {
+        return numberField();
+      }
+      return {
+        ...base,
+        kind: 'range',
+        range: getRangeValue(values, field.id),
+        wheelConfig: buildWheelConfig(t, field, unit),
+        onChange: next => onChange(setRangeValue(values, field.id, next)),
+      };
+  }
+}
+
+function fieldsForType(
+  context: SetTypeContext,
+  setType: SetTypeId,
+): SetTypeFieldDef[] {
+  return context.setTypesById.get(setType)?.fields ?? [];
+}
+
+export function buildTemplateSetCards(
+  t: TFunction,
+  props: TemplateSetTableProps,
+): SetCardModel[] {
+  return props.sets.map((set, index) => {
+    const type = props.setTypesById.get(set.setType);
+    return {
+      key: set.id,
+      index,
+      setType: set.setType,
+      setTypeLabel: type?.name ?? set.setType,
+      setTypeIcon: type?.icon ?? null,
+      setTypeColor: type?.color ?? 'terracotta',
+      fields: (type?.fields ?? []).map(field =>
+        buildCardField(field, set.fieldValues, {
+          mode: 'target',
+          readOnly: false,
+          weightUnit: props.weightUnit,
+          t,
+          onChange: next =>
+            props.onChangeSet(index, { ...set, fieldValues: next }),
+        }),
+      ),
+      rest: {
+        value: set.restSeconds,
+        readOnly: false,
+        onChange: value =>
+          props.onChangeSet(index, { ...set, restSeconds: value }),
+      },
+      tone: 'default',
+      isCurrent: false,
+      canRemove: props.sets.length > 1,
+      readOnly: false,
+      onSetTypeChange: setType =>
+        props.onChangeSet(index, {
+          ...set,
+          setType,
+          fieldValues: reconcileValuesForType(
+            set.fieldValues,
+            fieldsForType(props, setType),
+          ),
+        }),
+      onRemove: () => props.onRemoveSet(index),
+    };
+  });
+}
+
+export function buildWorkoutSetCards(
   t: TFunction,
   props: EditableExerciseSetTableProps,
-): SetTableRow[] {
-  const repsConfig = buildRepsWheelConfig(t);
-  const rpeConfig = buildRpeWheelConfig(t);
-
-  return props.sets.map((set, index) => ({
-    key: set.id,
-    index,
-    setType: set.setType,
-    fields: [
-      {
-        id: 'weight',
-        accessibilityLabel: t('setTable.a11y.setWeight', { number: index + 1 }),
-        value: set.weight,
-        isValid: isCurrentWorkoutSetFieldValid(set, 'weight'),
-        inputMethod: 'keyboard',
-        allowDecimal: true,
+): SetCardModel[] {
+  // The set to log next: the first one not yet marked done.
+  const currentIndex = props.sets.findIndex(set => !set.isDone);
+  return props.sets.map((set, index) => {
+    const type = props.setTypesById.get(set.setType);
+    return {
+      key: set.id,
+      index,
+      setType: set.setType,
+      setTypeLabel: type?.name ?? set.setType,
+      setTypeIcon: type?.icon ?? null,
+      setTypeColor: type?.color ?? 'terracotta',
+      fields: (type?.fields ?? []).map(field =>
+        buildCardField(field, set.fieldValues, {
+          mode: 'actual',
+          readOnly: false,
+          weightUnit: props.weightUnit,
+          t,
+          onChange: next => props.onChangeSet(set.id, { fieldValues: next }),
+        }),
+      ),
+      rest: {
+        value: set.restSeconds,
+        readOnly: false,
+        onChange: value => props.onChangeSet(set.id, { restSeconds: value }),
       },
-      {
-        id: 'reps',
-        accessibilityLabel: t('setTable.a11y.setReps', { number: index + 1 }),
-        value: set.reps,
-        isValid: isCurrentWorkoutSetFieldValid(set, 'reps'),
-        inputMethod: 'wheel',
-        wheelConfig: repsConfig,
-      },
-      {
-        id: 'rpe',
-        accessibilityLabel: t('setTable.a11y.setRpe', { number: index + 1 }),
-        value: set.rpe,
-        isValid: isCurrentWorkoutSetFieldValid(set, 'rpe'),
-        inputMethod: 'wheel',
-        wheelConfig: rpeConfig,
-      },
-    ],
-    tone: set.isDone ? 'completed' : 'default',
-    isDone: set.isDone,
-    canRemove: props.sets.length > 1,
-    onSetTypeChange: setType => props.onChangeSet(set.id, { setType }),
-    onFieldChange: (fieldId, value) =>
-      props.onChangeSet(set.id, { [fieldId]: value }),
-    onToggleDone: () => props.onToggleSetDone(set.id),
-    onRemove: () => props.onRemoveSet(set),
-  }));
+      tone: set.isDone ? 'completed' : 'default',
+      isDone: set.isDone,
+      isCurrent: index === currentIndex,
+      canRemove: props.sets.length > 1,
+      readOnly: false,
+      onSetTypeChange: setType =>
+        props.onChangeSet(set.id, {
+          setType,
+          fieldValues: reconcileValuesForType(
+            set.fieldValues,
+            fieldsForType(props, setType),
+          ),
+        }),
+      onToggleDone: () => props.onToggleSetDone(set.id),
+      onRemove: () => props.onRemoveSet(set),
+    };
+  });
 }
 
-export function buildReadOnlyWorkoutSetTableRows(
+export function buildReadOnlySetCards(
   t: TFunction,
   props: ReadOnlyExerciseSetTableProps,
-): SetTableRow[] {
-  const repsConfig = buildRepsWheelConfig(t);
-  const rpeConfig = buildRpeWheelConfig(t);
-
-  return props.sets.map((set, index) => ({
-    key: set.id,
-    index,
-    setType: set.setType,
-    fields: [
-      {
-        id: 'weight',
-        accessibilityLabel: t('setTable.a11y.setWeight', { number: index + 1 }),
-        value:
-          set.weight === null
-            ? null
-            : displayWeight(set.weight, props.weightUnit),
-        inputMethod: 'keyboard',
-        allowDecimal: true,
-      },
-      {
-        id: 'reps',
-        accessibilityLabel: t('setTable.a11y.setReps', { number: index + 1 }),
-        value: set.reps,
-        inputMethod: 'wheel',
-        wheelConfig: repsConfig,
-      },
-      {
-        id: 'rpe',
-        accessibilityLabel: t('setTable.a11y.setRpe', { number: index + 1 }),
-        value: set.rpe,
-        inputMethod: 'wheel',
-        wheelConfig: rpeConfig,
-      },
-    ],
-    readOnly: true,
-    canRemove: false,
-    onSetTypeChange: () => undefined,
-    onFieldChange: () => undefined,
-    onRemove: () => undefined,
-  }));
+): SetCardModel[] {
+  return props.sets.map((set, index) => {
+    const type = props.setTypesById.get(set.setType);
+    return {
+      key: set.id,
+      index,
+      setType: set.setType,
+      setTypeLabel: type?.name ?? set.setType,
+      setTypeIcon: type?.icon ?? null,
+      setTypeColor: type?.color ?? 'terracotta',
+      fields: (type?.fields ?? []).map(field =>
+        buildCardField(field, set.fieldValues, {
+          mode: 'actual',
+          readOnly: true,
+          weightUnit: props.weightUnit,
+          t,
+          onChange: () => undefined,
+        }),
+      ),
+      rest:
+        set.restSeconds != null
+          ? { value: set.restSeconds, readOnly: true, onChange: () => undefined }
+          : null,
+      tone: 'default',
+      isCurrent: false,
+      canRemove: false,
+      readOnly: true,
+      onSetTypeChange: () => undefined,
+      onRemove: () => undefined,
+    };
+  });
 }

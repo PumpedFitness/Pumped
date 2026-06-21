@@ -1,6 +1,7 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import type { WorkoutSetType } from '@/data/local/enums';
 import type { performedSets, workoutSessions } from '@/data/local/schema';
+import { buildBuiltInFieldValues } from '@/data/local/builtins';
 import { EXERCISE_IDS, LOCAL_USER_ID, sampleId, TEMPLATE_IDS } from './ids';
 
 type SessionInsert = InferInsertModel<typeof workoutSessions>;
@@ -83,6 +84,7 @@ function progression(index: number, step: number): number {
   return Math.floor(index / 4) * step;
 }
 
+
 function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
   const gain = progression(index, 2.5);
   const builders: Record<WorkoutKind, () => SetGroup[]> = {
@@ -96,7 +98,7 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
       group(EXERCISE_IDS.overheadPress, repeatedSets(3, 8, 35 + gain / 2)),
       group(EXERCISE_IDS.tricepsPushdown, [
         ...repeatedSets(2, 12, 25 + gain / 2),
-        set(15, 17.5 + gain / 2, 9, 'DROP'),
+        set(15, 17.5 + gain / 2, 9, 'MAX_EFFORT'),
       ]),
     ],
     pull: () => [
@@ -107,7 +109,7 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
       group(EXERCISE_IDS.latPulldown, repeatedSets(3, 12, 45 + gain)),
       group(EXERCISE_IDS.dumbbellCurl, [
         ...repeatedSets(2, 12, 12 + progression(index, 1)),
-        set(14, 10 + progression(index, 1), 9, 'AMRAP'),
+        set(14, 10 + progression(index, 1), 9, 'MAX_EFFORT'),
       ]),
     ],
     lower: () => [
@@ -123,7 +125,7 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
       group(EXERCISE_IDS.backSquat, repeatedSets(3, 6, 65 + gain, 7.5)),
       group(EXERCISE_IDS.barbellRow, [
         ...repeatedSets(2, 10, 50 + gain),
-        set(12, 42.5 + gain, 8, 'BACKOFF'),
+        set(12, 42.5 + gain, 8, 'NORMAL'),
       ]),
       group(EXERCISE_IDS.plank, [
         set(40, undefined, 7),
@@ -198,16 +200,16 @@ function buildSession(spec: HistorySpec, index: number, now: number) {
     (setGroup, exercisePosition) =>
       setGroup.sets.map((performedSet, setPosition) => {
         setIndex += 1;
+        const setType = performedSet.type ?? 'NORMAL';
         return {
           id: sampleId(`performed-${spec.daysAgo}-${spec.kind}-${setIndex}`),
           workoutSessionId: id,
           exerciseId: setGroup.exerciseId,
           exercisePosition,
           setPosition,
-          setType: performedSet.type ?? 'NORMAL',
-          reps: performedSet.reps,
-          weight: performedSet.weight ?? null,
-          rpe: performedSet.rpe ?? null,
+          setType,
+          restSeconds: null,
+          fieldValues: buildBuiltInFieldValues(setType, performedSet),
           performedAt: startedAt + (5 + setIndex * 4) * 60_000,
         } satisfies PerformedSetInsert;
       }),

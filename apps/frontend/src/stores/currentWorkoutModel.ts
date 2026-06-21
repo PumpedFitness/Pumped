@@ -1,18 +1,22 @@
 import { randomUUID } from 'expo-crypto';
 import { i18n } from '@/i18n';
-import type { WorkoutSetType } from '@/data/local/enums';
+import type { SetTypeId } from '@/data/local/enums';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
-import type { WorkoutTemplate } from '@/types/workout';
+import type { SetFieldValue, WorkoutTemplate } from '@/types/workout';
+import type { SetTypeFieldDef } from '@/types/setType';
+import {
+  isSetComplete,
+  snapshotActualsFromTargets,
+} from '@/data/local/sets/fieldValues';
 import { uniqueBy } from '@/utils/dedupe';
 
 export type CurrentWorkoutSet = {
   id: string;
   sourceTemplateSetId: string | null;
   position: number;
-  setType: WorkoutSetType;
-  reps: number | null;
-  weight: number | null;
-  rpe: number | null;
+  setType: SetTypeId;
+  restSeconds: number | null;
+  fieldValues: SetFieldValue[];
   isDone: boolean;
   performedAt: number | null;
 };
@@ -36,10 +40,8 @@ export type CurrentWorkout = {
 };
 
 export type UpdateCurrentWorkoutSetInput = Partial<
-  Pick<CurrentWorkoutSet, 'weight' | 'reps' | 'rpe' | 'setType'>
+  Pick<CurrentWorkoutSet, 'setType' | 'restSeconds' | 'fieldValues'>
 >;
-
-type CurrentWorkoutSetField = 'weight' | 'reps' | 'rpe';
 
 export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
   return {
@@ -47,9 +49,8 @@ export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
     sourceTemplateSetId: null,
     position,
     setType: 'NORMAL',
-    reps: null,
-    weight: null,
-    rpe: null,
+    restSeconds: null,
+    fieldValues: [],
     isDone: false,
     performedAt: null,
   };
@@ -90,9 +91,8 @@ export function createTemplateSnapshot(
         sourceTemplateSetId: set.id,
         position: set.position,
         setType: set.setType,
-        reps: set.targetReps,
-        weight: null,
-        rpe: null,
+        restSeconds: set.restSeconds,
+        fieldValues: snapshotActualsFromTargets(set.fieldValues),
         isDone: false,
         performedAt: null,
       })),
@@ -152,24 +152,28 @@ export function buildTemplateSyncInput(
     id: template.id,
     name: template.name,
     description: template.description,
-    status: template.status,
     color: template.color,
-    exercises: workout.exercises.map(exercise => ({
-      exerciseId: exercise.exerciseId,
-      goal: exercise.goal,
-      notes: exercise.notes,
-      sets: exercise.sets.map(set => {
-        const source = set.sourceTemplateSetId
-          ? sourceSets.get(set.sourceTemplateSetId)
-          : null;
-        return {
-          setType: set.setType,
-          targetReps: source?.targetReps ?? null,
-          targetPercentage1Rm: source?.targetPercentage1Rm ?? null,
-          targetRpe: source?.targetRpe ?? null,
-        };
-      }),
-    })),
+    exercises: workout.exercises.map(exercise => {
+      const sourceExercise = template.exercises.find(
+        candidate => candidate.exerciseId === exercise.exerciseId,
+      );
+      return {
+        exerciseId: exercise.exerciseId,
+        typeId: sourceExercise?.typeId ?? null,
+        goal: exercise.goal,
+        notes: exercise.notes,
+        sets: exercise.sets.map(set => {
+          const source = set.sourceTemplateSetId
+            ? sourceSets.get(set.sourceTemplateSetId)
+            : null;
+          return {
+            setType: set.setType,
+            restSeconds: source?.restSeconds ?? null,
+            fieldValues: source?.fieldValues ?? [],
+          };
+        }),
+      };
+    }),
   };
 }
 
@@ -199,29 +203,24 @@ export function hasWorkoutStructureChanged(
   });
 }
 
-export function isCurrentWorkoutSetFieldValid(
+/** Whether a set's logged actuals satisfy its set type's fields. Pure — the
+ *  caller resolves the field defs (built-in constants or the DB library). */
+export function isCurrentWorkoutSetValid(
   set: CurrentWorkoutSet,
-  field: CurrentWorkoutSetField,
+  fields: SetTypeFieldDef[],
 ): boolean {
-  if (field === 'weight') {
-    return set.weight !== null && set.weight >= 0;
-  }
-  if (field === 'reps') {
-    return set.reps !== null && Number.isInteger(set.reps) && set.reps >= 0;
-  }
-  return set.rpe === null || (set.rpe >= 1 && set.rpe <= 10);
+  return isSetComplete(fields, set.fieldValues, 'actual');
 }
 
-export function isCurrentWorkoutSetValid(set: CurrentWorkoutSet): boolean {
-  return (['weight', 'reps', 'rpe'] as const).every(field =>
-    isCurrentWorkoutSetFieldValid(set, field),
-  );
-}
-
-export function isCurrentWorkoutComplete(workout: CurrentWorkout): boolean {
+export function isCurrentWorkoutComplete(
+  workout: CurrentWorkout,
+  resolveFields: (setTypeId: SetTypeId) => SetTypeFieldDef[],
+): boolean {
   const sets = workout.exercises.flatMap(exercise => exercise.sets);
   return (
     sets.length > 0 &&
-    sets.every(set => set.isDone && isCurrentWorkoutSetValid(set))
+    sets.every(
+      set => set.isDone && isCurrentWorkoutSetValid(set, resolveFields(set.setType)),
+    )
   );
 }

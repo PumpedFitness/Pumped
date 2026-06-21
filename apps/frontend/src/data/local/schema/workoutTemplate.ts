@@ -1,16 +1,7 @@
-import {
-  index,
-  sqliteTable,
-  text,
-  integer,
-  real,
-} from 'drizzle-orm/sqlite-core';
-import type {
-  WorkoutSetType,
-  WorkoutTemplateColor,
-  WorkoutTemplateStatus,
-} from '@/data/local/enums';
-import { enumText } from './columns';
+import { index, sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { SetFieldValue } from '@/types/workout';
+import { enumText, jsonArray } from './columns';
 
 // Scheduling no longer lives on the template — it moved to the `schedule` /
 // `schedule_slot` tables (see schema/schedule.ts). Templates are pure workout
@@ -20,9 +11,6 @@ export const workoutTemplates = sqliteTable('workout_template', {
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
   description: text('description'),
-  status: enumText<WorkoutTemplateStatus>()('status')
-    .notNull()
-    .default('ACTIVE'),
   color: enumText<WorkoutTemplateColor>()('color')
     .notNull()
     .default('TERRACOTTA'),
@@ -39,6 +27,8 @@ export const workoutTemplateExercises = sqliteTable(
       .references(() => workoutTemplates.id, { onDelete: 'cascade' }),
     exerciseId: text('exercise_id').notNull(),
     position: integer('position').notNull(),
+    // Training-intent tag for this exercise (→ workout_exercise_type), nullable.
+    typeId: text('type_id'),
     goal: text('goal'),
     notes: text('notes'),
   },
@@ -58,10 +48,12 @@ export const workoutTemplateSets = sqliteTable(
       .notNull()
       .references(() => workoutTemplateExercises.id, { onDelete: 'cascade' }),
     position: integer('position').notNull(),
-    setType: enumText<WorkoutSetType>()('set_type').notNull(),
-    targetReps: integer('target_reps'),
-    targetPercentage1Rm: real('target_percentage_1rm'),
-    targetRpe: real('target_rpe'),
+    // Holds a set_type id (built-in id or user-created uuid).
+    setType: enumText<SetTypeId>()('set_type').notNull(),
+    // Universal per-set rest, independent of the set type's fields.
+    restSeconds: integer('rest_seconds'),
+    // Target values for the set type's fields, keyed by set_type_field id.
+    fieldValues: jsonArray<SetFieldValue>()('field_values').notNull().default([]),
   },
   table => [
     index('idx_template_sets_exercise_position').on(

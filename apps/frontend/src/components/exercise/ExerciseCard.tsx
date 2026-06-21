@@ -11,6 +11,9 @@ type ExerciseCardProps = {
   name: string;
   description: string;
   children: ReactNode;
+  headerAccessory?: ReactNode;
+  /** 0–1 completion shown as a progress bar under the description. */
+  progress?: number;
   onRemove?: DeleteHandler;
 };
 
@@ -18,18 +21,31 @@ export function ExerciseCard({
   name,
   description,
   children,
+  headerAccessory,
+  progress,
   onRemove,
 }: ExerciseCardProps) {
   const content = (
-    <View className="gap-4 rounded-[22px] border border-border-hairline bg-surface-card p-4">
+    <View className="gap-4 rounded-[22px] border border-border-hairline bg-surface-sunk p-4">
       <View className="flex-row items-start gap-3">
-        <View className="h-10 w-10 items-center justify-center rounded-[13px] bg-accent-soft">
-          <ClayIcon name="dumbbell" size={20} color={colors.accent} />
+        <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-accent">
+          <ClayIcon name="dumbbell" size={20} color={colors.cream} />
         </View>
         <View className="flex-1">
           <Text className="t-heading">{name}</Text>
           <Text className="t-caption mt-0.5">{description}</Text>
+          {progress != null ? (
+            <View className="mt-2 h-1.5 overflow-hidden rounded-full bg-background">
+              <View
+                className="h-full rounded-full bg-accent"
+                style={{
+                  width: `${Math.round(Math.max(0, Math.min(1, progress)) * 100)}%`,
+                }}
+              />
+            </View>
+          ) : null}
         </View>
+        {headerAccessory}
       </View>
 
       {children}

@@ -9,6 +9,8 @@ import { ExerciseSelectionScreen } from '@/screens/schedule/exercise-selection/E
 import { CurrentWorkoutScreen } from '@/screens/schedule/current-workout/CurrentWorkoutScreen';
 import { WorkoutPlaceholderScreen } from '@/screens/schedule/placeholder/WorkoutPlaceholderScreen';
 import { WorkoutTemplateEditorScreen } from '@/screens/library/template-editor/WorkoutTemplateEditorScreen';
+import { ExerciseSetEditorScreen } from '@/screens/library/exercise-set-editor/ExerciseSetEditorScreen';
+import { SetTypeEditorScreen } from '@/screens/library/set-type-editor/SetTypeEditorScreen';
 import { ScheduleEditorScreen } from '@/screens/schedule/schedule-editor/ScheduleEditorScreen';
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
@@ -17,7 +19,11 @@ import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
 import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHistoryScreen';
 import { useAuthStore } from '@/stores/authStore';
 import { colors } from '@/theme/tokens';
-import type { ExerciseSelectionResult } from '@/types/exercise';
+import type {
+  EditableExercise,
+  ExerciseEditResult,
+  ExerciseSelectionResult,
+} from '@/types/exercise';
 
 export type MetricKind = 'weight' | 'bodyFat';
 
@@ -32,8 +38,15 @@ export type RootStackParamList = {
     | {
         templateId?: string;
         exerciseSelection?: ExerciseSelectionResult;
+        exerciseEdit?: ExerciseEditResult;
       }
     | undefined;
+  ExerciseSetEditor: {
+    exercise: EditableExercise;
+    name: string;
+    returnRouteKey: string;
+  };
+  SetTypeEditor: { setTypeId?: string } | undefined;
   ScheduleEditor: { scheduleId?: string } | undefined;
   CurrentWorkout:
     | {
@@ -106,6 +119,23 @@ export function AppNavigator() {
           name="WorkoutTemplateEditor"
           component={WorkoutTemplateEditorScreen}
           options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="ExerciseSetEditor"
+          component={ExerciseSetEditorScreen}
+          // gestureEnabled:false — the unsaved-changes guard uses a beforeRemove
+          // listener, which native-stack's swipe-to-dismiss races (the screen is
+          // removed natively before JS can prompt). Exit via Cancel/Done instead.
+          options={{
+            animation: 'slide_from_bottom',
+            presentation: 'modal',
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="SetTypeEditor"
+          component={SetTypeEditorScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
         />
         <Stack.Screen
           name="ScheduleEditor"

@@ -5,12 +5,9 @@
 import { randomUUID } from 'expo-crypto';
 import { asc, eq } from 'drizzle-orm';
 import { i18n } from '@/i18n';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type {
-  WorkoutSetType,
-  WorkoutTemplateColor,
-  WorkoutTemplateStatus,
-} from '@/data/local/enums';
-import type {
+  SetFieldValue,
   WorkoutTemplate,
   WorkoutTemplateExercise,
   WorkoutTemplateSet,
@@ -27,14 +24,14 @@ import {
 import { LOCAL_USER_ID, requireText } from './validation';
 
 export type WorkoutTemplateSetInput = {
-  setType: WorkoutSetType;
-  targetReps?: number | null;
-  targetPercentage1Rm?: number | null;
-  targetRpe?: number | null;
+  setType: SetTypeId;
+  restSeconds?: number | null;
+  fieldValues?: SetFieldValue[];
 };
 
 export type WorkoutTemplateExerciseInput = {
   exerciseId: string;
+  typeId?: string | null;
   goal?: string | null;
   notes?: string | null;
   sets: WorkoutTemplateSetInput[];
@@ -44,7 +41,6 @@ export type SaveWorkoutTemplateInput = {
   id?: string;
   name: string;
   description?: string | null;
-  status?: WorkoutTemplateStatus;
   color?: WorkoutTemplateColor;
   exercises: WorkoutTemplateExerciseInput[];
 };
@@ -53,28 +49,29 @@ function validateTemplateSet(
   set: WorkoutTemplateSetInput,
 ): WorkoutTemplateSetInput {
   if (
-    set.targetReps !== null &&
-    set.targetReps !== undefined &&
-    (!Number.isInteger(set.targetReps) || set.targetReps < 1)
+    set.restSeconds !== null &&
+    set.restSeconds !== undefined &&
+    (!Number.isInteger(set.restSeconds) || set.restSeconds < 0)
   ) {
-    throw new Error(i18n.t('errors.targetRepsPositive'));
+    throw new Error(i18n.t('errors.restSecondsPositive'));
   }
-  if (
-    set.targetPercentage1Rm !== null &&
-    set.targetPercentage1Rm !== undefined &&
-    (!Number.isFinite(set.targetPercentage1Rm) ||
-      set.targetPercentage1Rm <= 0 ||
-      set.targetPercentage1Rm > 100)
-  ) {
-    throw new Error(i18n.t('errors.percentageRange'));
-  }
-  if (
-    set.targetRpe !== null &&
-    set.targetRpe !== undefined &&
-    (!Number.isFinite(set.targetRpe) || set.targetRpe < 1 || set.targetRpe > 10)
-  ) {
-    throw new Error(i18n.t('errors.rpeRange'));
-  }
+  // Structural sanity only — per-field bounds/required are enforced at the UI
+  // layer where the set type's field defs are in scope.
+  (set.fieldValues ?? []).forEach(value => {
+    if (value.number != null && !Number.isFinite(value.number)) {
+      throw new Error(i18n.t('errors.fieldValueInvalid'));
+    }
+    if (value.range) {
+      const { min, max } = value.range;
+      if (
+        (min != null && !Number.isFinite(min)) ||
+        (max != null && !Number.isFinite(max)) ||
+        (min != null && max != null && min > max)
+      ) {
+        throw new Error(i18n.t('errors.fieldValueInvalid'));
+      }
+    }
+  });
 
   return set;
 }
@@ -121,6 +118,7 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
       id: exercise.id,
       exerciseId: exercise.exerciseId,
       position: exercise.position,
+      typeId: exercise.typeId,
       goal: exercise.goal,
       notes: exercise.notes,
       sets,
@@ -132,7 +130,6 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
     userId: template.userId,
     name: template.name,
     description: template.description,
-    status: template.status,
     color: template.color,
     exercises,
     createdAt: template.createdAt,
@@ -173,7 +170,6 @@ function upsertTemplateRow(
     tx.update(workoutTemplates)
       .set({
         ...shared,
-        status: input.status ?? existing.status,
         color: input.color ?? existing.color,
       })
       .where(eq(workoutTemplates.id, templateId))
@@ -184,7 +180,6 @@ function upsertTemplateRow(
         ...shared,
         id: templateId,
         userId: LOCAL_USER_ID,
-        status: input.status ?? 'ACTIVE',
         color: input.color ?? 'TERRACOTTA',
         createdAt: now,
       })
@@ -209,6 +204,7 @@ function replaceTemplateChildren(
         workoutTemplateId: templateId,
         exerciseId: exercise.exerciseId,
         position: exercisePosition,
+        typeId: exercise.typeId ?? null,
         goal: exercise.goal ?? null,
         notes: exercise.notes ?? null,
       })
@@ -222,9 +218,8 @@ function replaceTemplateChildren(
             workoutTemplateExerciseId: exerciseRowId,
             position: setPosition,
             setType: set.setType,
-            targetReps: set.targetReps ?? null,
-            targetPercentage1Rm: set.targetPercentage1Rm ?? null,
-            targetRpe: set.targetRpe ?? null,
+            restSeconds: set.restSeconds ?? null,
+            fieldValues: set.fieldValues ?? [],
           })),
         )
         .run();
@@ -252,21 +247,6 @@ export function saveWorkoutTemplate(
     workoutTemplateExercises,
     workoutTemplateSets,
   );
-
-  return getWorkoutTemplate(templateId)!;
-}
-
-export function updateWorkoutTemplateStatus(
-  templateId: string,
-  status: WorkoutTemplateStatus,
-): WorkoutTemplate {
-  assertTemplateExists(templateId);
-  db.update(workoutTemplates)
-    .set({ status, updatedAt: Date.now() })
-    .where(eq(workoutTemplates.id, templateId))
-    .run();
-
-  notifyTableChanged(workoutTemplates);
 
   return getWorkoutTemplate(templateId)!;
 }

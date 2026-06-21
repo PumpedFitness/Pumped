@@ -69,6 +69,11 @@ const PATHS: Record<string, string[]> = {
   star: [
     'M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.7l5.9-.9L12 3.5Z',
   ],
+  copy: [
+    'M9 9h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z',
+    'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',
+  ],
+  drag: ['M4 9h16M4 15h16'],
 };
 
 export type IconName = keyof typeof PATHS;

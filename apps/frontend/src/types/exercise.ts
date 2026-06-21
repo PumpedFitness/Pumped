@@ -1,4 +1,5 @@
-import type { WorkoutSetType } from '@/data/local/enums';
+import type { SetTypeId } from '@/data/local/enums';
+import type { SetFieldValue } from '@/types/workout';
 
 export type ExerciseOption = {
   id: string;
@@ -16,17 +17,24 @@ export type ExerciseSelectionResult = {
   exerciseIds: string[];
 };
 
+/** Result returned by the ExerciseSetEditor screen — a fully edited exercise. */
+export type ExerciseEditResult = {
+  id: string;
+  exercise: EditableExercise;
+};
+
 export type EditableExerciseSet = {
   /** Local-only identity for stable React keys; never persisted. */
   id: string;
-  setType: WorkoutSetType;
-  targetReps: string;
-  targetPercentage1Rm: string;
-  targetRpe: string;
+  setType: SetTypeId;
+  restSeconds: number | null;
+  /** Target values for the set type's fields, keyed by set_type_field id. */
+  fieldValues: SetFieldValue[];
 };
 
 export type EditableExercise = {
   exerciseId: string;
+  typeId: string | null;
   goal: string;
   notes: string | null;
   sets: EditableExerciseSet[];

@@ -1,16 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { randomUUID } from 'expo-crypto';
+import type { SetTypeId } from '@/data/local/enums';
 import type { workoutTemplates } from '@/data/local/schema/workoutTemplate';
 import type {
   SaveWorkoutTemplateInput,
   WorkoutTemplateExerciseInput,
 } from '@/data/local/workouts/templates';
-import type {
-  EditableExercise,
-  EditableExerciseSet,
-  ExerciseOption,
-} from '@/types/exercise';
+import type { EditableExercise, EditableExerciseSet } from '@/types/exercise';
 import type { WorkoutTemplate } from '@/types/workout';
 
 type WorkoutTemplateRow = typeof workoutTemplates.$inferSelect;
@@ -21,7 +18,6 @@ export type DraftExercise = EditableExercise;
 type WorkoutTemplateEditorDraft = {
   name: string;
   description: string;
-  status: WorkoutTemplateRow['status'];
   color: WorkoutTemplateRow['color'];
   exercises: DraftExercise[];
   error: string | null;
@@ -29,20 +25,16 @@ type WorkoutTemplateEditorDraft = {
 
 type UseWorkoutTemplateEditorDraftOptions = {
   template: WorkoutTemplate | null;
-  exerciseOptions: ExerciseOption[];
   onSave: (input: SaveWorkoutTemplateInput) => void;
   onSaved: () => void;
 };
 
-export function createDraftSet(
-  setType: DraftSet['setType'] = 'NORMAL',
-): DraftSet {
+export function createDraftSet(setType: SetTypeId = 'NORMAL'): DraftSet {
   return {
     id: randomUUID(),
     setType,
-    targetReps: '',
-    targetPercentage1Rm: '',
-    targetRpe: '',
+    restSeconds: null,
+    fieldValues: [],
   };
 }
 
@@ -52,19 +44,18 @@ function createInitialDraft(
   return {
     name: template?.name ?? '',
     description: template?.description ?? '',
-    status: template?.status ?? 'ACTIVE',
     color: template?.color ?? 'TERRACOTTA',
     exercises:
       template?.exercises.map(exercise => ({
         exerciseId: exercise.exerciseId,
+        typeId: exercise.typeId,
         goal: exercise.goal ?? '',
         notes: exercise.notes,
         sets: exercise.sets.map(set => ({
           id: randomUUID(),
           setType: set.setType,
-          targetReps: set.targetReps?.toString() ?? '',
-          targetPercentage1Rm: set.targetPercentage1Rm?.toString() ?? '',
-          targetRpe: set.targetRpe?.toString() ?? '',
+          restSeconds: set.restSeconds,
+          fieldValues: set.fieldValues,
         })),
       })) ?? [],
     error: null,
@@ -74,15 +65,11 @@ function createInitialDraft(
 function createDraftExercise(exerciseId: string): DraftExercise {
   return {
     exerciseId,
+    typeId: null,
     goal: '',
     notes: null,
     sets: [createDraftSet(), createDraftSet(), createDraftSet()],
   };
-}
-
-function parseOptionalNumber(value: string): number | null {
-  const normalized = value.trim().replace(',', '.');
-  return normalized ? Number(normalized) : null;
 }
 
 function buildExerciseInput(
@@ -90,13 +77,13 @@ function buildExerciseInput(
 ): WorkoutTemplateExerciseInput {
   return {
     exerciseId: exercise.exerciseId,
+    typeId: exercise.typeId,
     goal: exercise.goal.trim() || null,
     notes: exercise.notes,
     sets: exercise.sets.map(set => ({
       setType: set.setType,
-      targetReps: parseOptionalNumber(set.targetReps),
-      targetPercentage1Rm: parseOptionalNumber(set.targetPercentage1Rm),
-      targetRpe: parseOptionalNumber(set.targetRpe),
+      restSeconds: set.restSeconds,
+      fieldValues: set.fieldValues,
     })),
   };
 }
@@ -109,15 +96,35 @@ function buildSaveInput(
     id: templateId,
     name: draft.name,
     description: draft.description.trim() || null,
-    status: draft.status,
     color: draft.color,
     exercises: draft.exercises.map(buildExerciseInput),
   };
 }
 
+// Compares the editable portions of the draft (everything but the transient
+// `error`) so the back-guard only prompts when there are real unsaved edits.
+function draftFingerprint(draft: WorkoutTemplateEditorDraft): string {
+  const { error: _error, ...rest } = draft;
+  return JSON.stringify(rest);
+}
+
+export function duplicateLastSet(sets: DraftSet[]): DraftSet[] {
+  if (sets.length === 0) {
+    return [createDraftSet()];
+  }
+  const last = sets[sets.length - 1];
+  return [
+    ...sets,
+    {
+      ...last,
+      id: randomUUID(),
+      fieldValues: last.fieldValues.map(value => ({ ...value })),
+    },
+  ];
+}
+
 export function useWorkoutTemplateEditorDraft({
   template,
-  exerciseOptions,
   onSave,
   onSaved,
 }: UseWorkoutTemplateEditorDraftOptions) {
@@ -128,14 +135,8 @@ export function useWorkoutTemplateEditorDraft({
   const [draft, setDraft] = useState<WorkoutTemplateEditorDraft>(() =>
     createInitialDraft(template),
   );
-
-  const exerciseNames = useMemo(
-    () =>
-      new Map(
-        exerciseOptions.map(exercise => [exercise.id, exercise.name] as const),
-      ),
-    [exerciseOptions],
-  );
+  const initialFingerprint = useRef(draftFingerprint(draft));
+  const isDirty = draftFingerprint(draft) !== initialFingerprint.current;
 
   const updateDraft = useCallback(
     (update: Partial<WorkoutTemplateEditorDraft>) => {
@@ -159,6 +160,18 @@ export function useWorkoutTemplateEditorDraft({
     },
     [],
   );
+
+  const reorderExercises = useCallback((from: number, to: number) => {
+    setDraft(current => {
+      if (from === to) {
+        return current;
+      }
+      const exercises = [...current.exercises];
+      const [moved] = exercises.splice(from, 1);
+      exercises.splice(to, 0, moved);
+      return { ...current, error: null, exercises };
+    });
+  }, []);
 
   const removeExercise = useCallback((exerciseId: string) => {
     setDraft(current => ({
@@ -214,9 +227,10 @@ export function useWorkoutTemplateEditorDraft({
 
   return {
     draft,
-    exerciseNames,
+    isDirty,
     updateDraft,
     updateExercise,
+    reorderExercises,
     removeExercise,
     updateSelectedExercises,
     save,

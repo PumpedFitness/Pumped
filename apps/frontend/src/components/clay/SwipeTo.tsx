@@ -102,7 +102,10 @@ function SwipeActionLayer({
       style={[layerStyle, { backgroundColor: fill }]}
       pointerEvents="none"
     >
-      <AnimatedView className="items-center justify-center gap-1" style={contentStyle}>
+      <AnimatedView
+        className="items-center justify-center gap-1"
+        style={contentStyle}
+      >
         <ClayIcon name={icon} size={22} color={contentColor} />
         {subtitle ? (
           <Text

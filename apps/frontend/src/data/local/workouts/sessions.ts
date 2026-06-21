@@ -5,9 +5,10 @@
 import { randomUUID } from 'expo-crypto';
 import { asc, desc, eq } from 'drizzle-orm';
 import { i18n } from '@/i18n';
-import type { WorkoutSetType } from '@/data/local/enums';
+import type { SetTypeId } from '@/data/local/enums';
 import type {
   PerformedSet,
+  SetFieldValue,
   WorkoutSession,
   WorkoutSessionDetails,
 } from '@/types/workout';
@@ -22,10 +23,9 @@ export type PerformedSetInput = {
   exerciseId: string;
   exercisePosition: number;
   setPosition: number;
-  setType: WorkoutSetType;
-  reps: number;
-  weight?: number | null;
-  rpe?: number | null;
+  setType: SetTypeId;
+  restSeconds?: number | null;
+  fieldValues?: SetFieldValue[];
   performedAt?: number;
 };
 
@@ -133,9 +133,8 @@ export function saveCompletedWorkout(
             exercisePosition: set.exercisePosition,
             setPosition: set.setPosition,
             setType: set.setType,
-            reps: set.reps,
-            weight: set.weight ?? null,
-            rpe: set.rpe ?? null,
+            restSeconds: set.restSeconds ?? null,
+            fieldValues: set.fieldValues ?? [],
             performedAt: set.performedAt ?? Date.now(),
           })),
         )

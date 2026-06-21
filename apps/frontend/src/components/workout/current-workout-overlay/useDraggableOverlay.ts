@@ -87,7 +87,12 @@ export function useDraggableOverlay({
   // it at its default top, and the max drops it just above the tab bar.
   const maxOffsetY = Math.max(
     0,
-    windowHeight - insets.top - insets.bottom - 68 - CARD_HEIGHT - BOTTOM_RESERVE,
+    windowHeight -
+      insets.top -
+      insets.bottom -
+      68 -
+      CARD_HEIGHT -
+      BOTTOM_RESERVE,
   );
 
   // Resting X for the collapsed/expanded state on the current side. On the
@@ -191,7 +196,10 @@ export function useDraggableOverlay({
       }
       if (nextSide !== sideShared.value) {
         sideShared.value = nextSide;
-        translateX.value = withSpring(restingX(collapsed, nextSide), SIDE_SPRING);
+        translateX.value = withSpring(
+          restingX(collapsed, nextSide),
+          SIDE_SPRING,
+        );
         runOnJS(persistSide)(nextSide as OverlaySide);
       }
     })

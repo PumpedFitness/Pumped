@@ -5,12 +5,36 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
+import { useUndoToast } from '@/components/feedback/UndoToast';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
+import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { WorkoutTemplate } from '@/types/workout';
 import { WorkoutTemplateCard } from './WorkoutTemplateCard';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
+
+// Flatten a stored template back into the save shape so an undo can re-create
+// it (and its exercises + sets) after a cascading delete.
+function templateToInput(template: WorkoutTemplate): SaveWorkoutTemplateInput {
+  return {
+    id: template.id,
+    name: template.name,
+    description: template.description,
+    color: template.color,
+    exercises: template.exercises.map(exercise => ({
+      exerciseId: exercise.exerciseId,
+      typeId: exercise.typeId,
+      goal: exercise.goal,
+      notes: exercise.notes,
+      sets: exercise.sets.map(set => ({
+        setType: set.setType,
+        restSeconds: set.restSeconds,
+        fieldValues: set.fieldValues,
+      })),
+    })),
+  };
+}
 
 type WorkoutsLibraryProps = {
   leadingHeader?: ReactNode;
@@ -20,8 +44,20 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { templates, exerciseOptions, deleteTemplate } = useWorkoutTemplates();
+  const { templates, exerciseOptions, deleteTemplate, saveTemplate } =
+    useWorkoutTemplates();
   const { isFavorite, toggleFavorite } = useLocalFavorites();
+  const { showUndo } = useUndoToast();
+
+  // Capture the template before the cascading delete so undo can restore it.
+  const removeTemplate = (template: WorkoutTemplate) => {
+    const snapshot = templateToInput(template);
+    deleteTemplate(template.id);
+    showUndo({
+      message: t('common.deletedNamed', { name: template.name }),
+      onUndo: () => saveTemplate(snapshot),
+    });
+  };
 
   const exerciseNames = useMemo(
     () =>
@@ -65,7 +101,7 @@ export function WorkoutsLibrary({ leadingHeader }: WorkoutsLibraryProps) {
         <LibrarySwipeRow
           favorited={isFavorite(template.id)}
           onToggleFavorite={() => toggleFavorite(template.id)}
-          onDelete={() => deleteTemplate(template.id)}
+          onDelete={() => removeTemplate(template)}
           borderRadius={24}
         >
           <WorkoutTemplateCard

@@ -4,8 +4,9 @@ import { AppShell } from '@/components/layout/AppShell';
 import { SegmentedControl } from '@/components/clay/SegmentedControl';
 import { WorkoutsLibrary } from './components/WorkoutsLibrary';
 import { ExerciseLibrary } from './components/ExerciseLibrary';
+import { SetTypeLibrary } from './set-type-library/SetTypeLibrary';
 
-type LibrarySegment = 'workouts' | 'exercises';
+type LibrarySegment = 'workouts' | 'exercises' | 'setTypes';
 
 export function LibraryScreen() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export function LibraryScreen() {
       options={[
         { value: 'workouts', label: t('library.segments.workouts') },
         { value: 'exercises', label: t('library.segments.exercises') },
+        { value: 'setTypes', label: t('library.segments.setTypes') },
       ]}
       value={segment}
       onChange={value => setSegment(value as LibrarySegment)}
@@ -29,8 +31,10 @@ export function LibraryScreen() {
     <AppShell showTabBar>
       {segment === 'workouts' ? (
         <WorkoutsLibrary leadingHeader={segmentedControl} />
-      ) : (
+      ) : segment === 'exercises' ? (
         <ExerciseLibrary leadingHeader={segmentedControl} />
+      ) : (
+        <SetTypeLibrary leadingHeader={segmentedControl} />
       )}
     </AppShell>
   );

@@ -7,75 +7,83 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors, motion } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import type { SetTableRow, SetTypeOption } from './exerciseSetTableModel';
-import { ExerciseSetTableRow } from './ExerciseSetTableRow';
+import { SetCard } from './SetCard';
+import type { SetCardModel, SetTypeOption } from './exerciseSetTableModel';
+
+type AddSetButtonProps = {
+  label: string;
+  icon: 'plus' | 'copy';
+  onPress: () => void;
+};
+
+function AddSetButton({ label, icon, onPress }: AddSetButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      className="min-h-10 flex-1 flex-row items-center justify-center gap-2 rounded-full bg-accent-soft px-3"
+      onPress={onPress}
+    >
+      <ClayIcon name={icon} size={16} color={colors.accent} />
+      <Text className="t-label text-accent">{label}</Text>
+    </Pressable>
+  );
+}
 
 type ExerciseSetTableContentProps = {
-  columns: readonly [string, string, string, string];
-  rows: SetTableRow[];
+  cards: SetCardModel[];
   setTypeOptions: SetTypeOption[];
-  actionColumnLabel?: string;
   addSetLabel?: string;
+  duplicateSetLabel?: string;
   onAddSet?: () => void;
+  onDuplicateSet?: () => void;
+  onCreateSetType?: (name: string) => string;
 };
 
 export function ExerciseSetTableContent({
-  columns,
-  rows,
+  cards,
   setTypeOptions,
-  actionColumnLabel,
   addSetLabel,
+  duplicateSetLabel,
   onAddSet,
+  onDuplicateSet,
+  onCreateSetType,
 }: ExerciseSetTableContentProps) {
   const { t } = useTranslation();
 
   return (
-    <View className="px-1 pb-2">
-      <View className="flex-row items-center gap-1.5 px-1 py-2">
-        <Text className="w-6 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
-          {t('setTable.columns.set')}
-        </Text>
-        {columns.map((column, index) => (
-          <Text
-            key={column}
-            className={`flex-1 text-[9px] font-semibold uppercase tracking-[0.5px] text-muted ${
-              index === 0 ? 'text-left' : 'text-center'
-            }`}
-          >
-            {column}
-          </Text>
-        ))}
-        {actionColumnLabel ? (
-          <Text className="w-8 text-center text-[9px] font-semibold uppercase tracking-[0.5px] text-muted">
-            {actionColumnLabel}
-          </Text>
-        ) : null}
-      </View>
-
-      {rows.map(row => (
-        // Layout animation: a removed set fades out and the rows below slide up
+    <View className="gap-3">
+      {cards.map(card => (
+        // Layout animation: a removed set fades out and the cards below slide up
         // smoothly instead of snapping into place.
         <Animated.View
-          key={row.key}
+          key={card.key}
           layout={LinearTransition.duration(motion.base)}
           entering={FadeIn.duration(motion.fast)}
           exiting={FadeOut.duration(motion.fast)}
         >
-          <ExerciseSetTableRow row={row} setTypeOptions={setTypeOptions} />
+          <SetCard
+            card={card}
+            setTypeOptions={setTypeOptions}
+            onCreateSetType={onCreateSetType}
+          />
         </Animated.View>
       ))}
 
       {onAddSet ? (
-        <Pressable
-          accessibilityRole="button"
-          className="mx-1 mt-2 min-h-10 flex-row items-center justify-center gap-2 rounded-full bg-accent-soft px-3"
-          onPress={onAddSet}
-        >
-          <ClayIcon name="plus" size={16} color={colors.accent} />
-          <Text className="t-label text-accent">
-            {addSetLabel ?? t('setTable.addSet')}
-          </Text>
-        </Pressable>
+        <View className="mt-1 flex-row gap-2">
+          <AddSetButton
+            label={addSetLabel ?? t('setTable.addSet')}
+            icon="plus"
+            onPress={onAddSet}
+          />
+          {onDuplicateSet ? (
+            <AddSetButton
+              label={duplicateSetLabel ?? t('setTable.duplicateSet')}
+              icon="copy"
+              onPress={onDuplicateSet}
+            />
+          ) : null}
+        </View>
       ) : null}
     </View>
   );

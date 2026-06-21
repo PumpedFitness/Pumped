@@ -5,6 +5,7 @@ import {
   saveWorkoutTemplate,
 } from '@/data/local/workouts/templates';
 import { saveCompletedWorkout } from '@/data/local/workouts/sessions';
+import { getSetTypeFieldDefs } from '@/data/local/sets/setTypes';
 import { useTableQuery } from '@/data/local/tableVersions';
 import {
   workoutTemplateExercises,
@@ -29,7 +30,9 @@ export function useCurrentWorkout() {
   const startWorkout = useCurrentWorkoutStore(state => state.startWorkout);
   const discardWorkout = useCurrentWorkoutStore(state => state.discardWorkout);
   const updateSet = useCurrentWorkoutStore(state => state.updateSet);
-  const toggleSetDone = useCurrentWorkoutStore(state => state.toggleSetDone);
+  const toggleSetDoneAction = useCurrentWorkoutStore(
+    state => state.toggleSetDone,
+  );
   const addSet = useCurrentWorkoutStore(state => state.addSet);
   const removeSet = useCurrentWorkoutStore(state => state.removeSet);
   const updateExercises = useCurrentWorkoutStore(
@@ -44,6 +47,20 @@ export function useCurrentWorkout() {
         ? getWorkoutTemplate(currentWorkout.workoutTemplateId)
         : null,
     [currentWorkout],
+  );
+
+  // Resolve the set's type fields (built-in or custom) before delegating to the
+  // store, which gates completion on them. Keeps DB reads out of the store.
+  const toggleSetDone = useCallback(
+    (exerciseId: string, setId: string) => {
+      const workout = useCurrentWorkoutStore.getState().currentWorkout;
+      const set = workout?.exercises
+        .find(exercise => exercise.id === exerciseId)
+        ?.sets.find(item => item.id === setId);
+      const fields = set ? getSetTypeFieldDefs(set.setType) : [];
+      return toggleSetDoneAction(exerciseId, setId, fields);
+    },
+    [toggleSetDoneAction],
   );
 
   const startTemplateWorkout = useCallback(
@@ -65,7 +82,7 @@ export function useCurrentWorkout() {
       const workout = requireCurrentWorkout(
         useCurrentWorkoutStore.getState().currentWorkout,
       );
-      if (!isCurrentWorkoutComplete(workout)) {
+      if (!isCurrentWorkoutComplete(workout, getSetTypeFieldDefs)) {
         throw new Error(i18n.t('errors.completeEverySet'));
       }
       if (input?.updateTemplate) {
@@ -88,10 +105,8 @@ export function useCurrentWorkout() {
             exercisePosition: exercise.position,
             setPosition: set.position,
             setType: set.setType,
-            // Guaranteed non-null by the isCurrentWorkoutComplete guard.
-            reps: set.reps!,
-            weight: set.weight,
-            rpe: set.rpe,
+            restSeconds: set.restSeconds,
+            fieldValues: set.fieldValues,
             performedAt: set.performedAt ?? Date.now(),
           })),
         ),
@@ -102,7 +117,10 @@ export function useCurrentWorkout() {
   );
 
   const canFinish = useMemo(
-    () => (currentWorkout ? isCurrentWorkoutComplete(currentWorkout) : false),
+    () =>
+      currentWorkout
+        ? isCurrentWorkoutComplete(currentWorkout, getSetTypeFieldDefs)
+        : false,
     [currentWorkout],
   );
   const structureChanged = useMemo(

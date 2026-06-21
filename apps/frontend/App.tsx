@@ -5,9 +5,14 @@ import '@/i18n';
 import { useEffect, useState } from 'react';
 import { HeroUINativeProvider } from 'heroui-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  SafeAreaProvider,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context';
 import { StatusBar, ActivityIndicator, Text, View } from 'react-native';
 import { Uniwind } from 'uniwind';
 import { AppNavigator } from '@/navigation/AppNavigator';
+import { UndoToastProvider } from '@/components/feedback/UndoToast';
 import { initDatabase } from '@/data/local/database';
 import { useAuthStore } from '@/stores/authStore';
 import { useHomescreenStore } from '@/stores/homescreenStore';
@@ -72,10 +77,14 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} className="flex-1">
-      <HeroUINativeProvider>
-        <StatusBar barStyle="dark-content" />
-        <AppNavigator />
-      </HeroUINativeProvider>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <HeroUINativeProvider>
+          <UndoToastProvider>
+            <StatusBar barStyle="dark-content" />
+            <AppNavigator />
+          </UndoToastProvider>
+        </HeroUINativeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

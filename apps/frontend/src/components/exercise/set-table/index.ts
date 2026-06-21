@@ -1,6 +1,7 @@
-export { CollapsibleExerciseSetTable } from './CollapsibleExerciseSetTable';
+export { TemplateSetTable } from './TemplateSetTable';
 export { ExerciseSetTable } from './ExerciseSetTable';
 export {
-  SET_TYPE_OPTIONS,
   formatExerciseSetSummary,
+  formatSetFieldDetail,
 } from './exerciseSetPresentation';
+export { formatSetNumber, type SetTypeOption } from './exerciseSetTableModel';

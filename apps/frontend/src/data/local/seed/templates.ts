@@ -1,6 +1,7 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import type { WorkoutSetType } from '@/data/local/enums';
 import type { db } from '@/data/local/database';
+import { buildBuiltInFieldValues } from '@/data/local/builtins';
 import {
   schedules,
   scheduleSlots,
@@ -26,7 +27,6 @@ type SetSpec = {
   type?: WorkoutSetType;
   reps: number;
   rpe?: number;
-  percentage?: number;
 };
 
 type ExerciseSpec = {
@@ -52,11 +52,10 @@ const TEMPLATES: TemplateSpec[] = [
     id: TEMPLATE_IDS.push,
     name: 'Push Strength',
     description: 'Bench and overhead press strength session.',
-    status: 'ACTIVE',
     color: 'TERRACOTTA',
     exercises: [
       templateExercise('bench', EXERCISE_IDS.benchPress, '3 x 6-8 at RPE 8', [
-        { type: 'WARMUP', reps: 10, percentage: 50 },
+        { type: 'WARMUP', reps: 10 },
         ...normalSets(3, 8),
       ]),
       templateExercise(
@@ -69,7 +68,7 @@ const TEMPLATES: TemplateSpec[] = [
         'triceps',
         EXERCISE_IDS.tricepsPushdown,
         'Finish with 2 x 12-15',
-        [...normalSets(2, 12), { type: 'DROP', reps: 15, rpe: 9 }],
+        [...normalSets(2, 12), { type: 'MAX_EFFORT', reps: 15, rpe: 9 }],
       ),
     ],
   },
@@ -77,18 +76,17 @@ const TEMPLATES: TemplateSpec[] = [
     id: TEMPLATE_IDS.fullBody,
     name: 'Full Body Rotation',
     description: 'Simple squat, row, and trunk session every three days.',
-    status: 'ACTIVE',
     color: 'SAGE',
     exercises: [
       templateExercise(
         'squat',
         EXERCISE_IDS.backSquat,
         '3 x 5 with clean reps',
-        [{ type: 'WARMUP', reps: 8, percentage: 50 }, ...normalSets(3, 5)],
+        [{ type: 'WARMUP', reps: 8 }, ...normalSets(3, 5)],
       ),
       templateExercise('row', EXERCISE_IDS.barbellRow, '3 x 10 with a pause', [
         ...normalSets(2, 10),
-        { type: 'BACKOFF', reps: 12, rpe: 8 },
+        { type: 'NORMAL', reps: 12, rpe: 8 },
       ]),
       templateExercise(
         'plank',
@@ -103,11 +101,10 @@ const TEMPLATES: TemplateSpec[] = [
     id: TEMPLATE_IDS.pull,
     name: 'Pull Hypertrophy',
     description: 'Deadlift technique followed by back and biceps volume.',
-    status: 'ACTIVE',
     color: 'MOSS',
     exercises: [
       templateExercise('deadlift', EXERCISE_IDS.deadlift, '3 x 5 at RPE 7-8', [
-        { type: 'WARMUP', reps: 5, percentage: 55 },
+        { type: 'WARMUP', reps: 5 },
         ...normalSets(3, 5, 7.5),
       ]),
       templateExercise(
@@ -118,7 +115,7 @@ const TEMPLATES: TemplateSpec[] = [
       ),
       templateExercise('curl', EXERCISE_IDS.dumbbellCurl, '2 x 12 plus AMRAP', [
         ...normalSets(2, 12),
-        { type: 'AMRAP', reps: 12, rpe: 9 },
+        { type: 'MAX_EFFORT', reps: 12, rpe: 9 },
       ]),
     ],
   },
@@ -126,7 +123,6 @@ const TEMPLATES: TemplateSpec[] = [
     id: TEMPLATE_IDS.lower,
     name: 'Lower Body Builder',
     description: 'Squat, hinge, leg press, and calves.',
-    status: 'ACTIVE',
     color: 'HONEY',
     exercises: [
       templateExercise(
@@ -159,7 +155,6 @@ const TEMPLATES: TemplateSpec[] = [
     id: TEMPLATE_IDS.upperExpress,
     name: 'Upper Express',
     description: 'A short upper-body session for busy days.',
-    status: 'INACTIVE',
     color: 'ROSE',
     exercises: [
       templateExercise(
@@ -270,26 +265,24 @@ function buildExerciseRows(): TemplateExerciseInsert[] {
 function buildSetRows(): TemplateSetInsert[] {
   return TEMPLATES.flatMap(template =>
     template.exercises.flatMap(exercise =>
-      exercise.sets.map((set, position) => ({
-        id: templateSetId(exercise.key, position, set.type ?? 'NORMAL'),
-        workoutTemplateExerciseId: sampleId(
-          `template-exercise-${exercise.key}`,
-        ),
-        position,
-        setType: set.type ?? 'NORMAL',
-        targetReps: set.reps,
-        targetPercentage1Rm: set.percentage ?? null,
-        targetRpe: set.rpe ?? null,
-      })),
+      exercise.sets.map((set, position) => {
+        const setType = set.type ?? 'NORMAL';
+        return {
+          id: templateSetId(exercise.key, position),
+          workoutTemplateExerciseId: sampleId(
+            `template-exercise-${exercise.key}`,
+          ),
+          position,
+          setType,
+          restSeconds: null,
+          fieldValues: buildBuiltInFieldValues(setType, set),
+        };
+      }),
     ),
   );
 }
 
-function templateSetId(
-  exerciseKey: string,
-  position: number,
-  setType: WorkoutSetType,
-): string {
+function templateSetId(exerciseKey: string, position: number): string {
   if (exerciseKey === 'bench') {
     return sampleId(
       position === 0
@@ -302,13 +295,6 @@ function templateSetId(
       position === 0
         ? 'template-set-squat-warmup'
         : `template-set-squat-normal-${position - 1}`,
-    );
-  }
-  if (exerciseKey === 'row') {
-    return sampleId(
-      setType === 'BACKOFF'
-        ? 'template-set-row-backoff'
-        : `template-set-row-normal-${position}`,
     );
   }
   return sampleId(`template-set-${exerciseKey}-${position}`);

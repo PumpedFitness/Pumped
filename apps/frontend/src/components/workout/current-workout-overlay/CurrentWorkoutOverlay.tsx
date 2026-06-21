@@ -163,7 +163,12 @@ function CollapseButton({ side, onCollapse }: CollapseButtonProps) {
       >
         {/* Chevron points toward the edge the card collapses into. */}
         <View style={{ transform: [{ scaleX: side === 1 ? -1 : 1 }] }}>
-          <ClayIcon name="chevron" size={17} stroke={2} color={colors.creamDim} />
+          <ClayIcon
+            name="chevron"
+            size={17}
+            stroke={2}
+            color={colors.creamDim}
+          />
         </View>
       </Pressable>
     </View>
@@ -253,7 +258,10 @@ export function CurrentWorkoutOverlay({
                 currentExerciseName={currentExerciseName}
                 onOpenWorkout={onOpenWorkout}
               />
-              <CollapseButton side={side} onCollapse={() => setCollapsed(true)} />
+              <CollapseButton
+                side={side}
+                onCollapse={() => setCollapsed(true)}
+              />
             </View>
           </Animated.View>
         </GestureDetector>

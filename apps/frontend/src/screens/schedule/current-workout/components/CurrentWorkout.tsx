@@ -10,10 +10,9 @@ import type { CurrentWorkoutExercise } from '@/stores/currentWorkoutModel';
 import { colors } from '@/theme/tokens';
 import type { ExerciseSelectionResult } from '@/types/exercise';
 import { ExerciseCard } from '@/components/exercise/ExerciseCard';
-import {
-  SET_TYPE_OPTIONS,
-  ExerciseSetTable,
-} from '@/components/exercise/set-table';
+import { ExerciseSetTable } from '@/components/exercise/set-table';
+import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { OptionPopup, type PopupOption } from '@/components/clay/option-popup';
 import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
 import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
@@ -260,6 +259,12 @@ export function CurrentWorkout({
   const { t } = useTranslation();
   const appliedSelectionId = useRef<string | null>(null);
   const {
+    options: setTypeOptions,
+    byId: setTypesById,
+    createSetType,
+  } = useSetTypeLibrary();
+  const { profile } = useUserProfile();
+  const {
     currentWorkout,
     exerciseOptions,
     discardWorkout,
@@ -329,7 +334,9 @@ export function CurrentWorkout({
           </Text>
         </View>
 
-        {currentWorkout.exercises.map(exercise => (
+        {currentWorkout.exercises.map(exercise => {
+          const doneCount = exercise.sets.filter(set => set.isDone).length;
+          return (
           <ExerciseCard
             key={exercise.id}
             name={
@@ -337,14 +344,20 @@ export function CurrentWorkout({
               t('plan.card.fallbackExercise')
             }
             description={t('currentWorkout.setsDone', {
-              done: exercise.sets.filter(set => set.isDone).length,
+              done: doneCount,
               total: exercise.sets.length,
             })}
+            progress={
+              exercise.sets.length ? doneCount / exercise.sets.length : 0
+            }
             onRemove={() => requestRemoveExercise(t, exercise, removeExercise)}
           >
             <ExerciseSetTable
               sets={exercise.sets}
-              setTypeOptions={SET_TYPE_OPTIONS}
+              setTypeOptions={setTypeOptions}
+              setTypesById={setTypesById}
+              weightUnit={profile.weightUnit}
+              onCreateSetType={createSetType}
               onAddSet={() => addSet(exercise.id)}
               onChangeSet={(setId, values) =>
                 updateSet(exercise.id, setId, values)
@@ -353,7 +366,8 @@ export function CurrentWorkout({
               onRemoveSet={set => requestRemoveSet(t, exercise, set, removeSet)}
             />
           </ExerciseCard>
-        ))}
+          );
+        })}
 
         <Pressable
           accessibilityRole="button"

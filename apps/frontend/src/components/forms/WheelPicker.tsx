@@ -5,9 +5,8 @@ import {
   Platform,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
-  type ListRenderItemInfo,
 } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 
 type WheelPickerProps = {
   items: string[];
@@ -29,7 +28,9 @@ export function WheelPicker({
   visibleCount = VISIBLE_COUNT,
   width = 80,
 }: WheelPickerProps) {
-  const listRef = useRef<FlatList>(null);
+  // A plain ScrollView (not a FlatList) — the value lists are tiny, so
+  // virtualization is unnecessary and would warn when nested in a ScrollView.
+  const listRef = useRef<ScrollView>(null);
   const isUserScrollingRef = useRef(false);
   const userScrolledOffsetRef = useRef<number | null>(null);
   const padCount = Math.floor(visibleCount / 2);
@@ -54,10 +55,7 @@ export function WheelPicker({
       return;
     }
     userScrolledOffsetRef.current = null;
-    listRef.current.scrollToOffset({
-      offset: targetOffset,
-      animated: false,
-    });
+    listRef.current.scrollTo({ y: targetOffset, animated: false });
   }, [selectedIndex, itemHeight]);
 
   const onScrollBeginDrag = useCallback(() => {
@@ -78,34 +76,6 @@ export function WheelPicker({
     [itemHeight, items.length, selectedIndex, onChange],
   );
 
-  const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<string>) => {
-      const realIndex = index - padCount;
-      const isSelected = realIndex === selectedIndex;
-      return (
-        <View
-          className="justify-center items-center"
-          style={{ height: itemHeight }}
-        >
-          <Text
-            className={`${
-              isSelected ? 'text-lg font-semibold' : 'text-[15px] font-normal'
-            } ${
-              item === ''
-                ? 'text-transparent'
-                : isSelected
-                ? 'text-foreground'
-                : 'text-muted'
-            }`}
-          >
-            {item || ' '}
-          </Text>
-        </View>
-      );
-    },
-    [selectedIndex, itemHeight, padCount],
-  );
-
   const containerHeight = visibleCount * itemHeight;
   const highlightTop = padCount * itemHeight;
 
@@ -115,11 +85,8 @@ export function WheelPicker({
         className="absolute left-0 right-0 bg-surface-sunk rounded-lg"
         style={{ top: highlightTop, height: itemHeight }}
       />
-      <FlatList
+      <ScrollView
         ref={listRef}
-        data={paddedItems}
-        keyExtractor={(_, i) => String(i)}
-        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         snapToInterval={itemHeight}
         decelerationRate="fast"
@@ -127,12 +94,35 @@ export function WheelPicker({
         onMomentumScrollEnd={onMomentumEnd}
         nestedScrollEnabled={Platform.OS === 'android'}
         overScrollMode="never"
-        getItemLayout={(_, index) => ({
-          length: itemHeight,
-          offset: itemHeight * index,
-          index,
+      >
+        {paddedItems.map((item, index) => {
+          const realIndex = index - padCount;
+          const isSelected = realIndex === selectedIndex;
+          return (
+            <View
+              key={index}
+              className="justify-center items-center"
+              style={{ height: itemHeight }}
+            >
+              <Text
+                className={`${
+                  isSelected
+                    ? 'text-lg font-semibold'
+                    : 'text-[15px] font-normal'
+                } ${
+                  item === ''
+                    ? 'text-transparent'
+                    : isSelected
+                    ? 'text-foreground'
+                    : 'text-muted'
+                }`}
+              >
+                {item || ' '}
+              </Text>
+            </View>
+          );
         })}
-      />
+      </ScrollView>
     </View>
   );
 }

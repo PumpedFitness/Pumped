@@ -5,6 +5,7 @@ import { randomUUID } from 'expo-crypto';
 import { create, type StateCreator } from 'zustand';
 import { i18n } from '@/i18n';
 import type { WorkoutTemplate } from '@/types/workout';
+import type { SetTypeFieldDef } from '@/types/setType';
 import { uniqueStrings } from '@/utils/dedupe';
 import {
   createCurrentWorkoutExercise,
@@ -26,7 +27,11 @@ type CurrentWorkoutState = {
     setId: string,
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
-  toggleSetDone: (exerciseId: string, setId: string) => boolean;
+  toggleSetDone: (
+    exerciseId: string,
+    setId: string,
+    fields: SetTypeFieldDef[],
+  ) => boolean;
   addSet: (exerciseId: string) => void;
   removeSet: (exerciseId: string, setId: string) => void;
   updateExercises: (exerciseIds: string[]) => void;
@@ -82,6 +87,7 @@ function toggleWorkoutSetDone(
   getState: StoreGet,
   exerciseId: string,
   setId: string,
+  fields: SetTypeFieldDef[],
 ): boolean {
   const workout = requireCurrentWorkout(getState().currentWorkout);
   const exercise = workout.exercises.find(item => item.id === exerciseId);
@@ -89,7 +95,7 @@ function toggleWorkoutSetDone(
   if (!workoutSet) {
     return false;
   }
-  if (!workoutSet.isDone && !isCurrentWorkoutSetValid(workoutSet)) {
+  if (!workoutSet.isDone && !isCurrentWorkoutSetValid(workoutSet, fields)) {
     return false;
   }
   setState({
@@ -214,8 +220,8 @@ export const useCurrentWorkoutStore = create<CurrentWorkoutState>(
     startWorkout: template => startWorkout(setState, getState, template),
     updateSet: (exerciseId, setId, values) =>
       updateWorkoutSet(setState, getState, exerciseId, setId, values),
-    toggleSetDone: (exerciseId, setId) =>
-      toggleWorkoutSetDone(setState, getState, exerciseId, setId),
+    toggleSetDone: (exerciseId, setId, fields) =>
+      toggleWorkoutSetDone(setState, getState, exerciseId, setId, fields),
     addSet: exerciseId => addWorkoutSet(setState, getState, exerciseId),
     removeSet: (exerciseId, setId) =>
       removeWorkoutSet(setState, getState, exerciseId, setId),

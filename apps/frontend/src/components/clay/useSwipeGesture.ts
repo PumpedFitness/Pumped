@@ -41,13 +41,20 @@ const ARM_HYSTERESIS = 16;
 const OPEN_SPRING = { damping: 22, stiffness: 240, mass: 0.7 } as const;
 const CLOSE_SPRING = { damping: 26, stiffness: 280, mass: 0.7 } as const;
 const COMMIT_DURATION = 200;
-const FLING_VELOCITY = 900;
+// A fling only short-circuits the distance threshold when it's both fast and
+// already well into the swipe — these destructive actions have no confirm step,
+// so a casual flick must never commit.
+const FLING_VELOCITY = 1400;
+// Fraction of the arm threshold the row must already be revealed past before a
+// fling is allowed to commit. Keeps a quick flick from the rest strip safe.
+const FLING_MIN_REVEAL = 0.6;
 
-// Full-swipe arms at half the row width, but never before the rest strip is
-// fully revealed — matches the native "drag most of the way across" gesture.
+// Full-swipe arms once the row is dragged most of the way across — deliberately
+// far, since committing fires immediately with no confirmation. Never arms
+// before the rest strip is well clear of the resting position.
 export function armThresholdFor(width: number) {
   'worklet';
-  return Math.max(width * 0.5, REST_WIDTH + 64);
+  return Math.max(width * 0.7, REST_WIDTH + 96);
 }
 
 function fireImpact(armed: boolean) {
@@ -197,9 +204,12 @@ export function useSwipeGesture({
       const arm = armThresholdFor(width.value);
       const side: SwipeFrom = offset >= 0 ? 'left' : 'right';
       const dir = offset >= 0 ? 1 : -1;
-      // A fling towards the open edge arms once the rest strip is revealed.
+      // A fling towards the open edge only commits when it's both fast and
+      // already most of the way to the arm threshold — never from a near-closed
+      // flick, since there's no confirmation behind it.
       const armsByFling =
-        event.velocityX * dir > FLING_VELOCITY && reveal >= REST_WIDTH;
+        event.velocityX * dir > FLING_VELOCITY &&
+        reveal >= arm * FLING_MIN_REVEAL;
       if (reveal >= arm || armsByFling) {
         runOnJS(commit)(side);
         return;

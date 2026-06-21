@@ -2,9 +2,10 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
+  Easing,
   FadeIn,
-  FadeOut,
   LinearTransition,
+  SlideOutLeft,
 } from 'react-native-reanimated';
 import { Button } from 'heroui-native';
 import { EmptyState } from '@/components/clay/EmptyState';
@@ -141,24 +142,28 @@ export function SearchableLibrary<T>({
   );
 
   const list =
-    filtered.length > 0 ? (
-      filtered.map(item => (
-        // Layout animation: removed rows fade out and siblings slide up
-        // smoothly instead of snapping into place.
-        <Animated.View
-          key={keyExtractor(item)}
-          layout={LinearTransition.duration(motion.base)}
-          entering={FadeIn.duration(motion.fast)}
-          exiting={FadeOut.duration(motion.fast)}
-        >
-          {renderItem(item)}
-        </Animated.View>
-      ))
-    ) : items.length === 0 ? (
-      (emptyState ?? defaultEmpty)
-    ) : (
-      (noMatchState ?? defaultNoMatch)
-    );
+    filtered.length > 0
+      ? filtered.map(item => (
+          // One fluid removal: a deleted row keeps sliding off to the left
+          // (continuing the swipe), while the siblings glide up to close the gap
+          // over the same window — so the swipe, the slide-off, and the collapse
+          // read as a single motion. Durations/easing are matched on purpose.
+          <Animated.View
+            key={keyExtractor(item)}
+            layout={LinearTransition.duration(motion.base).easing(
+              Easing.inOut(Easing.cubic),
+            )}
+            entering={FadeIn.duration(motion.fast)}
+            exiting={SlideOutLeft.duration(motion.base).easing(
+              Easing.in(Easing.cubic),
+            )}
+          >
+            {renderItem(item)}
+          </Animated.View>
+        ))
+      : items.length === 0
+      ? emptyState ?? defaultEmpty
+      : noMatchState ?? defaultNoMatch;
 
   // Pinned chrome (segmented control and/or the search row) rendered as a single
   // sticky header *inside* the ScrollView. Keeping it inside means the ScrollView

@@ -1,22 +1,35 @@
-import type {
-  WorkoutSetType,
-  WorkoutTemplateColor,
-  WorkoutTemplateStatus,
-} from '@/data/local/enums';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+
+/** Min–max span for a `range` field's target (e.g. reps 8–12). */
+export type SetFieldRange = {
+  min: number | null;
+  max: number | null;
+};
+
+/** A per-set value keyed by its set type's field id (`set_type_field.id`). The
+ *  owning field's `dataType` selects the slot. For a `range` field, templates
+ *  populate `range` (the target) and sessions populate `number` (the actual). */
+export type SetFieldValue = {
+  fieldId: string;
+  number?: number | null;
+  bool?: boolean | null;
+  text?: string | null;
+  range?: SetFieldRange | null;
+};
 
 export type WorkoutTemplateSet = {
   id: string;
   position: number;
-  setType: WorkoutSetType;
-  targetReps: number | null;
-  targetPercentage1Rm: number | null;
-  targetRpe: number | null;
+  setType: SetTypeId;
+  restSeconds: number | null;
+  fieldValues: SetFieldValue[];
 };
 
 export type WorkoutTemplateExercise = {
   id: string;
   exerciseId: string;
   position: number;
+  typeId: string | null;
   goal: string | null;
   notes: string | null;
   sets: WorkoutTemplateSet[];
@@ -27,7 +40,6 @@ export type WorkoutTemplate = {
   userId: string;
   name: string;
   description: string | null;
-  status: WorkoutTemplateStatus;
   color: WorkoutTemplateColor;
   exercises: WorkoutTemplateExercise[];
   createdAt: number;
@@ -51,10 +63,9 @@ export type PerformedSet = {
   exerciseId: string;
   exercisePosition: number;
   setPosition: number;
-  setType: WorkoutSetType;
-  reps: number;
-  weight: number | null;
-  rpe: number | null;
+  setType: SetTypeId;
+  restSeconds: number | null;
+  fieldValues: SetFieldValue[];
   performedAt: number | null;
   importId: number | null;
 };

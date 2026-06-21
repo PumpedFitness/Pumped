@@ -3,7 +3,6 @@ import {
   deleteWorkoutTemplate,
   listWorkoutTemplates,
   saveWorkoutTemplate,
-  updateWorkoutTemplateStatus,
   type SaveWorkoutTemplateInput,
 } from '@/data/local/workouts/templates';
 import { listWorkoutSessions } from '@/data/local/workouts/sessions';
@@ -14,7 +13,6 @@ import {
   workoutTemplateSets,
   workoutTemplates,
 } from '@/data/local/schema';
-import type { WorkoutTemplateStatus } from '@/data/local/enums';
 import type { ExerciseOption } from '@/types/exercise';
 import type { WorkoutSession, WorkoutTemplate } from '@/types/workout';
 import { useExerciseOptions } from './useExerciseOptions';
@@ -24,10 +22,6 @@ type UseWorkoutTemplatesResult = {
   sessions: WorkoutSession[];
   exerciseOptions: ExerciseOption[];
   saveTemplate: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
-  updateTemplateStatus: (
-    templateId: string,
-    status: WorkoutTemplateStatus,
-  ) => WorkoutTemplate;
   deleteTemplate: (templateId: string) => void;
 };
 
@@ -51,18 +45,12 @@ export function useWorkoutTemplates(): UseWorkoutTemplatesResult {
     (templateId: string) => deleteWorkoutTemplate(templateId),
     [],
   );
-  const updateStatus = useCallback(
-    (templateId: string, status: WorkoutTemplateStatus) =>
-      updateWorkoutTemplateStatus(templateId, status),
-    [],
-  );
 
   return {
     templates,
     sessions,
     exerciseOptions,
     saveTemplate,
-    updateTemplateStatus: updateStatus,
     deleteTemplate,
   };
 }

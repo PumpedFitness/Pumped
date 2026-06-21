@@ -9,10 +9,8 @@ import {
 import type { PerformedSet } from '@/types/workout';
 import { displayWeight } from '@/utils/units';
 import { ExerciseCard } from '@/components/exercise/ExerciseCard';
-import {
-  SET_TYPE_OPTIONS,
-  ExerciseSetTable,
-} from '@/components/exercise/set-table';
+import { ExerciseSetTable } from '@/components/exercise/set-table';
+import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
 
@@ -88,6 +86,7 @@ export function CompletedWorkoutDetails({
   const { t, i18n } = useTranslation();
   const workout = useWorkoutSession(workoutId);
   const exerciseOptions = useExerciseOptions();
+  const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
 
   if (!workout) {
     return (
@@ -165,7 +164,8 @@ export function CompletedWorkoutDetails({
             <ExerciseSetTable
               readOnly
               sets={exercise.sets}
-              setTypeOptions={SET_TYPE_OPTIONS}
+              setTypeOptions={setTypeOptions}
+              setTypesById={setTypesById}
               weightUnit={weightUnit}
             />
           </ExerciseCard>

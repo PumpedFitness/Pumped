@@ -1,70 +1,48 @@
-import { useEffect, useRef } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
+import { ScrollViewContainer } from 'react-native-reorderable-list';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
-import type { ExerciseOption, ExerciseSelectionResult } from '@/types/exercise';
+import type { ExerciseOption } from '@/types/exercise';
 import type { WorkoutTemplate } from '@/types/workout';
 import { colors } from '@/theme/tokens';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
 import { ClayIcon } from '@/components/icons/ClayIcon';
+import { TemplateEditorProvider } from '@/screens/library/template-editor/templateEditorContext';
+import { useTemplateEditorController } from '@/screens/library/template-editor/useTemplateEditorController';
 import { WorkoutTemplateAppearanceSection } from './WorkoutTemplateAppearanceSection';
 import { WorkoutTemplateDetailsSection } from './WorkoutTemplateDetailsSection';
 import { WorkoutTemplateExercisesSection } from './WorkoutTemplateExercisesSection';
-import { useWorkoutTemplateEditorDraft } from '@/screens/library/template-editor/useWorkoutTemplateEditorDraft';
 
 type WorkoutTemplateEditorProps = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
-  exerciseSelection?: ExerciseSelectionResult;
-  onClose: () => void;
-  onChooseExercises: (selectedExerciseIds: string[]) => void;
   onSave: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
-  onRequestDelete: (template: WorkoutTemplate) => void;
+  onDelete: (templateId: string) => void;
 };
+
+const CONTENT_STYLE = {
+  gap: 28,
+  paddingHorizontal: 20,
+  paddingBottom: 40,
+  paddingTop: 24,
+} as const;
 
 export function WorkoutTemplateEditor({
   template,
   exerciseOptions,
-  exerciseSelection,
-  onClose,
-  onChooseExercises,
   onSave,
-  onRequestDelete,
+  onDelete,
 }: WorkoutTemplateEditorProps) {
   const { t } = useTranslation();
-  const appliedSelectionId = useRef<string | null>(null);
-  const {
-    draft,
-    exerciseNames,
-    updateDraft,
-    updateExercise,
-    removeExercise,
-    updateSelectedExercises,
-    save,
-  } = useWorkoutTemplateEditorDraft({
-    template,
-    exerciseOptions,
-    onSave,
-    onSaved: onClose,
-  });
-
-  useEffect(() => {
-    if (
-      exerciseSelection &&
-      exerciseSelection.id !== appliedSelectionId.current
-    ) {
-      appliedSelectionId.current = exerciseSelection.id;
-      updateSelectedExercises(exerciseSelection.exerciseIds);
-    }
-  }, [exerciseSelection, updateSelectedExercises]);
+  const { draft, updateDraft, save, requestDelete, close, context } =
+    useTemplateEditorController({
+      template,
+      exerciseOptions,
+      onSave,
+      onDelete,
+    });
 
   return (
     <AppView edges={['top', 'bottom']}>
@@ -79,13 +57,13 @@ export function WorkoutTemplateEditor({
               : t('templateEditor.newTitle')
           }
           rightLabel={t('templateEditor.save')}
-          onLeftPress={onClose}
+          onLeftPress={close}
           onRightPress={save}
         />
 
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="gap-7 px-5 pb-10 pt-6"
+        <ScrollViewContainer
+          style={{ flex: 1 }}
+          contentContainerStyle={CONTENT_STYLE}
           keyboardShouldPersistTaps="handled"
         >
           <WorkoutTemplateDetailsSection
@@ -97,21 +75,12 @@ export function WorkoutTemplateEditor({
           />
           <WorkoutTemplateAppearanceSection
             color={draft.color}
-            status={draft.status}
             onColorChange={color => updateDraft({ color })}
-            onStatusChange={status => updateDraft({ status })}
           />
-          <WorkoutTemplateExercisesSection
-            exercises={draft.exercises}
-            exerciseNames={exerciseNames}
-            onChooseExercises={() =>
-              onChooseExercises(
-                draft.exercises.map(exercise => exercise.exerciseId),
-              )
-            }
-            onUpdateExercise={updateExercise}
-            onRemoveExercise={removeExercise}
-          />
+
+          <TemplateEditorProvider value={context}>
+            <WorkoutTemplateExercisesSection />
+          </TemplateEditorProvider>
 
           {draft.error && (
             <View className="rounded-[18px] bg-danger/10 px-4 py-3">
@@ -134,13 +103,13 @@ export function WorkoutTemplateEditor({
               className="h-14 rounded-full"
               variant="danger-soft"
               feedbackVariant="scale"
-              onPress={() => onRequestDelete(template)}
+              onPress={requestDelete}
             >
               <ClayIcon name="trash" size={18} color={colors.danger} />
               <Button.Label>{t('templateEditor.deleteCta')}</Button.Label>
             </Button>
           )}
-        </ScrollView>
+        </ScrollViewContainer>
       </KeyboardAvoidingView>
     </AppView>
   );
