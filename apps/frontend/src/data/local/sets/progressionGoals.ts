@@ -115,7 +115,14 @@ export function normalizeProgressionGoal(
 }
 
 export function formatNumber(value: number): string {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+  if (Number.isInteger(value)) {
+    return value.toString();
+  }
+
+  return value
+    .toFixed(2)
+    .replace(/\.0+$/, '')
+    .replace(/(\.\d*[1-9])0$/, '$1');
 }
 
 export function formatProgressionGoal(
