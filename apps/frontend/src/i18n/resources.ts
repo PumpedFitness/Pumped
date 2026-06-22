@@ -336,24 +336,16 @@ export const resources = {
       progression: {
         title: 'Progression',
         modes: {
-          auto: 'Manual',
-          manual: 'Manual progression',
+          linear: 'Linear progression',
           none: 'No Progression',
         },
         helper: {
-          auto: 'Use the set type’s linear progression settings.',
-          manual: 'Use the set type’s linear progression settings.',
+          linear: 'Use the set type’s linear progression settings.',
           none: 'Suggest the values from your last completed set.',
         },
-        goal: {
-          kind: {
-            none: 'No progression',
-            linear: 'Linear progression',
-          },
-          summary: {
-            none: 'No progression',
-            linear: 'Linear +{{increment}}',
-          },
+        summary: {
+          none: 'No progression',
+          linear: 'Linear +{{increment}}',
         },
         suggestion: {
           suggested: 'Suggested: {{target}}',
@@ -1221,13 +1213,11 @@ export const resources = {
       progression: {
         title: 'Progression',
         modes: {
-          auto: 'Manuell',
-          manual: 'Manuelle Progression',
+          linear: 'Lineare Progression',
           none: 'Keine Progression',
         },
         helper: {
-          auto: 'Verwende die linearen Progressionseinstellungen des Satztyps.',
-          manual:
+          linear:
             'Verwende die linearen Progressionseinstellungen des Satztyps.',
           none: 'Schlage die Werte aus deinem letzten abgeschlossenen Satz vor.',
         },

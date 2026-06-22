@@ -131,10 +131,10 @@ export function formatProgressionGoal(
 ): string {
   switch (goal.kind) {
     case 'linear':
-      return t('progression.goal.summary.linear', {
+      return t('progression.summary.linear', {
         increment: formatNumber(goal.increment),
       });
     case 'none':
-      return t('progression.goal.summary.none');
+      return t('progression.summary.none');
   }
 }

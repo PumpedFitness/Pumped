@@ -307,7 +307,7 @@ export function buildLinearResult(
   const fallback = suggestedSets[0];
   const hasSuggestion = firstSuggestion != null;
   return {
-    mode: 'manual',
+    mode: 'linear',
     kind: hasSuggestion
       ? 'suggestion'
       : fallback?.lastPerformedText

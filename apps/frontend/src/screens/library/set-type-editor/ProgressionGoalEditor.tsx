@@ -58,12 +58,12 @@ function goalOptions(t: TFunction): GoalOption[] {
   return [
     {
       kind: 'none',
-      label: t('progression.goal.kind.none'),
+      label: t('progression.modes.none'),
       goal: { kind: 'none' },
     },
     {
       kind: 'linear',
-      label: t('progression.goal.kind.linear'),
+      label: t('progression.modes.linear'),
       goal: { kind: 'linear', increment: DEFAULT_LINEAR_INCREMENT },
     },
   ];

@@ -60,15 +60,13 @@ export function ExerciseSetEditorScreen({
     ? exerciseTypes.items.find(item => item.id === draft.typeId)?.name
     : undefined;
   const progressionMode =
-    draft.progressionMode === 'auto'
-      ? 'manual'
-      : draft.progressionMode ?? 'none';
+    draft.progressionMode ?? 'none';
   const progressionOptions: Array<{
     value: Exclude<ProgressionMode, 'auto'>;
     label: string;
   }> = [
     { value: 'none', label: t('progression.modes.none') },
-    { value: 'manual', label: t('progression.modes.manual') },
+    { value: 'linear', label: t('progression.modes.linear') },
   ];
 
   const setSets = (sets: EditableExercise['sets']) =>

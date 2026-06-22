@@ -382,7 +382,7 @@ export function buildWorkoutSetCards(
         ? t(
             suggestion.isLastPerformanceOnly
               ? 'progression.modes.none'
-              : 'progression.modes.manual',
+              : 'progression.modes.linear',
           )
         : undefined,
       tone: set.isDone ? 'completed' : 'default',

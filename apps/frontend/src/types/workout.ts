@@ -17,7 +17,7 @@ export type SetFieldValue = {
   range?: SetFieldRange | null;
 };
 
-export type ProgressionMode = 'auto' | 'manual' | 'none';
+export type ProgressionMode = 'linear' | 'none';
 
 export type WorkoutTemplateSet = {
   id: string;
