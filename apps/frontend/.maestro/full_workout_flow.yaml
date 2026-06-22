@@ -1,0 +1,105 @@
+# End-to-end: build a workout from scratch and run it to completion.
+#   create exercise -> create template -> create + activate schedule
+#   -> start today's workout -> complete a set -> finish.
+# Starts from a cleared state (fresh onboarding skipped). Screens are matched by
+# testID where stable (screen-*, create_*); in-screen actions by their English
+# copy. Uses a 1-day cycle schedule so "today" always maps to the template,
+# independent of the run date.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+# After clearState a local dev build cold-loads the JS bundle from Metro, which
+# can take ~20s — wait for onboarding before tapping (no-op in CI's baked build).
+- extendedWaitUntil:
+    visible: 'Skip'
+    timeout: 45000
+- tapOn: 'Skip'
+- waitForAnimationToEnd
+
+# ── 1. Create an exercise ─────────────────────────────
+# Tabs are tapped by label (the Android JS bar + CI). NOTE: on a local iOS 26
+# simulator the OS-native tab bar does not respond to XCUITest/WDA taps, so this
+# flow can't be driven through the tabs locally on iOS — run it on Android
+# (`bun run e2e:android`) or in CI. Library opens on the Workouts segment, so we
+# switch to the Exercises segment (segment-* testID) for create_exercise.
+- tapOn: 'Library'
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'screen-library'
+- tapOn:
+    id: 'segment-exercises'
+- tapOn:
+    id: 'create_exercise'
+- assertVisible: 'e.g. Barbell Bench Press'
+- tapOn: 'e.g. Barbell Bench Press'
+- inputText: 'E2E Squat'
+- pressKey: Back
+- waitForAnimationToEnd
+- assertVisible: 'Add Exercise'
+- tapOn: 'Add Exercise'
+- assertVisible:
+    id: 'screen-library'
+
+# ── 2. Create a workout template that uses it ─────────
+- tapOn: 'Workouts'
+- tapOn:
+    id: 'create_workout'
+- assertVisible: 'Template name'
+- tapOn: 'Template name'
+- inputText: 'E2E Template'
+- hideKeyboard
+- tapOn: 'Choose exercises'
+- tapOn: 'Search name, muscle, or type'
+- inputText: 'E2E'
+- tapOn: 'E2E Squat'
+- tapOn: 'Done'
+# Header save (the "Save template" CTA sits below the fold).
+- tapOn: 'Save'
+
+# ── 3. Create + activate a schedule (1-day cycle) ─────
+- tapOn: 'Schedule'
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'screen-schedule'
+- tapOn:
+    id: 'create_schedule'
+- assertVisible: 'Schedule name'
+- tapOn: 'Schedule name'
+- inputText: 'E2E Schedule'
+- hideKeyboard
+- tapOn:
+    id: 'segment-CYCLE'
+# A 1-day cycle defaults to one "Day 1" slot showing "Rest day"; tapping it
+# opens the workout picker. Assign our template so today always maps to it.
+- tapOn: 'Rest day'
+- tapOn: 'E2E Template'
+# Mark it the active program here (unambiguous) so it's live on save — avoids a
+# second "Activate" tap that could match the wrong schedule in the list.
+- tapOn: 'Active program'
+- tapOn: 'Save'
+
+# ── 4. Start today's workout ──────────────────────────
+- tapOn: "Start today's workout"
+- waitForAnimationToEnd
+- assertVisible: 'E2E Squat'
+
+# ── 5. Log a set (weight + reps, then mark it done) ───
+# Cells are text inputs; pressKey Back closes the soft keyboard so the next
+# control isn't covered. Set 1's cells are the first Weight/Reps on screen.
+- tapOn: 'Weight'
+- inputText: '50'
+- pressKey: Back
+- tapOn: 'Reps'
+- inputText: '5'
+- pressKey: Back
+- tapOn: 'Mark set 1 complete'
+
+# ── 6. End the workout (discard the session) ──────────
+# A successful "Finish" requires every set completed; discarding exercises the
+# end-of-session path reliably regardless of how many sets the template seeds.
+- tapOn: 'Cancel'
+- assertVisible: 'Discard workout'
+- tapOn: 'Discard'
+- assertVisible:
+    id: 'screen-schedule'

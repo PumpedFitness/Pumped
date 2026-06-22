@@ -1,6 +1,6 @@
 import { randomUUID } from 'expo-crypto';
 import { i18n } from '@/i18n';
-import type { SetTypeId } from '@/data/local/enums';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { SetFieldValue, WorkoutTemplate } from '@/types/workout';
 import type { SetTypeFieldDef } from '@/types/setType';
@@ -8,6 +8,7 @@ import {
   isSetComplete,
   snapshotActualsFromTargets,
 } from '@/data/local/sets/fieldValues';
+import { resolveExerciseColor } from '@/components/workout/workoutTemplatePresentation';
 import { uniqueBy } from '@/utils/dedupe';
 
 export type CurrentWorkoutSet = {
@@ -26,6 +27,8 @@ export type CurrentWorkoutExercise = {
   sourceTemplateExerciseId: string | null;
   exerciseId: string;
   position: number;
+  /** Resolved accent color (own, else the workout color). Never null here. */
+  color: WorkoutTemplateColor;
   goal: string | null;
   notes: string | null;
   sets: CurrentWorkoutSet[];
@@ -36,8 +39,23 @@ export type CurrentWorkout = {
   workoutTemplateId: string;
   name: string;
   startedAt: number;
+  /** Timestamp the elapsed clock was paused at; null while running. */
+  pausedAt: number | null;
+  /** Accumulated paused time (ms) from prior pause spans. */
+  pausedMs: number;
+  /** The workout's color, used as the fallback for ad-hoc exercises. */
+  color: WorkoutTemplateColor;
   exercises: CurrentWorkoutExercise[];
 };
+
+/** Elapsed clock time excluding paused spans; frozen while paused. */
+export function currentWorkoutElapsedMs(
+  workout: Pick<CurrentWorkout, 'startedAt' | 'pausedAt' | 'pausedMs'>,
+  now: number,
+): number {
+  const end = workout.pausedAt ?? now;
+  return Math.max(0, end - workout.startedAt - workout.pausedMs);
+}
 
 export type UpdateCurrentWorkoutSetInput = Partial<
   Pick<CurrentWorkoutSet, 'setType' | 'restSeconds' | 'fieldValues'>
@@ -59,12 +77,14 @@ export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
 export function createCurrentWorkoutExercise(
   exerciseId: string,
   position: number,
+  color: WorkoutTemplateColor,
 ): CurrentWorkoutExercise {
   return {
     id: randomUUID(),
     sourceTemplateExerciseId: null,
     exerciseId,
     position,
+    color,
     goal: null,
     notes: null,
     sets: [
@@ -84,6 +104,7 @@ export function createTemplateSnapshot(
       sourceTemplateExerciseId: exercise.id,
       exerciseId: exercise.exerciseId,
       position: exercise.position,
+      color: resolveExerciseColor(exercise.color, template.color),
       goal: exercise.goal,
       notes: exercise.notes,
       sets: exercise.sets.map(set => ({
@@ -160,6 +181,9 @@ export function buildTemplateSyncInput(
       return {
         exerciseId: exercise.exerciseId,
         typeId: sourceExercise?.typeId ?? null,
+        // The live exercise carries a resolved color — emit it directly so a
+        // mid-session "update template" save preserves per-exercise colors.
+        color: exercise.color,
         goal: exercise.goal,
         notes: exercise.notes,
         sets: exercise.sets.map(set => {

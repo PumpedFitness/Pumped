@@ -29,6 +29,9 @@ export const workoutTemplateExercises = sqliteTable(
     position: integer('position').notNull(),
     // Training-intent tag for this exercise (→ workout_exercise_type), nullable.
     typeId: text('type_id'),
+    // Per-placement accent color. Nullable: null means "inherit" (falls back to
+    // the template color in presentation), never confused with a chosen color.
+    color: enumText<WorkoutTemplateColor>()('color'),
     goal: text('goal'),
     notes: text('notes'),
   },

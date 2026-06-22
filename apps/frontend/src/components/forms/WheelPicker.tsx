@@ -7,6 +7,7 @@ import {
   type NativeScrollEvent,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 
 type WheelPickerProps = {
   items: string[];
@@ -19,6 +20,17 @@ type WheelPickerProps = {
 
 const ITEM_HEIGHT = 40;
 const VISIBLE_COUNT = 5;
+
+// Best-effort selection tick as the wheel crosses each value. A simulator/older
+// device no-ops, and a not-yet-rebuilt native module throws synchronously —
+// neither should ever break scrolling.
+function fireSelectionHaptic() {
+  try {
+    Haptics.selectionAsync().catch(() => {});
+  } catch {
+    // expo-haptics native module unavailable until the app is rebuilt.
+  }
+}
 
 export function WheelPicker({
   items,
@@ -33,6 +45,8 @@ export function WheelPicker({
   const listRef = useRef<ScrollView>(null);
   const isUserScrollingRef = useRef(false);
   const userScrolledOffsetRef = useRef<number | null>(null);
+  // Index the last haptic tick fired for, so a tick fires once per crossed value.
+  const lastHapticIndexRef = useRef(selectedIndex);
   const padCount = Math.floor(visibleCount / 2);
   const paddedItems = [
     ...Array(padCount).fill(''),
@@ -60,7 +74,28 @@ export function WheelPicker({
 
   const onScrollBeginDrag = useCallback(() => {
     isUserScrollingRef.current = true;
-  }, []);
+    lastHapticIndexRef.current = selectedIndex;
+  }, [selectedIndex]);
+
+  // Fire a tick whenever a user-driven scroll (drag or momentum) crosses into a
+  // new value. Guarded so programmatic scrollTo corrections stay silent.
+  const onScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!isUserScrollingRef.current) {
+        return;
+      }
+      const y = e.nativeEvent.contentOffset.y;
+      const index = Math.max(
+        0,
+        Math.min(Math.round(y / itemHeight), items.length - 1),
+      );
+      if (index !== lastHapticIndexRef.current) {
+        lastHapticIndexRef.current = index;
+        fireSelectionHaptic();
+      }
+    },
+    [itemHeight, items.length],
+  );
 
   const onMomentumEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -90,6 +125,8 @@ export function WheelPicker({
         showsVerticalScrollIndicator={false}
         snapToInterval={itemHeight}
         decelerationRate="fast"
+        scrollEventThrottle={16}
+        onScroll={onScroll}
         onScrollBeginDrag={onScrollBeginDrag}
         onMomentumScrollEnd={onMomentumEnd}
         nestedScrollEnabled={Platform.OS === 'android'}

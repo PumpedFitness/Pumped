@@ -9,7 +9,9 @@ type SetTypeColorTokens = {
 };
 
 // Resolves a set-type palette name to concrete fg/soft-bg tokens for the pill.
-export function setTypeColorTokens(color: SetTypeColorName): SetTypeColorTokens {
+export function setTypeColorTokens(
+  color: SetTypeColorName,
+): SetTypeColorTokens {
   switch (color) {
     case 'honey':
       return { fg: colors.accentHoney, soft: 'rgba(194, 151, 76, 0.16)' };

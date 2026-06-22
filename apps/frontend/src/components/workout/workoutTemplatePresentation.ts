@@ -57,6 +57,15 @@ export function getWorkoutTemplateColor(
   );
 }
 
+/** Resolves an exercise's effective color: its own, else the template's. The
+ *  single source of the per-exercise color precedence rule. */
+export function resolveExerciseColor(
+  exerciseColor: WorkoutTemplateColor | null,
+  templateColor: WorkoutTemplateColor,
+): WorkoutTemplateColor {
+  return exerciseColor ?? templateColor;
+}
+
 export function countTemplateSets(template: WorkoutTemplate): number {
   return template.exercises.reduce(
     (total, exercise) => total + exercise.sets.length,

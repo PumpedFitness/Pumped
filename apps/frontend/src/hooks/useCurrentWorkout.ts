@@ -39,14 +39,21 @@ export function useCurrentWorkout() {
     state => state.updateExercises,
   );
   const removeExercise = useCurrentWorkoutStore(state => state.removeExercise);
+  const pauseWorkout = useCurrentWorkoutStore(state => state.pauseWorkout);
+  const resumeWorkout = useCurrentWorkoutStore(state => state.resumeWorkout);
   const exerciseOptions = useExerciseOptions();
+  // Keyed on the template id, not the whole `currentWorkout` object: the draft
+  // gets a fresh identity on every set edit, but its source template is
+  // immutable mid-session, so re-reading it (N+2 sync SQLite queries) per edit
+  // is pure waste. `useTableVersion` still busts the cache on a real template
+  // write (e.g. the "update template" save in finishWorkout).
   const sourceTemplate = useTableQuery(
     [workoutTemplates, workoutTemplateExercises, workoutTemplateSets],
     () =>
       currentWorkout
         ? getWorkoutTemplate(currentWorkout.workoutTemplateId)
         : null,
-    [currentWorkout],
+    [currentWorkout?.workoutTemplateId],
   );
 
   // Resolve the set's type fields (built-in or custom) before delegating to the
@@ -143,6 +150,8 @@ export function useCurrentWorkout() {
     removeSet,
     updateExercises,
     removeExercise,
+    pauseWorkout,
+    resumeWorkout,
     canFinish,
     structureChanged,
   };

@@ -85,6 +85,7 @@ export function SegmentedControl({
         return (
           <Pressable
             key={o.value}
+            testID={`segment-${o.value}`}
             onPress={() => onChange?.(o.value)}
             className="flex-1 h-[38px] items-center justify-center rounded-full"
           >

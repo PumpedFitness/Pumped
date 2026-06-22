@@ -5,6 +5,8 @@ import { Button } from 'heroui-native';
 import { ExerciseCard } from '@/components/exercise/ExerciseCard';
 import { useTemplateEditor } from '@/screens/library/template-editor/templateEditorContext';
 import type { EditorExercise } from '@/screens/library/template-editor/useEditorExercises';
+import { ColorSwatchPicker } from './ColorSwatchPicker';
+import { useWorkoutColorOptions } from './useWorkoutColorOptions';
 
 type ExerciseEditorCardProps = {
   exercise: EditorExercise;
@@ -16,8 +18,9 @@ export function ExerciseEditorCard({
   dragHandle,
 }: ExerciseEditorCardProps) {
   const { t } = useTranslation();
-  const { editExercise, openExerciseOverview, removeExercise } =
+  const { editExercise, openExerciseOverview, removeExercise, setExerciseColor } =
     useTemplateEditor();
+  const colorOptions = useWorkoutColorOptions();
 
   return (
     <ExerciseCard
@@ -65,6 +68,15 @@ export function ExerciseEditorCard({
             {t('templateEditor.exercises.noSets')}
           </Text>
         )}
+      </View>
+
+      <View className="gap-2">
+        <Text className="t-label">{t('templateEditor.exercises.color')}</Text>
+        <ColorSwatchPicker
+          value={exercise.color}
+          options={colorOptions}
+          onChange={color => setExerciseColor(exercise.exerciseId, color)}
+        />
       </View>
 
       <Button

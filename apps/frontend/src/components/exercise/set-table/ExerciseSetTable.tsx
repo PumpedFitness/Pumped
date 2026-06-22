@@ -15,10 +15,9 @@ export function ExerciseSetTable(props: ExerciseSetTableProps) {
   return (
     <ExerciseSetTableContent
       cards={cards}
-      setTypeOptions={props.setTypeOptions}
       addSetLabel={props.readOnly ? undefined : props.addSetLabel}
       onAddSet={props.readOnly ? undefined : props.onAddSet}
-      onCreateSetType={props.readOnly ? undefined : props.onCreateSetType}
+      animateLayout={props.readOnly ? false : props.animateLayout ?? true}
     />
   );
 }

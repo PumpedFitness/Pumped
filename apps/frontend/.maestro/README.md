@@ -11,6 +11,15 @@ standalone (Go, **no JVM**) runner that runs Maestro YAML flows unchanged.
 |------|----------------|
 | `smoke.yaml`          | App launches and the Home tab renders. |
 | `tab-navigation.yaml` | Walks the bottom tab bar (Home · Schedule · Library · History · User) and asserts each screen renders. |
+| `full_workout_flow.yaml` | Full lifecycle: create an exercise → build a template using it → create + activate a (1-day-cycle) schedule → start today's workout → log a set → end the session. |
+
+> **`full_workout_flow.yaml` runs on Android.** The iOS build uses the OS-native
+> bottom tab bar (`@react-navigation/bottom-tabs/unstable`), whose items don't
+> respond to XCUITest/WDA synthetic taps on recent iOS simulators (this also
+> affects `tab-navigation.yaml` locally) — so a tab-driven flow can't be driven
+> on iOS locally. Android uses a JS tab bar that taps fine. After `clearState`,
+> a local dev build cold-loads the JS bundle from Metro (~20s), so the flow waits
+> for onboarding via `extendedWaitUntil` (a no-op against CI's baked bundle).
 
 Navigation is driven by **testIDs** (Android `resource-id` / iOS accessibility
 id), not visible text: tab buttons are `tab-<name>` and each tab's screen

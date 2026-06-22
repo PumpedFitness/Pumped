@@ -10,7 +10,8 @@ export type ColorSwatchOption<T extends string> = {
 };
 
 type ColorSwatchPickerProps<T extends string> = {
-  value: T;
+  /** The selected value; null leaves every swatch unselected (inherit). */
+  value: T | null;
   options: ColorSwatchOption<T>[];
   onChange: (value: T) => void;
 };

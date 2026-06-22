@@ -1,14 +1,10 @@
-import { useMemo } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutTemplateColor } from '@/data/local/enums';
-import { colors } from '@/theme/tokens';
-import { ColorSwatchPicker, type ColorSwatchOption } from './ColorSwatchPicker';
+import { ColorSwatchPicker } from './ColorSwatchPicker';
 import { FormSection } from './FormSection';
-import {
-  getWorkoutTemplateColor,
-  WORKOUT_TEMPLATE_COLORS,
-} from '@/components/workout/workoutTemplatePresentation';
+import { useWorkoutColorOptions } from './useWorkoutColorOptions';
+import { getWorkoutTemplateColor } from '@/components/workout/workoutTemplatePresentation';
 
 type WorkoutTemplateAppearanceSectionProps = {
   color: WorkoutTemplateColor;
@@ -21,16 +17,7 @@ export function WorkoutTemplateAppearanceSection({
 }: WorkoutTemplateAppearanceSectionProps) {
   const { t } = useTranslation();
 
-  const colorOptions = useMemo<ColorSwatchOption<WorkoutTemplateColor>[]>(
-    () =>
-      WORKOUT_TEMPLATE_COLORS.map(option => ({
-        value: option.value,
-        label: t(option.labelKey),
-        color: option.hex,
-        checkColor: option.value === 'HONEY' ? colors.accentInk : colors.cream,
-      })),
-    [t],
-  );
+  const colorOptions = useWorkoutColorOptions();
 
   const selectedColor = getWorkoutTemplateColor(color);
 

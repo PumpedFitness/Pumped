@@ -12,6 +12,7 @@ const storage = createMMKV({ id: 'settings-storage' });
 const LANGUAGE_KEY = 'language';
 const WEIGHT_UNIT_KEY = 'weight_unit';
 const FIRST_DAY_OF_WEEK_KEY = 'first_day_of_week';
+const REST_TIMER_FULLSCREEN_KEY = 'rest_timer_fullscreen';
 
 export type FirstDayOfWeek = 'sunday' | 'monday';
 
@@ -83,19 +84,32 @@ export function firstDayOfWeekToIndex(firstDayOfWeek: FirstDayOfWeek): number {
   return firstDayOfWeek === 'monday' ? 1 : 0;
 }
 
+// Whether a new rest opens the full-screen timer. When off ("Never show
+// again"), rests go straight to the minimized bottom bar. Defaults to on.
+function readRestTimerFullscreen(): boolean {
+  return storage.getBoolean(REST_TIMER_FULLSCREEN_KEY) ?? true;
+}
+
+function writeRestTimerFullscreen(enabled: boolean): void {
+  storage.set(REST_TIMER_FULLSCREEN_KEY, enabled);
+}
+
 type AppSettingsState = {
   language: SupportedLanguage;
   weightUnit: WeightUnit;
   firstDayOfWeek: FirstDayOfWeek;
+  restTimerFullscreen: boolean;
   setLanguage: (language: SupportedLanguage) => void;
   setWeightUnit: (weightUnit: WeightUnit) => void;
   setFirstDayOfWeek: (firstDayOfWeek: FirstDayOfWeek) => void;
+  setRestTimerFullscreen: (enabled: boolean) => void;
 };
 
 export const useAppSettingsStore = create<AppSettingsState>(set => ({
   language: readLanguagePreference(),
   weightUnit: readWeightUnit(),
   firstDayOfWeek: readFirstDayOfWeek(),
+  restTimerFullscreen: readRestTimerFullscreen(),
   setLanguage: language => {
     writeLanguagePreference(language);
     set({ language });
@@ -107,5 +121,9 @@ export const useAppSettingsStore = create<AppSettingsState>(set => ({
   setFirstDayOfWeek: firstDayOfWeek => {
     writeFirstDayOfWeek(firstDayOfWeek);
     set({ firstDayOfWeek });
+  },
+  setRestTimerFullscreen: enabled => {
+    writeRestTimerFullscreen(enabled);
+    set({ restTimerFullscreen: enabled });
   },
 }));

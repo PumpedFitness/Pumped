@@ -1,4 +1,4 @@
-import type { SetTypeId } from '@/data/local/enums';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { SetFieldValue } from '@/types/workout';
 
 export type ExerciseOption = {
@@ -35,6 +35,8 @@ export type EditableExerciseSet = {
 export type EditableExercise = {
   exerciseId: string;
   typeId: string | null;
+  /** Per-placement accent color; null inherits the template color. */
+  color: WorkoutTemplateColor | null;
   goal: string;
   notes: string | null;
   sets: EditableExerciseSet[];

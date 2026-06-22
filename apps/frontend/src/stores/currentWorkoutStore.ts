@@ -36,6 +36,8 @@ type CurrentWorkoutState = {
   removeSet: (exerciseId: string, setId: string) => void;
   updateExercises: (exerciseIds: string[]) => void;
   removeExercise: (exerciseId: string) => void;
+  pauseWorkout: () => void;
+  resumeWorkout: () => void;
   discardWorkout: () => void;
 };
 
@@ -55,6 +57,9 @@ function startWorkout(
     workoutTemplateId: template.id,
     name: template.name,
     startedAt: Date.now(),
+    pausedAt: null,
+    pausedMs: 0,
+    color: template.color,
     exercises: createTemplateSnapshot(template),
   };
   setState({ currentWorkout });
@@ -191,9 +196,31 @@ function selectWorkoutExercises(
         uniqueExerciseIds.map(
           (exerciseId, position) =>
             currentByExerciseId.get(exerciseId) ??
-            createCurrentWorkoutExercise(exerciseId, position),
+            createCurrentWorkoutExercise(exerciseId, position, workout.color),
         ),
       ),
+    },
+  });
+}
+
+function pauseWorkout(setState: StoreSet, getState: StoreGet) {
+  const workout = requireCurrentWorkout(getState().currentWorkout);
+  if (workout.pausedAt != null) {
+    return;
+  }
+  setState({ currentWorkout: { ...workout, pausedAt: Date.now() } });
+}
+
+function resumeWorkout(setState: StoreSet, getState: StoreGet) {
+  const workout = requireCurrentWorkout(getState().currentWorkout);
+  if (workout.pausedAt == null) {
+    return;
+  }
+  setState({
+    currentWorkout: {
+      ...workout,
+      pausedMs: workout.pausedMs + (Date.now() - workout.pausedAt),
+      pausedAt: null,
     },
   });
 }
@@ -229,6 +256,8 @@ export const useCurrentWorkoutStore = create<CurrentWorkoutState>(
       selectWorkoutExercises(setState, getState, exerciseIds),
     removeExercise: exerciseId =>
       removeWorkoutExercise(setState, getState, exerciseId),
+    pauseWorkout: () => pauseWorkout(setState, getState),
+    resumeWorkout: () => resumeWorkout(setState, getState),
     discardWorkout: () => setState({ currentWorkout: null }),
   }),
 );

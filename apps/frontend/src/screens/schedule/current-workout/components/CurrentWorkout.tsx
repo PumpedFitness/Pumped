@@ -1,39 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import { Alert, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button } from 'heroui-native';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
+import { useAppSettingsStore } from '@/stores/appSettingsStore';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { CurrentWorkoutExercise } from '@/stores/currentWorkoutModel';
 import { colors } from '@/theme/tokens';
 import type { ExerciseSelectionResult } from '@/types/exercise';
-import { ExerciseCard } from '@/components/exercise/ExerciseCard';
-import { ExerciseSetTable } from '@/components/exercise/set-table';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { OptionPopup, type PopupOption } from '@/components/clay/option-popup';
-import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
-import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import {
-  requestRemoveExercise,
-  requestRemoveSet,
-} from './currentWorkoutConfirm';
+import { SetSheetHost } from '@/components/exercise/set-table';
+import { SessionHeader } from './SessionHeader';
+import { SessionExerciseList } from './SessionExerciseList';
+import { CurrentWorkoutFooter } from './CurrentWorkoutFooter';
+import { RestTimerOverlay } from './rest-timer/RestTimerOverlay';
+import { RestTimerPill } from './rest-timer/RestTimerPill';
+import { useRestTimer } from './rest-timer/useRestTimer';
 
 type CurrentWorkoutProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'CurrentWorkout'>;
   exerciseSelection?: ExerciseSelectionResult;
   onChooseExercises: (selectedExerciseIds: string[]) => void;
 };
-
-type CurrentWorkoutNavigation = NativeStackNavigationProp<
-  RootStackParamList,
-  'CurrentWorkout'
->;
-type FinishWorkout = ReturnType<typeof useCurrentWorkout>['finishWorkout'];
-type TemplateFinishChoice = 'keep' | 'update';
 
 type EmptyWorkoutProps = {
   onBack: () => void;
@@ -63,23 +55,6 @@ function EmptyWorkout({ onBack }: EmptyWorkoutProps) {
       </Button>
     </View>
   );
-}
-
-function completeWorkout(
-  t: TFunction,
-  navigation: CurrentWorkoutNavigation,
-  finishWorkout: FinishWorkout,
-  updateTemplate = false,
-) {
-  try {
-    finishWorkout({ updateTemplate });
-    navigation.goBack();
-  } catch (error) {
-    Alert.alert(
-      t('currentWorkout.alerts.finishFailedTitle'),
-      error instanceof Error ? error.message : t('common.tryAgain'),
-    );
-  }
 }
 
 function applyExerciseSelection(
@@ -112,145 +87,6 @@ function applyExerciseSelection(
   );
 }
 
-type CurrentWorkoutFooterProps = {
-  canFinish: boolean;
-  shouldPromptForTemplate: boolean;
-  navigation: CurrentWorkoutNavigation;
-  finishWorkout: FinishWorkout;
-  discardWorkout: () => void;
-};
-
-type DiscardWorkoutPopupProps = {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-};
-
-function DiscardWorkoutPopup({
-  visible,
-  onClose,
-  onConfirm,
-}: DiscardWorkoutPopupProps) {
-  const { t } = useTranslation();
-
-  return (
-    <OptionPopupFrame
-      visible={visible}
-      title={t('currentWorkout.alerts.discardTitle')}
-      text={t('currentWorkout.alerts.discardBody')}
-      footer={
-        <ConfirmationActions
-          confirmLabel={t('currentWorkout.alerts.discard')}
-          disabled={false}
-          onClose={onClose}
-          onConfirm={onConfirm}
-        />
-      }
-      onClose={onClose}
-    >
-      {null}
-    </OptionPopupFrame>
-  );
-}
-
-function CurrentWorkoutFooter({
-  canFinish,
-  shouldPromptForTemplate,
-  navigation,
-  finishWorkout,
-  discardWorkout,
-}: CurrentWorkoutFooterProps) {
-  const { t } = useTranslation();
-  const [templatePopupVisible, setTemplatePopupVisible] = useState(false);
-  const [discardPopupVisible, setDiscardPopupVisible] = useState(false);
-
-  const templateFinishOptions: PopupOption<TemplateFinishChoice>[] = [
-    {
-      value: 'keep',
-      label: t('currentWorkout.templatePopup.keep'),
-      description: t('currentWorkout.templatePopup.keepDescription'),
-    },
-    {
-      value: 'update',
-      label: t('currentWorkout.templatePopup.update'),
-      description: t('currentWorkout.templatePopup.updateDescription'),
-    },
-  ];
-
-  const requestFinish = () => {
-    if (!canFinish) {
-      return;
-    }
-    if (shouldPromptForTemplate) {
-      setTemplatePopupVisible(true);
-      return;
-    }
-    completeWorkout(t, navigation, finishWorkout);
-  };
-
-  const finishWithTemplateChoice = (choice: TemplateFinishChoice) => {
-    completeWorkout(t, navigation, finishWorkout, choice === 'update');
-  };
-
-  const confirmDiscard = () => {
-    discardWorkout();
-    navigation.goBack();
-  };
-
-  return (
-    <>
-      <View className="flex-row gap-3 border-t border-border-soft bg-background px-5 py-4">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('currentWorkout.discardA11y')}
-          className="h-12 w-12 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
-          onPress={() => setDiscardPopupVisible(true)}
-        >
-          <ClayIcon name="trash" size={19} color={colors.muted} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('currentWorkout.finishA11y')}
-          accessibilityState={{ disabled: !canFinish }}
-          disabled={!canFinish}
-          className={`h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full ${
-            canFinish ? 'bg-accent' : 'bg-surface-sunk'
-          }`}
-          onPress={requestFinish}
-        >
-          <ClayIcon
-            name="check"
-            size={18}
-            color={canFinish ? colors.accentInk : colors.muted}
-          />
-          <Text
-            className={`t-label ${
-              canFinish ? 'text-accent-foreground' : 'text-muted'
-            }`}
-          >
-            {t('currentWorkout.finish')}
-          </Text>
-        </Pressable>
-      </View>
-
-      <OptionPopup
-        needsConfirmation
-        visible={templatePopupVisible}
-        title={t('currentWorkout.templatePopup.title')}
-        text={t('currentWorkout.templatePopup.text')}
-        options={templateFinishOptions}
-        onClose={() => setTemplatePopupVisible(false)}
-        onSelect={finishWithTemplateChoice}
-      />
-      <DiscardWorkoutPopup
-        visible={discardPopupVisible}
-        onClose={() => setDiscardPopupVisible(false)}
-        onConfirm={confirmDiscard}
-      />
-    </>
-  );
-}
-
 export function CurrentWorkout({
   navigation,
   exerciseSelection,
@@ -264,6 +100,13 @@ export function CurrentWorkout({
     createSetType,
   } = useSetTypeLibrary();
   const { profile } = useUserProfile();
+  const rest = useRestTimer();
+  const restTimerFullscreen = useAppSettingsStore(
+    state => state.restTimerFullscreen,
+  );
+  const setRestTimerFullscreen = useAppSettingsStore(
+    state => state.setRestTimerFullscreen,
+  );
   const {
     currentWorkout,
     exerciseOptions,
@@ -275,9 +118,16 @@ export function CurrentWorkout({
     removeSet,
     updateExercises,
     removeExercise,
+    pauseWorkout,
+    resumeWorkout,
     canFinish,
     structureChanged,
   } = useCurrentWorkout();
+
+  const optionById = useMemo(
+    () => new Map(exerciseOptions.map(option => [option.id, option] as const)),
+    [exerciseOptions],
+  );
 
   useEffect(() => {
     if (!currentWorkout) {
@@ -305,105 +155,79 @@ export function CurrentWorkout({
     return <EmptyWorkout onBack={() => navigation.goBack()} />;
   }
 
-  const exerciseNames = new Map(
-    exerciseOptions.map(exercise => [exercise.id, exercise.name] as const),
-  );
   const allSets = currentWorkout.exercises.flatMap(exercise => exercise.sets);
   const completedSetCount = allSets.filter(set => set.isDone).length;
 
   return (
-    <View className="flex-1">
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="gap-4 px-5 pb-8 pt-5"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="rounded-[24px] bg-moss px-5 py-5">
-          <Text className="t-eyebrow text-surface-card/70">
-            {t('currentWorkout.inProgress')}
-          </Text>
-          <Text className="t-title mt-1 text-surface-card">
-            {currentWorkout.name}
-          </Text>
-          <Text className="t-caption mt-2 text-surface-card/70">
-            {t('currentWorkout.setsCompleted', {
-              completed: completedSetCount,
-              total: allSets.length,
-            })}
-          </Text>
-        </View>
-
-        {currentWorkout.exercises.map(exercise => {
-          const doneCount = exercise.sets.filter(set => set.isDone).length;
-          const exerciseName =
-            exerciseNames.get(exercise.exerciseId) ??
-            t('plan.card.fallbackExercise');
-          return (
-            <ExerciseCard
-              key={exercise.id}
-              name={exerciseName}
-              description={t('currentWorkout.setsDone', {
-                done: doneCount,
-                total: exercise.sets.length,
-              })}
-              progress={
-                exercise.sets.length ? doneCount / exercise.sets.length : 0
-              }
-              openAccessibilityLabel={t('exerciseOverview.openA11y', {
-                name: exerciseName,
-              })}
-              onOpen={() =>
-                navigation.navigate('EditExercise', {
-                  exerciseId: exercise.exerciseId,
-                })
-              }
-              onRemove={() =>
-                requestRemoveExercise(t, exercise, removeExercise)
-              }
-            >
-              <ExerciseSetTable
-                sets={exercise.sets}
-                setTypeOptions={setTypeOptions}
-                setTypesById={setTypesById}
-                weightUnit={profile.weightUnit}
-                onCreateSetType={createSetType}
-                onAddSet={() => addSet(exercise.id)}
-                onChangeSet={(setId, values) =>
-                  updateSet(exercise.id, setId, values)
-                }
-                onToggleSetDone={setId => toggleSetDone(exercise.id, setId)}
-                onRemoveSet={set =>
-                  requestRemoveSet(t, exercise, set, removeSet)
-                }
-              />
-            </ExerciseCard>
-          );
-        })}
-
-        <Pressable
-          accessibilityRole="button"
-          className="min-h-14 flex-row items-center justify-center gap-2 rounded-[20px] border border-dashed border-accent bg-accent-soft px-4"
-          onPress={() =>
-            onChooseExercises(
-              currentWorkout.exercises.map(exercise => exercise.exerciseId),
-            )
+    <SetSheetHost
+      setTypeOptions={setTypeOptions}
+      onCreateSetType={createSetType}
+    >
+      <View className="flex-1">
+        <SessionHeader
+          workoutName={currentWorkout.name}
+          startedAt={currentWorkout.startedAt}
+          pausedAt={currentWorkout.pausedAt}
+          pausedMs={currentWorkout.pausedMs}
+          completedSets={completedSetCount}
+          totalSets={allSets.length}
+          onTogglePause={
+            currentWorkout.pausedAt != null ? resumeWorkout : pauseWorkout
           }
-        >
-          <ClayIcon name="plus" size={18} color={colors.accent} />
-          <Text className="t-label text-accent">
-            {t('currentWorkout.addOrRemoveExercises')}
-          </Text>
-        </Pressable>
-      </ScrollView>
+          onBack={() => navigation.goBack()}
+        />
 
-      <CurrentWorkoutFooter
-        canFinish={canFinish}
-        shouldPromptForTemplate={structureChanged}
-        navigation={navigation}
-        finishWorkout={finishWorkout}
-        discardWorkout={discardWorkout}
-      />
-    </View>
+        <SessionExerciseList
+          exercises={currentWorkout.exercises}
+          optionById={optionById}
+          setTypeOptions={setTypeOptions}
+          setTypesById={setTypesById}
+          weightUnit={profile.weightUnit}
+          onCreateSetType={createSetType}
+          addSet={addSet}
+          updateSet={updateSet}
+          toggleSetDone={toggleSetDone}
+          restStart={rest.start}
+          removeSet={removeSet}
+          removeExercise={removeExercise}
+          onChooseExercises={onChooseExercises}
+        />
+
+        <RestTimerPill
+          visible={rest.isActive && rest.isMinimized}
+          isRunning={rest.isRunning}
+          remainingMs={rest.remainingMs}
+          totalMs={rest.totalMs}
+          onToggle={rest.toggle}
+          onAddSeconds={rest.addSeconds}
+          onSkip={rest.skip}
+          onExpand={rest.expand}
+          canExpand={restTimerFullscreen}
+        />
+
+        <CurrentWorkoutFooter
+          canFinish={canFinish}
+          shouldPromptForTemplate={structureChanged}
+          navigation={navigation}
+          finishWorkout={finishWorkout}
+          discardWorkout={discardWorkout}
+        />
+
+        <RestTimerOverlay
+          visible={rest.isActive && !rest.isMinimized && restTimerFullscreen}
+          isRunning={rest.isRunning}
+          remainingMs={rest.remainingMs}
+          totalMs={rest.totalMs}
+          onToggle={rest.toggle}
+          onAddSeconds={rest.addSeconds}
+          onSkip={rest.skip}
+          onMinimize={rest.minimize}
+          onNeverShowAgain={() => {
+            setRestTimerFullscreen(false);
+            rest.minimize();
+          }}
+        />
+      </View>
+    </SetSheetHost>
   );
 }

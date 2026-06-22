@@ -1,30 +1,24 @@
-import { Fragment, useState } from 'react';
-import { Keyboard, Pressable, Text, View } from 'react-native';
+import { Fragment, memo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@/theme/tokens';
 import { SwipeTo, type SwipeAction } from '@/components/clay/SwipeTo';
-import { LibraryPicker } from '@/components/forms/LibraryPicker';
-import { OptionalWheelPickerSheet } from '@/components/forms/OptionalWheelPickerSheet';
-import { RangeWheelPickerSheet } from '@/components/forms/RangeWheelPickerSheet';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { SetFieldCell } from './SetFieldCell';
 import { setTypeColorTokens } from './setTypeColors';
+import { useSetSheetOpeners } from './SetSheets';
 import type {
   SetCardField,
   SetCardModel,
-  SetTypeOption,
+  SetCardNumberField,
+  SetCardRangeField,
 } from './exerciseSetTableModel';
 
 type SetCardProps = {
   card: SetCardModel;
-  setTypeOptions: SetTypeOption[];
-  onCreateSetType?: (name: string) => string;
 };
-
-type NumberField = Extract<SetCardField, { kind: 'number' }>;
-type RangeField = Extract<SetCardField, { kind: 'range' }>;
 
 type SetCardHeaderProps = {
   card: SetCardModel;
@@ -126,8 +120,8 @@ type SetCardFieldsProps = {
   cells: SetCardField[];
   showValidation: boolean;
   showRequired: boolean;
-  onOpenWheel: (fieldId: string) => void;
-  onOpenRange: (fieldId: string) => void;
+  onOpenWheel: (field: SetCardNumberField) => void;
+  onOpenRange: (field: SetCardRangeField) => void;
 };
 
 function SetCardFields({
@@ -155,77 +149,6 @@ function SetCardFields({
         </Fragment>
       ))}
     </View>
-  );
-}
-
-type SetCardSheetsProps = {
-  card: SetCardModel;
-  setTypeOptions: SetTypeOption[];
-  onCreateSetType?: (name: string) => string;
-  isSetTypePickerOpen: boolean;
-  onCloseSetType: () => void;
-  activeWheelField: NumberField | null;
-  wheelSheetField?: NumberField;
-  onCloseWheel: () => void;
-  activeRangeField: RangeField | null;
-  rangeSheetField?: RangeField;
-  onCloseRange: () => void;
-};
-
-function SetCardSheets({
-  card,
-  setTypeOptions,
-  onCreateSetType,
-  isSetTypePickerOpen,
-  onCloseSetType,
-  activeWheelField,
-  wheelSheetField,
-  onCloseWheel,
-  activeRangeField,
-  rangeSheetField,
-  onCloseRange,
-}: SetCardSheetsProps) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <LibraryPicker
-        visible={isSetTypePickerOpen}
-        title={t('setTable.setTypePickerTitle')}
-        items={setTypeOptions.map(option => ({
-          id: option.value,
-          name: option.label,
-        }))}
-        selectedIds={[card.setType]}
-        onClose={onCloseSetType}
-        onChange={ids => {
-          const [id] = ids;
-          if (id) {
-            card.onSetTypeChange(id);
-          }
-        }}
-        onCreate={onCreateSetType ?? (() => card.setType)}
-      />
-
-      {wheelSheetField && (
-        <OptionalWheelPickerSheet
-          visible={activeWheelField !== null}
-          value={activeWheelField?.value ?? null}
-          config={wheelSheetField.wheelConfig!}
-          onClose={onCloseWheel}
-          onChange={value => activeWheelField?.onChange(value)}
-        />
-      )}
-
-      {rangeSheetField && (
-        <RangeWheelPickerSheet
-          visible={activeRangeField !== null}
-          value={activeRangeField?.range ?? null}
-          config={rangeSheetField.wheelConfig}
-          onClose={onCloseRange}
-          onChange={value => activeRangeField?.onChange(value)}
-        />
-      )}
-    </>
   );
 }
 
@@ -273,31 +196,12 @@ function buildSwipeActions(
   return { left, right };
 }
 
-export function SetCard({ card, setTypeOptions, onCreateSetType }: SetCardProps) {
+// Memoized: with a stable `card` (and the stable open-handlers from the table
+// host) an edit to one set re-renders only that set's card, not its siblings.
+export const SetCard = memo(function SetCard({ card }: SetCardProps) {
   const { t } = useTranslation();
-  const [isSetTypePickerOpen, setIsSetTypePickerOpen] = useState(false);
-  const [activeWheelFieldId, setActiveWheelFieldId] = useState<string | null>(
-    null,
-  );
-  const [activeRangeFieldId, setActiveRangeFieldId] = useState<string | null>(
-    null,
-  );
+  const { openSetTypePicker, openWheel, openRange } = useSetSheetOpeners();
   const [showValidation, setShowValidation] = useState(false);
-
-  const wheelFields = card.fields.filter(
-    (field): field is NumberField =>
-      field.kind === 'number' && field.input === 'wheel',
-  );
-  const activeWheelField =
-    wheelFields.find(field => field.id === activeWheelFieldId) ?? null;
-  const wheelSheetField = activeWheelField ?? wheelFields[0];
-
-  const rangeFields = card.fields.filter(
-    (field): field is RangeField => field.kind === 'range',
-  );
-  const activeRangeField =
-    rangeFields.find(field => field.id === activeRangeFieldId) ?? null;
-  const rangeSheetField = activeRangeField ?? rangeFields[0];
 
   const restField: SetCardField | null = card.rest
     ? {
@@ -344,48 +248,25 @@ export function SetCard({ card, setTypeOptions, onCreateSetType }: SetCardProps)
     <View className={`gap-3 rounded-[20px] p-3 ${containerClass}`}>
       <SetCardHeader
         card={card}
-        onOpenSetTypePicker={() => setIsSetTypePickerOpen(true)}
+        onOpenSetTypePicker={() => openSetTypePicker(card)}
         onToggleDone={attemptDone}
       />
       <SetCardFields
         cells={cells}
         showValidation={showValidation}
         showRequired={card.onToggleDone != null}
-        onOpenWheel={fieldId => {
-          Keyboard.dismiss();
-          setActiveWheelFieldId(fieldId);
-        }}
-        onOpenRange={fieldId => {
-          Keyboard.dismiss();
-          setActiveRangeFieldId(fieldId);
-        }}
+        onOpenWheel={openWheel}
+        onOpenRange={openRange}
       />
     </View>
   );
 
-  return (
-    <>
-      {finishAction || removeAction ? (
-        <SwipeTo left={finishAction} right={removeAction} borderRadius={20}>
-          {content}
-        </SwipeTo>
-      ) : (
-        content
-      )}
-
-      <SetCardSheets
-        card={card}
-        setTypeOptions={setTypeOptions}
-        onCreateSetType={onCreateSetType}
-        isSetTypePickerOpen={isSetTypePickerOpen}
-        onCloseSetType={() => setIsSetTypePickerOpen(false)}
-        activeWheelField={activeWheelField}
-        wheelSheetField={wheelSheetField}
-        onCloseWheel={() => setActiveWheelFieldId(null)}
-        activeRangeField={activeRangeField}
-        rangeSheetField={rangeSheetField}
-        onCloseRange={() => setActiveRangeFieldId(null)}
-      />
-    </>
-  );
-}
+  if (finishAction || removeAction) {
+    return (
+      <SwipeTo left={finishAction} right={removeAction} borderRadius={20}>
+        {content}
+      </SwipeTo>
+    );
+  }
+  return content;
+});

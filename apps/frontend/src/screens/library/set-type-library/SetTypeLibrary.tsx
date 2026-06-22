@@ -12,8 +12,13 @@ import type { SetTypeWithFields } from '@/types/setType';
 
 type SetTypeRowProps = {
   type: SetTypeWithFields;
-  onPress: () => void;
+  // Built-ins are display-only, so they pass no handler and render as a
+  // non-interactive row (no chevron, no press feedback).
+  onPress?: () => void;
 };
+
+const ROW_CLASS =
+  'flex-row items-center gap-3 rounded-[18px] border border-border-soft bg-surface-card px-4 py-3';
 
 function SetTypeRow({ type, onPress }: SetTypeRowProps) {
   const { t } = useTranslation();
@@ -21,12 +26,8 @@ function SetTypeRow({ type, onPress }: SetTypeRowProps) {
     ? type.fields.map(field => field.name).join(' · ')
     : t('setTypeLibrary.noFields');
 
-  return (
-    <Pressable
-      accessibilityRole="button"
-      className="flex-row items-center gap-3 rounded-[18px] border border-border-soft bg-surface-card px-4 py-3 active:bg-surface-sunk"
-      onPress={onPress}
-    >
+  const content = (
+    <>
       <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-sunk">
         <ClayIcon
           name={(type.icon as IconName) ?? 'target'}
@@ -49,7 +50,21 @@ function SetTypeRow({ type, onPress }: SetTypeRowProps) {
           {summary}
         </Text>
       </View>
-      <ClayIcon name="chevron" size={16} color={colors.muted} />
+      {onPress ? <ClayIcon name="chevron" size={16} color={colors.muted} /> : null}
+    </>
+  );
+
+  if (!onPress) {
+    return <View className={ROW_CLASS}>{content}</View>;
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      className={`${ROW_CLASS} active:bg-surface-sunk`}
+      onPress={onPress}
+    >
+      {content}
     </Pressable>
   );
 }

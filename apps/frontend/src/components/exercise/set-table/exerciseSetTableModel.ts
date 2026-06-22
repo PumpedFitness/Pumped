@@ -6,7 +6,11 @@ import type {
   UpdateCurrentWorkoutSetInput,
 } from '@/stores/currentWorkoutModel';
 import type { EditableExerciseSet } from '@/types/exercise';
-import type { PerformedSet, SetFieldRange, SetFieldValue } from '@/types/workout';
+import type {
+  PerformedSet,
+  SetFieldRange,
+  SetFieldValue,
+} from '@/types/workout';
 import type {
   SetTypeColorName,
   SetTypeFieldDef,
@@ -49,6 +53,10 @@ type SetTypeContext = {
 type BaseTableProps = SetTypeContext & {
   addSetLabel?: string;
   onAddSet: () => void;
+  // Whether set cards animate their layout (slide) when sets are added/removed.
+  // Off in the active workout, where activation re-renders during the snap
+  // scroll make the cards fly in oddly. Defaults to on. */
+  animateLayout?: boolean;
 };
 
 export type TemplateSetTableProps = BaseTableProps & {
@@ -119,6 +127,9 @@ export type SetCardField =
       wheelConfig: OptionalWheelPickerConfig;
       onChange: (value: SetFieldRange | null) => void;
     });
+
+export type SetCardNumberField = Extract<SetCardField, { kind: 'number' }>;
+export type SetCardRangeField = Extract<SetCardField, { kind: 'range' }>;
 
 export type SetCardRest = {
   value: number | null;
@@ -399,7 +410,11 @@ export function buildReadOnlySetCards(
       ),
       rest:
         set.restSeconds != null
-          ? { value: set.restSeconds, readOnly: true, onChange: () => undefined }
+          ? {
+              value: set.restSeconds,
+              readOnly: true,
+              onChange: () => undefined,
+            }
           : null,
       tone: 'default',
       isCurrent: false,

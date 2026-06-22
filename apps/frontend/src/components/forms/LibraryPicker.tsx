@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Keyboard, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -25,6 +25,7 @@ type LibraryPickerProps = {
 };
 
 function LibraryPickerContent({
+  visible,
   title,
   items,
   selectedIds,
@@ -32,9 +33,18 @@ function LibraryPickerContent({
   onClose,
   onChange,
   onCreate,
-}: Omit<LibraryPickerProps, 'visible'>) {
+}: LibraryPickerProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
+
+  // Start every open with a clean filter. Matters most for the set-type picker,
+  // which is shared across all sets in a table — without this, a query typed for
+  // one set would linger when the picker is reopened on another.
+  useEffect(() => {
+    if (visible) {
+      setSearch('');
+    }
+  }, [visible]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLocaleLowerCase();
@@ -181,7 +191,7 @@ export function LibraryPicker({
     >
       <BottomSheet.Portal>
         <BottomSheet.Overlay />
-        <LibraryPickerContent {...contentProps} />
+        <LibraryPickerContent visible={visible} {...contentProps} />
       </BottomSheet.Portal>
     </BottomSheet>
   );

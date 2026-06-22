@@ -76,6 +76,12 @@ export function AppSettings() {
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
   const weightUnit = useAppSettingsStore(state => state.weightUnit);
   const setWeightUnit = useAppSettingsStore(state => state.setWeightUnit);
+  const restTimerFullscreen = useAppSettingsStore(
+    state => state.restTimerFullscreen,
+  );
+  const setRestTimerFullscreen = useAppSettingsStore(
+    state => state.setRestTimerFullscreen,
+  );
 
   const handleResetAll = useCallback(() => {
     Alert.alert(t('profile.alerts.resetTitle'), t('profile.alerts.resetBody'), [
@@ -165,6 +171,24 @@ export function AppSettings() {
           }
         />
         <FirstDayOfWeekSetting />
+        <ListRow
+          icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
+          label={t('settings.restTimerFullscreen.label')}
+          paddingVertical={10}
+          divider
+          trailing={
+            <View className="w-32">
+              <SegmentedControl
+                options={[
+                  { value: 'on', label: t('settings.restTimerFullscreen.on') },
+                  { value: 'off', label: t('settings.restTimerFullscreen.off') },
+                ]}
+                value={restTimerFullscreen ? 'on' : 'off'}
+                onChange={value => setRestTimerFullscreen(value === 'on')}
+              />
+            </View>
+          }
+        />
       </SettingsSection>
 
       {/* ── Data ─────────────────────────────── */}

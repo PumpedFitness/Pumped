@@ -30,6 +30,8 @@ export type WorkoutTemplateExercise = {
   exerciseId: string;
   position: number;
   typeId: string | null;
+  /** Per-placement accent color; null inherits the template color. */
+  color: WorkoutTemplateColor | null;
   goal: string | null;
   notes: string | null;
   sets: WorkoutTemplateSet[];

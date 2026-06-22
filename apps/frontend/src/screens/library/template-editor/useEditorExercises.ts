@@ -12,6 +12,7 @@ import {
   type WorkoutExerciseTypeItem,
 } from '@/hooks/useWorkoutExerciseTypes';
 import type { SetTypeWithFields } from '@/types/setType';
+import type { WorkoutTemplateColor } from '@/data/local/enums';
 import type {
   EditableExercise,
   EditableExerciseSet,
@@ -36,6 +37,8 @@ export type EditorExercise = {
   option: ExerciseOption | null;
   name: string;
   type: WorkoutExerciseTypeItem | null;
+  /** Per-placement accent color; null inherits the template color. */
+  color: WorkoutTemplateColor | null;
   goal: string;
   setSummary: string;
   setViews: EditorSetView[];
@@ -90,6 +93,7 @@ export function useEditorExercises(
         type: exercise.typeId
           ? exerciseTypes.items.find(item => item.id === exercise.typeId) ?? null
           : null,
+        color: exercise.color,
         goal: exercise.goal,
         setSummary: formatExerciseSetSummary(t, exercise.sets, setTypeOptions),
         setViews: exercise.sets.map(set =>

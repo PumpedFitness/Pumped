@@ -5,7 +5,12 @@ import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { SetFieldRange } from '@/types/workout';
 import { EditableNumberInput, ValueButton } from './ExerciseSetTableCells';
-import { formatSetNumber, type SetCardField } from './exerciseSetTableModel';
+import {
+  formatSetNumber,
+  type SetCardField,
+  type SetCardNumberField,
+  type SetCardRangeField,
+} from './exerciseSetTableModel';
 
 type SetFieldCellProps = {
   field: SetCardField;
@@ -13,8 +18,8 @@ type SetFieldCellProps = {
   hasError: boolean;
   /** Show the "required to finish" marker (active workout only). */
   showRequired: boolean;
-  onOpenWheel: (fieldId: string) => void;
-  onOpenRange: (fieldId: string) => void;
+  onOpenWheel: (field: SetCardNumberField) => void;
+  onOpenRange: (field: SetCardRangeField) => void;
 };
 
 function withUnit(value: string, unit: string): string {
@@ -233,24 +238,26 @@ export function SetFieldCell({
     return <TextFieldCell field={field} label={label} hasError={hasError} />;
   }
   if (field.kind === 'range') {
+    const rangeField = field;
     return (
       <ButtonFieldCell
         label={label}
         accessibilityLabel={field.label}
         display={formatRange(field.range, field.unit)}
         hasError={hasError}
-        onPress={field.readOnly ? undefined : () => onOpenRange(field.id)}
+        onPress={field.readOnly ? undefined : () => onOpenRange(rangeField)}
       />
     );
   }
   if (field.input === 'wheel') {
+    const wheelField = field;
     return (
       <ButtonFieldCell
         label={label}
         accessibilityLabel={field.label}
         display={withUnit(formatSetNumber(field.value), field.unit)}
         hasError={hasError}
-        onPress={field.readOnly ? undefined : () => onOpenWheel(field.id)}
+        onPress={field.readOnly ? undefined : () => onOpenWheel(wheelField)}
       />
     );
   }

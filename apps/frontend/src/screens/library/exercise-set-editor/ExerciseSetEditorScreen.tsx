@@ -11,7 +11,10 @@ import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
 import { PickerRow } from '@/components/exercise/PickerRow';
 import { LibraryPicker } from '@/components/forms/LibraryPicker';
-import { TemplateSetTable } from '@/components/exercise/set-table';
+import {
+  SetSheetHost,
+  TemplateSetTable,
+} from '@/components/exercise/set-table';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutExerciseTypes } from '@/hooks/useWorkoutExerciseTypes';
@@ -69,71 +72,76 @@ export function ExerciseSetEditorScreen({
 
   return (
     <AppView edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
+      <SetSheetHost
+        setTypeOptions={setTypeOptions}
+        onCreateSetType={createSetType}
       >
-        <ModalHeader
-          title={name}
-          rightLabel={t('templateEditor.setEditor.done')}
-          onLeftPress={goBack}
-          onRightPress={done}
-        />
-
-        <ScrollView
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           className="flex-1"
-          contentContainerClassName="gap-5 px-5 pb-10 pt-5"
-          keyboardShouldPersistTaps="handled"
         >
-          <PickerRow
-            label={t('templateEditor.exercises.typeLabel')}
-            value={typeName}
-            placeholder={t('templateEditor.exercises.typePlaceholder')}
-            onPress={() => setTypePickerVisible(true)}
+          <ModalHeader
+            title={name}
+            rightLabel={t('templateEditor.setEditor.done')}
+            onLeftPress={goBack}
+            onRightPress={done}
           />
 
-          <Input
-            className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
-            placeholder={t('templateEditor.exercises.goalPlaceholder')}
-            value={draft.goal}
-            onChangeText={goal => setDraft(current => ({ ...current, goal }))}
-          />
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="gap-5 px-5 pb-10 pt-5"
+            keyboardShouldPersistTaps="handled"
+          >
+            <PickerRow
+              label={t('templateEditor.exercises.typeLabel')}
+              value={typeName}
+              placeholder={t('templateEditor.exercises.typePlaceholder')}
+              onPress={() => setTypePickerVisible(true)}
+            />
 
-          <TemplateSetTable
-            sets={draft.sets}
-            setTypeOptions={setTypeOptions}
-            setTypesById={setTypesById}
-            weightUnit={profile.weightUnit}
-            onCreateSetType={createSetType}
-            onAddSet={() => setSets([...draft.sets, createDraftSet()])}
-            onDuplicateSet={() => setSets(duplicateLastSet(draft.sets))}
-            onChangeSet={(index, set) =>
-              setSets(
-                draft.sets.map((current, i) => (i === index ? set : current)),
-              )
-            }
-            onRemoveSet={index =>
-              setSets(
-                draft.sets.length > 1
-                  ? draft.sets.filter((_, i) => i !== index)
-                  : draft.sets,
-              )
-            }
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <Input
+              className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
+              placeholder={t('templateEditor.exercises.goalPlaceholder')}
+              value={draft.goal}
+              onChangeText={goal => setDraft(current => ({ ...current, goal }))}
+            />
 
-      <LibraryPicker
-        visible={typePickerVisible}
-        title={t('templateEditor.exercises.typePickerTitle')}
-        items={exerciseTypes.items}
-        selectedIds={draft.typeId ? [draft.typeId] : []}
-        onClose={() => setTypePickerVisible(false)}
-        onChange={ids =>
-          setDraft(current => ({ ...current, typeId: ids[0] ?? null }))
-        }
-        onCreate={exerciseTypes.createType}
-      />
+            <TemplateSetTable
+              sets={draft.sets}
+              setTypeOptions={setTypeOptions}
+              setTypesById={setTypesById}
+              weightUnit={profile.weightUnit}
+              onCreateSetType={createSetType}
+              onAddSet={() => setSets([...draft.sets, createDraftSet()])}
+              onDuplicateSet={() => setSets(duplicateLastSet(draft.sets))}
+              onChangeSet={(index, set) =>
+                setSets(
+                  draft.sets.map((current, i) => (i === index ? set : current)),
+                )
+              }
+              onRemoveSet={index =>
+                setSets(
+                  draft.sets.length > 1
+                    ? draft.sets.filter((_, i) => i !== index)
+                    : draft.sets,
+                )
+              }
+            />
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        <LibraryPicker
+          visible={typePickerVisible}
+          title={t('templateEditor.exercises.typePickerTitle')}
+          items={exerciseTypes.items}
+          selectedIds={draft.typeId ? [draft.typeId] : []}
+          onClose={() => setTypePickerVisible(false)}
+          onChange={ids =>
+            setDraft(current => ({ ...current, typeId: ids[0] ?? null }))
+          }
+          onCreate={exerciseTypes.createType}
+        />
+      </SetSheetHost>
     </AppView>
   );
 }

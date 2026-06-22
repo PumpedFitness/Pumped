@@ -12,12 +12,10 @@ export function TemplateSetTable(props: TemplateSetTableProps) {
   return (
     <ExerciseSetTableContent
       cards={cards}
-      setTypeOptions={props.setTypeOptions}
       addSetLabel={props.addSetLabel ?? t('setTable.addSet')}
       duplicateSetLabel={t('setTable.duplicateSet')}
       onAddSet={props.onAddSet}
       onDuplicateSet={props.onDuplicateSet}
-      onCreateSetType={props.onCreateSetType}
     />
   );
 }

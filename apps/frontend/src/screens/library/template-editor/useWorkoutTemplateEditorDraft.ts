@@ -49,6 +49,7 @@ function createInitialDraft(
       template?.exercises.map(exercise => ({
         exerciseId: exercise.exerciseId,
         typeId: exercise.typeId,
+        color: exercise.color,
         goal: exercise.goal ?? '',
         notes: exercise.notes,
         sets: exercise.sets.map(set => ({
@@ -66,6 +67,7 @@ function createDraftExercise(exerciseId: string): DraftExercise {
   return {
     exerciseId,
     typeId: null,
+    color: null,
     goal: '',
     notes: null,
     sets: [createDraftSet(), createDraftSet(), createDraftSet()],
@@ -78,6 +80,7 @@ function buildExerciseInput(
   return {
     exerciseId: exercise.exerciseId,
     typeId: exercise.typeId,
+    color: exercise.color,
     goal: exercise.goal.trim() || null,
     notes: exercise.notes,
     sets: exercise.sets.map(set => ({

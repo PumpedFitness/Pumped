@@ -32,6 +32,7 @@ export type WorkoutTemplateSetInput = {
 export type WorkoutTemplateExerciseInput = {
   exerciseId: string;
   typeId?: string | null;
+  color?: WorkoutTemplateColor | null;
   goal?: string | null;
   notes?: string | null;
   sets: WorkoutTemplateSetInput[];
@@ -119,6 +120,7 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
       exerciseId: exercise.exerciseId,
       position: exercise.position,
       typeId: exercise.typeId,
+      color: exercise.color,
       goal: exercise.goal,
       notes: exercise.notes,
       sets,
@@ -205,6 +207,7 @@ function replaceTemplateChildren(
         exerciseId: exercise.exerciseId,
         position: exercisePosition,
         typeId: exercise.typeId ?? null,
+        color: exercise.color ?? null,
         goal: exercise.goal ?? null,
         notes: exercise.notes ?? null,
       })

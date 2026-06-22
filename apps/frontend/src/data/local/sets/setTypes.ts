@@ -5,6 +5,7 @@
 import { asc, eq } from 'drizzle-orm';
 import { i18n } from '@/i18n';
 import { db } from '@/data/local/database';
+import { getTableVersion } from '@/data/local/tableVersions';
 import { setTypeFields, setTypes } from '@/data/local/schema';
 import {
   builtInSetFieldLabelKey,
@@ -61,15 +62,35 @@ function toSetTypeWithFields(
   };
 }
 
-/** Raw field defs for a set type (for validation/snapshot). */
+// Field defs are read non-reactively on hot paths (completion checks fire once
+// per done set on every workout mutation), so memoize them. The cache clears
+// when the setTypeFields table changes or the UI language switches (built-in
+// field labels resolve via i18n in toFieldDef).
+const fieldDefCache = new Map<string, SetTypeFieldDef[]>();
+let fieldDefCacheVersion = -1;
+let fieldDefCacheLang = '';
+
+/** Raw field defs for a set type (for validation/snapshot). Cached. */
 export function getSetTypeFieldDefs(setTypeId: string): SetTypeFieldDef[] {
-  return db
+  const version = getTableVersion(setTypeFields);
+  if (version !== fieldDefCacheVersion || i18n.language !== fieldDefCacheLang) {
+    fieldDefCache.clear();
+    fieldDefCacheVersion = version;
+    fieldDefCacheLang = i18n.language;
+  }
+  const cached = fieldDefCache.get(setTypeId);
+  if (cached) {
+    return cached;
+  }
+  const defs = db
     .select()
     .from(setTypeFields)
     .where(eq(setTypeFields.setTypeId, setTypeId))
     .orderBy(asc(setTypeFields.position))
     .all()
     .map(toFieldDef);
+  fieldDefCache.set(setTypeId, defs);
+  return defs;
 }
 
 export function getSetTypeWithFields(

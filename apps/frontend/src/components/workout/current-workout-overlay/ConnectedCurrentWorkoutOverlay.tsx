@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
+import { useExerciseOptions } from '@/hooks/useExerciseOptions';
+import { useCurrentWorkoutStore } from '@/stores/currentWorkoutStore';
+import { currentWorkoutElapsedMs } from '@/stores/currentWorkoutModel';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { CurrentWorkoutOverlay } from './CurrentWorkoutOverlay';
 
@@ -16,7 +18,12 @@ export function ConnectedCurrentWorkoutOverlay({
 }: ConnectedCurrentWorkoutOverlayProps) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { currentWorkout, exerciseOptions } = useCurrentWorkout();
+  // Read the draft straight from the store + the exercise catalog. Going through
+  // useCurrentWorkout here would also run getWorkoutTemplate and recompute
+  // canFinish/structureChanged on every mutation — dead work this overlay never
+  // reads, in an always-mounted component.
+  const currentWorkout = useCurrentWorkoutStore(state => state.currentWorkout);
+  const exerciseOptions = useExerciseOptions();
   const [now, setNow] = useState(Date.now());
   const currentWorkoutId = currentWorkout?.id;
 
@@ -51,7 +58,7 @@ export function ConnectedCurrentWorkoutOverlay({
     exercise.sets.some(set => !set.isDone),
   );
   const elapsedMinutes = Math.floor(
-    Math.max(0, now - currentWorkout.startedAt) / 60_000,
+    currentWorkoutElapsedMs(currentWorkout, now) / 60_000,
   );
 
   return (

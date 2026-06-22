@@ -1,14 +1,10 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from 'react-native-reanimated';
+import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
 import { colors, motion } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { SetCard } from './SetCard';
-import type { SetCardModel, SetTypeOption } from './exerciseSetTableModel';
+import type { SetCardModel } from './exerciseSetTableModel';
 
 type AddSetButtonProps = {
   label: string;
@@ -31,22 +27,22 @@ function AddSetButton({ label, icon, onPress }: AddSetButtonProps) {
 
 type ExerciseSetTableContentProps = {
   cards: SetCardModel[];
-  setTypeOptions: SetTypeOption[];
   addSetLabel?: string;
   duplicateSetLabel?: string;
   onAddSet?: () => void;
   onDuplicateSet?: () => void;
-  onCreateSetType?: (name: string) => string;
+  animateLayout?: boolean;
 };
 
+// The set-type / wheel / range sheets are NOT here — they live once per screen
+// in <SetSheetHost>, and cards open them via the useSetSheetOpeners() context.
 export function ExerciseSetTableContent({
   cards,
-  setTypeOptions,
   addSetLabel,
   duplicateSetLabel,
   onAddSet,
   onDuplicateSet,
-  onCreateSetType,
+  animateLayout = true,
 }: ExerciseSetTableContentProps) {
   const { t } = useTranslation();
 
@@ -54,18 +50,17 @@ export function ExerciseSetTableContent({
     <View className="gap-3">
       {cards.map(card => (
         // Layout animation: a removed set fades out and the cards below slide up
-        // smoothly instead of snapping into place.
+        // smoothly. No `entering` — fading every card in on mount janks the
+        // workout's first frame. `layout` is skipped where the table re-renders
+        // mid-scroll (active workout), which otherwise makes cards fly in.
         <Animated.View
           key={card.key}
-          layout={LinearTransition.duration(motion.base)}
-          entering={FadeIn.duration(motion.fast)}
+          layout={
+            animateLayout ? LinearTransition.duration(motion.base) : undefined
+          }
           exiting={FadeOut.duration(motion.fast)}
         >
-          <SetCard
-            card={card}
-            setTypeOptions={setTypeOptions}
-            onCreateSetType={onCreateSetType}
-          />
+          <SetCard card={card} />
         </Animated.View>
       ))}
 
