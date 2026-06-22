@@ -181,7 +181,10 @@ export function buildTemplateSyncInput(
     name: template.name,
     description: template.description,
     color: template.color,
-    exercises: workout.exercises.map(exercise => {
+    exercises: uniqueBy(
+      workout.exercises,
+      exercise => exercise.exerciseId,
+    ).map(exercise => {
       const sourceExercise = template.exercises.find(
         candidate => candidate.exerciseId === exercise.exerciseId,
       );

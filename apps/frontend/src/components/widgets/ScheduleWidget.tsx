@@ -13,6 +13,7 @@ import {
   startOfWeek,
 } from '@/data/local/schedules/scheduleResolution';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
 
 type ScheduleWidgetProps = {
   colSpan: number;
@@ -87,12 +88,12 @@ export function ScheduleWidget(_props: ScheduleWidgetProps) {
       return;
     }
     if (currentWorkout) {
-      navigation.navigate('CurrentWorkout');
+      openCurrentWorkout(navigation);
       return;
     }
     try {
       startTemplateWorkout(todayTemplateIds[0]);
-      navigation.navigate('CurrentWorkout');
+      openCurrentWorkout(navigation);
     } catch {
       // Starting can fail if a workout is already in progress — ignored; the
       // existing in-progress overlay already surfaces that state.
