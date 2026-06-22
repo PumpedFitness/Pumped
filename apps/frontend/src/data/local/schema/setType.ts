@@ -1,4 +1,6 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import type { ProgressionGoal } from '@/types/setType';
+import { jsonObject } from './columns';
 
 // User-configurable set-type library. Each type OWNS its field schema (see
 // set_type_field). Seeded with built-ins (is_built_in = 1) whose ids equal the
@@ -12,5 +14,8 @@ export const setTypes = sqliteTable('set_type', {
     .notNull()
     .default(false),
   position: integer('position').notNull().default(0),
+  progressionGoal: jsonObject<ProgressionGoal>()('progression_goal')
+    .notNull()
+    .default({ kind: 'none' }),
   createdAt: integer('created_at').notNull(),
 });

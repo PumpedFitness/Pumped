@@ -10,8 +10,10 @@ import {
   builtInSetTypeColor,
   builtInSetTypeLabelKey,
 } from '@/data/local/builtins';
+import { normalizeProgressionGoal } from '@/data/local/sets/progressionGoals';
 import { deriveSetTypeColor } from '@/data/local/sets/setTypeColor';
 import type {
+  ProgressionGoal,
   SetTypeFieldConfig,
   SetTypeFieldDef,
   SetTypeWithFields,
@@ -37,10 +39,18 @@ export type SetTypeLibrary = {
   byId: Map<string, SetTypeWithFields>;
   /** Pickable options for the set-type picker (built-ins first, then customs). */
   options: SetTypeOption[];
-  createSetType: (name: string, icon?: string | null) => string;
+  createSetType: (
+    name: string,
+    icon?: string | null,
+    progressionGoal?: ProgressionGoal,
+  ) => string;
   updateSetType: (
     id: string,
-    patch: { name?: string; icon?: string | null },
+    patch: {
+      name?: string;
+      icon?: string | null;
+      progressionGoal?: ProgressionGoal;
+    },
   ) => void;
   deleteSetType: (id: string) => void;
   addField: (setTypeId: string, field: NewSetTypeFieldInput) => string;
@@ -67,14 +77,8 @@ export function useSetTypeLibrary(): SetTypeLibrary {
       const key = builtInSetFieldLabelKey(id);
       return key ? t(key) : name;
     };
-    return typeRows.map(typeRow => ({
-      id: typeRow.id,
-      name: resolveTypeName(typeRow.id, typeRow.name),
-      icon: typeRow.icon,
-      color: builtInSetTypeColor(typeRow.id) ?? deriveSetTypeColor(typeRow.id),
-      isBuiltIn: typeRow.isBuiltIn,
-      position: typeRow.position,
-      fields: fieldRows
+    return typeRows.map(typeRow => {
+      const fields = fieldRows
         .filter(field => field.setTypeId === typeRow.id)
         .map(
           (field): SetTypeFieldDef => ({
@@ -86,8 +90,22 @@ export function useSetTypeLibrary(): SetTypeLibrary {
             position: field.position,
             config: field.config,
           }),
+        );
+      return {
+        id: typeRow.id,
+        name: resolveTypeName(typeRow.id, typeRow.name),
+        icon: typeRow.icon,
+        color:
+          builtInSetTypeColor(typeRow.id) ?? deriveSetTypeColor(typeRow.id),
+        isBuiltIn: typeRow.isBuiltIn,
+        position: typeRow.position,
+        progressionGoal: normalizeProgressionGoal(
+          typeRow.progressionGoal,
+          fields,
         ),
-    }));
+        fields,
+      };
+    });
   }, [typeRows, fieldRows, t]);
 
   const byId = useMemo(
@@ -100,7 +118,11 @@ export function useSetTypeLibrary(): SetTypeLibrary {
   );
 
   const createSetType = useCallback(
-    (name: string, icon: string | null = null) => {
+    (
+      name: string,
+      icon: string | null = null,
+      progressionGoal: ProgressionGoal = { kind: 'none' },
+    ) => {
       const id = randomUUID();
       typeRepo.create({
         id,
@@ -108,6 +130,7 @@ export function useSetTypeLibrary(): SetTypeLibrary {
         icon,
         isBuiltIn: false,
         position: typeRows.length,
+        progressionGoal,
         createdAt: Date.now(),
       });
       return id;
@@ -116,8 +139,14 @@ export function useSetTypeLibrary(): SetTypeLibrary {
   );
 
   const updateSetType = useCallback(
-    (id: string, patch: { name?: string; icon?: string | null }) =>
-      typeRepo.update(id, patch),
+    (
+      id: string,
+      patch: {
+        name?: string;
+        icon?: string | null;
+        progressionGoal?: ProgressionGoal;
+      },
+    ) => typeRepo.update(id, patch),
     [typeRepo],
   );
 

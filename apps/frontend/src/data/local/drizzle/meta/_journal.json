@@ -120,6 +120,13 @@
       "when": 1782086400000,
       "tag": "0016_progression_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1782172800000,
+      "tag": "0017_set_type_progression_goal",
+      "breakpoints": true
     }
   ]
 }

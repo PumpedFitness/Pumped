@@ -1,5 +1,27 @@
 import type { SetFieldDataType, SetFieldUnit } from '@/data/local/enums';
 
+export type SetFieldRole =
+  | 'weight'
+  | 'reps'
+  | 'duration'
+  | 'distance'
+  | 'rpe'
+  | 'rir'
+  | 'notes'
+  | 'other';
+
+export type LinearProgressionGoal = {
+  kind: 'linear';
+  fieldId?: string;
+  increment: number;
+};
+
+export type NoProgressionGoal = {
+  kind: 'none';
+};
+
+export type ProgressionGoal = LinearProgressionGoal | NoProgressionGoal;
+
 /** Palette colour for a set type's pill/badge (matches the app's accent set). */
 export type SetTypeColorName =
   | 'terracotta'
@@ -42,5 +64,6 @@ export type SetTypeWithFields = {
   color: SetTypeColorName;
   isBuiltIn: boolean;
   position: number;
+  progressionGoal: ProgressionGoal;
   fields: SetTypeFieldDef[];
 };

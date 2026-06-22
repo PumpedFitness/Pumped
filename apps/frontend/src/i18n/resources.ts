@@ -34,6 +34,8 @@ export const resources = {
         load: 'Load',
         start: 'Start',
         archive: 'Archive',
+        from: 'From',
+        to: 'To',
         closePopup: 'Close popup',
         noResults: 'No results',
         notSet: 'Not set',
@@ -334,14 +336,24 @@ export const resources = {
       progression: {
         title: 'Progression',
         modes: {
-          auto: 'Auto Progression',
-          manual: 'Manual',
+          auto: 'Manual',
+          manual: 'Manual progression',
           none: 'No Progression',
         },
         helper: {
-          auto: 'The app suggests the next target based on your last performance.',
-          manual: 'Use the manual target settings already available for this exercise.',
-          none: 'Only show what you performed last time.',
+          auto: 'Use the set type’s linear progression settings.',
+          manual: 'Use the set type’s linear progression settings.',
+          none: 'Suggest the values from your last completed set.',
+        },
+        goal: {
+          kind: {
+            none: 'No progression',
+            linear: 'Linear progression',
+          },
+          summary: {
+            none: 'No progression',
+            linear: 'Linear +{{increment}}',
+          },
         },
         suggestion: {
           suggested: 'Suggested: {{target}}',
@@ -398,6 +410,13 @@ export const resources = {
         fieldsLabel: 'Tracked fields',
         addField: 'Add field',
         emptyFields: 'Add a field to track values like reps or weight.',
+        progression: {
+          label: 'Progression Goal',
+          hint: 'Manual progression increases one tracked field each time.',
+          noFields: 'Add a numeric field to enable linear progression.',
+          field: 'Field',
+          increase: 'Increase by',
+        },
         deleteSetType: 'Delete set type',
         fieldSheet: {
           addTitle: 'Add field',
@@ -484,6 +503,7 @@ export const resources = {
         swipeFinish: 'Finish',
         swipeUndo: 'Undo',
         setTypePickerTitle: 'Set type',
+        progressionReadOnly: 'Progression: {{goal}}',
         hidePrescriptions: 'Hide prescriptions',
         wheel: {
           description: 'Spin to choose a value.',
@@ -893,6 +913,8 @@ export const resources = {
         load: 'Laden',
         start: 'Starten',
         archive: 'Archivieren',
+        from: 'Von',
+        to: 'Bis',
         closePopup: 'Popup schließen',
         noResults: 'Keine Ergebnisse',
         notSet: 'Nicht angegeben',
@@ -1199,15 +1221,25 @@ export const resources = {
       progression: {
         title: 'Progression',
         modes: {
-          auto: 'Automatische Progression',
-          manual: 'Manuell',
+          auto: 'Manuell',
+          manual: 'Manuelle Progression',
           none: 'Keine Progression',
         },
         helper: {
-          auto: 'Die App schlägt das nächste Ziel anhand deiner letzten Leistung vor.',
+          auto: 'Verwende die linearen Progressionseinstellungen des Satztyps.',
           manual:
-            'Verwende die manuellen Zieleinstellungen, die für diese Übung schon verfügbar sind.',
-          none: 'Zeige nur, was du beim letzten Mal geschafft hast.',
+            'Verwende die linearen Progressionseinstellungen des Satztyps.',
+          none: 'Schlage die Werte aus deinem letzten abgeschlossenen Satz vor.',
+        },
+        goal: {
+          kind: {
+            none: 'Keine Progression',
+            linear: 'Lineare Progression',
+          },
+          summary: {
+            none: 'Keine Progression',
+            linear: 'Linear +{{increment}}',
+          },
         },
         suggestion: {
           suggested: 'Vorschlag: {{target}}',
@@ -1265,6 +1297,14 @@ export const resources = {
         addField: 'Feld hinzufügen',
         emptyFields:
           'Füge ein Feld hinzu, um Werte wie Wdh. oder Gewicht zu erfassen.',
+        progression: {
+          label: 'Progressionsziel',
+          hint: 'Die manuelle Progression steigert ein erfasstes Feld.',
+          noFields:
+            'Füge ein numerisches Feld hinzu, um lineare Progression zu aktivieren.',
+          field: 'Feld',
+          increase: 'Steigern um',
+        },
         deleteSetType: 'Satztyp löschen',
         fieldSheet: {
           addTitle: 'Feld hinzufügen',
@@ -1352,6 +1392,7 @@ export const resources = {
         swipeFinish: 'Fertig',
         swipeUndo: 'Rückgängig',
         setTypePickerTitle: 'Satztyp',
+        progressionReadOnly: 'Progression: {{goal}}',
         hidePrescriptions: 'Vorgaben ausblenden',
         wheel: {
           description: 'Drehe, um einen Wert zu wählen.',

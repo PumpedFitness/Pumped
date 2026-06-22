@@ -17,6 +17,7 @@ import m0013 from './0013_sets_fields_set_types.sql';
 import m0014 from './0014_settype_fields.sql';
 import m0015 from './0015_template_exercise_color.sql';
 import m0016 from './0016_progression_mode.sql';
+import m0017 from './0017_set_type_progression_goal.sql';
 
 export default {
   journal,
@@ -38,5 +39,6 @@ export default {
     m0014,
     m0015,
     m0016,
+    m0017,
   },
 };

@@ -17,6 +17,7 @@ import type {
   SetTypeWithFields,
 } from '@/types/setType';
 import { displayWeight } from '@/utils/units';
+import { formatProgressionGoal } from '@/data/local/sets/progressionGoals';
 import {
   getBoolValue,
   getFieldValue,
@@ -41,13 +42,11 @@ import {
   type SuggestedSetValues,
 } from './exerciseSetSuggestion';
 
-/** A selectable set type — label resolved upstream (i18n or custom name). */
 export type SetTypeOption = {
   value: SetTypeId;
   label: string;
 };
 
-/** Everything the set tables need to resolve a set's type into fields/labels. */
 type SetTypeContext = {
   setTypeOptions: SetTypeOption[];
   setTypesById: Map<string, SetTypeWithFields>;
@@ -86,7 +85,7 @@ type ReadOnlyExerciseSet = Pick<
   'id' | 'setType' | 'restSeconds' | 'fieldValues'
 >;
 
-type ReadOnlyExerciseSetTableProps = SetTypeContext & {
+export type ReadOnlyExerciseSetTableProps = SetTypeContext & {
   readOnly: true;
   sets: ReadOnlyExerciseSet[];
 };
@@ -106,7 +105,6 @@ type BaseCardField = {
   readOnly: boolean;
 };
 
-/** A single editable/displayable value on a set card, by data type. */
 export type SetCardField =
   | (BaseCardField & {
       kind: 'number';
@@ -151,11 +149,10 @@ export type SetCardModel = {
   setTypeIcon: string | null;
   setTypeColor: SetTypeColorName;
   fields: SetCardField[];
-  /** Universal per-set rest chip; null only when read-only with no rest. */
   rest: SetCardRest | null;
+  progressionBadgeText?: string;
   tone: 'default' | 'completed';
   isDone?: boolean;
-  /** The active set to log next (first not-done) — shows the "NOW" badge. */
   isCurrent: boolean;
   canRemove: boolean;
   readOnly: boolean;
@@ -224,7 +221,7 @@ type FieldBuildOptions = {
   suggestion?: SuggestedSetValues;
 };
 
-function buildCardField(
+export function buildCardField(
   field: SetTypeFieldDef,
   values: SetFieldValue[],
   options: FieldBuildOptions,
@@ -305,6 +302,9 @@ export function buildTemplateSetCards(
 ): SetCardModel[] {
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
+    const progressionSummary = type
+      ? formatProgressionGoal(t, type.progressionGoal)
+      : null;
     return {
       key: set.id,
       index,
@@ -328,6 +328,7 @@ export function buildTemplateSetCards(
         onChange: value =>
           props.onChangeSet(index, { ...set, restSeconds: value }),
       },
+      progressionBadgeText: progressionSummary ?? undefined,
       tone: 'default',
       isCurrent: false,
       canRemove: props.sets.length > 1,
@@ -354,6 +355,7 @@ export function buildWorkoutSetCards(
   const currentIndex = props.sets.findIndex(set => !set.isDone);
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
+    const suggestion = props.suggestedSets?.[index];
     return {
       key: set.id,
       index,
@@ -367,7 +369,7 @@ export function buildWorkoutSetCards(
           readOnly: false,
           weightUnit: props.weightUnit,
           t,
-          suggestion: props.suggestedSets?.[index],
+          suggestion,
           onChange: next => props.onChangeSet(set.id, { fieldValues: next }),
         }),
       ),
@@ -376,6 +378,13 @@ export function buildWorkoutSetCards(
         readOnly: false,
         onChange: value => props.onChangeSet(set.id, { restSeconds: value }),
       },
+      progressionBadgeText: suggestion
+        ? t(
+            suggestion.isLastPerformanceOnly
+              ? 'progression.modes.none'
+              : 'progression.modes.manual',
+          )
+        : undefined,
       tone: set.isDone ? 'completed' : 'default',
       isDone: set.isDone,
       isCurrent: index === currentIndex,
@@ -391,46 +400,6 @@ export function buildWorkoutSetCards(
         }),
       onToggleDone: () => props.onToggleSetDone(set.id),
       onRemove: () => props.onRemoveSet(set),
-    };
-  });
-}
-
-export function buildReadOnlySetCards(
-  t: TFunction,
-  props: ReadOnlyExerciseSetTableProps,
-): SetCardModel[] {
-  return props.sets.map((set, index) => {
-    const type = props.setTypesById.get(set.setType);
-    return {
-      key: set.id,
-      index,
-      setType: set.setType,
-      setTypeLabel: type?.name ?? set.setType,
-      setTypeIcon: type?.icon ?? null,
-      setTypeColor: type?.color ?? 'terracotta',
-      fields: (type?.fields ?? []).map(field =>
-        buildCardField(field, set.fieldValues, {
-          mode: 'actual',
-          readOnly: true,
-          weightUnit: props.weightUnit,
-          t,
-          onChange: () => undefined,
-        }),
-      ),
-      rest:
-        set.restSeconds != null
-          ? {
-              value: set.restSeconds,
-              readOnly: true,
-              onChange: () => undefined,
-            }
-          : null,
-      tone: 'default',
-      isCurrent: false,
-      canRemove: false,
-      readOnly: true,
-      onSetTypeChange: () => undefined,
-      onRemove: () => undefined,
     };
   });
 }

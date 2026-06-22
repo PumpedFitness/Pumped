@@ -37,7 +37,7 @@ function SetCardHeader({
   return (
     <View className="flex-row items-center gap-2">
       <View
-        className="h-7 w-7 items-center justify-center rounded-full"
+        className="h-7 w-7 shrink-0 items-center justify-center rounded-full"
         style={{
           backgroundColor: card.isCurrent ? colors.ink : colors.cardSunk,
         }}
@@ -50,68 +50,85 @@ function SetCardHeader({
         </Text>
       </View>
 
-      <Pressable
-        accessibilityRole={card.readOnly ? undefined : 'button'}
-        accessibilityLabel={t('setTable.a11y.setType', {
-          number: card.index + 1,
-        })}
-        disabled={card.readOnly}
-        className="flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
-        style={{ backgroundColor: tone.soft }}
-        onPress={card.readOnly ? undefined : onOpenSetTypePicker}
-      >
-        <ClayIcon
-          name={card.setTypeIcon ?? 'target'}
-          size={14}
-          color={tone.fg}
-        />
-        <Text
-          className="text-[13px] font-bold"
-          style={{ color: tone.fg }}
-          numberOfLines={1}
-        >
-          {card.setTypeLabel}
-        </Text>
-        {!card.readOnly && (
-          <ClayIcon name="chevronDown" size={12} color={tone.fg} />
-        )}
-      </Pressable>
-
-      <View className="flex-1" />
-
-      {card.isCurrent && card.onToggleDone ? (
-        <View className="rounded-full bg-accent-soft px-2 py-1">
-          <Text className="text-[9px] font-bold uppercase tracking-[0.6px] text-accent">
-            {t('currentWorkout.now')}
-          </Text>
-        </View>
-      ) : null}
-
-      {card.onToggleDone ? (
+      <View className="min-w-0 flex-1 flex-row items-center gap-1.5">
         <Pressable
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: card.isDone }}
-          accessibilityLabel={
-            card.isDone
-              ? t('setTable.a11y.markSetIncomplete', { number: card.index + 1 })
-              : t('setTable.a11y.markSetComplete', { number: card.index + 1 })
-          }
-          className="h-8 w-8 items-center justify-center rounded-full active:bg-surface-sunk"
-          onPress={onToggleDone}
+          accessibilityRole={card.readOnly ? undefined : 'button'}
+          accessibilityLabel={t('setTable.a11y.setType', {
+            number: card.index + 1,
+          })}
+          disabled={card.readOnly}
+          className="min-w-0 max-w-[58%] flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
+          style={{ backgroundColor: tone.soft }}
+          onPress={card.readOnly ? undefined : onOpenSetTypePicker}
         >
-          <View
-            className={`h-7 w-7 items-center justify-center rounded-full ${
-              card.isDone
-                ? 'bg-moss'
-                : 'border-2 border-border-soft bg-background'
-            }`}
+          <ClayIcon
+            name={card.setTypeIcon ?? 'target'}
+            size={14}
+            color={tone.fg}
+          />
+          <Text
+            className="min-w-0 shrink text-[13px] font-bold"
+            style={{ color: tone.fg }}
+            numberOfLines={1}
           >
-            {card.isDone && (
-              <ClayIcon name="check" size={15} color={colors.cream} />
-            )}
-          </View>
+            {card.setTypeLabel}
+          </Text>
+          {!card.readOnly && (
+            <ClayIcon name="chevronDown" size={12} color={tone.fg} />
+          )}
         </Pressable>
-      ) : null}
+
+        {card.progressionBadgeText ? (
+          <View className="min-w-0 shrink rounded-full bg-surface-sunk px-2.5 py-1">
+            <Text
+              className="text-[10px] font-bold text-muted"
+              numberOfLines={1}
+            >
+              {card.progressionBadgeText}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
+      <View className="shrink-0 flex-row items-center gap-2">
+        {card.isCurrent && card.onToggleDone ? (
+          <View className="rounded-full bg-accent-soft px-2 py-1">
+            <Text className="text-[9px] font-bold uppercase tracking-[0.6px] text-accent">
+              {t('currentWorkout.now')}
+            </Text>
+          </View>
+        ) : null}
+
+        {card.onToggleDone ? (
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: card.isDone }}
+            accessibilityLabel={
+              card.isDone
+                ? t('setTable.a11y.markSetIncomplete', {
+                    number: card.index + 1,
+                  })
+                : t('setTable.a11y.markSetComplete', {
+                    number: card.index + 1,
+                  })
+            }
+            className="h-8 w-8 items-center justify-center rounded-full active:bg-surface-sunk"
+            onPress={onToggleDone}
+          >
+            <View
+              className={`h-7 w-7 items-center justify-center rounded-full ${
+                card.isDone
+                  ? 'bg-moss'
+                  : 'border-2 border-border-soft bg-background'
+              }`}
+            >
+              {card.isDone && (
+                <ClayIcon name="check" size={15} color={colors.cream} />
+              )}
+            </View>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -220,7 +237,6 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
     : null;
   const cells = restField ? [...card.fields, restField] : card.fields;
 
-  // Try to mark the set done; on failure show the missing inputs + buzz.
   const attemptDone = () => {
     if (!card.onToggleDone) {
       return;

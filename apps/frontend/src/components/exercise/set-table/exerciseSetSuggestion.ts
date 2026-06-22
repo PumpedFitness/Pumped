@@ -1,32 +1,37 @@
-import type { SetTypeFieldDef } from '@/types/setType';
+import { getSetFieldRole } from '@/data/local/sets/progressionGoals';
+import type { SetFieldRole, SetTypeFieldDef } from '@/types/setType';
+
+export type SuggestedFieldValue = {
+  fieldId?: string;
+  fieldRole: SetFieldRole;
+  value: number | string;
+  displayValue: string;
+};
 
 export type SuggestedSetValues = {
   weightKg?: number;
   reps?: number;
+  durationSeconds?: number;
+  fieldSuggestions?: SuggestedFieldValue[];
+  displayText?: string;
+  lastPerformedText?: string;
+  isLastPerformanceOnly?: boolean;
 };
 
-function isRepsField(field: SetTypeFieldDef): boolean {
-  const name = field.name.toLowerCase();
-  const id = field.id.toLowerCase();
-  if (name.includes('rep') || id.includes('rep')) {
-    return true;
-  }
-  return (
-    field.unit === null &&
-    (field.dataType === 'number' || field.dataType === 'range') &&
-    (field.config.max == null || field.config.max > 10)
+function fieldSuggestionValue(
+  field: SetTypeFieldDef,
+  suggestion?: SuggestedSetValues,
+): number | undefined {
+  const matched = suggestion?.fieldSuggestions?.find(
+    value =>
+      value.fieldId === field.id || value.fieldRole === getSetFieldRole(field),
   );
+  return typeof matched?.value === 'number' ? matched.value : undefined;
 }
 
 export function suggestedNumberValue(
   field: SetTypeFieldDef,
   suggestion?: SuggestedSetValues,
 ): number | undefined {
-  if (field.unit === 'amount') {
-    return suggestion?.weightKg;
-  }
-  if (isRepsField(field)) {
-    return suggestion?.reps;
-  }
-  return undefined;
+  return fieldSuggestionValue(field, suggestion);
 }

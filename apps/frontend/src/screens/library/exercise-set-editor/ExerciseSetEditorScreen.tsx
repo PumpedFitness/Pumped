@@ -59,14 +59,16 @@ export function ExerciseSetEditorScreen({
   const typeName = draft.typeId
     ? exerciseTypes.items.find(item => item.id === draft.typeId)?.name
     : undefined;
-  const progressionMode = draft.progressionMode ?? 'auto';
+  const progressionMode =
+    draft.progressionMode === 'auto'
+      ? 'manual'
+      : draft.progressionMode ?? 'none';
   const progressionOptions: Array<{
-    value: ProgressionMode;
+    value: Exclude<ProgressionMode, 'auto'>;
     label: string;
   }> = [
-    { value: 'auto', label: t('progression.modes.auto') },
-    { value: 'manual', label: t('progression.modes.manual') },
     { value: 'none', label: t('progression.modes.none') },
+    { value: 'manual', label: t('progression.modes.manual') },
   ];
 
   const setSets = (sets: EditableExercise['sets']) =>
@@ -122,7 +124,7 @@ export function ExerciseSetEditorScreen({
             <PickerRow
               label={t('progression.title')}
               value={t(`progression.modes.${progressionMode}`)}
-              placeholder={t('progression.modes.auto')}
+              placeholder={t('progression.modes.none')}
               onPress={() => setProgressionPickerVisible(true)}
             />
             <Text className="t-caption -mt-3 text-muted">

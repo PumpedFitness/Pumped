@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Input } from 'heroui-native';
@@ -14,6 +21,9 @@ import {
   useSetTypeLibrary,
   type SetTypeLibrary,
 } from '@/hooks/useSetTypeLibrary';
+import { normalizeProgressionGoal } from '@/data/local/sets/progressionGoals';
+import type { ProgressionGoal } from '@/types/setType';
+import { ProgressionGoalEditor } from './ProgressionGoalEditor';
 import { SetTypeFieldEditorSheet } from './SetTypeFieldEditorSheet';
 import { setTypeToDraftFields, type DraftField } from './draft';
 
@@ -30,10 +40,20 @@ function persistDraft(
   name: string,
   icon: IconName | null,
   fields: DraftField[],
+  progressionGoal: ProgressionGoal,
 ): void {
+  const progressionFields = fields.map(field => ({
+    ...field,
+    id: field.id ?? field.key,
+  }));
+  const safeGoal = normalizeProgressionGoal(progressionGoal, progressionFields);
   let typeId = existingId;
   if (typeId) {
-    library.updateSetType(typeId, { name: name.trim(), icon });
+    library.updateSetType(typeId, {
+      name: name.trim(),
+      icon,
+      progressionGoal: safeGoal,
+    });
     const keptIds = new Set(fields.filter(f => f.id).map(f => f.id));
     (existing?.fields ?? []).forEach(field => {
       if (!keptIds.has(field.id)) {
@@ -41,7 +61,7 @@ function persistDraft(
       }
     });
   } else {
-    typeId = library.createSetType(name.trim(), icon);
+    typeId = library.createSetType(name.trim(), icon, safeGoal);
   }
 
   const orderedIds = fields.map(field => {
@@ -97,6 +117,47 @@ function FieldRow({ field, subtitle, onPress }: FieldRowProps) {
   );
 }
 
+type FieldsSectionProps = {
+  fields: DraftField[];
+  onAddField: () => void;
+  onEditField: (field: DraftField) => void;
+};
+
+function FieldsSection({
+  fields,
+  onAddField,
+  onEditField,
+}: FieldsSectionProps) {
+  const { t } = useTranslation();
+  return (
+    <View className="gap-2">
+      <Text className="t-eyebrow">{t('setTypeEditor.fieldsLabel')}</Text>
+      {fields.length === 0 ? (
+        <Text className="t-caption">{t('setTypeEditor.emptyFields')}</Text>
+      ) : (
+        fields.map(field => (
+          <FieldRow
+            key={field.key}
+            field={field}
+            subtitle={fieldSubtitle(t, field)}
+            onPress={() => onEditField(field)}
+          />
+        ))
+      )}
+      <Pressable
+        accessibilityRole="button"
+        className="min-h-12 flex-row items-center justify-center gap-2 rounded-full border border-dashed border-accent bg-accent-soft px-4"
+        onPress={onAddField}
+      >
+        <ClayIcon name="plus" size={16} color={colors.accent} />
+        <Text className="t-label text-accent">
+          {t('setTypeEditor.addField')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export function SetTypeEditorScreen({
   navigation,
   route,
@@ -113,6 +174,9 @@ export function SetTypeEditorScreen({
   );
   const [fields, setFields] = useState<DraftField[]>(() =>
     setTypeToDraftFields(existing),
+  );
+  const [progressionGoal, setProgressionGoal] = useState<ProgressionGoal>(
+    existing?.progressionGoal ?? { kind: 'none' },
   );
   const [error, setError] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<DraftField | null>(null);
@@ -147,7 +211,15 @@ export function SetTypeEditorScreen({
       setError(t('setTypeEditor.errors.nameRequired'));
       return;
     }
-    persistDraft(library, existing?.id, existing, name, icon, fields);
+    persistDraft(
+      library,
+      existing?.id,
+      existing,
+      name,
+      icon,
+      fields,
+      progressionGoal,
+    );
     navigation.goBack();
   };
 
@@ -165,7 +237,11 @@ export function SetTypeEditorScreen({
         className="flex-1"
       >
         <ModalHeader
-          title={existing ? t('setTypeEditor.editTitle') : t('setTypeEditor.newTitle')}
+          title={
+            existing
+              ? t('setTypeEditor.editTitle')
+              : t('setTypeEditor.newTitle')
+          }
           rightLabel={t('setTypeEditor.done')}
           onLeftPress={() => navigation.goBack()}
           onRightPress={done}
@@ -197,33 +273,17 @@ export function SetTypeEditorScreen({
             <IconPicker value={icon} onChange={setIcon} />
           </View>
 
-          <View className="gap-2">
-            <Text className="t-eyebrow">{t('setTypeEditor.fieldsLabel')}</Text>
-            {fields.length === 0 ? (
-              <Text className="t-caption">
-                {t('setTypeEditor.emptyFields')}
-              </Text>
-            ) : (
-              fields.map(field => (
-                <FieldRow
-                  key={field.key}
-                  field={field}
-                  subtitle={fieldSubtitle(t, field)}
-                  onPress={() => openEditField(field)}
-                />
-              ))
-            )}
-            <Pressable
-              accessibilityRole="button"
-              className="min-h-12 flex-row items-center justify-center gap-2 rounded-full border border-dashed border-accent bg-accent-soft px-4"
-              onPress={openNewField}
-            >
-              <ClayIcon name="plus" size={16} color={colors.accent} />
-              <Text className="t-label text-accent">
-                {t('setTypeEditor.addField')}
-              </Text>
-            </Pressable>
-          </View>
+          <FieldsSection
+            fields={fields}
+            onAddField={openNewField}
+            onEditField={openEditField}
+          />
+
+          <ProgressionGoalEditor
+            fields={fields}
+            value={progressionGoal}
+            onChange={setProgressionGoal}
+          />
 
           {existing && !existing.isBuiltIn ? (
             <Pressable

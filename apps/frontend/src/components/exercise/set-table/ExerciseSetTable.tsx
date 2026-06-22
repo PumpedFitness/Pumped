@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import {
-  buildReadOnlySetCards,
   buildWorkoutSetCards,
   type ExerciseSetTableProps,
 } from './exerciseSetTableModel';
 import { ExerciseSetTableContent } from './ExerciseSetTableContent';
+import { buildReadOnlySetCards } from './readOnlySetCards';
 
 export function ExerciseSetTable(props: ExerciseSetTableProps) {
   const { t } = useTranslation();
