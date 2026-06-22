@@ -11,7 +11,6 @@ import type { SetTypeWithFields } from '@/types/setType';
 import { colors } from '@/theme/tokens';
 import type { SetTypeOption } from '@/components/exercise/set-table';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import type { LastPerformedSet } from './CurrentWorkout';
 import {
   SessionExerciseHeader,
   type ExerciseTrayState,
@@ -22,7 +21,6 @@ import { allSetsDone, useExerciseSnap } from './useExerciseSnap';
 type SessionExerciseListProps = {
   exercises: CurrentWorkoutExercise[];
   optionById: Map<string, ExerciseOption>;
-  lastSetsByExerciseId: Map<string, LastPerformedSet[]>;
   setTypeOptions: SetTypeOption[];
   setTypesById: Map<string, SetTypeWithFields>;
   weightUnit: WeightUnit;
@@ -52,7 +50,6 @@ function bodyOpacity(state: ExerciseTrayState): number {
 export function SessionExerciseList({
   exercises,
   optionById,
-  lastSetsByExerciseId,
   setTypeOptions,
   setTypesById,
   weightUnit,
@@ -106,7 +103,6 @@ export function SessionExerciseList({
       >
         <SessionExerciseBody
           exercise={exercise}
-          lastPerformedSets={lastSetsByExerciseId.get(exercise.exerciseId)}
           weightUnit={weightUnit}
           setTypeOptions={setTypeOptions}
           setTypesById={setTypesById}

@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ExerciseCard } from '@/components/exercise/ExerciseCard';
@@ -22,11 +22,6 @@ import {
   requestRemoveSet,
 } from './currentWorkoutConfirm';
 
-type LastPerformedSet = {
-  weightKg?: number;
-  reps?: number;
-};
-
 type CurrentWorkoutNavigation = NativeStackNavigationProp<
   RootStackParamList,
   'CurrentWorkout'
@@ -35,7 +30,6 @@ type CurrentWorkoutNavigation = NativeStackNavigationProp<
 type CurrentWorkoutExerciseCardProps = {
   exercise: CurrentWorkoutExercise;
   exerciseName: string;
-  lastPerformedSets?: LastPerformedSet[];
   setTypeOptions: SetTypeOption[];
   setTypesById: Map<string, SetTypeWithFields>;
   weightUnit: WeightUnit;
@@ -74,10 +68,20 @@ function fallbackTemplateExercise(
   };
 }
 
+function repeatSuggestedSets<T>(sets: T[], count: number): T[] {
+  if (sets.length >= count) {
+    return sets.slice(0, count);
+  }
+  const lastSet = sets[sets.length - 1];
+  if (!lastSet) {
+    return [];
+  }
+  return Array.from({ length: count }, (_, index) => sets[index] ?? lastSet);
+}
+
 export function CurrentWorkoutExerciseCard({
   exercise,
   exerciseName,
-  lastPerformedSets,
   setTypeOptions,
   setTypesById,
   weightUnit,
@@ -95,8 +99,11 @@ export function CurrentWorkoutExerciseCard({
     exerciseId: exercise.exerciseId,
     templateExercise:
       exercise.sourceTemplateExercise ?? fallbackTemplateExercise(exercise),
-    lastPerformedSets,
   });
+  const suggestedSets = useMemo(
+    () => repeatSuggestedSets(progression.suggestedSets, exercise.sets.length),
+    [exercise.sets.length, progression.suggestedSets],
+  );
 
   return (
     <ExerciseCard
@@ -116,12 +123,9 @@ export function CurrentWorkoutExerciseCard({
       }
       onRemove={() => requestRemoveExercise(t, exercise, removeExercise)}
     >
-      {progression.displayText ? (
-        <Text className="t-caption text-muted">{progression.displayText}</Text>
-      ) : null}
-
       <ExerciseSetTable
         sets={exercise.sets}
+        suggestedSets={suggestedSets}
         setTypeOptions={setTypeOptions}
         setTypesById={setTypesById}
         weightUnit={weightUnit}

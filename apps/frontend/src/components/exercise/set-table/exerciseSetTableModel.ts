@@ -36,6 +36,10 @@ import type {
   DeleteHandler,
   DeleteResult,
 } from '@/components/clay/SwipeToDelete';
+import {
+  suggestedNumberValue,
+  type SuggestedSetValues,
+} from './exerciseSetSuggestion';
 
 /** A selectable set type — label resolved upstream (i18n or custom name). */
 export type SetTypeOption = {
@@ -70,6 +74,7 @@ export type TemplateSetTableProps = BaseTableProps & {
 type EditableExerciseSetTableProps = BaseTableProps & {
   readOnly?: false;
   sets: CurrentWorkoutSet[];
+  suggestedSets?: SuggestedSetValues[];
   onChangeSet: (setId: string, values: UpdateCurrentWorkoutSetInput) => void;
   onToggleSetDone: (setId: string) => boolean;
   onRemoveSet: (set: CurrentWorkoutSet) => DeleteResult;
@@ -106,6 +111,7 @@ export type SetCardField =
   | (BaseCardField & {
       kind: 'number';
       value: number | null;
+      suggestedValue?: number;
       input: 'keyboard' | 'wheel';
       allowDecimal: boolean;
       wheelConfig?: OptionalWheelPickerConfig;
@@ -215,6 +221,7 @@ type FieldBuildOptions = {
   weightUnit: WeightUnit;
   t: TFunction;
   onChange: (next: SetFieldValue[]) => void;
+  suggestion?: SuggestedSetValues;
 };
 
 function buildCardField(
@@ -222,7 +229,7 @@ function buildCardField(
   values: SetFieldValue[],
   options: FieldBuildOptions,
 ): SetCardField {
-  const { mode, readOnly, weightUnit, t, onChange } = options;
+  const { mode, readOnly, weightUnit, t, onChange, suggestion } = options;
   const unit = unitSuffix(field.unit, weightUnit);
   const base = {
     id: field.id,
@@ -243,6 +250,7 @@ function buildCardField(
       ...base,
       kind: 'number',
       value,
+      suggestedValue: suggestedNumberValue(field, suggestion),
       input: isBoundedNumber(field.config) ? 'wheel' : 'keyboard',
       allowDecimal: (field.config.decimals ?? 0) > 0,
       wheelConfig: isBoundedNumber(field.config)
@@ -359,6 +367,7 @@ export function buildWorkoutSetCards(
           readOnly: false,
           weightUnit: props.weightUnit,
           t,
+          suggestion: props.suggestedSets?.[index],
           onChange: next => props.onChangeSet(set.id, { fieldValues: next }),
         }),
       ),

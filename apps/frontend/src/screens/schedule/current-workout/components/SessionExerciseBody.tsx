@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
@@ -14,12 +14,10 @@ import {
   ExerciseSetTable,
   type SetTypeOption,
 } from '@/components/exercise/set-table';
-import type { LastPerformedSet } from './CurrentWorkout';
 import { requestRemoveSet } from './currentWorkoutConfirm';
 
 type SessionExerciseBodyProps = {
   exercise: CurrentWorkoutExercise;
-  lastPerformedSets?: LastPerformedSet[];
   weightUnit: WeightUnit;
   setTypeOptions: SetTypeOption[];
   setTypesById: Map<string, SetTypeWithFields>;
@@ -60,9 +58,19 @@ function fallbackTemplateExercise(
   };
 }
 
+function repeatSuggestedSets<T>(sets: T[], count: number): T[] {
+  if (sets.length >= count) {
+    return sets.slice(0, count);
+  }
+  const lastSet = sets[sets.length - 1];
+  if (!lastSet) {
+    return [];
+  }
+  return Array.from({ length: count }, (_, index) => sets[index] ?? lastSet);
+}
+
 export const SessionExerciseBody = memo(function SessionExerciseBody({
   exercise,
-  lastPerformedSets,
   weightUnit,
   setTypeOptions,
   setTypesById,
@@ -78,8 +86,11 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
     exerciseId: exercise.exerciseId,
     templateExercise:
       exercise.sourceTemplateExercise ?? fallbackTemplateExercise(exercise),
-    lastPerformedSets,
   });
+  const suggestedSets = useMemo(
+    () => repeatSuggestedSets(progression.suggestedSets, exercise.sets.length),
+    [exercise.sets.length, progression.suggestedSets],
+  );
 
   const handleChangeSet = useCallback(
     (setId: string, values: UpdateCurrentWorkoutSetInput) =>
@@ -117,6 +128,7 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
 
       <ExerciseSetTable
         sets={exercise.sets}
+        suggestedSets={suggestedSets}
         setTypeOptions={setTypeOptions}
         setTypesById={setTypesById}
         weightUnit={weightUnit}

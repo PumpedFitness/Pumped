@@ -1,10 +1,14 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
+import { getNumberValue, getRangeValue } from '@/data/local/sets/fieldValues';
+import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
+import { performedSets, workoutSessions } from '@/data/local/schema';
+import { useTableQuery } from '@/data/local/tableVersions';
 import {
-  getNumberValue,
-  getRangeValue,
-} from '@/data/local/sets/fieldValues';
+  getWorkoutSession,
+  listWorkoutSessions,
+} from '@/data/local/workouts/sessions';
 import type { SetTypeFieldDef } from '@/types/setType';
 import type {
   ProgressionMode,
@@ -22,6 +26,7 @@ export type ProgressionSuggestionResult = {
   mode: ProgressionMode;
   suggestedWeightKg?: number;
   suggestedReps?: number;
+  suggestedSets: ProgressionSuggestedSet[];
   displayText?: string;
   lastPerformedText?: string;
   reason?: string;
@@ -35,10 +40,11 @@ type LastPerformedSet = {
   reps?: number;
 };
 
+export type ProgressionSuggestedSet = LastPerformedSet;
+
 type ProgressionSuggestionParams = {
   exerciseId: string;
   templateExercise: WorkoutTemplateExercise;
-  lastPerformedSets?: LastPerformedSet[];
 };
 
 type TargetValues = {
@@ -166,6 +172,7 @@ function emptyResult(
 ): ProgressionSuggestionResult {
   return {
     mode,
+    suggestedSets: [],
     hasSuggestion: false,
     isLastPerformanceOnly: false,
     missingRequirement,
@@ -180,6 +187,15 @@ function buildManualResult(
 ): ProgressionSuggestionResult {
   const mode: ProgressionMode = 'manual';
   const manualTarget = firstManualTarget(templateExercise, fieldsBySetType);
+  const suggestedSets = templateExercise.sets
+    .map(set => {
+      const values = targetValuesForSet(set, fieldsBySetType);
+      return {
+        weightKg: values.weightKg,
+        reps: values.reps ?? values.repRange?.min ?? undefined,
+      };
+    })
+    .filter(set => set.weightKg != null || set.reps != null);
   const text = manualTarget
     ? targetText(manualTarget.weightKg, manualTarget.reps, weightUnit)
     : null;
@@ -193,6 +209,7 @@ function buildManualResult(
     mode,
     suggestedWeightKg: manualTarget?.weightKg,
     suggestedReps: manualTarget?.reps,
+    suggestedSets,
     displayText: t('progression.suggestion.suggested', { target: text }),
     hasSuggestion: true,
     isLastPerformanceOnly: false,
@@ -210,6 +227,7 @@ function buildNoneResult(
     .join(', ');
   return {
     mode: 'none',
+    suggestedSets: performedSets,
     displayText: lastText
       ? t('progression.suggestion.lastTime', { target: lastText })
       : t('progression.suggestion.noPreviousSets'),
@@ -264,6 +282,7 @@ function buildAutoResult(
     mode,
     suggestedWeightKg: suggested.weightKg,
     suggestedReps: suggested.reps,
+    suggestedSets: [suggested],
     displayText: t('progression.suggestion.suggested', { target: text }),
     hasSuggestion: true,
     isLastPerformanceOnly: false,
@@ -271,13 +290,39 @@ function buildAutoResult(
 }
 
 export function useProgressionSuggestion({
-  exerciseId: _exerciseId,
+  exerciseId,
   templateExercise,
-  lastPerformedSets,
 }: ProgressionSuggestionParams): ProgressionSuggestionResult {
   const { t } = useTranslation();
   const { profile } = useUserProfile();
   const { byId: setTypesById } = useSetTypeLibrary();
+  const lastPerformedSets = useTableQuery(
+    [workoutSessions, performedSets],
+    () => {
+      const session = listWorkoutSessions()
+        .filter(candidate => candidate.endedAt !== null)
+        .map(candidate => getWorkoutSession(candidate.id))
+        .find(
+          candidate =>
+            candidate?.sets.some(set => set.exerciseId === exerciseId) ?? false,
+        );
+
+      if (!session) {
+        return [];
+      }
+
+      return session.sets
+        .filter(set => set.exerciseId === exerciseId)
+        .map(set => {
+          const { weight, reps } = resolveSetWeightReps(set);
+          return {
+            weightKg: weight ?? undefined,
+            reps: reps || undefined,
+          };
+        });
+    },
+    [exerciseId],
+  );
 
   return useMemo(() => {
     const mode = templateExercise.progressionMode ?? 'auto';
@@ -288,7 +333,7 @@ export function useProgressionSuggestion({
         value.fields,
       ]),
     );
-    const performedSets = lastPerformedSets ?? [];
+    const previousSets = lastPerformedSets;
 
     if (mode === 'manual') {
       return buildManualResult(
@@ -300,14 +345,14 @@ export function useProgressionSuggestion({
     }
 
     if (mode === 'none') {
-      return buildNoneResult(t, performedSets, weightUnit);
+      return buildNoneResult(t, previousSets, weightUnit);
     }
 
     return buildAutoResult(
       t,
       templateExercise,
       fieldsBySetType,
-      performedSets,
+      previousSets,
       weightUnit,
     );
   }, [

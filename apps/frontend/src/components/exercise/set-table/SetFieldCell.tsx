@@ -70,15 +70,20 @@ function CellLabel({ label, required, satisfied, hasError }: CellLabelProps) {
 
 function CellShell({
   hasError,
+  hasSuggestion,
   children,
 }: {
   hasError: boolean;
+  hasSuggestion?: boolean;
   children: ReactNode;
 }) {
+  const backgroundClass = hasError
+    ? 'bg-danger/10'
+    : hasSuggestion
+    ? 'bg-foreground/5'
+    : '';
   return (
-    <View className={`flex-1 px-3 py-2.5 ${hasError ? 'bg-danger/10' : ''}`}>
-      {children}
-    </View>
+    <View className={`flex-1 px-3 py-2.5 ${backgroundClass}`}>{children}</View>
   );
 }
 
@@ -156,8 +161,9 @@ type NumberCellProps = {
 };
 
 function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
+  const hasSuggestion = field.value === null && field.suggestedValue != null;
   return (
-    <CellShell hasError={hasError}>
+    <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
       {label}
       <View className="flex-row items-baseline gap-1">
         {field.readOnly ? (
@@ -168,6 +174,7 @@ function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
           <EditableNumberInput
             accessibilityLabel={field.label}
             value={field.value}
+            suggestedValue={field.suggestedValue}
             allowDecimal={field.allowDecimal}
             hasError={hasError}
             onChange={field.onChange}
@@ -199,15 +206,17 @@ function ButtonFieldCell({
   label,
   accessibilityLabel,
   display,
+  isSuggested = false,
   hasError,
   onPress,
-}: ButtonCellProps) {
+}: ButtonCellProps & { isSuggested?: boolean }) {
   return (
-    <CellShell hasError={hasError}>
+    <CellShell hasError={hasError} hasSuggestion={isSuggested}>
       {label}
       <ValueButton
         accessibilityLabel={accessibilityLabel}
         display={display}
+        isSuggested={isSuggested}
         hasError={hasError}
         onPress={onPress}
       />
@@ -251,11 +260,18 @@ export function SetFieldCell({
   }
   if (field.input === 'wheel') {
     const wheelField = field;
+    const suggestedDisplay =
+      field.value === null && field.suggestedValue != null
+        ? withUnit(formatSetNumber(field.suggestedValue), field.unit)
+        : '';
     return (
       <ButtonFieldCell
         label={label}
         accessibilityLabel={field.label}
-        display={withUnit(formatSetNumber(field.value), field.unit)}
+        display={
+          suggestedDisplay || withUnit(formatSetNumber(field.value), field.unit)
+        }
+        isSuggested={suggestedDisplay.length > 0}
         hasError={hasError}
         onPress={field.readOnly ? undefined : () => onOpenWheel(wheelField)}
       />
