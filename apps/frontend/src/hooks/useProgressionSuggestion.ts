@@ -50,7 +50,6 @@ export function useProgressionSuggestion({
   );
 
   return useMemo(() => {
-    const mode = templateExercise.progressionMode ?? 'none';
     const weightUnit = profile.weightUnit;
     const fieldsBySetType = new Map(
       [...setTypesById.entries()].map(([setType, value]) => [
@@ -58,8 +57,13 @@ export function useProgressionSuggestion({
         value.fields,
       ]),
     );
+    const hasLinearProgression = templateExercise.sets.some(set => {
+      const goal = set.progressionGoal ??
+        setTypesById.get(set.setType)?.progressionGoal ?? { kind: 'none' };
+      return goal.kind === 'linear';
+    });
 
-    if (mode === 'none') {
+    if (!hasLinearProgression) {
       return buildNoneResult(
         t,
         templateExercise,

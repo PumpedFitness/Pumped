@@ -17,7 +17,6 @@ import type {
   SetTypeWithFields,
 } from '@/types/setType';
 import { displayWeight } from '@/utils/units';
-import { formatProgressionGoal } from '@/data/local/sets/progressionGoals';
 import {
   getBoolValue,
   getFieldValue,
@@ -41,6 +40,10 @@ import {
   suggestedNumberValue,
   type SuggestedSetValues,
 } from './exerciseSetSuggestion';
+import {
+  buildSetCardProgression,
+  type SetCardProgression,
+} from './setCardProgression';
 
 export type SetTypeOption = {
   value: SetTypeId;
@@ -150,6 +153,7 @@ export type SetCardModel = {
   setTypeColor: SetTypeColorName;
   fields: SetCardField[];
   rest: SetCardRest | null;
+  progression?: SetCardProgression;
   progressionBadgeText?: string;
   tone: 'default' | 'completed';
   isDone?: boolean;
@@ -302,9 +306,6 @@ export function buildTemplateSetCards(
 ): SetCardModel[] {
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
-    const progressionSummary = type
-      ? formatProgressionGoal(t, type.progressionGoal)
-      : null;
     return {
       key: set.id,
       index,
@@ -328,7 +329,9 @@ export function buildTemplateSetCards(
         onChange: value =>
           props.onChangeSet(index, { ...set, restSeconds: value }),
       },
-      progressionBadgeText: progressionSummary ?? undefined,
+      progression: buildSetCardProgression(set, type, progressionGoal =>
+        props.onChangeSet(index, { ...set, progressionGoal }),
+      ),
       tone: 'default',
       isCurrent: false,
       canRemove: props.sets.length > 1,
@@ -337,6 +340,7 @@ export function buildTemplateSetCards(
         props.onChangeSet(index, {
           ...set,
           setType,
+          progressionGoal: undefined,
           fieldValues: reconcileValuesForType(
             set.fieldValues,
             fieldsForType(props, setType),
@@ -378,6 +382,9 @@ export function buildWorkoutSetCards(
         readOnly: false,
         onChange: value => props.onChangeSet(set.id, { restSeconds: value }),
       },
+      progression: buildSetCardProgression(set, type, progressionGoal =>
+        props.onChangeSet(set.id, { progressionGoal }),
+      ),
       progressionBadgeText: suggestion
         ? t(
             suggestion.isLastPerformanceOnly

@@ -7,7 +7,7 @@ import type {
   WorkoutTemplate,
   WorkoutTemplateExercise,
 } from '@/types/workout';
-import type { SetTypeFieldDef } from '@/types/setType';
+import type { ProgressionGoal, SetTypeFieldDef } from '@/types/setType';
 import {
   isSetComplete,
   snapshotActualsFromTargets,
@@ -21,6 +21,7 @@ export type CurrentWorkoutSet = {
   position: number;
   setType: SetTypeId;
   restSeconds: number | null;
+  progressionGoal?: ProgressionGoal | null;
   fieldValues: SetFieldValue[];
   isDone: boolean;
   performedAt: number | null;
@@ -63,7 +64,10 @@ export function currentWorkoutElapsedMs(
 }
 
 export type UpdateCurrentWorkoutSetInput = Partial<
-  Pick<CurrentWorkoutSet, 'setType' | 'restSeconds' | 'fieldValues'>
+  Pick<
+    CurrentWorkoutSet,
+    'setType' | 'restSeconds' | 'progressionGoal' | 'fieldValues'
+  >
 >;
 
 export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
@@ -73,6 +77,7 @@ export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
     position,
     setType: 'NORMAL',
     restSeconds: null,
+    progressionGoal: null,
     fieldValues: [],
     isDone: false,
     performedAt: null,
@@ -120,6 +125,7 @@ export function createTemplateSnapshot(
         position: set.position,
         setType: set.setType,
         restSeconds: set.restSeconds,
+        progressionGoal: set.progressionGoal,
         fieldValues: snapshotActualsFromTargets(set.fieldValues),
         isDone: false,
         performedAt: null,
@@ -181,35 +187,39 @@ export function buildTemplateSyncInput(
     name: template.name,
     description: template.description,
     color: template.color,
-    exercises: uniqueBy(
-      workout.exercises,
-      exercise => exercise.exerciseId,
-    ).map(exercise => {
-      const sourceExercise = template.exercises.find(
-        candidate => candidate.exerciseId === exercise.exerciseId,
-      );
-      return {
-        exerciseId: exercise.exerciseId,
-        typeId: sourceExercise?.typeId ?? null,
-        // The live exercise carries a resolved color — emit it directly so a
-        // mid-session "update template" save preserves per-exercise colors.
-        color: exercise.color,
-        goal: exercise.goal,
-        notes: exercise.notes,
-        progressionMode: sourceExercise?.progressionMode,
-        sets: exercise.sets.map(set => {
-          const source = set.sourceTemplateSetId
-            ? sourceSets.get(set.sourceTemplateSetId)
-            : null;
-          return {
-            setType: set.setType,
-            restSeconds: source?.restSeconds ?? null,
-            fieldValues: source?.fieldValues ?? [],
-          };
-        }),
-      };
-    }),
+    exercises: uniqueBy(workout.exercises, exercise => exercise.exerciseId).map(
+      exercise => {
+        const sourceExercise = template.exercises.find(
+          candidate => candidate.exerciseId === exercise.exerciseId,
+        );
+        return {
+          exerciseId: exercise.exerciseId,
+          typeId: sourceExercise?.typeId ?? null,
+          // The live exercise carries a resolved color — emit it directly so a
+          // mid-session "update template" save preserves per-exercise colors.
+          color: exercise.color,
+          goal: exercise.goal,
+          notes: exercise.notes,
+          progressionMode: sourceExercise?.progressionMode,
+          sets: exercise.sets.map(set => {
+            const source = set.sourceTemplateSetId
+              ? sourceSets.get(set.sourceTemplateSetId)
+              : null;
+            return {
+              setType: set.setType,
+              restSeconds: source?.restSeconds ?? null,
+              progressionGoal: set.progressionGoal ?? source?.progressionGoal,
+              fieldValues: source?.fieldValues ?? [],
+            };
+          }),
+        };
+      },
+    ),
   };
+}
+
+function progressionFingerprint(goal: ProgressionGoal | null | undefined) {
+  return JSON.stringify(goal ?? null);
 }
 
 export function hasWorkoutStructureChanged(
@@ -231,7 +241,9 @@ export function hasWorkoutStructureChanged(
         return (
           !sourceSet ||
           set.sourceTemplateSetId !== sourceSet.id ||
-          set.setType !== sourceSet.setType
+          set.setType !== sourceSet.setType ||
+          progressionFingerprint(set.progressionGoal) !==
+            progressionFingerprint(sourceSet.progressionGoal)
         );
       })
     );

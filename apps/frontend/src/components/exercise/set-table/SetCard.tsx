@@ -23,12 +23,51 @@ type SetCardProps = {
 type SetCardHeaderProps = {
   card: SetCardModel;
   onOpenSetTypePicker: () => void;
+  onOpenProgressionPicker: () => void;
   onToggleDone: () => void;
 };
+
+type ProgressionPillsProps = {
+  card: SetCardModel;
+  onOpenProgressionPicker: () => void;
+};
+
+function ProgressionPills({
+  card,
+  onOpenProgressionPicker,
+}: ProgressionPillsProps) {
+  const { t } = useTranslation();
+  const progression = card.progression;
+
+  if (!progression) {
+    return null;
+  }
+  const goal = progression.goal;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={progression.readOnly}
+      className="h-8 min-w-0 max-w-[42%] flex-row items-center gap-1.5 rounded-full bg-surface-sunk px-2.5 active:bg-surface-card"
+      onPress={progression.readOnly ? undefined : onOpenProgressionPicker}
+    >
+      <Text
+        className="min-w-0 shrink text-[11px] font-bold text-muted"
+        numberOfLines={1}
+      >
+        {t(`progression.summary.${goal.kind}`)}
+      </Text>
+      {!progression.readOnly ? (
+        <ClayIcon name="chevronDown" size={11} color={colors.muted} />
+      ) : null}
+    </Pressable>
+  );
+}
 
 function SetCardHeader({
   card,
   onOpenSetTypePicker,
+  onOpenProgressionPicker,
   onToggleDone,
 }: SetCardHeaderProps) {
   const { t } = useTranslation();
@@ -78,7 +117,12 @@ function SetCardHeader({
           )}
         </Pressable>
 
-        {card.progressionBadgeText ? (
+        {card.progression ? (
+          <ProgressionPills
+            card={card}
+            onOpenProgressionPicker={onOpenProgressionPicker}
+          />
+        ) : card.progressionBadgeText ? (
           <View className="min-w-0 shrink rounded-full bg-surface-sunk px-2.5 py-1">
             <Text
               className="text-[10px] font-bold text-muted"
@@ -217,7 +261,8 @@ function buildSwipeActions(
 // host) an edit to one set re-renders only that set's card, not its siblings.
 export const SetCard = memo(function SetCard({ card }: SetCardProps) {
   const { t } = useTranslation();
-  const { openSetTypePicker, openWheel, openRange } = useSetSheetOpeners();
+  const { openSetTypePicker, openProgressionPicker, openWheel, openRange } =
+    useSetSheetOpeners();
   const [showValidation, setShowValidation] = useState(false);
 
   const restField: SetCardField | null = card.rest
@@ -265,6 +310,7 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
       <SetCardHeader
         card={card}
         onOpenSetTypePicker={() => openSetTypePicker(card)}
+        onOpenProgressionPicker={() => openProgressionPicker(card)}
         onToggleDone={attemptDone}
       />
       <SetCardFields

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,12 +7,10 @@ import { randomUUID } from 'expo-crypto';
 import { Input } from 'heroui-native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditableExercise } from '@/types/exercise';
-import type { ProgressionMode } from '@/types/workout';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
 import { PickerRow } from '@/components/exercise/PickerRow';
 import { LibraryPicker } from '@/components/forms/LibraryPicker';
-import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
 import {
   SetSheetHost,
   TemplateSetTable,
@@ -40,8 +38,6 @@ export function ExerciseSetEditorScreen({
 
   const [draft, setDraft] = useState<EditableExercise>(initialExercise);
   const [typePickerVisible, setTypePickerVisible] = useState(false);
-  const [progressionPickerVisible, setProgressionPickerVisible] =
-    useState(false);
 
   const initialFingerprint = useRef(JSON.stringify(initialExercise));
   const isDirty = JSON.stringify(draft) !== initialFingerprint.current;
@@ -59,16 +55,6 @@ export function ExerciseSetEditorScreen({
   const typeName = draft.typeId
     ? exerciseTypes.items.find(item => item.id === draft.typeId)?.name
     : undefined;
-  const progressionMode =
-    draft.progressionMode ?? 'none';
-  const progressionOptions: Array<{
-    value: Exclude<ProgressionMode, 'auto'>;
-    label: string;
-  }> = [
-    { value: 'none', label: t('progression.modes.none') },
-    { value: 'linear', label: t('progression.modes.linear') },
-  ];
-
   const setSets = (sets: EditableExercise['sets']) =>
     setDraft(current => ({ ...current, sets }));
 
@@ -119,16 +105,6 @@ export function ExerciseSetEditorScreen({
               onChangeText={goal => setDraft(current => ({ ...current, goal }))}
             />
 
-            <PickerRow
-              label={t('progression.title')}
-              value={t(`progression.modes.${progressionMode}`)}
-              placeholder={t('progression.modes.none')}
-              onPress={() => setProgressionPickerVisible(true)}
-            />
-            <Text className="t-caption -mt-3 text-muted">
-              {t(`progression.helper.${progressionMode}`)}
-            </Text>
-
             <TemplateSetTable
               sets={draft.sets}
               setTypeOptions={setTypeOptions}
@@ -163,16 +139,6 @@ export function ExerciseSetEditorScreen({
             setDraft(current => ({ ...current, typeId: ids[0] ?? null }))
           }
           onCreate={exerciseTypes.createType}
-        />
-        <OptionSelectorSheet
-          visible={progressionPickerVisible}
-          title={t('progression.title')}
-          value={progressionMode}
-          options={progressionOptions}
-          onClose={() => setProgressionPickerVisible(false)}
-          onChange={progressionMode =>
-            setDraft(current => ({ ...current, progressionMode }))
-          }
         />
       </SetSheetHost>
     </AppView>

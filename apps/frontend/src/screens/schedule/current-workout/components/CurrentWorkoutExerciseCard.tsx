@@ -63,8 +63,35 @@ function fallbackTemplateExercise(
       position: set.position,
       setType: set.setType,
       restSeconds: set.restSeconds,
+      progressionGoal: set.progressionGoal,
       fieldValues: [],
     })),
+  };
+}
+
+function effectiveTemplateExercise(
+  exercise: CurrentWorkoutExercise,
+): WorkoutTemplateExercise {
+  const source = exercise.sourceTemplateExercise;
+  if (!source) {
+    return fallbackTemplateExercise(exercise);
+  }
+  const sourceSets = new Map(source.sets.map(set => [set.id, set] as const));
+  return {
+    ...source,
+    sets: exercise.sets.map(set => {
+      const sourceSet = set.sourceTemplateSetId
+        ? sourceSets.get(set.sourceTemplateSetId)
+        : null;
+      return {
+        id: sourceSet?.id ?? set.sourceTemplateSetId ?? set.id,
+        position: set.position,
+        setType: set.setType,
+        restSeconds: sourceSet?.restSeconds ?? set.restSeconds,
+        progressionGoal: set.progressionGoal ?? sourceSet?.progressionGoal,
+        fieldValues: sourceSet?.fieldValues ?? [],
+      };
+    }),
   };
 }
 
@@ -97,8 +124,7 @@ export function CurrentWorkoutExerciseCard({
   const doneCount = exercise.sets.filter(set => set.isDone).length;
   const progression = useProgressionSuggestion({
     exerciseId: exercise.exerciseId,
-    templateExercise:
-      exercise.sourceTemplateExercise ?? fallbackTemplateExercise(exercise),
+    templateExercise: effectiveTemplateExercise(exercise),
   });
   const suggestedSets = useMemo(
     () => repeatSuggestedSets(progression.suggestedSets, exercise.sets.length),

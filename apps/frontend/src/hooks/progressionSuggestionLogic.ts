@@ -48,6 +48,16 @@ function fieldsForSet(
   return fieldsBySetType.get(set.setType) ?? [];
 }
 
+function progressionGoalForSet(
+  set: WorkoutTemplateSet,
+  setTypesById: Map<string, SetTypeWithFields>,
+): ProgressionGoal {
+  return (
+    set.progressionGoal ??
+    setTypesById.get(set.setType)?.progressionGoal ?? { kind: 'none' }
+  );
+}
+
 function roleValue(
   set: Pick<PerformedSet, 'setType' | 'fieldValues'>,
   setTypesById: Map<string, SetTypeWithFields>,
@@ -124,8 +134,8 @@ function performedSuggestionForSet(
             role === 'weight'
               ? formatWeight(value, weightUnit)
               : role === 'duration'
-              ? durationText(value)
-              : formatNumber(value),
+                ? durationText(value)
+                : formatNumber(value),
         });
         return suggestions;
       }, [])
@@ -204,8 +214,8 @@ function autoTargetForGoal(
     role === 'weight'
       ? formatWeight(value, weightUnit)
       : role === 'duration'
-      ? durationText(value)
-      : formatNumber(value);
+        ? durationText(value)
+        : formatNumber(value);
   const suggestion: ProgressionFieldSuggestion = {
     fieldId: field.id,
     fieldRole: role,
@@ -229,9 +239,7 @@ function buildAutoSetSuggestion(
   performed: PerformedSet[],
   weightUnit: WeightUnit,
 ): ProgressionSuggestedSet {
-  const goal = setTypesById.get(set.setType)?.progressionGoal ?? {
-    kind: 'none',
-  };
+  const goal = progressionGoalForSet(set, setTypesById);
   const currentFields = fieldsForSet(set, fieldsBySetType);
   if (
     goal.kind === 'none' ||
@@ -311,8 +319,8 @@ export function buildLinearResult(
     kind: hasSuggestion
       ? 'suggestion'
       : fallback?.lastPerformedText
-      ? 'last_performed'
-      : 'none',
+        ? 'last_performed'
+        : 'none',
     fieldSuggestions: firstSuggestion?.fieldSuggestions ?? [],
     suggestedWeightKg: firstSuggestion?.weightKg,
     suggestedReps: firstSuggestion?.reps,

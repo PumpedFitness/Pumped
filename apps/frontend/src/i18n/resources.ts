@@ -345,7 +345,7 @@ export const resources = {
         },
         summary: {
           none: 'No progression',
-          linear: 'Linear +{{increment}}',
+          linear: 'Linear',
         },
         suggestion: {
           suggested: 'Suggested: {{target}}',
@@ -495,6 +495,9 @@ export const resources = {
         swipeFinish: 'Finish',
         swipeUndo: 'Undo',
         setTypePickerTitle: 'Set type',
+        progressionTypePickerTitle: 'Progression',
+        progressionPopupText:
+          'Choose how this set progresses, then configure the field and increment.',
         progressionReadOnly: 'Progression: {{goal}}',
         hidePrescriptions: 'Hide prescriptions',
         wheel: {
@@ -1228,7 +1231,7 @@ export const resources = {
           },
           summary: {
             none: 'Keine Progression',
-            linear: 'Linear +{{increment}}',
+            linear: 'Linear',
           },
         },
         suggestion: {
@@ -1382,6 +1385,9 @@ export const resources = {
         swipeFinish: 'Fertig',
         swipeUndo: 'Rückgängig',
         setTypePickerTitle: 'Satztyp',
+        progressionTypePickerTitle: 'Progression',
+        progressionPopupText:
+          'Wähle, wie dieser Satz progressiert, und stelle Feld und Steigerung ein.',
         progressionReadOnly: 'Progression: {{goal}}',
         hidePrescriptions: 'Vorgaben ausblenden',
         wheel: {

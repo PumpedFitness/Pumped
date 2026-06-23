@@ -1,4 +1,3 @@
-import type { TFunction } from 'i18next';
 import type {
   LinearProgressionGoal,
   ProgressionGoal,
@@ -123,18 +122,4 @@ export function formatNumber(value: number): string {
     .toFixed(2)
     .replace(/\.0+$/, '')
     .replace(/(\.\d*[1-9])0$/, '$1');
-}
-
-export function formatProgressionGoal(
-  t: TFunction,
-  goal: ProgressionGoal,
-): string {
-  switch (goal.kind) {
-    case 'linear':
-      return t('progression.summary.linear', {
-        increment: formatNumber(goal.increment),
-      });
-    case 'none':
-      return t('progression.summary.none');
-  }
 }

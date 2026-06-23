@@ -1,4 +1,5 @@
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { ProgressionGoal } from '@/types/setType';
 
 /** Min–max span for a `range` field's target (e.g. reps 8–12). */
 export type SetFieldRange = {
@@ -24,6 +25,7 @@ export type WorkoutTemplateSet = {
   position: number;
   setType: SetTypeId;
   restSeconds: number | null;
+  progressionGoal?: ProgressionGoal | null;
   fieldValues: SetFieldValue[];
 };
 
