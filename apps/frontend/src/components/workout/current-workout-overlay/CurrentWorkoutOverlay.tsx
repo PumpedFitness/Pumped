@@ -203,6 +203,29 @@ export function CurrentWorkoutOverlay({
     return null;
   }
 
+  const progressButton = (
+    <WorkoutProgressButton
+      collapsed={collapsed}
+      percentage={progress.percentage}
+      onExpand={() => setCollapsed(false)}
+      onOpenWorkout={onOpenWorkout}
+    />
+  );
+  const details = (
+    <WorkoutDetails
+      workoutName={workoutName}
+      completedSets={progress.completedSets}
+      totalSets={progress.totalSets}
+      elapsedTime={elapsedTime}
+      side={side}
+      currentExerciseName={currentExerciseName}
+      onOpenWorkout={onOpenWorkout}
+    />
+  );
+  const collapseButton = (
+    <CollapseButton side={side} onCollapse={() => setCollapsed(true)} />
+  );
+
   return (
     <Portal name={PORTAL_NAME}>
       <View
@@ -234,34 +257,31 @@ export function CurrentWorkoutOverlay({
             ]}
           >
             <View
-              // Mirror the row when docked left so the progress ring always
-              // hugs the outer screen edge (and stays visible when collapsed).
-              style={{ flexDirection: side === 1 ? 'row-reverse' : 'row' }}
-              className={`flex-1 items-center overflow-hidden bg-moss border border-border-on-moss ${
-                side === 1
-                  ? 'rounded-r-[30px] border-l-0'
-                  : 'rounded-l-[30px] border-r-0'
-              }`}
+              style={{
+                borderColor: colors.lineOnMoss,
+                borderWidth: 1,
+                borderLeftWidth: side === 1 ? 0 : 1,
+                borderRightWidth: side === 1 ? 1 : 0,
+                borderTopLeftRadius: side === 1 ? 0 : 30,
+                borderBottomLeftRadius: side === 1 ? 0 : 30,
+                borderTopRightRadius: side === 1 ? 30 : 0,
+                borderBottomRightRadius: side === 1 ? 30 : 0,
+              }}
+              className="flex-1 flex-row items-center overflow-hidden bg-moss"
             >
-              <WorkoutProgressButton
-                collapsed={collapsed}
-                percentage={progress.percentage}
-                onExpand={() => setCollapsed(false)}
-                onOpenWorkout={onOpenWorkout}
-              />
-              <WorkoutDetails
-                workoutName={workoutName}
-                completedSets={progress.completedSets}
-                totalSets={progress.totalSets}
-                elapsedTime={elapsedTime}
-                side={side}
-                currentExerciseName={currentExerciseName}
-                onOpenWorkout={onOpenWorkout}
-              />
-              <CollapseButton
-                side={side}
-                onCollapse={() => setCollapsed(true)}
-              />
+              {side === 1 ? (
+                <>
+                  {collapseButton}
+                  {details}
+                  {progressButton}
+                </>
+              ) : (
+                <>
+                  {progressButton}
+                  {details}
+                  {collapseButton}
+                </>
+              )}
             </View>
           </Animated.View>
         </GestureDetector>
