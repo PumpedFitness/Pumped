@@ -80,8 +80,8 @@ function CellShell({
   const backgroundClass = hasError
     ? 'bg-danger/10'
     : hasSuggestion
-    ? 'bg-foreground/5'
-    : '';
+      ? 'bg-foreground/5'
+      : '';
   return (
     <View className={`flex-1 px-3 py-2.5 ${backgroundClass}`}>{children}</View>
   );
@@ -224,6 +224,72 @@ function ButtonFieldCell({
   );
 }
 
+type WheelNumberCellProps = {
+  field: SetCardNumberField;
+  label: ReactNode;
+  hasError: boolean;
+  onPress?: () => void;
+};
+
+function WheelNumberFieldCell({
+  field,
+  label,
+  hasError,
+  onPress,
+}: WheelNumberCellProps) {
+  const hasSuggestion = field.value === null && field.suggestedValue != null;
+  const display = formatSetNumber(field.value);
+  const placeholder = hasSuggestion
+    ? formatSetNumber(field.suggestedValue ?? null)
+    : '–';
+  const valueInput = (
+    <TextInput
+      accessibilityLabel={field.label}
+      className={`min-w-12 text-[17px] font-bold tabular-nums ${
+        hasError
+          ? 'text-danger'
+          : display
+            ? 'text-foreground'
+            : 'text-muted'
+      }`}
+      editable={false}
+      placeholder={placeholder}
+      placeholderTextColor={hasError ? colors.danger : colors.muted}
+      pointerEvents="none"
+      value={display}
+    />
+  );
+
+  return (
+    <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
+      {label}
+      <View className="flex-row items-baseline gap-1">
+        {onPress ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${field.label}: ${display || placeholder}`}
+            hitSlop={6}
+            onPress={onPress}
+          >
+            {valueInput}
+          </Pressable>
+        ) : (
+          valueInput
+        )}
+        {field.unit ? (
+          <Text
+            className={`text-[11px] font-semibold ${
+              hasError ? 'text-danger' : 'text-muted'
+            }`}
+          >
+            {field.unit}
+          </Text>
+        ) : null}
+      </View>
+    </CellShell>
+  );
+}
+
 export function SetFieldCell({
   field,
   hasError,
@@ -260,18 +326,10 @@ export function SetFieldCell({
   }
   if (field.input === 'wheel') {
     const wheelField = field;
-    const suggestedDisplay =
-      field.value === null && field.suggestedValue != null
-        ? withUnit(formatSetNumber(field.suggestedValue), field.unit)
-        : '';
     return (
-      <ButtonFieldCell
+      <WheelNumberFieldCell
+        field={field}
         label={label}
-        accessibilityLabel={field.label}
-        display={
-          suggestedDisplay || withUnit(formatSetNumber(field.value), field.unit)
-        }
-        isSuggested={suggestedDisplay.length > 0}
         hasError={hasError}
         onPress={field.readOnly ? undefined : () => onOpenWheel(wheelField)}
       />
