@@ -99,7 +99,7 @@ function WorkoutDetails({
       accessibilityLabel={t('currentWorkout.overlay.openA11y')}
       onPress={onOpenWorkout}
       className={`flex-1 h-full justify-center active:opacity-[0.72] ${
-        side === 1 ? 'pr-[6px]' : 'pl-[6px]'
+        side === 1 ? 'pl-[10px] pr-[6px]' : 'pl-[6px]'
       }`}
     >
       <View className="flex-row items-center gap-[7px]">
