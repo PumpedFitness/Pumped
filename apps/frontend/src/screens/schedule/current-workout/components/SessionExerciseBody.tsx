@@ -122,10 +122,6 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
 
   return (
     <>
-      {progression.displayText ? (
-        <Text className="t-caption text-muted">{progression.displayText}</Text>
-      ) : null}
-
       <ExerciseSetTable
         sets={exercise.sets}
         suggestedSets={suggestedSets}
