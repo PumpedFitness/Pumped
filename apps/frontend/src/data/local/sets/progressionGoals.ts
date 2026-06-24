@@ -33,9 +33,25 @@ export function progressionField(
   return choices.find(field => field.id === goal.fieldId) ?? choices[0];
 }
 
+function decimalsForField(field: RoleField | undefined): number {
+  return Math.max(0, field?.config.decimals ?? 0);
+}
+
+function normalizeIncrementForField(
+  increment: number,
+  field: RoleField | undefined,
+): number {
+  const decimals = decimalsForField(field);
+  if (decimals === 0) {
+    return Math.round(increment);
+  }
+  const factor = 10 ** decimals;
+  return Math.round(increment * factor) / factor;
+}
+
 function defaultIncrementForField(field: RoleField | undefined): number {
   if (field?.unit === 'amount' && isNumericField(field)) {
-    return 2.5;
+    return normalizeIncrementForField(2.5, field);
   }
   if (field?.unit === 'seconds' && isNumericField(field)) {
     return 5;
@@ -73,7 +89,7 @@ export function normalizeProgressionGoal(
   return {
     kind: 'linear',
     fieldId: field.id,
-    increment,
+    increment: normalizeIncrementForField(increment, field),
   };
 }
 

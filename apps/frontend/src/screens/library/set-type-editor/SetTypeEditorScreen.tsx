@@ -82,8 +82,25 @@ function persistDraft(
 
 function fieldSubtitle(t: TFunction, field: DraftField): string {
   const parts: string[] = [t(`setField.dataType.${field.dataType}`)];
+  if (field.dataType === 'number' || field.dataType === 'range') {
+    parts.push(
+      field.config.decimals === 0
+        ? t('setTypeEditor.fieldSheet.numberFormat.integer', {
+            defaultValue: 'Integer',
+          })
+        : t('setTypeEditor.fieldSheet.numberFormat.decimal', {
+            defaultValue: 'Comma number',
+          }),
+    );
+  }
   if (field.unit) {
-    parts.push(t(`setField.unit.${field.unit}`));
+    parts.push(
+      field.unit === 'amount'
+        ? t('setTypeEditor.fieldSheet.unit.weight', {
+            defaultValue: 'Weight (settings)',
+          })
+        : t(`setField.unit.${field.unit}`),
+    );
   }
   if (field.config.required) {
     parts.push(t('setTypeEditor.fieldSheet.requiredLabel'));

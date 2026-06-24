@@ -20,22 +20,60 @@ function parseInputNumber(text: string, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
 }
 
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
+function selectedProgressionField(
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
+  progression: NonNullable<SetCardModel['progression']>,
+) {
+  return progression.fields.find(item => item.id === goal.fieldId);
 }
 
-function parseInputText(text: string): string {
+function decimalsForGoal(
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
+  progression: NonNullable<SetCardModel['progression']>,
+): number {
+  return Math.max(
+    0,
+    selectedProgressionField(goal, progression)?.config.decimals ?? 0,
+  );
+}
+
+function roundToDecimals(value: number, decimals: number): number {
+  if (decimals === 0) {
+    return Math.round(value);
+  }
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+function parseInputText(text: string, allowDecimal: boolean): string {
   const normalizedText = text.replaceAll(',', '.');
-  const firstSeparator = normalizedText.indexOf('.');
+  const numericText = normalizedText.replace(/[^\d.]/g, '');
+  if (!allowDecimal) {
+    return numericText.replaceAll('.', '');
+  }
+  const firstSeparator = numericText.indexOf('.');
 
   if (firstSeparator === -1) {
-    return normalizedText;
+    return numericText;
   }
 
   return (
-    normalizedText.slice(0, firstSeparator + 1) +
-    normalizedText.slice(firstSeparator + 1).replaceAll('.', '')
+    numericText.slice(0, firstSeparator + 1) +
+    numericText.slice(firstSeparator + 1).replaceAll('.', '')
   );
+}
+
+function normalizeGoalForSelectedField(
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
+  progression: NonNullable<SetCardModel['progression']>,
+): Extract<ProgressionGoal, { kind: 'linear' }> {
+  return {
+    ...goal,
+    increment: roundToDecimals(
+      goal.increment,
+      decimalsForGoal(goal, progression),
+    ),
+  };
 }
 
 function incrementSuffix(
@@ -147,7 +185,14 @@ function FieldPills({ goal, progression, onChange }: FieldPillsProps) {
                   ? 'border-accent bg-accent-soft'
                   : 'border-border-soft bg-background'
               }`}
-              onPress={() => onChange({ ...goal, fieldId: field.id })}
+              onPress={() =>
+                onChange(
+                  normalizeGoalForSelectedField(
+                    { ...goal, fieldId: field.id },
+                    progression,
+                  ),
+                )
+              }
             >
               <Text
                 className={`text-[13px] font-semibold ${
@@ -174,16 +219,28 @@ function IncrementInput({ goal, progression, onChange }: IncrementInputProps) {
   const { t } = useTranslation();
   const [text, setText] = useState(formatNumber(goal.increment));
   const localIncrementRef = useRef(goal.increment);
+  const decimals = decimalsForGoal(goal, progression);
+  const allowDecimal = decimals > 0;
 
   useEffect(() => {
-    if (goal.increment !== localIncrementRef.current) {
-      localIncrementRef.current = goal.increment;
-      setText(formatNumber(goal.increment));
+    const normalizedIncrement = roundToDecimals(goal.increment, decimals);
+    if (normalizedIncrement !== goal.increment) {
+      localIncrementRef.current = normalizedIncrement;
+      onChange({ ...goal, increment: normalizedIncrement });
+      setText(formatNumber(normalizedIncrement));
+      return;
     }
-  }, [goal.increment]);
+    if (normalizedIncrement !== localIncrementRef.current) {
+      localIncrementRef.current = normalizedIncrement;
+      setText(formatNumber(normalizedIncrement));
+    }
+  }, [decimals, goal, onChange]);
 
   const updateIncrement = (input: string, format: boolean) => {
-    const parsed = roundToTwoDecimals(parseInputNumber(input, goal.increment));
+    const parsed = roundToDecimals(
+      parseInputNumber(input, goal.increment),
+      decimals,
+    );
     localIncrementRef.current = parsed;
     onChange({ ...goal, increment: parsed });
     if (format) {
@@ -199,17 +256,20 @@ function IncrementInput({ goal, progression, onChange }: IncrementInputProps) {
       <View className="flex-row items-center gap-2">
         <Input
           className="h-[46px] flex-1 rounded-[14px] border-border-hairline bg-surface-sunk px-3 text-foreground"
-          keyboardType="decimal-pad"
+          keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
           value={text}
           onChangeText={uiText => {
-            const nextText = parseInputText(uiText);
+            const nextText = parseInputText(uiText, allowDecimal);
             setText(nextText);
             if (nextText.trim()) {
               updateIncrement(nextText, false);
             }
           }}
           onEndEditing={event => {
-            updateIncrement(parseInputText(event.nativeEvent.text), true);
+            updateIncrement(
+              parseInputText(event.nativeEvent.text, allowDecimal),
+              true,
+            );
           }}
         />
         {incrementSuffix(goal, progression) ? (

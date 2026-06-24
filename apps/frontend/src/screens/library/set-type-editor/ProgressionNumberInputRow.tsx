@@ -6,6 +6,7 @@ import { formatNumber } from '@/data/local/sets/progressionGoals';
 type ProgressionNumberInputRowProps = {
   label: string;
   value: number;
+  decimals?: number;
   suffix?: string;
   onChange: (value: number) => void;
 };
@@ -15,35 +16,46 @@ function parseInputNumber(text: string, fallback: number): number {
   return Number.isFinite(value) ? value : fallback;
 }
 
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
+function roundToDecimals(value: number, decimals: number): number {
+  if (decimals === 0) {
+    return Math.round(value);
+  }
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
 }
 
-function parseInputText(text: string): string {
+function parseInputText(text: string, allowDecimal: boolean): string {
   const normalizedText = text.replaceAll(',', '.');
-  const firstSeparator = normalizedText.indexOf('.');
+  const numericText = normalizedText.replace(/[^\d.]/g, '');
+  if (!allowDecimal) {
+    return numericText.replaceAll('.', '');
+  }
+  const firstSeparator = numericText.indexOf('.');
 
   if (firstSeparator === -1) {
-    return normalizedText;
+    return numericText;
   }
 
   return (
-    normalizedText.slice(0, firstSeparator + 1) +
-    normalizedText.slice(firstSeparator + 1).replaceAll('.', '')
+    numericText.slice(0, firstSeparator + 1) +
+    numericText.slice(firstSeparator + 1).replaceAll('.', '')
   );
 }
 
 export function ProgressionNumberInputRow({
   label,
   value,
+  decimals = 2,
   suffix,
   onChange,
 }: ProgressionNumberInputRowProps) {
   const [text, setText] = useState<string>(formatNumber(value));
+  const safeDecimals = Math.max(0, decimals);
+  const allowDecimal = safeDecimals > 0;
 
   useEffect(() => {
-    setText(formatNumber(value));
-  }, [value]);
+    setText(formatNumber(roundToDecimals(value, safeDecimals)));
+  }, [safeDecimals, value]);
 
   return (
     <View className="flex-1 gap-1.5">
@@ -51,15 +63,16 @@ export function ProgressionNumberInputRow({
       <View className="flex-row items-center gap-2">
         <Input
           className="h-[46px] flex-1 rounded-[14px] border-border-hairline bg-surface-sunk px-3 text-foreground"
-          keyboardType="decimal-pad"
+          keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
           value={text}
-          onChangeText={uiText => setText(parseInputText(uiText))}
+          onChangeText={uiText => setText(parseInputText(uiText, allowDecimal))}
           onEndEditing={event => {
-            const parsed = roundToTwoDecimals(
+            const parsed = roundToDecimals(
               parseInputNumber(
-              parseInputText(event.nativeEvent.text),
-              value,
+                parseInputText(event.nativeEvent.text, allowDecimal),
+                value,
               ),
+              safeDecimals,
             );
             onChange(parsed);
             setText(formatNumber(parsed));

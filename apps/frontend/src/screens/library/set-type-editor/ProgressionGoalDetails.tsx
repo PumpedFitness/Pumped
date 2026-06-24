@@ -50,6 +50,39 @@ function selectedFieldId(
   return goal.fieldId ?? defaultLinearProgressionFieldId(fields);
 }
 
+function selectedField(
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
+  fields: ProgressionDraftField[],
+): ProgressionDraftField | undefined {
+  const fieldId = selectedFieldId(goal, fields);
+  return fields.find(field => field.id === fieldId);
+}
+
+function decimalsForField(field: ProgressionDraftField | undefined): number {
+  return Math.max(0, field?.config.decimals ?? 0);
+}
+
+function roundToDecimals(value: number, decimals: number): number {
+  if (decimals === 0) {
+    return Math.round(value);
+  }
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+function normalizeGoalForSelectedField(
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
+  fields: ProgressionDraftField[],
+): Extract<ProgressionGoal, { kind: 'linear' }> {
+  return {
+    ...goal,
+    increment: roundToDecimals(
+      goal.increment,
+      decimalsForField(selectedField(goal, fields)),
+    ),
+  };
+}
+
 type FieldSelectorProps = {
   goal: Extract<ProgressionGoal, { kind: 'linear' }>;
   fields: ProgressionDraftField[];
@@ -79,7 +112,14 @@ function FieldSelector({ goal, fields, onChange }: FieldSelectorProps) {
                 ? 'border-accent bg-accent-soft'
                 : 'border-border-soft bg-background'
             }`}
-            onPress={() => onChange({ ...goal, fieldId: field.id })}
+            onPress={() =>
+              onChange(
+                normalizeGoalForSelectedField(
+                  { ...goal, fieldId: field.id },
+                  fields,
+                ),
+              )
+            }
           >
             <Text
               className={`text-[13px] font-semibold ${
@@ -121,12 +161,15 @@ export function ProgressionGoalDetails({
   if (goal.kind !== 'linear') {
     return null;
   }
+  const field = selectedField(goal, fields);
+  const decimals = decimalsForField(field);
   return (
     <View className="gap-3 rounded-[16px] bg-surface-card p-3">
       <FieldSelector goal={goal} fields={fields} onChange={onChange} />
       <ProgressionNumberInputRow
         label={t('setTypeEditor.progression.increase')}
         value={goal.increment}
+        decimals={decimals}
         suffix={incrementSuffix(goal, fields)}
         onChange={increment => onChange({ ...goal, increment })}
       />
