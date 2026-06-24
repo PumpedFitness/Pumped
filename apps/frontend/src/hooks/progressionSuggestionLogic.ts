@@ -3,6 +3,7 @@ import { getNumberValue } from '@/data/local/sets/fieldValues';
 import {
   formatNumber,
   isProgressionGoalCompatible,
+  normalizeProgressionGoal,
   progressionField,
 } from '@/data/local/sets/progressionGoals';
 import type {
@@ -97,10 +98,12 @@ function performedSuggestionForSet(
   const previous = performed
     .slice()
     .reverse()
-    .find(candidate =>
-      fields.some(
-        field => getNumberValue(candidate.fieldValues, field.id) != null,
-      ),
+    .find(
+      candidate =>
+        candidate.setType === set.setType &&
+        fields.some(
+          field => getNumberValue(candidate.fieldValues, field.id) != null,
+        ),
     );
   const fieldSuggestions = previous
     ? fields.reduce<ProgressionFieldSuggestion[]>((suggestions, field) => {
@@ -125,46 +128,6 @@ function performedSuggestionForSet(
     displayText: text ?? undefined,
     lastPerformedText: text ?? undefined,
     isLastPerformanceOnly: true,
-  };
-}
-
-export function buildNoneResult(
-  t: TFunction,
-  templateExercise: WorkoutTemplateExercise,
-  performed: PerformedSet[],
-  setTypesById: Map<string, SetTypeWithFields>,
-  fieldsBySetType: Map<string, SetTypeFieldDef[]>,
-  weightUnit: WeightUnit,
-): ProgressionSuggestionResult {
-  const suggestedSets = templateExercise.sets.map(set => {
-    const suggestion = performedSuggestionForSet(
-      set,
-      performed,
-      fieldsBySetType,
-      weightUnit,
-    );
-    return {
-      ...suggestion,
-      displayText: suggestion.displayText
-        ? t('progression.suggestion.lastTime', {
-            target: suggestion.displayText,
-          })
-        : t('progression.suggestion.noPreviousSets'),
-    };
-  });
-  const firstSuggestion = suggestedSets.find(set => set.lastPerformedText);
-  const text = firstSuggestion?.lastPerformedText ?? null;
-  return {
-    kind: text ? 'last_performed' : 'none',
-    fieldSuggestions: firstSuggestion?.fieldSuggestions ?? [],
-    suggestedSets,
-    displayText: text
-      ? t('progression.suggestion.lastTime', { target: text })
-      : t('progression.suggestion.noPreviousSets'),
-    lastPerformedText: text ?? undefined,
-    hasSuggestion: text != null,
-    isLastPerformanceOnly: true,
-    missingRequirement: text ? undefined : 'last_performance',
   };
 }
 
@@ -229,8 +192,11 @@ function buildAutoSetSuggestion(
   performed: PerformedSet[],
   weightUnit: WeightUnit,
 ): ProgressionSuggestedSet {
-  const goal = progressionGoalForSet(set, setTypesById);
   const currentFields = fieldsForSet(set, fieldsBySetType);
+  const goal = normalizeProgressionGoal(
+    progressionGoalForSet(set, setTypesById),
+    currentFields,
+  );
   if (
     goal.kind === 'none' ||
     !isProgressionGoalCompatible(goal, currentFields)
@@ -278,28 +244,86 @@ function buildAutoSetSuggestion(
   };
 }
 
-export function buildLinearResult(
-  t: TFunction,
-  templateExercise: WorkoutTemplateExercise,
-  setTypesById: Map<string, SetTypeWithFields>,
-  fieldsBySetType: Map<string, SetTypeFieldDef[]>,
-  performed: PerformedSet[],
-  weightUnit: WeightUnit,
-): ProgressionSuggestionResult {
-  const suggestedSets = templateExercise.sets.map(set =>
-    buildAutoSetSuggestion(
-      t,
+type ProgressionSuggestionContext = {
+  t: TFunction;
+  templateExercise: WorkoutTemplateExercise;
+  setTypesById: Map<string, SetTypeWithFields>;
+  fieldsBySetType: Map<string, SetTypeFieldDef[]>;
+  performed: PerformedSet[];
+  weightUnit: WeightUnit;
+};
+
+type SetProgressionSuggestionContext = Omit<
+  ProgressionSuggestionContext,
+  'templateExercise'
+> & {
+  set: WorkoutTemplateSet;
+};
+
+type SetProgressionSuggestionStrategy = (
+  context: SetProgressionSuggestionContext,
+) => ProgressionSuggestedSet;
+
+const setProgressionSuggestionStrategies: Record<
+  ProgressionGoal['kind'],
+  SetProgressionSuggestionStrategy
+> = {
+  none: ({ t, set, fieldsBySetType, performed, weightUnit }) => {
+    const performedSuggestion = performedSuggestionForSet(
       set,
-      setTypesById,
-      fieldsBySetType,
       performed,
+      fieldsBySetType,
       weightUnit,
+    );
+    return lastOnlySuggestion(
+      t,
+      performedSuggestion.lastPerformedText ?? null,
+      performedSuggestion.fieldSuggestions,
+    );
+  },
+  linear: context =>
+    buildAutoSetSuggestion(
+      context.t,
+      context.set,
+      context.setTypesById,
+      context.fieldsBySetType,
+      context.performed,
+      context.weightUnit,
     ),
+};
+
+function normalizedProgressionGoalForSet({
+  set,
+  setTypesById,
+  fieldsBySetType,
+}: Pick<
+  SetProgressionSuggestionContext,
+  'set' | 'setTypesById' | 'fieldsBySetType'
+>): ProgressionGoal {
+  return normalizeProgressionGoal(
+    progressionGoalForSet(set, setTypesById),
+    fieldsForSet(set, fieldsBySetType),
+  );
+}
+
+function buildSetProgressionSuggestion(
+  context: SetProgressionSuggestionContext,
+): ProgressionSuggestedSet {
+  const goal = normalizedProgressionGoalForSet(context);
+  return setProgressionSuggestionStrategies[goal.kind](context);
+}
+
+export function buildProgressionSuggestionResult(
+  context: ProgressionSuggestionContext,
+): ProgressionSuggestionResult {
+  const suggestedSets = context.templateExercise.sets.map(set =>
+    buildSetProgressionSuggestion({ ...context, set }),
   );
   const firstSuggestion = suggestedSets.find(
     set => !set.isLastPerformanceOnly && set.fieldSuggestions?.length,
   );
-  const fallback = suggestedSets[0];
+  const fallback =
+    suggestedSets.find(set => set.lastPerformedText) ?? suggestedSets[0];
   const hasSuggestion = firstSuggestion != null;
   return {
     kind: hasSuggestion

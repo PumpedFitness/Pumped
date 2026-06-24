@@ -1,9 +1,9 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import {
-  DEFAULT_LINEAR_INCREMENT,
   isProgressionGoalCompatible,
+  progressionGoalOptions,
+  type ProgressionGoalOption,
 } from '@/data/local/sets/progressionGoals';
 import type { ProgressionGoal } from '@/types/setType';
 import type { DraftField } from './draft';
@@ -19,21 +19,14 @@ type ProgressionGoalEditorProps = {
   onChange: (goal: ProgressionGoal) => void;
 };
 
-type GoalKind = ProgressionGoal['kind'];
-
-type GoalOption = {
-  kind: GoalKind;
-  label: string;
-  goal: ProgressionGoal;
-};
-
 type GoalOptionRowProps = {
-  option: GoalOption;
+  option: ProgressionGoalOption;
   selected: boolean;
   onPress: () => void;
 };
 
 function GoalOptionRow({ option, selected, onPress }: GoalOptionRowProps) {
+  const { t } = useTranslation();
   return (
     <Pressable
       accessibilityRole="radio"
@@ -48,25 +41,10 @@ function GoalOptionRow({ option, selected, onPress }: GoalOptionRowProps) {
       <Text
         className={`t-label ${selected ? 'text-accent' : 'text-foreground'}`}
       >
-        {option.label}
+        {t(option.labelKey)}
       </Text>
     </Pressable>
   );
-}
-
-function goalOptions(t: TFunction): GoalOption[] {
-  return [
-    {
-      kind: 'none',
-      label: t('progression.modes.none'),
-      goal: { kind: 'none' },
-    },
-    {
-      kind: 'linear',
-      label: t('progression.modes.linear'),
-      goal: { kind: 'linear', increment: DEFAULT_LINEAR_INCREMENT },
-    },
-  ];
 }
 
 export function ProgressionGoalEditor({
@@ -79,9 +57,7 @@ export function ProgressionGoalEditor({
     ...field,
     id: field.id ?? field.key,
   }));
-  const options = goalOptions(t).filter(option =>
-    isProgressionGoalCompatible(option.goal, progressionFields),
-  );
+  const options = progressionGoalOptions(progressionFields);
   const selectedKind = isProgressionGoalCompatible(value, progressionFields)
     ? value.kind
     : 'none';

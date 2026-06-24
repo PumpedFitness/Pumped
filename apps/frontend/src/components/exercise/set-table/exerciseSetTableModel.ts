@@ -251,7 +251,7 @@ export function buildCardField(
       ...base,
       kind: 'number',
       value,
-      suggestedValue: suggestedNumberValue(field, suggestion),
+      suggestedValue: suggestedNumberValue(field, suggestion, weightUnit),
       input: isBoundedNumber(field.config) ? 'wheel' : 'keyboard',
       allowDecimal: (field.config.decimals ?? 0) > 0,
       wheelConfig: isBoundedNumber(field.config)

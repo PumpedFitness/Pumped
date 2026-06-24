@@ -5,6 +5,25 @@ type RoleField = Pick<
   'id' | 'name' | 'dataType' | 'unit' | 'config'
 >;
 
+export type ProgressionGoalLabelKey =
+  | 'progression.modes.none'
+  | 'progression.modes.linear';
+
+export type GoalDefinition = {
+  kind: ProgressionGoal['kind'];
+  labelKey: ProgressionGoalLabelKey;
+  isAvailable: (fields: RoleField[]) => boolean;
+  createDefaultGoal: (fields: RoleField[]) => ProgressionGoal;
+  normalize: (goal: ProgressionGoal, fields: RoleField[]) => ProgressionGoal;
+};
+
+export type ProgressionGoalOption = Pick<
+  GoalDefinition,
+  'kind' | 'labelKey'
+> & {
+  goal: ProgressionGoal;
+};
+
 export const NO_PROGRESSION_GOAL: ProgressionGoal = { kind: 'none' };
 
 export const DEFAULT_LINEAR_INCREMENT = 1;
@@ -59,38 +78,95 @@ function defaultIncrementForField(field: RoleField | undefined): number {
   return DEFAULT_LINEAR_INCREMENT;
 }
 
-export function isProgressionGoalCompatible(
+function normalizeLinearGoal(
   goal: ProgressionGoal,
   fields: RoleField[],
-): boolean {
-  return goal.kind === 'none' || progressionField(fields, goal) != null;
-}
-
-export function normalizeProgressionGoal(
-  goal: ProgressionGoal | null | undefined | { kind?: string },
-  fields: RoleField[],
 ): ProgressionGoal {
-  if (goal?.kind !== 'linear') {
+  if (goal.kind !== 'linear') {
     return NO_PROGRESSION_GOAL;
   }
   const field =
-    progressionField(
-      fields,
-      goal as Extract<ProgressionGoal, { kind: 'linear' }>,
-    ) ?? linearProgressionFields(fields)[0];
+    progressionField(fields, goal) ?? linearProgressionFields(fields)[0];
   if (!field) {
     return NO_PROGRESSION_GOAL;
   }
+  const storedIncrement = (goal as { increment?: unknown }).increment;
   const increment =
-    typeof (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment ===
-    'number'
-      ? (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment
+    typeof storedIncrement === 'number'
+      ? storedIncrement
       : defaultIncrementForField(field);
   return {
     kind: 'linear',
     fieldId: field.id,
     increment: normalizeIncrementForField(increment, field),
   };
+}
+
+const progressionGoalDefinitions: GoalDefinition[] = [
+  {
+    kind: 'none',
+    labelKey: 'progression.modes.none',
+    isAvailable: () => true,
+    createDefaultGoal: () => NO_PROGRESSION_GOAL,
+    normalize: () => NO_PROGRESSION_GOAL,
+  },
+  {
+    kind: 'linear',
+    labelKey: 'progression.modes.linear',
+    isAvailable: fields => linearProgressionFields(fields).length > 0,
+    createDefaultGoal: fields => {
+      const field = linearProgressionFields(fields)[0];
+      return {
+        kind: 'linear',
+        fieldId: field?.id,
+        increment: defaultIncrementForField(field),
+      };
+    },
+    normalize: normalizeLinearGoal,
+  },
+];
+
+export function progressionGoalDefinition(
+  kind: ProgressionGoal['kind'],
+): GoalDefinition {
+  return (
+    progressionGoalDefinitions.find(definition => definition.kind === kind) ??
+    progressionGoalDefinitions[0]
+  );
+}
+
+export function progressionGoalOptions(
+  fields: RoleField[],
+): ProgressionGoalOption[] {
+  return progressionGoalDefinitions
+    .filter(definition => definition.isAvailable(fields))
+    .map(definition => ({
+      kind: definition.kind,
+      labelKey: definition.labelKey,
+      goal: definition.createDefaultGoal(fields),
+    }));
+}
+
+export function isProgressionGoalCompatible(
+  goal: ProgressionGoal,
+  fields: RoleField[],
+): boolean {
+  const definition = progressionGoalDefinition(goal.kind);
+  return (
+    definition.isAvailable(fields) &&
+    definition.normalize(goal, fields).kind === goal.kind
+  );
+}
+
+export function normalizeProgressionGoal(
+  goal: ProgressionGoal | null | undefined | { kind?: string },
+  fields: RoleField[],
+): ProgressionGoal {
+  if (goal?.kind !== 'none' && goal?.kind !== 'linear') {
+    return NO_PROGRESSION_GOAL;
+  }
+  const typedGoal = goal as ProgressionGoal;
+  return progressionGoalDefinition(typedGoal.kind).normalize(typedGoal, fields);
 }
 
 export function formatNumber(value: number): string {

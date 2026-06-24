@@ -7,10 +7,7 @@ import {
   listWorkoutSessions,
 } from '@/data/local/workouts/sessions';
 import type { WorkoutTemplateExercise } from '@/types/workout';
-import {
-  buildLinearResult,
-  buildNoneResult,
-} from './progressionSuggestionLogic';
+import { buildProgressionSuggestionResult } from './progressionSuggestionLogic';
 import { useSetTypeLibrary } from './useSetTypeLibrary';
 import { useUserProfile } from './useUserProfile';
 
@@ -57,31 +54,14 @@ export function useProgressionSuggestion({
         value.fields,
       ]),
     );
-    const hasLinearProgression = templateExercise.sets.some(set => {
-      const goal = set.progressionGoal ??
-        setTypesById.get(set.setType)?.progressionGoal ?? { kind: 'none' };
-      return goal.kind === 'linear';
-    });
-
-    if (!hasLinearProgression) {
-      return buildNoneResult(
-        t,
-        templateExercise,
-        lastPerformedSets,
-        setTypesById,
-        fieldsBySetType,
-        weightUnit,
-      );
-    }
-
-    return buildLinearResult(
+    return buildProgressionSuggestionResult({
       t,
       templateExercise,
       setTypesById,
       fieldsBySetType,
-      lastPerformedSets,
+      performed: lastPerformedSets,
       weightUnit,
-    );
+    });
   }, [
     lastPerformedSets,
     profile.weightUnit,

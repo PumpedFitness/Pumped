@@ -7,7 +7,6 @@ import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupA
 import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import type { ProgressionGoal } from '@/types/setType';
 import type { SetCardModel } from './exerciseSetTableModel';
-import type { SetCardProgressionKind } from './setCardProgression';
 
 type ProgressionEditorSheetProps = {
   card: SetCardModel | null;
@@ -112,26 +111,28 @@ function linearGoal(
 
 function TypePills({ goal, progression, onChange }: TypePillsProps) {
   const { t } = useTranslation();
-  const options: Array<{ value: SetCardProgressionKind; label: string }> = [
-    { value: 'none', label: t('progression.modes.none') },
-    ...(progression.canUseLinear
-      ? [{ value: 'linear' as const, label: t('progression.modes.linear') }]
-      : []),
-  ];
 
   const setKind = (kind: ProgressionGoal['kind']) => {
+    if (goal.kind === kind) {
+      onChange(goal);
+      return;
+    }
     onChange(
-      kind === 'none' ? { kind: 'none' } : linearGoal(goal, progression),
+      kind === 'linear'
+        ? linearGoal(goal, progression)
+        : (progression.options.find(option => option.kind === kind)?.goal ?? {
+            kind: 'none',
+          }),
     );
   };
 
   return (
     <View className="flex-row flex-wrap gap-2">
-      {options.map(option => {
-        const selected = goal.kind === option.value;
+      {progression.options.map(option => {
+        const selected = goal.kind === option.kind;
         return (
           <Pressable
-            key={option.value}
+            key={option.kind}
             accessibilityRole="radio"
             accessibilityState={{ checked: selected }}
             className={`min-h-9 justify-center rounded-full border px-3 ${
@@ -139,14 +140,14 @@ function TypePills({ goal, progression, onChange }: TypePillsProps) {
                 ? 'border-accent bg-accent-soft'
                 : 'border-border-soft bg-background'
             }`}
-            onPress={() => setKind(option.value)}
+            onPress={() => setKind(option.kind)}
           >
             <Text
               className={`text-[13px] font-semibold ${
                 selected ? 'text-accent' : 'text-foreground'
               }`}
             >
-              {option.label}
+              {t(option.labelKey)}
             </Text>
           </Pressable>
         );

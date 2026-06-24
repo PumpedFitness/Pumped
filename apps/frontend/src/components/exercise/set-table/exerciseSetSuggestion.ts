@@ -1,4 +1,6 @@
 import type { SetTypeFieldDef } from '@/types/setType';
+import { displayWeight } from '@/utils/units';
+import type { WeightUnit } from '@/data/local/schema/userProfile';
 
 export type SuggestedFieldValue = {
   fieldId?: string;
@@ -19,16 +21,23 @@ export type SuggestedSetValues = {
 function fieldSuggestionValue(
   field: SetTypeFieldDef,
   suggestion?: SuggestedSetValues,
+  weightUnit?: WeightUnit,
 ): number | undefined {
   const matched = suggestion?.fieldSuggestions?.find(
     value => value.fieldId === field.id,
   );
-  return typeof matched?.value === 'number' ? matched.value : undefined;
+  if (typeof matched?.value !== 'number') {
+    return undefined;
+  }
+  return field.unit === 'amount' && weightUnit
+    ? displayWeight(matched.value, weightUnit)
+    : matched.value;
 }
 
 export function suggestedNumberValue(
   field: SetTypeFieldDef,
   suggestion?: SuggestedSetValues,
+  weightUnit?: WeightUnit,
 ): number | undefined {
-  return fieldSuggestionValue(field, suggestion);
+  return fieldSuggestionValue(field, suggestion, weightUnit);
 }

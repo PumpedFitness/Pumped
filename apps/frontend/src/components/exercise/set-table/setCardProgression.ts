@@ -1,6 +1,7 @@
 import {
-  isProgressionGoalCompatible,
   normalizeProgressionGoal,
+  progressionGoalOptions,
+  type ProgressionGoalOption,
 } from '@/data/local/sets/progressionGoals';
 import type {
   ProgressionGoal,
@@ -17,7 +18,7 @@ export type SetCardProgressionKind = ProgressionGoal['kind'];
 export type SetCardProgression = {
   goal: ProgressionGoal;
   fields: SetTypeFieldDef[];
-  canUseLinear: boolean;
+  options: ProgressionGoalOption[];
   readOnly: boolean;
   onChange: (goal: ProgressionGoal) => void;
 };
@@ -47,12 +48,7 @@ export function buildSetCardProgression(
   return {
     goal: set.progressionGoal ?? defaultProgressionGoal(setType),
     fields: progressionFields(setType?.fields),
-    canUseLinear: setType
-      ? isProgressionGoalCompatible(
-          { kind: 'linear', increment: 1 },
-          setType.fields,
-        )
-      : false,
+    options: progressionGoalOptions(setType?.fields ?? []),
     readOnly: false,
     onChange: goal =>
       onChange(normalizeProgressionGoal(goal, setType?.fields ?? [])),
