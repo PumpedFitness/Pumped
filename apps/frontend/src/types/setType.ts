@@ -7,6 +7,15 @@ export type ProgressionGoal =
       increment: number;
     }
   | {
+      kind: 'rangeRollover';
+      rangeFieldId?: string;
+      targetFieldId?: string;
+      rangeMin: number;
+      rangeMax: number;
+      rangeIncrement: number;
+      targetIncrement: number;
+    }
+  | {
       kind: 'none';
     };
 

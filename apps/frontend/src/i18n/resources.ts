@@ -337,6 +337,7 @@ export const resources = {
         title: 'Progression',
         modes: {
           linear: 'Linear progression',
+          rangeRollover: 'Range rollover',
           none: 'No Progression',
         },
         helper: {
@@ -346,6 +347,7 @@ export const resources = {
         summary: {
           none: 'No progression',
           linear: 'Linear',
+          rangeRollover: 'Range rollover',
         },
         suggestion: {
           suggested: 'Suggested: {{target}}',
@@ -408,6 +410,12 @@ export const resources = {
           noFields: 'Add a numeric field to enable linear progression.',
           field: 'Field',
           increase: 'Increase by',
+          rangeField: 'Range field',
+          targetField: 'Increase field',
+          rangeMin: 'Min',
+          rangeMax: 'Max',
+          rangeIncrease: 'Range increase',
+          targetIncrease: 'Increase other field by',
         },
         deleteSetType: 'Delete set type',
         fieldSheet: {
@@ -1217,6 +1225,7 @@ export const resources = {
         title: 'Progression',
         modes: {
           linear: 'Lineare Progression',
+          rangeRollover: 'Bereich mit Wechsel',
           none: 'Keine Progression',
         },
         helper: {
@@ -1228,10 +1237,12 @@ export const resources = {
           kind: {
             none: 'Keine Progression',
             linear: 'Lineare Progression',
+            rangeRollover: 'Bereich mit Wechsel',
           },
           summary: {
             none: 'Keine Progression',
             linear: 'Linear',
+            rangeRollover: 'Bereich mit Wechsel',
           },
         },
         suggestion: {
@@ -1297,6 +1308,12 @@ export const resources = {
             'Füge ein numerisches Feld hinzu, um lineare Progression zu aktivieren.',
           field: 'Feld',
           increase: 'Steigern um',
+          rangeField: 'Bereichsfeld',
+          targetField: 'Steigerungsfeld',
+          rangeMin: 'Minimum',
+          rangeMax: 'Maximum',
+          rangeIncrease: 'Bereich steigern um',
+          targetIncrease: 'Anderes Feld steigern um',
         },
         deleteSetType: 'Satztyp löschen',
         fieldSheet: {

@@ -5,6 +5,8 @@ import {
   isProgressionGoalCompatible,
   normalizeProgressionGoal,
   progressionField,
+  rangeRolloverRangeField,
+  rangeRolloverTargetField,
 } from '@/data/local/sets/progressionGoals';
 import type {
   ProgressionGoal,
@@ -22,6 +24,10 @@ import type {
   ProgressionSuggestedSet,
   ProgressionSuggestionResult,
 } from './progressionSuggestionTypes';
+import {
+  autoTargetForRangeRolloverGoal,
+  lastCompatibleSetForFields,
+} from './progressionRangeRollover';
 
 type WeightUnit = 'kg' | 'lbs';
 
@@ -181,6 +187,49 @@ function autoTargetForGoal(
   };
 }
 
+function previousSetForGoal(
+  goal: Exclude<ProgressionGoal, { kind: 'none' }>,
+  set: WorkoutTemplateSet,
+  currentFields: SetTypeFieldDef[],
+  performed: PerformedSet[],
+  setOrder: number,
+): PerformedSet | null {
+  if (goal.kind === 'linear') {
+    const field = progressionField(currentFields, goal);
+    return field
+      ? lastCompatibleSet(set.setType, field.id, performed, setOrder)
+      : null;
+  }
+
+  const rangeField = rangeRolloverRangeField(currentFields, goal);
+  const targetField = rangeRolloverTargetField(currentFields, goal);
+  return rangeField && targetField
+    ? lastCompatibleSetForFields(
+        set.setType,
+        [rangeField.id, targetField.id],
+        performed,
+        setOrder,
+      )
+    : null;
+}
+
+function autoTargetForNormalizedGoal(
+  goal: Exclude<ProgressionGoal, { kind: 'none' }>,
+  currentFields: SetTypeFieldDef[],
+  previous: PerformedSet,
+  weightUnit: WeightUnit,
+): ProgressionSuggestedSet | null {
+  if (goal.kind === 'linear') {
+    return autoTargetForGoal(goal, currentFields, previous, weightUnit);
+  }
+  return autoTargetForRangeRolloverGoal(
+    goal,
+    currentFields,
+    previous,
+    weightUnit,
+  );
+}
+
 function buildAutoSetSuggestion(
   t: TFunction,
   set: WorkoutTemplateSet,
@@ -212,12 +261,15 @@ function buildAutoSetSuggestion(
       performedSuggestion.fieldSuggestions,
     );
   }
-  const field = progressionField(currentFields, goal);
-  const previous = field
-    ? lastCompatibleSet(set.setType, field.id, performed, setOrder)
-    : null;
+  const previous = previousSetForGoal(
+    goal,
+    set,
+    currentFields,
+    performed,
+    setOrder,
+  );
   const suggestion = previous
-    ? autoTargetForGoal(goal, currentFields, previous, weightUnit)
+    ? autoTargetForNormalizedGoal(goal, currentFields, previous, weightUnit)
     : null;
   if (!suggestion) {
     const performedSuggestion = performedSuggestionForSet(
@@ -284,6 +336,16 @@ const setProgressionSuggestionStrategies: Record<
     );
   },
   linear: context =>
+    buildAutoSetSuggestion(
+      context.t,
+      context.set,
+      context.setOrder,
+      context.setTypesById,
+      context.fieldsBySetType,
+      context.performed,
+      context.weightUnit,
+    ),
+  rangeRollover: context =>
     buildAutoSetSuggestion(
       context.t,
       context.set,

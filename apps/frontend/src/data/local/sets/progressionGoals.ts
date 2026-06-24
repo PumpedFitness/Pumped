@@ -7,7 +7,8 @@ type RoleField = Pick<
 
 export type ProgressionGoalLabelKey =
   | 'progression.modes.none'
-  | 'progression.modes.linear';
+  | 'progression.modes.linear'
+  | 'progression.modes.rangeRollover';
 
 export type GoalDefinition = {
   kind: ProgressionGoal['kind'];
@@ -27,6 +28,9 @@ export type ProgressionGoalOption = Pick<
 export const NO_PROGRESSION_GOAL: ProgressionGoal = { kind: 'none' };
 
 export const DEFAULT_LINEAR_INCREMENT = 1;
+
+const DEFAULT_RANGE_MIN = 5;
+const DEFAULT_RANGE_MAX = 8;
 
 export type WeightUnit = 'kg' | 'lbs';
 
@@ -50,6 +54,34 @@ export function progressionField(
 ): RoleField | undefined {
   const choices = linearProgressionFields(fields);
   return choices.find(field => field.id === goal.fieldId) ?? choices[0];
+}
+
+export function rangeRolloverFields(fields: RoleField[]): RoleField[] {
+  return fields.filter(isNumericField);
+}
+
+export function rangeRolloverTargetFields(
+  fields: RoleField[],
+  rangeFieldId?: string,
+): RoleField[] {
+  return rangeRolloverFields(fields).filter(field => field.id !== rangeFieldId);
+}
+
+export function rangeRolloverRangeField(
+  fields: RoleField[],
+  goal: Extract<ProgressionGoal, { kind: 'rangeRollover' }>,
+): RoleField | undefined {
+  const choices = rangeRolloverFields(fields);
+  return choices.find(field => field.id === goal.rangeFieldId) ?? choices[0];
+}
+
+export function rangeRolloverTargetField(
+  fields: RoleField[],
+  goal: Extract<ProgressionGoal, { kind: 'rangeRollover' }>,
+): RoleField | undefined {
+  const rangeField = rangeRolloverRangeField(fields, goal);
+  const choices = rangeRolloverTargetFields(fields, rangeField?.id);
+  return choices.find(field => field.id === goal.targetFieldId) ?? choices[0];
 }
 
 function decimalsForField(field: RoleField | undefined): number {
@@ -102,6 +134,67 @@ function normalizeLinearGoal(
   };
 }
 
+function normalizeRangeValue(
+  value: number,
+  field: RoleField | undefined,
+): number {
+  return normalizeIncrementForField(value, field);
+}
+
+function normalizeRangeRolloverGoal(
+  goal: ProgressionGoal,
+  fields: RoleField[],
+): ProgressionGoal {
+  if (goal.kind !== 'rangeRollover') {
+    return NO_PROGRESSION_GOAL;
+  }
+  const rangeField = rangeRolloverRangeField(fields, goal);
+  const targetField = rangeRolloverTargetField(fields, {
+    ...goal,
+    rangeFieldId: rangeRolloverRangeField(fields, goal)?.id,
+  });
+  if (!rangeField || !targetField) {
+    return NO_PROGRESSION_GOAL;
+  }
+
+  const storedRangeMin = (goal as { rangeMin?: unknown }).rangeMin;
+  const storedRangeMax = (goal as { rangeMax?: unknown }).rangeMax;
+  const storedRangeIncrement = (goal as { rangeIncrement?: unknown })
+    .rangeIncrement;
+  const storedTargetIncrement = (goal as { targetIncrement?: unknown })
+    .targetIncrement;
+  const rangeMin =
+    typeof storedRangeMin === 'number' ? storedRangeMin : DEFAULT_RANGE_MIN;
+  const rangeMax =
+    typeof storedRangeMax === 'number' ? storedRangeMax : DEFAULT_RANGE_MAX;
+  const normalizedMin = normalizeRangeValue(
+    Math.min(rangeMin, rangeMax),
+    rangeField,
+  );
+  const normalizedMax = normalizeRangeValue(
+    Math.max(rangeMin, rangeMax),
+    rangeField,
+  );
+  const rangeIncrement =
+    typeof storedRangeIncrement === 'number'
+      ? storedRangeIncrement
+      : DEFAULT_LINEAR_INCREMENT;
+  const targetIncrement =
+    typeof storedTargetIncrement === 'number'
+      ? storedTargetIncrement
+      : defaultIncrementForField(targetField);
+
+  return {
+    kind: 'rangeRollover',
+    rangeFieldId: rangeField.id,
+    targetFieldId: targetField.id,
+    rangeMin: normalizedMin,
+    rangeMax: normalizedMax,
+    rangeIncrement: normalizeIncrementForField(rangeIncrement, rangeField),
+    targetIncrement: normalizeIncrementForField(targetIncrement, targetField),
+  };
+}
+
 const progressionGoalDefinitions: GoalDefinition[] = [
   {
     kind: 'none',
@@ -123,6 +216,25 @@ const progressionGoalDefinitions: GoalDefinition[] = [
       };
     },
     normalize: normalizeLinearGoal,
+  },
+  {
+    kind: 'rangeRollover',
+    labelKey: 'progression.modes.rangeRollover',
+    isAvailable: fields => rangeRolloverFields(fields).length > 1,
+    createDefaultGoal: fields => {
+      const rangeField = rangeRolloverFields(fields)[0];
+      const targetField = rangeRolloverTargetFields(fields, rangeField?.id)[0];
+      return {
+        kind: 'rangeRollover',
+        rangeFieldId: rangeField?.id,
+        targetFieldId: targetField?.id,
+        rangeMin: DEFAULT_RANGE_MIN,
+        rangeMax: DEFAULT_RANGE_MAX,
+        rangeIncrement: DEFAULT_LINEAR_INCREMENT,
+        targetIncrement: defaultIncrementForField(targetField),
+      };
+    },
+    normalize: normalizeRangeRolloverGoal,
   },
 ];
 
@@ -162,7 +274,11 @@ export function normalizeProgressionGoal(
   goal: ProgressionGoal | null | undefined | { kind?: string },
   fields: RoleField[],
 ): ProgressionGoal {
-  if (goal?.kind !== 'none' && goal?.kind !== 'linear') {
+  if (
+    goal?.kind !== 'none' &&
+    goal?.kind !== 'linear' &&
+    goal?.kind !== 'rangeRollover'
+  ) {
     return NO_PROGRESSION_GOAL;
   }
   const typedGoal = goal as ProgressionGoal;

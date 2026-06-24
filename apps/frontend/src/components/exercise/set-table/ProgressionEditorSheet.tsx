@@ -2,11 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Input } from 'heroui-native';
-import { formatNumber } from '@/data/local/sets/progressionGoals';
+import {
+  formatNumber,
+  rangeRolloverTargetFields,
+} from '@/data/local/sets/progressionGoals';
 import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
 import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import type { ProgressionGoal } from '@/types/setType';
 import type { SetCardModel } from './exerciseSetTableModel';
+import { RangeRolloverProgressionEditor } from './RangeRolloverProgressionEditor';
 
 type ProgressionEditorSheetProps = {
   card: SetCardModel | null;
@@ -30,10 +34,13 @@ function decimalsForGoal(
   goal: Extract<ProgressionGoal, { kind: 'linear' }>,
   progression: NonNullable<SetCardModel['progression']>,
 ): number {
-  return Math.max(
-    0,
-    selectedProgressionField(goal, progression)?.config.decimals ?? 0,
-  );
+  return decimalsForField(selectedProgressionField(goal, progression));
+}
+
+function decimalsForField(
+  field: { config: { decimals?: number } } | undefined,
+): number {
+  return Math.max(0, field?.config.decimals ?? 0);
 }
 
 function roundToDecimals(value: number, decimals: number): number {
@@ -115,6 +122,35 @@ function linearGoal(
   };
 }
 
+function rangeRolloverGoal(
+  goal: ProgressionGoal,
+  progression: NonNullable<SetCardModel['progression']>,
+): Extract<ProgressionGoal, { kind: 'rangeRollover' }> {
+  if (goal.kind === 'rangeRollover') {
+    return goal;
+  }
+  const defaultGoal = progression.options.find(
+    option => option.kind === 'rangeRollover',
+  )?.goal;
+  if (defaultGoal?.kind === 'rangeRollover') {
+    return defaultGoal;
+  }
+  const rangeField = progression.fields[0];
+  const targetField = rangeRolloverTargetFields(
+    progression.fields,
+    rangeField?.id,
+  )[0];
+  return {
+    kind: 'rangeRollover',
+    rangeFieldId: rangeField?.id,
+    targetFieldId: targetField?.id,
+    rangeMin: 5,
+    rangeMax: 8,
+    rangeIncrement: 1,
+    targetIncrement: 1,
+  };
+}
+
 function TypePills({ goal, progression, onChange }: TypePillsProps) {
   const { t } = useTranslation();
 
@@ -126,9 +162,11 @@ function TypePills({ goal, progression, onChange }: TypePillsProps) {
     onChange(
       kind === 'linear'
         ? linearGoal(goal, progression)
-        : (progression.options.find(option => option.kind === kind)?.goal ?? {
-            kind: 'none',
-          }),
+        : kind === 'rangeRollover'
+          ? rangeRolloverGoal(goal, progression)
+          : (progression.options.find(option => option.kind === kind)?.goal ?? {
+              kind: 'none',
+            }),
     );
   };
 
@@ -346,6 +384,12 @@ export function ProgressionEditorSheet({
                 onChange={setDraftGoal}
               />
             </View>
+          ) : draftGoal.kind === 'rangeRollover' ? (
+            <RangeRolloverProgressionEditor
+              goal={draftGoal}
+              progression={progression}
+              onChange={setDraftGoal}
+            />
           ) : null}
         </View>
       ) : null}

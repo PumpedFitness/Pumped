@@ -188,6 +188,15 @@ function unitSuffix(
   return '';
 }
 
+function progressionModeLabelKey(
+  setGoal: { kind?: string } | null | undefined,
+  typeGoal: { kind?: string } | null | undefined,
+): 'progression.modes.rangeRollover' | 'progression.modes.linear' {
+  return (setGoal ?? typeGoal)?.kind === 'rangeRollover'
+    ? 'progression.modes.rangeRollover'
+    : 'progression.modes.linear';
+}
+
 function isBoundedNumber(config: SetTypeFieldDef['config']): boolean {
   return config.min != null && config.max != null && config.step != null;
 }
@@ -389,7 +398,10 @@ export function buildWorkoutSetCards(
         ? t(
             suggestion.isLastPerformanceOnly
               ? 'progression.modes.none'
-              : 'progression.modes.linear',
+              : progressionModeLabelKey(
+                  set.progressionGoal,
+                  type?.progressionGoal,
+                ),
           )
         : undefined,
       tone: set.isDone ? 'completed' : 'default',
