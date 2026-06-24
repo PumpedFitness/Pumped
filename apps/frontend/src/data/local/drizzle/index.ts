@@ -19,6 +19,7 @@ import m0015 from './0015_template_exercise_color.sql';
 import m0016 from './0016_progression_mode.sql';
 import m0017 from './0017_set_type_progression_goal.sql';
 import m0018 from './0018_template_set_progression_goal.sql';
+import m0019 from './0019_drop_progression_mode.sql';
 
 export default {
   journal,
@@ -42,5 +43,6 @@ export default {
     m0016,
     m0017,
     m0018,
+    m0019,
   },
 };

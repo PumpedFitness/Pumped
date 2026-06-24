@@ -10,17 +10,15 @@ export type SetFieldRole =
   | 'notes'
   | 'other';
 
-export type LinearProgressionGoal = {
-  kind: 'linear';
-  fieldId?: string;
-  increment: number;
-};
-
-export type NoProgressionGoal = {
-  kind: 'none';
-};
-
-export type ProgressionGoal = LinearProgressionGoal | NoProgressionGoal;
+export type ProgressionGoal =
+  | {
+      kind: 'linear';
+      fieldId?: string;
+      increment: number;
+    }
+  | {
+      kind: 'none';
+    };
 
 /** Palette colour for a set type's pill/badge (matches the app's accent set). */
 export type SetTypeColorName =

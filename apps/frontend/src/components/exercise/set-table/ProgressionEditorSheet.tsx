@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Input } from 'heroui-native';
@@ -8,7 +8,7 @@ import {
 } from '@/data/local/sets/progressionGoals';
 import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
 import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
-import type { LinearProgressionGoal, ProgressionGoal } from '@/types/setType';
+import type { ProgressionGoal } from '@/types/setType';
 import type { SetCardModel } from './exerciseSetTableModel';
 import type { SetCardProgressionKind } from './setCardProgression';
 
@@ -42,7 +42,7 @@ function parseInputText(text: string): string {
 }
 
 function incrementSuffix(
-  goal: LinearProgressionGoal,
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
   progression: NonNullable<SetCardModel['progression']>,
 ): string | undefined {
   const field = progression.fields.find(item => item.id === goal.fieldId);
@@ -68,7 +68,7 @@ type TypePillsProps = {
 function linearGoal(
   goal: ProgressionGoal,
   progression: NonNullable<SetCardModel['progression']>,
-): LinearProgressionGoal {
+): Extract<ProgressionGoal, { kind: 'linear' }> {
   if (goal.kind === 'linear') {
     return goal;
   }
@@ -125,7 +125,7 @@ function TypePills({ goal, progression, onChange }: TypePillsProps) {
 }
 
 type FieldPillsProps = {
-  goal: LinearProgressionGoal;
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>;
   progression: NonNullable<SetCardModel['progression']>;
   onChange: (goal: ProgressionGoal) => void;
 };
@@ -172,7 +172,7 @@ function FieldPills({ goal, progression, onChange }: FieldPillsProps) {
 }
 
 type IncrementInputProps = {
-  goal: LinearProgressionGoal;
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>;
   progression: NonNullable<SetCardModel['progression']>;
   onChange: (goal: ProgressionGoal) => void;
 };
@@ -180,10 +180,23 @@ type IncrementInputProps = {
 function IncrementInput({ goal, progression, onChange }: IncrementInputProps) {
   const { t } = useTranslation();
   const [text, setText] = useState(formatNumber(goal.increment));
+  const localIncrementRef = useRef(goal.increment);
 
   useEffect(() => {
-    setText(formatNumber(goal.increment));
+    if (goal.increment !== localIncrementRef.current) {
+      localIncrementRef.current = goal.increment;
+      setText(formatNumber(goal.increment));
+    }
   }, [goal.increment]);
+
+  const updateIncrement = (input: string, format: boolean) => {
+    const parsed = roundToTwoDecimals(parseInputNumber(input, goal.increment));
+    localIncrementRef.current = parsed;
+    onChange({ ...goal, increment: parsed });
+    if (format) {
+      setText(formatNumber(parsed));
+    }
+  };
 
   return (
     <View className="gap-1.5">
@@ -195,13 +208,15 @@ function IncrementInput({ goal, progression, onChange }: IncrementInputProps) {
           className="h-[46px] flex-1 rounded-[14px] border-border-hairline bg-surface-sunk px-3 text-foreground"
           keyboardType="decimal-pad"
           value={text}
-          onChangeText={uiText => setText(parseInputText(uiText))}
+          onChangeText={uiText => {
+            const nextText = parseInputText(uiText);
+            setText(nextText);
+            if (nextText.trim()) {
+              updateIncrement(nextText, false);
+            }
+          }}
           onEndEditing={event => {
-            const parsed = roundToTwoDecimals(
-              parseInputNumber(parseInputText(event.nativeEvent.text), 1),
-            );
-            onChange({ ...goal, increment: parsed });
-            setText(formatNumber(parsed));
+            updateIncrement(parseInputText(event.nativeEvent.text), true);
           }}
         />
         {incrementSuffix(goal, progression) ? (

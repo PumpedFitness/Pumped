@@ -5,7 +5,7 @@ import {
   getSetFieldRole,
   linearProgressionFields,
 } from '@/data/local/sets/progressionGoals';
-import type { LinearProgressionGoal, ProgressionGoal } from '@/types/setType';
+import type { ProgressionGoal } from '@/types/setType';
 import type { DraftField } from './draft';
 import { ProgressionNumberInputRow } from './ProgressionNumberInputRow';
 
@@ -45,14 +45,14 @@ export function withDefaultProgressionFieldIds(
 }
 
 function selectedFieldId(
-  goal: LinearProgressionGoal,
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
   fields: ProgressionDraftField[],
 ): string | undefined {
   return goal.fieldId ?? defaultLinearProgressionFieldId(fields);
 }
 
 type FieldSelectorProps = {
-  goal: LinearProgressionGoal;
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>;
   fields: ProgressionDraftField[];
   onChange: (goal: ProgressionGoal) => void;
 };
@@ -97,7 +97,7 @@ function FieldSelector({ goal, fields, onChange }: FieldSelectorProps) {
 }
 
 function incrementSuffix(
-  goal: LinearProgressionGoal,
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
   fields: ProgressionDraftField[],
 ): string | undefined {
   const field = fields.find(item => item.id === selectedFieldId(goal, fields));

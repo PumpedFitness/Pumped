@@ -1,5 +1,4 @@
 import type { SetFieldRole } from '@/types/setType';
-import type { ProgressionMode } from '@/types/workout';
 
 export type ProgressionFieldSuggestion = {
   fieldId?: string;
@@ -19,7 +18,6 @@ export type ProgressionSuggestedSet = {
 };
 
 export type ProgressionSuggestionResult = {
-  mode: ProgressionMode;
   kind: 'suggestion' | 'last_performed' | 'none';
   fieldSuggestions: ProgressionFieldSuggestion[];
   suggestedWeightKg?: number;

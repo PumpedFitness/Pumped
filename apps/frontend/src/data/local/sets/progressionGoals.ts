@@ -1,5 +1,4 @@
 import type {
-  LinearProgressionGoal,
   ProgressionGoal,
   SetFieldRole,
   SetTypeFieldDef,
@@ -65,7 +64,7 @@ export function defaultLinearProgressionFieldId(
 
 export function progressionField(
   fields: RoleField[],
-  goal: LinearProgressionGoal,
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
 ): RoleField | undefined {
   const choices = linearProgressionFields(fields);
   return choices.find(field => field.id === goal.fieldId) ?? choices[0];
@@ -97,14 +96,14 @@ export function normalizeProgressionGoal(
     return NO_PROGRESSION_GOAL;
   }
   const field =
-    progressionField(fields, goal as LinearProgressionGoal) ??
+    progressionField(fields, goal as Extract<ProgressionGoal, { kind: 'linear' }>) ??
     linearProgressionFields(fields)[0];
   if (!field) {
     return NO_PROGRESSION_GOAL;
   }
   const increment =
-    typeof (goal as LinearProgressionGoal).increment === 'number'
-      ? (goal as LinearProgressionGoal).increment
+    typeof (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment === 'number'
+      ? (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment
       : defaultIncrementForField(field);
   return {
     kind: 'linear',

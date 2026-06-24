@@ -1,6 +1,6 @@
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { ProgressionGoal } from '@/types/setType';
-import type { ProgressionMode, SetFieldValue } from '@/types/workout';
+import type { SetFieldValue } from '@/types/workout';
 
 export type ExerciseOption = {
   id: string;
@@ -41,6 +41,5 @@ export type EditableExercise = {
   color: WorkoutTemplateColor | null;
   goal: string;
   notes: string | null;
-  progressionMode?: ProgressionMode;
   sets: EditableExerciseSet[];
 };

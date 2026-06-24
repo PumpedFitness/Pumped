@@ -200,7 +200,6 @@ export function buildTemplateSyncInput(
           color: exercise.color,
           goal: exercise.goal,
           notes: exercise.notes,
-          progressionMode: sourceExercise?.progressionMode,
           sets: exercise.sets.map(set => {
             const source = set.sourceTemplateSetId
               ? sourceSets.get(set.sourceTemplateSetId)

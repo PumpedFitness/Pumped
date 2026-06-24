@@ -57,7 +57,6 @@ function fallbackTemplateExercise(
     color: exercise.color,
     goal: exercise.goal,
     notes: exercise.notes,
-    progressionMode: undefined,
     sets: exercise.sets.map(set => ({
       id: set.sourceTemplateSetId ?? set.id,
       position: set.position,

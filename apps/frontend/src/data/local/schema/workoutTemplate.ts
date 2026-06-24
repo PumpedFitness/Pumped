@@ -1,7 +1,7 @@
 import { index, sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { ProgressionGoal } from '@/types/setType';
-import type { ProgressionMode, SetFieldValue } from '@/types/workout';
+import type { SetFieldValue } from '@/types/workout';
 import { enumText, jsonArray, jsonObject } from './columns';
 
 // Scheduling no longer lives on the template — it moved to the `schedule` /
@@ -35,7 +35,6 @@ export const workoutTemplateExercises = sqliteTable(
     color: enumText<WorkoutTemplateColor>()('color'),
     goal: text('goal'),
     notes: text('notes'),
-    progressionMode: enumText<ProgressionMode>()('progression_mode'),
   },
   table => [
     index('idx_template_exercises_template_position').on(

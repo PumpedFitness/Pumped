@@ -8,7 +8,6 @@ import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { ProgressionGoal } from '@/types/setType';
 import type {
-  ProgressionMode,
   SetFieldValue,
   WorkoutTemplate,
   WorkoutTemplateExercise,
@@ -38,7 +37,6 @@ export type WorkoutTemplateExerciseInput = {
   color?: WorkoutTemplateColor | null;
   goal?: string | null;
   notes?: string | null;
-  progressionMode?: ProgressionMode;
   sets: WorkoutTemplateSetInput[];
 };
 
@@ -127,7 +125,6 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
       color: exercise.color,
       goal: exercise.goal,
       notes: exercise.notes,
-      progressionMode: exercise.progressionMode ?? undefined,
       sets,
     };
   });
@@ -215,7 +212,6 @@ function replaceTemplateChildren(
         color: exercise.color ?? null,
         goal: exercise.goal ?? null,
         notes: exercise.notes ?? null,
-        progressionMode: exercise.progressionMode ?? null,
       })
       .run();
 

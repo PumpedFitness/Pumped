@@ -177,7 +177,6 @@ export function buildNoneResult(
   const firstSuggestion = suggestedSets.find(set => set.lastPerformedText);
   const text = firstSuggestion?.lastPerformedText ?? null;
   return {
-    mode: 'none',
     kind: text ? 'last_performed' : 'none',
     fieldSuggestions: firstSuggestion?.fieldSuggestions ?? [],
     suggestedSets,
@@ -192,14 +191,11 @@ export function buildNoneResult(
 }
 
 function autoTargetForGoal(
-  goal: ProgressionGoal,
+  goal: Extract<ProgressionGoal, { kind: 'linear' }>,
   currentFields: SetTypeFieldDef[],
   previous: PerformedSet,
   weightUnit: WeightUnit,
 ): ProgressionSuggestedSet | null {
-  if (goal.kind !== 'linear') {
-    return null;
-  }
   const field = progressionField(currentFields, goal);
   if (!field) {
     return null;
@@ -277,8 +273,7 @@ function buildAutoSetSuggestion(
       performedSuggestion.fieldSuggestions,
     );
   }
-  const field =
-    goal.kind === 'linear' ? progressionField(currentFields, goal) : null;
+  const field = progressionField(currentFields, goal);
   const previous = field
     ? lastCompatibleSet(set.setType, field.id, performed)
     : null;
@@ -334,7 +329,6 @@ export function buildLinearResult(
   const fallback = suggestedSets[0];
   const hasSuggestion = firstSuggestion != null;
   return {
-    mode: 'linear',
     kind: hasSuggestion
       ? 'suggestion'
       : fallback?.lastPerformedText
