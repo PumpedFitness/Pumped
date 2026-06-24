@@ -208,26 +208,45 @@ function autoTargetForGoal(
   if (previousValue == null) {
     return null;
   }
-  const value = previousValue + goal.increment;
+  const progressedValue = previousValue + goal.increment;
+  const fieldSuggestions = currentFields.reduce<ProgressionFieldSuggestion[]>(
+    (suggestions, currentField) => {
+      const lastValue = getNumberValue(previous.fieldValues, currentField.id);
+      if (lastValue == null) {
+        return suggestions;
+      }
+      const role = getSetFieldRole(currentField);
+      const value = currentField.id === field.id ? progressedValue : lastValue;
+      const displayValue =
+        role === 'weight'
+          ? formatWeight(value, weightUnit)
+          : role === 'duration'
+            ? durationText(value)
+            : formatNumber(value);
+      suggestions.push({
+        fieldId: currentField.id,
+        fieldRole: role,
+        value,
+        displayValue,
+      });
+      return suggestions;
+    },
+    [],
+  );
+  const displayText = fieldSuggestionsText(fieldSuggestions);
   const role = getSetFieldRole(field);
   const displayValue =
     role === 'weight'
-      ? formatWeight(value, weightUnit)
+      ? formatWeight(progressedValue, weightUnit)
       : role === 'duration'
-        ? durationText(value)
-        : formatNumber(value);
-  const suggestion: ProgressionFieldSuggestion = {
-    fieldId: field.id,
-    fieldRole: role,
-    value,
-    displayValue,
-  };
+        ? durationText(progressedValue)
+        : formatNumber(progressedValue);
   return {
-    weightKg: role === 'weight' ? value : undefined,
-    reps: role === 'reps' ? value : undefined,
-    durationSeconds: role === 'duration' ? value : undefined,
-    fieldSuggestions: [suggestion],
-    displayText: displayValue,
+    weightKg: role === 'weight' ? progressedValue : undefined,
+    reps: role === 'reps' ? progressedValue : undefined,
+    durationSeconds: role === 'duration' ? progressedValue : undefined,
+    fieldSuggestions,
+    displayText: displayText ?? displayValue,
   };
 }
 
