@@ -1,8 +1,4 @@
-import type {
-  ProgressionGoal,
-  SetFieldRole,
-  SetTypeFieldDef,
-} from '@/types/setType';
+import type { ProgressionGoal, SetTypeFieldDef } from '@/types/setType';
 
 type RoleField = Pick<
   SetTypeFieldDef,
@@ -17,39 +13,6 @@ export type WeightUnit = 'kg' | 'lbs';
 
 function isNumericField(field: RoleField): boolean {
   return field.dataType === 'number' || field.dataType === 'range';
-}
-
-function isRepsField(field: RoleField): boolean {
-  const name = field.name.toLowerCase();
-  const id = field.id.toLowerCase();
-  if (name.includes('rep') || id.includes('rep')) {
-    return true;
-  }
-  return (
-    field.unit === null &&
-    isNumericField(field) &&
-    (field.config.max == null || field.config.max > 10)
-  );
-}
-
-export function getSetFieldRole(field: RoleField): SetFieldRole {
-  if (field.unit === 'amount' && isNumericField(field)) {
-    return 'weight';
-  }
-  if (field.unit === 'seconds' && isNumericField(field)) {
-    return 'duration';
-  }
-  if (isRepsField(field)) {
-    return 'reps';
-  }
-  return 'other';
-}
-
-export function fieldForRole(
-  fields: RoleField[],
-  role: SetFieldRole,
-): RoleField | undefined {
-  return fields.find(field => getSetFieldRole(field) === role);
 }
 
 export function linearProgressionFields(fields: RoleField[]): RoleField[] {
@@ -71,11 +34,10 @@ export function progressionField(
 }
 
 function defaultIncrementForField(field: RoleField | undefined): number {
-  const role = field ? getSetFieldRole(field) : 'other';
-  if (role === 'weight') {
+  if (field?.unit === 'amount' && isNumericField(field)) {
     return 2.5;
   }
-  if (role === 'duration') {
+  if (field?.unit === 'seconds' && isNumericField(field)) {
     return 5;
   }
   return DEFAULT_LINEAR_INCREMENT;
@@ -96,13 +58,16 @@ export function normalizeProgressionGoal(
     return NO_PROGRESSION_GOAL;
   }
   const field =
-    progressionField(fields, goal as Extract<ProgressionGoal, { kind: 'linear' }>) ??
-    linearProgressionFields(fields)[0];
+    progressionField(
+      fields,
+      goal as Extract<ProgressionGoal, { kind: 'linear' }>,
+    ) ?? linearProgressionFields(fields)[0];
   if (!field) {
     return NO_PROGRESSION_GOAL;
   }
   const increment =
-    typeof (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment === 'number'
+    typeof (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment ===
+    'number'
       ? (goal as Extract<ProgressionGoal, { kind: 'linear' }>).increment
       : defaultIncrementForField(field);
   return {

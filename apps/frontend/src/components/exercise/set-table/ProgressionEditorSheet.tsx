@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Input } from 'heroui-native';
-import {
-  formatNumber,
-  getSetFieldRole,
-} from '@/data/local/sets/progressionGoals';
+import { formatNumber } from '@/data/local/sets/progressionGoals';
 import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
 import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
 import type { ProgressionGoal } from '@/types/setType';
@@ -49,11 +46,7 @@ function incrementSuffix(
   if (!field) {
     return undefined;
   }
-  const role = getSetFieldRole(field);
-  if (role === 'weight') {
-    return field.unit === 'amount' ? undefined : field.unit ?? undefined;
-  }
-  if (role === 'duration') {
+  if (field.unit === 'seconds') {
     return 's';
   }
   return undefined;

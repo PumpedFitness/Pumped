@@ -1,15 +1,12 @@
 import type { TFunction } from 'i18next';
 import { getNumberValue } from '@/data/local/sets/fieldValues';
 import {
-  fieldForRole,
   formatNumber,
-  getSetFieldRole,
   isProgressionGoalCompatible,
   progressionField,
 } from '@/data/local/sets/progressionGoals';
 import type {
   ProgressionGoal,
-  SetFieldRole,
   SetTypeFieldDef,
   SetTypeWithFields,
 } from '@/types/setType';
@@ -58,17 +55,6 @@ function progressionGoalForSet(
   );
 }
 
-function roleValue(
-  set: Pick<PerformedSet, 'setType' | 'fieldValues'>,
-  setTypesById: Map<string, SetTypeWithFields>,
-  role: SetFieldRole,
-): number | null {
-  const type = setTypesById.get(set.setType);
-  const fields = type?.fields ?? [];
-  const field = fieldForRole(fields, role);
-  return field ? getNumberValue(set.fieldValues, field.id) : null;
-}
-
 function lastCompatibleSet(
   setTypeId: string,
   fieldId: string,
@@ -104,7 +90,6 @@ function lastOnlySuggestion(
 function performedSuggestionForSet(
   set: WorkoutTemplateSet,
   performed: PerformedSet[],
-  setTypesById: Map<string, SetTypeWithFields>,
   fieldsBySetType: Map<string, SetTypeFieldDef[]>,
   weightUnit: WeightUnit,
 ): ProgressionSuggestedSet {
@@ -113,27 +98,21 @@ function performedSuggestionForSet(
     .slice()
     .reverse()
     .find(candidate =>
-      fields.some(field => {
-        const role = getSetFieldRole(field);
-        return (
-          role !== 'other' && roleValue(candidate, setTypesById, role) != null
-        );
-      }),
+      fields.some(
+        field => getNumberValue(candidate.fieldValues, field.id) != null,
+      ),
     );
   const fieldSuggestions = previous
     ? fields.reduce<ProgressionFieldSuggestion[]>((suggestions, field) => {
-        const role = getSetFieldRole(field);
-        if (role === 'other') return suggestions;
-        const value = roleValue(previous, setTypesById, role);
+        const value = getNumberValue(previous.fieldValues, field.id);
         if (value == null) return suggestions;
         suggestions.push({
           fieldId: field.id,
-          fieldRole: role,
           value,
           displayValue:
-            role === 'weight'
+            field.unit === 'amount'
               ? formatWeight(value, weightUnit)
-              : role === 'duration'
+              : field.unit === 'seconds'
                 ? durationText(value)
                 : formatNumber(value),
         });
@@ -161,7 +140,6 @@ export function buildNoneResult(
     const suggestion = performedSuggestionForSet(
       set,
       performed,
-      setTypesById,
       fieldsBySetType,
       weightUnit,
     );
@@ -211,17 +189,15 @@ function autoTargetForGoal(
       if (lastValue == null) {
         return suggestions;
       }
-      const role = getSetFieldRole(currentField);
       const value = currentField.id === field.id ? progressedValue : lastValue;
       const displayValue =
-        role === 'weight'
+        currentField.unit === 'amount'
           ? formatWeight(value, weightUnit)
-          : role === 'duration'
+          : currentField.unit === 'seconds'
             ? durationText(value)
             : formatNumber(value);
       suggestions.push({
         fieldId: currentField.id,
-        fieldRole: role,
         value,
         displayValue,
       });
@@ -230,17 +206,16 @@ function autoTargetForGoal(
     [],
   );
   const displayText = fieldSuggestionsText(fieldSuggestions);
-  const role = getSetFieldRole(field);
   const displayValue =
-    role === 'weight'
+    field.unit === 'amount'
       ? formatWeight(progressedValue, weightUnit)
-      : role === 'duration'
+      : field.unit === 'seconds'
         ? durationText(progressedValue)
         : formatNumber(progressedValue);
   return {
-    weightKg: role === 'weight' ? progressedValue : undefined,
-    reps: role === 'reps' ? progressedValue : undefined,
-    durationSeconds: role === 'duration' ? progressedValue : undefined,
+    weightKg: field.unit === 'amount' ? progressedValue : undefined,
+    reps: undefined,
+    durationSeconds: field.unit === 'seconds' ? progressedValue : undefined,
     fieldSuggestions,
     displayText: displayText ?? displayValue,
   };
@@ -263,7 +238,6 @@ function buildAutoSetSuggestion(
     const performedSuggestion = performedSuggestionForSet(
       set,
       performed,
-      setTypesById,
       fieldsBySetType,
       weightUnit,
     );
@@ -284,7 +258,6 @@ function buildAutoSetSuggestion(
     const performedSuggestion = performedSuggestionForSet(
       set,
       performed,
-      setTypesById,
       fieldsBySetType,
       weightUnit,
     );

@@ -2,7 +2,6 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   defaultLinearProgressionFieldId,
-  getSetFieldRole,
   linearProgressionFields,
 } from '@/data/local/sets/progressionGoals';
 import type { ProgressionGoal } from '@/types/setType';
@@ -104,11 +103,10 @@ function incrementSuffix(
   if (!field) {
     return undefined;
   }
-  const role = getSetFieldRole(field);
-  if (role === 'weight') {
+  if (field.unit === 'amount') {
     return 'kg';
   }
-  if (role === 'duration') {
+  if (field.unit === 'seconds') {
     return 's';
   }
   return undefined;

@@ -1,15 +1,5 @@
 import type { SetFieldDataType, SetFieldUnit } from '@/data/local/enums';
 
-export type SetFieldRole =
-  | 'weight'
-  | 'reps'
-  | 'duration'
-  | 'distance'
-  | 'rpe'
-  | 'rir'
-  | 'notes'
-  | 'other';
-
 export type ProgressionGoal =
   | {
       kind: 'linear';

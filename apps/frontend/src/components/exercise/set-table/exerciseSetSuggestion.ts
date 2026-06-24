@@ -1,9 +1,7 @@
-import { getSetFieldRole } from '@/data/local/sets/progressionGoals';
-import type { SetFieldRole, SetTypeFieldDef } from '@/types/setType';
+import type { SetTypeFieldDef } from '@/types/setType';
 
 export type SuggestedFieldValue = {
   fieldId?: string;
-  fieldRole: SetFieldRole;
   value: number | string;
   displayValue: string;
 };
@@ -23,8 +21,7 @@ function fieldSuggestionValue(
   suggestion?: SuggestedSetValues,
 ): number | undefined {
   const matched = suggestion?.fieldSuggestions?.find(
-    value =>
-      value.fieldId === field.id || value.fieldRole === getSetFieldRole(field),
+    value => value.fieldId === field.id,
   );
   return typeof matched?.value === 'number' ? matched.value : undefined;
 }

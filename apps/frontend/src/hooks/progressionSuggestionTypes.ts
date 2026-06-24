@@ -1,8 +1,5 @@
-import type { SetFieldRole } from '@/types/setType';
-
 export type ProgressionFieldSuggestion = {
   fieldId?: string;
-  fieldRole: SetFieldRole;
   value: number | string;
   displayValue: string;
 };
