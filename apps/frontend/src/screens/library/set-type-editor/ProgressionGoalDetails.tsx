@@ -5,6 +5,7 @@ import {
   linearProgressionFields,
 } from '@/data/local/sets/progressionGoals';
 import type { ProgressionGoal } from '@/types/setType';
+import { RangeRolloverProgressionEditor } from '@/components/exercise/set-table/RangeRolloverProgressionEditor';
 import type { DraftField } from './draft';
 import { ProgressionNumberInputRow } from './ProgressionNumberInputRow';
 
@@ -158,6 +159,29 @@ export function ProgressionGoalDetails({
   onChange,
 }: ProgressionGoalDetailsProps) {
   const { t } = useTranslation();
+
+  if (goal.kind === 'rangeRollover') {
+    const progressionFields = fields.map((field, index) => ({
+      ...field,
+      setTypeId: 'draft',
+      position: index,
+    }));
+
+    return (
+      <RangeRolloverProgressionEditor
+        goal={goal}
+        progression={{
+          fields: progressionFields,
+          options: [],
+          readOnly: false,
+          onChange,
+        }}
+        surface="card"
+        onChange={onChange}
+      />
+    );
+  }
+
   if (goal.kind !== 'linear') {
     return null;
   }

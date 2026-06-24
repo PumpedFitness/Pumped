@@ -138,12 +138,14 @@ function NumberGoalInput({
 type RangeRolloverProgressionEditorProps = {
   goal: Extract<ProgressionGoal, { kind: 'rangeRollover' }>;
   progression: RangeProgression;
+  surface?: 'card' | 'sunk';
   onChange: (goal: ProgressionGoal) => void;
 };
 
 export function RangeRolloverProgressionEditor({
   goal,
   progression,
+  surface = 'sunk',
   onChange,
 }: RangeRolloverProgressionEditorProps) {
   const { t } = useTranslation();
@@ -166,7 +168,11 @@ export function RangeRolloverProgressionEditor({
   };
 
   return (
-    <View className="gap-3 rounded-[16px] bg-surface-sunk p-3">
+    <View
+      className={`gap-3 rounded-[16px] p-3 ${
+        surface === 'card' ? 'bg-surface-card' : 'bg-surface-sunk'
+      }`}
+    >
       <FieldChoices
         label={t('setTypeEditor.progression.rangeField')}
         fields={progression.fields}

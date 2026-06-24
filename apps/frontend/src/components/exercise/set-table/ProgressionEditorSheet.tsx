@@ -171,7 +171,7 @@ function TypePills({ goal, progression, onChange }: TypePillsProps) {
   };
 
   return (
-    <View className="flex-row flex-wrap gap-2">
+    <View className="gap-2">
       {progression.options.map(option => {
         const selected = goal.kind === option.kind;
         return (
@@ -179,7 +179,7 @@ function TypePills({ goal, progression, onChange }: TypePillsProps) {
             key={option.kind}
             accessibilityRole="radio"
             accessibilityState={{ checked: selected }}
-            className={`min-h-9 justify-center rounded-full border px-3 ${
+            className={`min-h-11 justify-center rounded-[12px] border px-3 ${
               selected
                 ? 'border-accent bg-accent-soft'
                 : 'border-border-soft bg-background'
