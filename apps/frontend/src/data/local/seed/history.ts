@@ -84,7 +84,6 @@ function progression(index: number, step: number): number {
   return Math.floor(index / 4) * step;
 }
 
-
 function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
   const gain = progression(index, 2.5);
   const builders: Record<WorkoutKind, () => SetGroup[]> = {
@@ -95,7 +94,10 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
         set(8, 70 + gain, 8),
         set(7, 70 + gain, 8.5),
       ]),
-      group(EXERCISE_IDS.overheadPress, repeatedSets(3, 8, 35 + gain / 2)),
+      group(
+        EXERCISE_IDS.overheadPress,
+        orderedSets(8, [35 + gain / 2, 37.5 + gain / 2, 40 + gain / 2]),
+      ),
       group(EXERCISE_IDS.tricepsPushdown, [
         ...repeatedSets(2, 12, 25 + gain / 2),
         set(15, 17.5 + gain / 2, 9, 'MAX_EFFORT'),
@@ -104,9 +106,20 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
     pull: () => [
       group(EXERCISE_IDS.deadlift, [
         set(5, 60, 4, 'WARMUP'),
-        ...repeatedSets(3, 5, 100 + progression(index, 5), 7.5),
+        ...orderedSets(
+          5,
+          [
+            100 + progression(index, 5),
+            105 + progression(index, 5),
+            110 + progression(index, 5),
+          ],
+          7.5,
+        ),
       ]),
-      group(EXERCISE_IDS.latPulldown, repeatedSets(3, 12, 45 + gain)),
+      group(
+        EXERCISE_IDS.latPulldown,
+        orderedSets(12, [45 + gain, 47.5 + gain, 50 + gain]),
+      ),
       group(EXERCISE_IDS.dumbbellCurl, [
         ...repeatedSets(2, 12, 12 + progression(index, 1)),
         set(14, 10 + progression(index, 1), 9, 'MAX_EFFORT'),
@@ -117,7 +130,10 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
         set(8, 40, 4, 'WARMUP'),
         ...repeatedSets(3, 5, 75 + gain, 8),
       ]),
-      group(EXERCISE_IDS.romanianDeadlift, repeatedSets(3, 8, 65 + gain, 8)),
+      group(
+        EXERCISE_IDS.romanianDeadlift,
+        orderedSets(8, [65 + gain, 70 + gain, 75 + gain], 8),
+      ),
       group(EXERCISE_IDS.legPress, repeatedSets(3, 10, 120 + gain * 2)),
       group(EXERCISE_IDS.calfRaise, repeatedSets(3, 15, 50 + gain)),
     ],
@@ -173,6 +189,14 @@ function repeatedSets(
   rpe = 8,
 ): SetGroup['sets'] {
   return Array.from({ length: count }, () => set(reps, weight, rpe));
+}
+
+function orderedSets(
+  reps: number,
+  weightsKg: number[],
+  rpe = 8,
+): SetGroup['sets'] {
+  return weightsKg.map(weightKg => set(reps, weightKg, rpe));
 }
 
 function workoutStart(now: number, daysAgo: number, hour = 18): number {
