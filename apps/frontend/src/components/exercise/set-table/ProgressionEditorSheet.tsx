@@ -102,6 +102,12 @@ function linearGoal(
   if (goal.kind === 'linear') {
     return goal;
   }
+  const defaultGoal = progression.options.find(
+    option => option.kind === 'linear',
+  )?.goal;
+  if (defaultGoal?.kind === 'linear') {
+    return defaultGoal;
+  }
   return {
     kind: 'linear',
     fieldId: progression.fields[0]?.id,

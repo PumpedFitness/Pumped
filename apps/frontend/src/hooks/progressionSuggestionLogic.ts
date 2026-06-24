@@ -60,17 +60,14 @@ function lastCompatibleSet(
   setTypeId: string,
   fieldId: string,
   sets: PerformedSet[],
+  setOrder: number,
 ): PerformedSet | null {
-  for (let index = sets.length - 1; index >= 0; index -= 1) {
-    const set = sets[index];
-    if (
+  const candidates = sets.filter(
+    set =>
       set.setType === setTypeId &&
-      getNumberValue(set.fieldValues, fieldId) != null
-    ) {
-      return set;
-    }
-  }
-  return null;
+      getNumberValue(set.fieldValues, fieldId) != null,
+  );
+  return candidates[setOrder] ?? candidates[candidates.length - 1] ?? null;
 }
 
 function lastOnlySuggestion(
@@ -90,21 +87,21 @@ function lastOnlySuggestion(
 
 function performedSuggestionForSet(
   set: WorkoutTemplateSet,
+  setOrder: number,
   performed: PerformedSet[],
   fieldsBySetType: Map<string, SetTypeFieldDef[]>,
   weightUnit: WeightUnit,
 ): ProgressionSuggestedSet {
   const fields = fieldsForSet(set, fieldsBySetType);
-  const previous = performed
-    .slice()
-    .reverse()
-    .find(
-      candidate =>
-        candidate.setType === set.setType &&
-        fields.some(
-          field => getNumberValue(candidate.fieldValues, field.id) != null,
-        ),
-    );
+  const matchingSets = performed.filter(
+    candidate =>
+      candidate.setType === set.setType &&
+      fields.some(
+        field => getNumberValue(candidate.fieldValues, field.id) != null,
+      ),
+  );
+  const previous =
+    matchingSets[setOrder] ?? matchingSets[matchingSets.length - 1];
   const fieldSuggestions = previous
     ? fields.reduce<ProgressionFieldSuggestion[]>((suggestions, field) => {
         const value = getNumberValue(previous.fieldValues, field.id);
@@ -187,6 +184,7 @@ function autoTargetForGoal(
 function buildAutoSetSuggestion(
   t: TFunction,
   set: WorkoutTemplateSet,
+  setOrder: number,
   setTypesById: Map<string, SetTypeWithFields>,
   fieldsBySetType: Map<string, SetTypeFieldDef[]>,
   performed: PerformedSet[],
@@ -203,6 +201,7 @@ function buildAutoSetSuggestion(
   ) {
     const performedSuggestion = performedSuggestionForSet(
       set,
+      setOrder,
       performed,
       fieldsBySetType,
       weightUnit,
@@ -215,7 +214,7 @@ function buildAutoSetSuggestion(
   }
   const field = progressionField(currentFields, goal);
   const previous = field
-    ? lastCompatibleSet(set.setType, field.id, performed)
+    ? lastCompatibleSet(set.setType, field.id, performed, setOrder)
     : null;
   const suggestion = previous
     ? autoTargetForGoal(goal, currentFields, previous, weightUnit)
@@ -223,6 +222,7 @@ function buildAutoSetSuggestion(
   if (!suggestion) {
     const performedSuggestion = performedSuggestionForSet(
       set,
+      setOrder,
       performed,
       fieldsBySetType,
       weightUnit,
@@ -258,6 +258,7 @@ type SetProgressionSuggestionContext = Omit<
   'templateExercise'
 > & {
   set: WorkoutTemplateSet;
+  setOrder: number;
 };
 
 type SetProgressionSuggestionStrategy = (
@@ -268,9 +269,10 @@ const setProgressionSuggestionStrategies: Record<
   ProgressionGoal['kind'],
   SetProgressionSuggestionStrategy
 > = {
-  none: ({ t, set, fieldsBySetType, performed, weightUnit }) => {
+  none: ({ t, set, setOrder, fieldsBySetType, performed, weightUnit }) => {
     const performedSuggestion = performedSuggestionForSet(
       set,
+      setOrder,
       performed,
       fieldsBySetType,
       weightUnit,
@@ -285,6 +287,7 @@ const setProgressionSuggestionStrategies: Record<
     buildAutoSetSuggestion(
       context.t,
       context.set,
+      context.setOrder,
       context.setTypesById,
       context.fieldsBySetType,
       context.performed,
@@ -316,9 +319,12 @@ function buildSetProgressionSuggestion(
 export function buildProgressionSuggestionResult(
   context: ProgressionSuggestionContext,
 ): ProgressionSuggestionResult {
-  const suggestedSets = context.templateExercise.sets.map(set =>
-    buildSetProgressionSuggestion({ ...context, set }),
-  );
+  const seenBySetType = new Map<string, number>();
+  const suggestedSets = context.templateExercise.sets.map(set => {
+    const setOrder = seenBySetType.get(set.setType) ?? 0;
+    seenBySetType.set(set.setType, setOrder + 1);
+    return buildSetProgressionSuggestion({ ...context, set, setOrder });
+  });
   const firstSuggestion = suggestedSets.find(
     set => !set.isLastPerformanceOnly && set.fieldSuggestions?.length,
   );
