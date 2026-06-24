@@ -3,7 +3,20 @@ import { setTypeFields, setTypes } from '@/data/local/schema';
 import {
   BUILT_IN_SET_TYPE_FIELDS,
   BUILT_IN_SET_TYPES,
+  builtInSetFieldId,
 } from '@/data/local/builtins';
+import type { ProgressionGoal } from '@/types/setType';
+
+function builtInProgressionGoal(setType: string): ProgressionGoal {
+  if (setType === 'NORMAL') {
+    return {
+      kind: 'linear',
+      fieldId: builtInSetFieldId('NORMAL', 'reps'),
+      increment: 1,
+    };
+  }
+  return { kind: 'none' };
+}
 
 type LocalDatabase = typeof db;
 
@@ -21,6 +34,7 @@ export function seedBuiltInTags(database: LocalDatabase, now: number): void {
         icon: type.icon,
         isBuiltIn: true,
         position: index,
+        progressionGoal: builtInProgressionGoal(type.id),
         createdAt: now,
       })),
     )

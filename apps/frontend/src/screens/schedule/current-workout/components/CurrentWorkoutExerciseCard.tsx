@@ -1,7 +1,14 @@
-import { memo, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ExerciseCard } from '@/components/exercise/ExerciseCard';
+import {
+  ExerciseSetTable,
+  type SetTypeOption,
+} from '@/components/exercise/set-table';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useProgressionSuggestion } from '@/hooks/useProgressionSuggestion';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type {
   CurrentWorkoutExercise,
   CurrentWorkoutSet,
@@ -9,30 +16,34 @@ import type {
 } from '@/stores/currentWorkoutModel';
 import type { SetTypeWithFields } from '@/types/setType';
 import type { WorkoutTemplateExercise } from '@/types/workout';
+import type { DeleteResult } from '@/components/clay/SwipeToDelete';
 import {
-  ExerciseSetTable,
-  type SetTypeOption,
-} from '@/components/exercise/set-table';
-import { requestRemoveSet } from './currentWorkoutConfirm';
+  requestRemoveExercise,
+  requestRemoveSet,
+} from './currentWorkoutConfirm';
 
-type SessionExerciseBodyProps = {
+type CurrentWorkoutNavigation = NativeStackNavigationProp<
+  RootStackParamList,
+  'CurrentWorkout'
+>;
+
+type CurrentWorkoutExerciseCardProps = {
   exercise: CurrentWorkoutExercise;
-  weightUnit: WeightUnit;
+  exerciseName: string;
   setTypeOptions: SetTypeOption[];
   setTypesById: Map<string, SetTypeWithFields>;
-  onCreateSetType: (name: string) => string;
-  // Stable top-level actions. Binding the per-exercise/per-set callbacks here
-  // (rather than inline in the list) is what lets this component memoize: an
-  // edit to one exercise re-renders only its body, not the whole session.
+  weightUnit: WeightUnit;
+  createSetType: (name: string) => string;
+  navigation: CurrentWorkoutNavigation;
+  addSet: (exerciseId: string) => void;
   updateSet: (
     exerciseId: string,
     setId: string,
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
   toggleSetDone: (exerciseId: string, setId: string) => boolean;
-  restStart: (seconds: number) => void;
   removeSet: (exerciseId: string, setId: string) => void;
-  addSet: (exerciseId: string) => void;
+  removeExercise: (exerciseId: string) => void;
 };
 
 function fallbackTemplateExercise(
@@ -94,19 +105,22 @@ function repeatSuggestedSets<T>(sets: T[], count: number): T[] {
   return Array.from({ length: count }, (_, index) => sets[index] ?? lastSet);
 }
 
-export const SessionExerciseBody = memo(function SessionExerciseBody({
+export function CurrentWorkoutExerciseCard({
   exercise,
-  weightUnit,
+  exerciseName,
   setTypeOptions,
   setTypesById,
-  onCreateSetType,
+  weightUnit,
+  createSetType,
+  navigation,
+  addSet,
   updateSet,
   toggleSetDone,
-  restStart,
   removeSet,
-  addSet,
-}: SessionExerciseBodyProps) {
+  removeExercise,
+}: CurrentWorkoutExerciseCardProps) {
   const { t } = useTranslation();
+  const doneCount = exercise.sets.filter(set => set.isDone).length;
   const progression = useProgressionSuggestion({
     exerciseId: exercise.exerciseId,
     templateExercise: effectiveTemplateExercise(exercise),
@@ -116,49 +130,38 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
     [exercise.sets.length, progression.suggestedSets],
   );
 
-  const handleChangeSet = useCallback(
-    (setId: string, values: UpdateCurrentWorkoutSetInput) =>
-      updateSet(exercise.id, setId, values),
-    [updateSet, exercise.id],
-  );
-  const handleAddSet = useCallback(
-    () => addSet(exercise.id),
-    [addSet, exercise.id],
-  );
-  // Capture the set's pre-toggle state so we know it became done (not undone)
-  // and what rest to seed — the toggle itself only returns a success boolean.
-  const handleToggleSetDone = useCallback(
-    (setId: string) => {
-      const set = exercise.sets.find(item => item.id === setId);
-      const wasDone = set?.isDone ?? false;
-      const ok = toggleSetDone(exercise.id, setId);
-      if (ok && !wasDone && set?.restSeconds && set.restSeconds > 0) {
-        restStart(set.restSeconds);
-      }
-      return ok;
-    },
-    [exercise, toggleSetDone, restStart],
-  );
-  const handleRemoveSet = useCallback(
-    (set: CurrentWorkoutSet) => requestRemoveSet(t, exercise, set, removeSet),
-    [t, exercise, removeSet],
-  );
-
   return (
-    <>
+    <ExerciseCard
+      name={exerciseName}
+      description={t('currentWorkout.setsDone', {
+        done: doneCount,
+        total: exercise.sets.length,
+      })}
+      progress={exercise.sets.length ? doneCount / exercise.sets.length : 0}
+      openAccessibilityLabel={t('exerciseOverview.openA11y', {
+        name: exerciseName,
+      })}
+      onOpen={() =>
+        navigation.navigate('EditExercise', {
+          exerciseId: exercise.exerciseId,
+        })
+      }
+      onRemove={() => requestRemoveExercise(t, exercise, removeExercise)}
+    >
       <ExerciseSetTable
         sets={exercise.sets}
         suggestedSets={suggestedSets}
         setTypeOptions={setTypeOptions}
         setTypesById={setTypesById}
         weightUnit={weightUnit}
-        onCreateSetType={onCreateSetType}
-        onAddSet={handleAddSet}
-        onChangeSet={handleChangeSet}
-        onToggleSetDone={handleToggleSetDone}
-        onRemoveSet={handleRemoveSet}
-        animateLayout={false}
+        onCreateSetType={createSetType}
+        onAddSet={() => addSet(exercise.id)}
+        onChangeSet={(setId, values) => updateSet(exercise.id, setId, values)}
+        onToggleSetDone={setId => toggleSetDone(exercise.id, setId)}
+        onRemoveSet={(set: CurrentWorkoutSet): DeleteResult =>
+          requestRemoveSet(t, exercise, set, removeSet)
+        }
       />
-    </>
+    </ExerciseCard>
   );
-});
+}

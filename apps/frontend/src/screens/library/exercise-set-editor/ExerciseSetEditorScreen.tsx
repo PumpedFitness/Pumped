@@ -55,7 +55,6 @@ export function ExerciseSetEditorScreen({
   const typeName = draft.typeId
     ? exerciseTypes.items.find(item => item.id === draft.typeId)?.name
     : undefined;
-
   const setSets = (sets: EditableExercise['sets']) =>
     setDraft(current => ({ ...current, sets }));
 

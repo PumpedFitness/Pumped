@@ -14,6 +14,7 @@ import {
 } from '@/data/local/builtins';
 import { deriveSetTypeColor } from '@/data/local/sets/setTypeColor';
 import { getNumberValue } from '@/data/local/sets/fieldValues';
+import { normalizeProgressionGoal } from '@/data/local/sets/progressionGoals';
 import type { SetTypeFieldDef, SetTypeWithFields } from '@/types/setType';
 import type { PerformedSet } from '@/types/workout';
 
@@ -48,6 +49,10 @@ function toSetTypeWithFields(
   row: SetTypeRow,
   fields: SetTypeFieldRow[],
 ): SetTypeWithFields {
+  const fieldDefs = fields
+    .filter(field => field.setTypeId === row.id)
+    .sort((a, b) => a.position - b.position)
+    .map(toFieldDef);
   return {
     id: row.id,
     name: resolveSetTypeName(row.id, row.name),
@@ -55,10 +60,8 @@ function toSetTypeWithFields(
     color: builtInSetTypeColor(row.id) ?? deriveSetTypeColor(row.id),
     isBuiltIn: row.isBuiltIn,
     position: row.position,
-    fields: fields
-      .filter(field => field.setTypeId === row.id)
-      .sort((a, b) => a.position - b.position)
-      .map(toFieldDef),
+    progressionGoal: normalizeProgressionGoal(row.progressionGoal, fieldDefs),
+    fields: fieldDefs,
   };
 }
 

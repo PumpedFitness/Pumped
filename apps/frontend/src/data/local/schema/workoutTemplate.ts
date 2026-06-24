@@ -1,7 +1,8 @@
 import { index, sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { ProgressionGoal } from '@/types/setType';
 import type { SetFieldValue } from '@/types/workout';
-import { enumText, jsonArray } from './columns';
+import { enumText, jsonArray, jsonObject } from './columns';
 
 // Scheduling no longer lives on the template — it moved to the `schedule` /
 // `schedule_slot` tables (see schema/schedule.ts). Templates are pure workout
@@ -55,8 +56,13 @@ export const workoutTemplateSets = sqliteTable(
     setType: enumText<SetTypeId>()('set_type').notNull(),
     // Universal per-set rest, independent of the set type's fields.
     restSeconds: integer('rest_seconds'),
+    // Optional per-template-set progression override. Null means use the set
+    // type's default progression goal.
+    progressionGoal: jsonObject<ProgressionGoal>()('progression_goal'),
     // Target values for the set type's fields, keyed by set_type_field id.
-    fieldValues: jsonArray<SetFieldValue>()('field_values').notNull().default([]),
+    fieldValues: jsonArray<SetFieldValue>()('field_values')
+      .notNull()
+      .default([]),
   },
   table => [
     index('idx_template_sets_exercise_position').on(

@@ -36,14 +36,20 @@ import type {
   DeleteHandler,
   DeleteResult,
 } from '@/components/clay/SwipeToDelete';
+import {
+  suggestedNumberValue,
+  type SuggestedSetValues,
+} from './exerciseSetSuggestion';
+import {
+  buildSetCardProgression,
+  type SetCardProgression,
+} from './setCardProgression';
 
-/** A selectable set type — label resolved upstream (i18n or custom name). */
 export type SetTypeOption = {
   value: SetTypeId;
   label: string;
 };
 
-/** Everything the set tables need to resolve a set's type into fields/labels. */
 type SetTypeContext = {
   setTypeOptions: SetTypeOption[];
   setTypesById: Map<string, SetTypeWithFields>;
@@ -70,6 +76,7 @@ export type TemplateSetTableProps = BaseTableProps & {
 type EditableExerciseSetTableProps = BaseTableProps & {
   readOnly?: false;
   sets: CurrentWorkoutSet[];
+  suggestedSets?: SuggestedSetValues[];
   onChangeSet: (setId: string, values: UpdateCurrentWorkoutSetInput) => void;
   onToggleSetDone: (setId: string) => boolean;
   onRemoveSet: (set: CurrentWorkoutSet) => DeleteResult;
@@ -81,7 +88,7 @@ type ReadOnlyExerciseSet = Pick<
   'id' | 'setType' | 'restSeconds' | 'fieldValues'
 >;
 
-type ReadOnlyExerciseSetTableProps = SetTypeContext & {
+export type ReadOnlyExerciseSetTableProps = SetTypeContext & {
   readOnly: true;
   sets: ReadOnlyExerciseSet[];
 };
@@ -101,11 +108,11 @@ type BaseCardField = {
   readOnly: boolean;
 };
 
-/** A single editable/displayable value on a set card, by data type. */
 export type SetCardField =
   | (BaseCardField & {
       kind: 'number';
       value: number | null;
+      suggestedValue?: number;
       input: 'keyboard' | 'wheel';
       allowDecimal: boolean;
       wheelConfig?: OptionalWheelPickerConfig;
@@ -145,11 +152,11 @@ export type SetCardModel = {
   setTypeIcon: string | null;
   setTypeColor: SetTypeColorName;
   fields: SetCardField[];
-  /** Universal per-set rest chip; null only when read-only with no rest. */
   rest: SetCardRest | null;
+  progression?: SetCardProgression;
+  progressionBadgeText?: string;
   tone: 'default' | 'completed';
   isDone?: boolean;
-  /** The active set to log next (first not-done) — shows the "NOW" badge. */
   isCurrent: boolean;
   canRemove: boolean;
   readOnly: boolean;
@@ -179,6 +186,15 @@ function unitSuffix(
     return 's';
   }
   return '';
+}
+
+function progressionModeLabelKey(
+  setGoal: { kind?: string } | null | undefined,
+  typeGoal: { kind?: string } | null | undefined,
+): 'progression.modes.rangeRollover' | 'progression.modes.linear' {
+  return (setGoal ?? typeGoal)?.kind === 'rangeRollover'
+    ? 'progression.modes.rangeRollover'
+    : 'progression.modes.linear';
 }
 
 function isBoundedNumber(config: SetTypeFieldDef['config']): boolean {
@@ -215,14 +231,15 @@ type FieldBuildOptions = {
   weightUnit: WeightUnit;
   t: TFunction;
   onChange: (next: SetFieldValue[]) => void;
+  suggestion?: SuggestedSetValues;
 };
 
-function buildCardField(
+export function buildCardField(
   field: SetTypeFieldDef,
   values: SetFieldValue[],
   options: FieldBuildOptions,
 ): SetCardField {
-  const { mode, readOnly, weightUnit, t, onChange } = options;
+  const { mode, readOnly, weightUnit, t, onChange, suggestion } = options;
   const unit = unitSuffix(field.unit, weightUnit);
   const base = {
     id: field.id,
@@ -243,6 +260,7 @@ function buildCardField(
       ...base,
       kind: 'number',
       value,
+      suggestedValue: suggestedNumberValue(field, suggestion, weightUnit),
       input: isBoundedNumber(field.config) ? 'wheel' : 'keyboard',
       allowDecimal: (field.config.decimals ?? 0) > 0,
       wheelConfig: isBoundedNumber(field.config)
@@ -320,6 +338,9 @@ export function buildTemplateSetCards(
         onChange: value =>
           props.onChangeSet(index, { ...set, restSeconds: value }),
       },
+      progression: buildSetCardProgression(set, type, progressionGoal =>
+        props.onChangeSet(index, { ...set, progressionGoal }),
+      ),
       tone: 'default',
       isCurrent: false,
       canRemove: props.sets.length > 1,
@@ -328,6 +349,7 @@ export function buildTemplateSetCards(
         props.onChangeSet(index, {
           ...set,
           setType,
+          progressionGoal: undefined,
           fieldValues: reconcileValuesForType(
             set.fieldValues,
             fieldsForType(props, setType),
@@ -346,6 +368,7 @@ export function buildWorkoutSetCards(
   const currentIndex = props.sets.findIndex(set => !set.isDone);
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
+    const suggestion = props.suggestedSets?.[index];
     return {
       key: set.id,
       index,
@@ -359,6 +382,7 @@ export function buildWorkoutSetCards(
           readOnly: false,
           weightUnit: props.weightUnit,
           t,
+          suggestion,
           onChange: next => props.onChangeSet(set.id, { fieldValues: next }),
         }),
       ),
@@ -367,6 +391,19 @@ export function buildWorkoutSetCards(
         readOnly: false,
         onChange: value => props.onChangeSet(set.id, { restSeconds: value }),
       },
+      progression: buildSetCardProgression(set, type, progressionGoal =>
+        props.onChangeSet(set.id, { progressionGoal }),
+      ),
+      progressionBadgeText: suggestion
+        ? t(
+            suggestion.isLastPerformanceOnly
+              ? 'progression.modes.none'
+              : progressionModeLabelKey(
+                  set.progressionGoal,
+                  type?.progressionGoal,
+                ),
+          )
+        : undefined,
       tone: set.isDone ? 'completed' : 'default',
       isDone: set.isDone,
       isCurrent: index === currentIndex,
@@ -382,46 +419,6 @@ export function buildWorkoutSetCards(
         }),
       onToggleDone: () => props.onToggleSetDone(set.id),
       onRemove: () => props.onRemoveSet(set),
-    };
-  });
-}
-
-export function buildReadOnlySetCards(
-  t: TFunction,
-  props: ReadOnlyExerciseSetTableProps,
-): SetCardModel[] {
-  return props.sets.map((set, index) => {
-    const type = props.setTypesById.get(set.setType);
-    return {
-      key: set.id,
-      index,
-      setType: set.setType,
-      setTypeLabel: type?.name ?? set.setType,
-      setTypeIcon: type?.icon ?? null,
-      setTypeColor: type?.color ?? 'terracotta',
-      fields: (type?.fields ?? []).map(field =>
-        buildCardField(field, set.fieldValues, {
-          mode: 'actual',
-          readOnly: true,
-          weightUnit: props.weightUnit,
-          t,
-          onChange: () => undefined,
-        }),
-      ),
-      rest:
-        set.restSeconds != null
-          ? {
-              value: set.restSeconds,
-              readOnly: true,
-              onChange: () => undefined,
-            }
-          : null,
-      tone: 'default',
-      isCurrent: false,
-      canRemove: false,
-      readOnly: true,
-      onSetTypeChange: () => undefined,
-      onRemove: () => undefined,
     };
   });
 }

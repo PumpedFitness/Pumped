@@ -1,4 +1,5 @@
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { ProgressionGoal } from '@/types/setType';
 import type { SetFieldValue } from '@/types/workout';
 
 export type ExerciseOption = {
@@ -28,6 +29,7 @@ export type EditableExerciseSet = {
   id: string;
   setType: SetTypeId;
   restSeconds: number | null;
+  progressionGoal?: ProgressionGoal | null;
   /** Target values for the set type's fields, keyed by set_type_field id. */
   fieldValues: SetFieldValue[];
 };

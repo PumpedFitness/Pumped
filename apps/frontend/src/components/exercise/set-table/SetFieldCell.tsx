@@ -70,15 +70,20 @@ function CellLabel({ label, required, satisfied, hasError }: CellLabelProps) {
 
 function CellShell({
   hasError,
+  hasSuggestion,
   children,
 }: {
   hasError: boolean;
+  hasSuggestion?: boolean;
   children: ReactNode;
 }) {
+  const backgroundClass = hasError
+    ? 'bg-danger/10'
+    : hasSuggestion
+      ? 'bg-foreground/5'
+      : '';
   return (
-    <View className={`flex-1 px-3 py-2.5 ${hasError ? 'bg-danger/10' : ''}`}>
-      {children}
-    </View>
+    <View className={`flex-1 px-3 py-2.5 ${backgroundClass}`}>{children}</View>
   );
 }
 
@@ -156,8 +161,9 @@ type NumberCellProps = {
 };
 
 function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
+  const hasSuggestion = field.value === null && field.suggestedValue != null;
   return (
-    <CellShell hasError={hasError}>
+    <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
       {label}
       <View className="flex-row items-baseline gap-1">
         {field.readOnly ? (
@@ -168,6 +174,7 @@ function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
           <EditableNumberInput
             accessibilityLabel={field.label}
             value={field.value}
+            suggestedValue={field.suggestedValue}
             allowDecimal={field.allowDecimal}
             hasError={hasError}
             onChange={field.onChange}
@@ -199,18 +206,86 @@ function ButtonFieldCell({
   label,
   accessibilityLabel,
   display,
+  isSuggested = false,
   hasError,
   onPress,
-}: ButtonCellProps) {
+}: ButtonCellProps & { isSuggested?: boolean }) {
   return (
-    <CellShell hasError={hasError}>
+    <CellShell hasError={hasError} hasSuggestion={isSuggested}>
       {label}
       <ValueButton
         accessibilityLabel={accessibilityLabel}
         display={display}
+        isSuggested={isSuggested}
         hasError={hasError}
         onPress={onPress}
       />
+    </CellShell>
+  );
+}
+
+type WheelNumberCellProps = {
+  field: SetCardNumberField;
+  label: ReactNode;
+  hasError: boolean;
+  onPress?: () => void;
+};
+
+function WheelNumberFieldCell({
+  field,
+  label,
+  hasError,
+  onPress,
+}: WheelNumberCellProps) {
+  const hasSuggestion = field.value === null && field.suggestedValue != null;
+  const display = formatSetNumber(field.value);
+  const placeholder = hasSuggestion
+    ? formatSetNumber(field.suggestedValue ?? null)
+    : '–';
+  const valueInput = (
+    <TextInput
+      accessibilityLabel={field.label}
+      className={`min-w-12 text-[17px] font-bold tabular-nums ${
+        hasError
+          ? 'text-danger'
+          : display
+            ? 'text-foreground'
+            : 'text-muted'
+      }`}
+      editable={false}
+      placeholder={placeholder}
+      placeholderTextColor={hasError ? colors.danger : colors.muted}
+      pointerEvents="none"
+      value={display}
+    />
+  );
+
+  return (
+    <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
+      {label}
+      <View className="flex-row items-baseline gap-1">
+        {onPress ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${field.label}: ${display || placeholder}`}
+            hitSlop={6}
+            onPress={onPress}
+          >
+            {valueInput}
+          </Pressable>
+        ) : (
+          valueInput
+        )}
+        {field.unit ? (
+          <Text
+            className={`text-[11px] font-semibold ${
+              hasError ? 'text-danger' : 'text-muted'
+            }`}
+          >
+            {field.unit}
+          </Text>
+        ) : null}
+      </View>
     </CellShell>
   );
 }
@@ -252,10 +327,9 @@ export function SetFieldCell({
   if (field.input === 'wheel') {
     const wheelField = field;
     return (
-      <ButtonFieldCell
+      <WheelNumberFieldCell
+        field={field}
         label={label}
-        accessibilityLabel={field.label}
-        display={withUnit(formatSetNumber(field.value), field.unit)}
         hasError={hasError}
         onPress={field.readOnly ? undefined : () => onOpenWheel(wheelField)}
       />

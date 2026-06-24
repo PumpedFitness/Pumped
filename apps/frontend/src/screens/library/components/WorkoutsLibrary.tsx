@@ -11,6 +11,7 @@ import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
 import type { WorkoutTemplate } from '@/types/workout';
 import { WorkoutTemplateCard } from './WorkoutTemplateCard';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
@@ -78,7 +79,7 @@ export function WorkoutsLibrary() {
           { text: t('common.cancel'), style: 'cancel' },
           {
             text: t('plan.alerts.openWorkout'),
-            onPress: () => navigation.navigate('CurrentWorkout'),
+            onPress: () => openCurrentWorkout(navigation),
           },
         ],
       );
@@ -86,7 +87,7 @@ export function WorkoutsLibrary() {
     }
     try {
       startTemplateWorkout(template.id);
-      navigation.navigate('CurrentWorkout');
+      openCurrentWorkout(navigation);
     } catch (error) {
       Alert.alert(
         t('plan.alerts.startFailedTitle'),

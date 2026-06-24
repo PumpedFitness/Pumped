@@ -1,7 +1,11 @@
 import type { InferInsertModel } from 'drizzle-orm';
 import type { WorkoutSetType } from '@/data/local/enums';
+import type { ProgressionGoal } from '@/types/setType';
 import type { db } from '@/data/local/database';
-import { buildBuiltInFieldValues } from '@/data/local/builtins';
+import {
+  buildBuiltInFieldValues,
+  builtInSetFieldId,
+} from '@/data/local/builtins';
 import {
   schedules,
   scheduleSlots,
@@ -27,6 +31,7 @@ type SetSpec = {
   type?: WorkoutSetType;
   reps: number;
   rpe?: number;
+  progressionGoal?: ProgressionGoal | null;
 };
 
 type ExerciseSpec = {
@@ -47,6 +52,12 @@ type TemplateSpec = Omit<
 const normalSets = (count: number, reps: number, rpe = 8): SetSpec[] =>
   Array.from({ length: count }, () => ({ reps, rpe }));
 
+const linearReps = (increment = 1): ProgressionGoal => ({
+  kind: 'linear',
+  fieldId: builtInSetFieldId('NORMAL', 'reps'),
+  increment,
+});
+
 const TEMPLATES: TemplateSpec[] = [
   {
     id: TEMPLATE_IDS.push,
@@ -56,7 +67,10 @@ const TEMPLATES: TemplateSpec[] = [
     exercises: [
       templateExercise('bench', EXERCISE_IDS.benchPress, '3 x 6-8 at RPE 8', [
         { type: 'WARMUP', reps: 10 },
-        ...normalSets(3, 8),
+        ...normalSets(3, 8).map(set => ({
+          ...set,
+          progressionGoal: linearReps(),
+        })),
       ]),
       templateExercise(
         'overhead',
@@ -82,7 +96,13 @@ const TEMPLATES: TemplateSpec[] = [
         'squat',
         EXERCISE_IDS.backSquat,
         '3 x 5 with clean reps',
-        [{ type: 'WARMUP', reps: 8 }, ...normalSets(3, 5)],
+        [
+          { type: 'WARMUP', reps: 8 },
+          ...normalSets(3, 5).map((set, index) => ({
+            ...set,
+            progressionGoal: index === 0 ? linearReps(2) : null,
+          })),
+        ],
       ),
       templateExercise('row', EXERCISE_IDS.barbellRow, '3 x 10 with a pause', [
         ...normalSets(2, 10),
@@ -275,6 +295,7 @@ function buildSetRows(): TemplateSetInsert[] {
           position,
           setType,
           restSeconds: null,
+          progressionGoal: set.progressionGoal ?? null,
           fieldValues: buildBuiltInFieldValues(setType, set),
         };
       }),
