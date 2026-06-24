@@ -6,7 +6,7 @@ import { formatNumber } from '@/data/local/sets/progressionGoals';
 type ProgressionNumberInputRowProps = {
   label: string;
   value: number;
-  decimals?: number;
+  decimals: number;
   suffix?: string;
   onChange: (value: number) => void;
 };
@@ -45,17 +45,28 @@ function parseInputText(text: string, allowDecimal: boolean): string {
 export function ProgressionNumberInputRow({
   label,
   value,
-  decimals = 2,
+  decimals,
   suffix,
   onChange,
 }: ProgressionNumberInputRowProps) {
-  const [text, setText] = useState<string>(formatNumber(value));
+  const [text, setText] = useState(formatNumber(value));
   const safeDecimals = Math.max(0, decimals);
   const allowDecimal = safeDecimals > 0;
 
   useEffect(() => {
-    setText(formatNumber(roundToDecimals(value, safeDecimals)));
-  }, [safeDecimals, value]);
+    setText(formatNumber(value));
+  }, [value]);
+
+  const commitText = (input: string, format: boolean) => {
+    const parsed = roundToDecimals(
+      parseInputNumber(parseInputText(input, allowDecimal), value),
+      safeDecimals,
+    );
+    onChange(parsed);
+    if (format) {
+      setText(formatNumber(parsed));
+    }
+  };
 
   return (
     <View className="flex-1 gap-1.5">
@@ -65,17 +76,15 @@ export function ProgressionNumberInputRow({
           className="h-[46px] flex-1 rounded-[14px] border-border-hairline bg-surface-sunk px-3 text-foreground"
           keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
           value={text}
-          onChangeText={uiText => setText(parseInputText(uiText, allowDecimal))}
+          onChangeText={uiText => {
+            const nextText = parseInputText(uiText, allowDecimal);
+            setText(nextText);
+            if (nextText.trim()) {
+              commitText(nextText, false);
+            }
+          }}
           onEndEditing={event => {
-            const parsed = roundToDecimals(
-              parseInputNumber(
-                parseInputText(event.nativeEvent.text, allowDecimal),
-                value,
-              ),
-              safeDecimals,
-            );
-            onChange(parsed);
-            setText(formatNumber(parsed));
+            commitText(event.nativeEvent.text, true);
           }}
         />
         {suffix ? <Text className="t-caption text-muted">{suffix}</Text> : null}
