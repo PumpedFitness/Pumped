@@ -165,9 +165,16 @@ function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
   return (
     <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
       {label}
-      <View className="flex-row items-baseline gap-1">
+      <View
+        className={`flex-row items-baseline gap-1 ${
+          field.readOnly && field.unit ? 'mt-1' : ''
+        }`}
+      >
         {field.readOnly ? (
-          <Text className="text-[17px] font-bold tabular-nums text-foreground">
+          <Text
+            className="text-[17px] font-bold leading-[22px] tabular-nums text-foreground"
+            style={{ includeFontPadding: false }}
+          >
             {formatSetNumber(field.value) || '–'}
           </Text>
         ) : (
@@ -183,8 +190,11 @@ function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
         {field.unit ? (
           <Text
             className={`text-[11px] font-semibold ${
+              field.readOnly ? 'leading-[14px]' : ''
+            } ${
               hasError ? 'text-danger' : 'text-muted'
             }`}
+            style={field.readOnly ? { includeFontPadding: false } : undefined}
           >
             {field.unit}
           </Text>

@@ -767,6 +767,11 @@ export const resources = {
           sets: 'Sets',
           volume: 'Volume',
         },
+        exerciseStats: {
+          sets: 'Sets',
+          volume: 'Volume',
+          topWeight: 'Top',
+        },
         completedSets_one: '{{count}} completed set',
         completedSets_other: '{{count}} completed sets',
         notes: 'Notes',
@@ -1671,6 +1676,11 @@ export const resources = {
           duration: 'Dauer',
           sets: 'Sätze',
           volume: 'Volumen',
+        },
+        exerciseStats: {
+          sets: 'Sätze',
+          volume: 'Volumen',
+          topWeight: 'Top',
         },
         completedSets_one: '{{count}} abgeschlossener Satz',
         completedSets_other: '{{count}} abgeschlossene Sätze',

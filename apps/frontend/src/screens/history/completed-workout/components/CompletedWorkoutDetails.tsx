@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import {
@@ -10,12 +12,16 @@ import {
 } from '@/hooks/useWorkoutHistory';
 import type { PerformedSet } from '@/types/workout';
 import { displayWeight } from '@/utils/units';
-import { ExerciseCard } from '@/components/exercise/ExerciseCard';
-import { ExerciseSetTable } from '@/components/exercise/set-table';
+import {
+  ExerciseSetTable,
+  type SetTypeOption,
+} from '@/components/exercise/set-table';
+import { ExerciseSectionHeader } from '@/components/exercise/ExerciseSectionHeader';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { colors } from '@/theme/tokens';
+import type { SetTypeWithFields } from '@/types/setType';
 
 type CompletedWorkoutDetailsProps = {
   workoutId: string;
@@ -26,6 +32,12 @@ type CompletedExercise = {
   key: string;
   exerciseId: string;
   sets: PerformedSet[];
+};
+
+type ExerciseStats = {
+  sets: number;
+  volumeKg: number;
+  topWeightKg: number | null;
 };
 
 function groupCompletedExercises(
@@ -68,6 +80,25 @@ function formatVolume(volumeKg: number, weightUnit: WeightUnit): string {
   return `${Math.round(volume).toLocaleString()} ${weightUnit}`;
 }
 
+function buildExerciseStats(sets: PerformedSet[]): ExerciseStats {
+  return sets.reduce<ExerciseStats>(
+    (stats, set) => {
+      const { weight: weightKg, reps } = resolveSetWeightReps(set);
+      const volumeKg =
+        weightKg !== null && reps !== null ? weightKg * reps : 0;
+      return {
+        sets: stats.sets + 1,
+        volumeKg: stats.volumeKg + volumeKg,
+        topWeightKg:
+          weightKg === null
+            ? stats.topWeightKg
+            : Math.max(stats.topWeightKg ?? weightKg, weightKg),
+      };
+    },
+    { sets: 0, volumeKg: 0, topWeightKg: null },
+  );
+}
+
 type StatTileProps = {
   label: string;
   value: string;
@@ -82,6 +113,93 @@ function StatTile({ label, value }: StatTileProps) {
   );
 }
 
+function ExerciseStatPill({ label, value }: StatTileProps) {
+  return (
+    <View className="min-w-0 flex-1">
+      <Text className="text-[9px] font-bold uppercase tracking-[0.6px] text-muted">
+        {label}
+      </Text>
+      <Text className="mt-0.5 text-[13px] font-bold tabular-nums text-foreground">
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+type CompletedExerciseSectionProps = {
+  exercise: CompletedExercise;
+  index: number;
+  name: string;
+  isCollapsed: boolean;
+  onOpen?: () => void;
+  onToggleCollapsed: () => void;
+  setTypeOptions: SetTypeOption[];
+  setTypesById: Map<string, SetTypeWithFields>;
+  weightUnit: WeightUnit;
+};
+
+function CompletedExerciseSection({
+  exercise,
+  index,
+  name,
+  isCollapsed,
+  onOpen,
+  onToggleCollapsed,
+  setTypeOptions,
+  setTypesById,
+  weightUnit,
+}: CompletedExerciseSectionProps) {
+  const { t } = useTranslation();
+  const setCount = exercise.sets.length;
+  const stats = buildExerciseStats(exercise.sets);
+  const topWeight =
+    stats.topWeightKg === null
+      ? '–'
+      : `${displayWeight(stats.topWeightKg, weightUnit)} ${weightUnit}`;
+
+  return (
+    <View className="-mx-5 overflow-hidden border-y border-border-hairline bg-background">
+      <ExerciseSectionHeader
+        index={index}
+        name={name}
+        doneCount={setCount}
+        totalCount={setCount}
+        state="finished"
+        onOpen={onOpen}
+        isCollapsed={isCollapsed}
+        onToggleCollapsed={onToggleCollapsed}
+      />
+      <View className="border-b border-border-hairline bg-surface-card px-4 py-2.5">
+        <View className="flex-row gap-3">
+          <ExerciseStatPill
+            label={t('completedWorkout.exerciseStats.sets')}
+            value={`${stats.sets}`}
+          />
+          <ExerciseStatPill
+            label={t('completedWorkout.exerciseStats.volume')}
+            value={formatVolume(stats.volumeKg, weightUnit)}
+          />
+          <ExerciseStatPill
+            label={t('completedWorkout.exerciseStats.topWeight')}
+            value={topWeight}
+          />
+        </View>
+      </View>
+      {!isCollapsed ? (
+        <View className="px-4 py-3">
+          <ExerciseSetTable
+            readOnly
+            sets={exercise.sets}
+            setTypeOptions={setTypeOptions}
+            setTypesById={setTypesById}
+            weightUnit={weightUnit}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 export function CompletedWorkoutDetails({
   workoutId,
   weightUnit,
@@ -92,6 +210,26 @@ export function CompletedWorkoutDetails({
   const workout = useWorkoutSession(workoutId);
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
+
+  const [collapsedExercises, setCollapsedExercises] = useState<Set<string>>(
+    () =>
+      new Set(
+        (workout ? groupCompletedExercises(workout) : []).map(
+          exercise => exercise.key,
+        ),
+      ),
+  );
+  const toggleCollapsed = (exerciseKey: string) => {
+    setCollapsedExercises(previous => {
+      const next = new Set(previous);
+      if (next.has(exerciseKey)) {
+        next.delete(exerciseKey);
+      } else {
+        next.add(exerciseKey);
+      }
+      return next;
+    });
+  };
 
   if (!workout) {
     return (
@@ -111,7 +249,6 @@ export function CompletedWorkoutDetails({
   const exerciseById = new Map(
     exerciseOptions.map(exercise => [exercise.id, exercise] as const),
   );
-
   return (
     <ScrollView
       className="flex-1"
@@ -151,25 +288,17 @@ export function CompletedWorkoutDetails({
         </View>
       </View>
 
-      {exercises.map(exercise => {
+      {exercises.map((exercise, index) => {
         const option = exerciseById.get(exercise.exerciseId);
-        const description = [
-          t('completedWorkout.completedSets', { count: exercise.sets.length }),
-          option?.typeName,
-        ]
-          .filter(Boolean)
-          .join(' · ');
+        const isCollapsed = collapsedExercises.has(exercise.key);
 
         return (
-          <ExerciseCard
+          <CompletedExerciseSection
             key={exercise.key}
+            exercise={exercise}
+            index={index}
             name={option?.name ?? t('common.unknownExercise')}
-            description={description}
-            openAccessibilityLabel={
-              option
-                ? t('exerciseOverview.openA11y', { name: option.name })
-                : undefined
-            }
+            isCollapsed={isCollapsed}
             onOpen={
               option
                 ? () =>
@@ -178,15 +307,11 @@ export function CompletedWorkoutDetails({
                     })
                 : undefined
             }
-          >
-            <ExerciseSetTable
-              readOnly
-              sets={exercise.sets}
-              setTypeOptions={setTypeOptions}
-              setTypesById={setTypesById}
-              weightUnit={weightUnit}
-            />
-          </ExerciseCard>
+            onToggleCollapsed={() => toggleCollapsed(exercise.key)}
+            setTypeOptions={setTypeOptions}
+            setTypesById={setTypesById}
+            weightUnit={weightUnit}
+          />
         );
       })}
 

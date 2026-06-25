@@ -117,8 +117,9 @@ export function ValueButton({
     return (
       <Text
         accessibilityLabel={`${accessibilityLabel}: ${display || '-'}`}
-        className={textClass}
+        className={`${textClass} leading-[22px]`}
         numberOfLines={1}
+        style={{ includeFontPadding: false }}
       >
         {display || '–'}
       </Text>
