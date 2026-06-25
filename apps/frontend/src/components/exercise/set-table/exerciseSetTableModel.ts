@@ -38,6 +38,7 @@ import type {
 } from '@/components/clay/SwipeToDelete';
 import {
   suggestedNumberValue,
+  suggestedRangeValue,
   type SuggestedSetValues,
 } from './exerciseSetSuggestion';
 import {
@@ -131,6 +132,7 @@ export type SetCardField =
   | (BaseCardField & {
       kind: 'range';
       range: SetFieldRange | null;
+      suggestedRange?: SetFieldRange;
       wheelConfig: OptionalWheelPickerConfig;
       onChange: (value: SetFieldRange | null) => void;
     });
@@ -296,6 +298,7 @@ export function buildCardField(
         ...base,
         kind: 'range',
         range: getRangeValue(values, field.id),
+        suggestedRange: suggestedRangeValue(field, suggestion, weightUnit),
         wheelConfig: buildWheelConfig(t, field, unit),
         onChange: next => onChange(setRangeValue(values, field.id, next)),
       };

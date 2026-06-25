@@ -1,4 +1,5 @@
 import type { SetTypeFieldDef } from '@/types/setType';
+import type { SetFieldRange } from '@/types/workout';
 import { displayWeight } from '@/utils/units';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 
@@ -40,4 +41,13 @@ export function suggestedNumberValue(
   weightUnit?: WeightUnit,
 ): number | undefined {
   return fieldSuggestionValue(field, suggestion, weightUnit);
+}
+
+export function suggestedRangeValue(
+  field: SetTypeFieldDef,
+  suggestion?: SuggestedSetValues,
+  weightUnit?: WeightUnit,
+): SetFieldRange | undefined {
+  const value = fieldSuggestionValue(field, suggestion, weightUnit);
+  return value === undefined ? undefined : { min: value, max: value };
 }

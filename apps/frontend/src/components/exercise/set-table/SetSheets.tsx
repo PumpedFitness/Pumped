@@ -115,7 +115,7 @@ function SetSheets({
 
       <OptionalWheelPickerSheet
         visible={wheelOpen}
-        value={wheelField?.value ?? null}
+        value={wheelField?.value ?? wheelField?.suggestedValue ?? null}
         config={wheelField?.wheelConfig ?? WHEEL_PLACEHOLDER}
         onClose={onCloseWheel}
         onChange={value => wheelField?.onChange(value)}
@@ -123,7 +123,7 @@ function SetSheets({
 
       <RangeWheelPickerSheet
         visible={rangeOpen}
-        value={rangeField?.range ?? null}
+        value={rangeField?.range ?? rangeField?.suggestedRange ?? null}
         config={rangeField?.wheelConfig ?? WHEEL_PLACEHOLDER}
         onClose={onCloseRange}
         onChange={value => rangeField?.onChange(value)}
