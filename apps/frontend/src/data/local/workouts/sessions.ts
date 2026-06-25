@@ -13,6 +13,10 @@ import type {
   WorkoutSessionDetails,
 } from '@/types/workout';
 import { db } from '@/data/local/database';
+import {
+  loadSetFields,
+  snapshotFieldDefinitions,
+} from '@/data/local/sets/fieldValueSnapshots';
 import { notifyTableChanged } from '@/data/local/tableVersions';
 import { performedSets, workoutSessions } from '@/data/local/schema';
 import { LOCAL_USER_ID, requireText } from './validation';
@@ -87,6 +91,14 @@ export function saveCompletedWorkout(
     assertTemplateExists(input.workoutTemplateId);
   }
 
+  const fieldRows = loadSetFields();
+  const fieldsBySetType = new Map<string, typeof fieldRows>();
+  fieldRows.forEach(field => {
+    const fields = fieldsBySetType.get(field.setTypeId) ?? [];
+    fields.push(field);
+    fieldsBySetType.set(field.setTypeId, fields);
+  });
+
   db.transaction(tx => {
     const existing = tx
       .select()
@@ -134,6 +146,10 @@ export function saveCompletedWorkout(
             setPosition: set.setPosition,
             setType: set.setType,
             restSeconds: set.restSeconds ?? null,
+            fieldDefinitions: snapshotFieldDefinitions(
+              set.fieldValues ?? [],
+              fieldsBySetType.get(set.setType) ?? [],
+            ),
             fieldValues: set.fieldValues ?? [],
             performedAt: set.performedAt ?? Date.now(),
           })),

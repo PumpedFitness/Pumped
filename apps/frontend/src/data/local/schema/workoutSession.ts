@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import type { SetTypeId } from '@/data/local/enums';
-import type { SetFieldValue } from '@/types/workout';
+import type { HistoricalSetField, SetFieldValue } from '@/types/workout';
 import { enumText, jsonArray } from './columns';
 import { workoutTemplates } from './workoutTemplate';
 
@@ -36,7 +36,13 @@ export const performedSets = sqliteTable(
     // Universal per-set rest, independent of the set type's fields.
     restSeconds: integer('rest_seconds'),
     // Actual values logged for the set type's fields, keyed by set_type_field id.
-    fieldValues: jsonArray<SetFieldValue>()('field_values').notNull().default([]),
+    fieldValues: jsonArray<SetFieldValue>()('field_values')
+      .notNull()
+      .default([]),
+    // Display metadata captured with completed/imported sets for deleted or unknown fields.
+    fieldDefinitions: jsonArray<HistoricalSetField>()('field_definitions')
+      .notNull()
+      .default([]),
     performedAt: integer('performed_at'),
     importId: integer('import_id'),
   },

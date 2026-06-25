@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { historicalFieldsForSet } from '@/data/local/sets/fieldValueSnapshots';
 import {
   buildCardField,
   type ReadOnlyExerciseSetTableProps,
@@ -11,6 +12,12 @@ export function buildReadOnlySetCards(
 ): SetCardModel[] {
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
+    const fields = historicalFieldsForSet(
+      type?.fields ?? [],
+      set.setType,
+      set.fieldValues,
+      set.fieldDefinitions,
+    );
     return {
       key: set.id,
       index,
@@ -18,7 +25,7 @@ export function buildReadOnlySetCards(
       setTypeLabel: type?.name ?? set.setType,
       setTypeIcon: type?.icon ?? null,
       setTypeColor: type?.color ?? 'terracotta',
-      fields: (type?.fields ?? []).map(field =>
+      fields: fields.map(field =>
         buildCardField(field, set.fieldValues, {
           mode: 'actual',
           readOnly: true,

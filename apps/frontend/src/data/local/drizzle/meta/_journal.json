@@ -141,6 +141,13 @@
       "when": 1782345600000,
       "tag": "0019_drop_progression_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1782432000000,
+      "tag": "0020_performed_set_field_definitions",
+      "breakpoints": true
     }
   ]
 }

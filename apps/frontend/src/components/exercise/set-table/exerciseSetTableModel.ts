@@ -85,7 +85,7 @@ type EditableExerciseSetTableProps = BaseTableProps & {
 
 type ReadOnlyExerciseSet = Pick<
   PerformedSet,
-  'id' | 'setType' | 'restSeconds' | 'fieldValues'
+  'id' | 'setType' | 'restSeconds' | 'fieldValues' | 'fieldDefinitions'
 >;
 
 export type ReadOnlyExerciseSetTableProps = SetTypeContext & {

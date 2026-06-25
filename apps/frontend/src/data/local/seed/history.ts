@@ -2,6 +2,10 @@ import type { InferInsertModel } from 'drizzle-orm';
 import type { WorkoutSetType } from '@/data/local/enums';
 import type { performedSets, workoutSessions } from '@/data/local/schema';
 import { buildBuiltInFieldValues } from '@/data/local/builtins';
+import {
+  BUILT_IN_FIELD_DEFINITIONS,
+  snapshotFieldDefinitions,
+} from '@/data/local/sets/fieldValueSnapshots';
 import { EXERCISE_IDS, LOCAL_USER_ID, sampleId, TEMPLATE_IDS } from './ids';
 
 type SessionInsert = InferInsertModel<typeof workoutSessions>;
@@ -225,6 +229,7 @@ function buildSession(spec: HistorySpec, index: number, now: number) {
       setGroup.sets.map((performedSet, setPosition) => {
         setIndex += 1;
         const setType = performedSet.type ?? 'NORMAL';
+        const fieldValues = buildBuiltInFieldValues(setType, performedSet);
         return {
           id: sampleId(`performed-${spec.daysAgo}-${spec.kind}-${setIndex}`),
           workoutSessionId: id,
@@ -233,7 +238,11 @@ function buildSession(spec: HistorySpec, index: number, now: number) {
           setPosition,
           setType,
           restSeconds: null,
-          fieldValues: buildBuiltInFieldValues(setType, performedSet),
+          fieldDefinitions: snapshotFieldDefinitions(
+            fieldValues,
+            BUILT_IN_FIELD_DEFINITIONS,
+          ),
+          fieldValues,
           performedAt: startedAt + (5 + setIndex * 4) * 60_000,
         } satisfies PerformedSetInsert;
       }),
