@@ -1,15 +1,16 @@
+import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/clay/Card';
-import { ExerciseSetTable } from '@/components/exercise/set-table';
+import { CompletedExerciseHistorySection } from '@/components/exercise/CompletedExerciseHistorySection';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { ExerciseHistoryEntry } from '@/hooks/useExerciseAnalytics';
 import { colors } from '@/theme/tokens';
-import { displayWeight, formatWeight } from '@/utils/units';
 
 type ExerciseHistorySectionProps = {
+  exerciseName: string;
   history: ExerciseHistoryEntry[];
   weightUnit: WeightUnit;
   onOpenWorkout: (workoutId: string) => void;
@@ -24,34 +25,29 @@ function formatDate(timestamp: number, language: string): string {
   });
 }
 
-function formatVolume(volumeKg: number, weightUnit: WeightUnit): string {
-  const value = displayWeight(volumeKg, weightUnit);
-  return `${Math.round(value).toLocaleString()} ${weightUnit}`;
-}
-
-type HistoryStatProps = {
-  label: string;
-  value: string;
-};
-
-function HistoryStat({ label, value }: HistoryStatProps) {
-  return (
-    <View className="flex-1 rounded-[14px] bg-surface-sunk px-3 py-2.5">
-      <Text className="t-eyebrow text-muted">{label}</Text>
-      <Text className="t-label mt-1" numberOfLines={1}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
 export function ExerciseHistorySection({
+  exerciseName,
   history,
   weightUnit,
   onOpenWorkout,
 }: ExerciseHistorySectionProps) {
   const { t, i18n } = useTranslation();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
+  const [expandedWorkoutIds, setExpandedWorkoutIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const toggleWorkoutExpanded = (workoutId: string) => {
+    setExpandedWorkoutIds(current => {
+      const next = new Set(current);
+      if (next.has(workoutId)) {
+        next.delete(workoutId);
+      } else {
+        next.add(workoutId);
+      }
+      return next;
+    });
+  };
 
   return (
     <Card>
@@ -60,12 +56,12 @@ export function ExerciseHistorySection({
         {t('exerciseOverview.history.subtitle')}
       </Text>
 
-      <View className="mt-4 gap-3">
+      <View className="mt-4 -mx-[18px]">
         {history.length > 0 ? (
-          history.map(entry => (
+          history.map((entry, index) => (
             <View
               key={entry.workoutId}
-              className="gap-3 rounded-[20px] border border-border-soft p-3"
+              className={`gap-4 px-[18px] py-5 ${index > 0 ? 'border-t border-border-hairline' : ''}`}
             >
               <Pressable
                 accessibilityRole="button"
@@ -89,32 +85,22 @@ export function ExerciseHistorySection({
                 <ClayIcon name="chevron" size={16} color={colors.muted} />
               </Pressable>
 
-              <View className="flex-row gap-2">
-                <HistoryStat
-                  label={t('exerciseOverview.history.sets')}
-                  value={`${entry.setCount}`}
-                />
-                <HistoryStat
-                  label={t('exerciseOverview.history.volume')}
-                  value={formatVolume(entry.volumeKg, weightUnit)}
-                />
-                <HistoryStat
-                  label={t('exerciseOverview.history.topWeight')}
-                  value={
-                    entry.topWeightKg == null
-                      ? t('common.notAvailable')
-                      : formatWeight(entry.topWeightKg, weightUnit)
+              <View className="-mx-[18px]">
+                <CompletedExerciseHistorySection
+                  edgeToEdge={false}
+                  showHeader={false}
+                  index={0}
+                  name={exerciseName}
+                  sets={entry.sets}
+                  isCollapsed={!expandedWorkoutIds.has(entry.workoutId)}
+                  onToggleCollapsed={() =>
+                    toggleWorkoutExpanded(entry.workoutId)
                   }
+                  setTypeOptions={setTypeOptions}
+                  setTypesById={setTypesById}
+                  weightUnit={weightUnit}
                 />
               </View>
-
-              <ExerciseSetTable
-                readOnly
-                sets={entry.sets}
-                setTypeOptions={setTypeOptions}
-                setTypesById={setTypesById}
-                weightUnit={weightUnit}
-              />
             </View>
           ))
         ) : (
