@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Button } from 'heroui-native';
 import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
+import { setWorkoutSessionTemplate } from '@/data/local/workouts/sessions';
+import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import {
   useWorkoutSession,
   type WorkoutHistoryItem,
 } from '@/hooks/useWorkoutHistory';
+import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import type { PerformedSet } from '@/types/workout';
 import { displayWeight } from '@/utils/units';
 import {
@@ -27,6 +31,35 @@ type CompletedWorkoutDetailsProps = {
   workoutId: string;
   weightUnit: WeightUnit;
 };
+
+type CompletedWorkoutTemplateActionProps = {
+  hasTemplate: boolean;
+  onPress: () => void;
+};
+
+function CompletedWorkoutTemplateAction({
+  hasTemplate,
+  onPress,
+}: CompletedWorkoutTemplateActionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <Button
+      className="mx-5 rounded-full"
+      variant="secondary"
+      feedbackVariant="scale"
+      onPress={onPress}
+    >
+      <Button.Label>
+        {t(
+          hasTemplate
+            ? 'completedWorkout.editTemplate'
+            : 'completedWorkout.createTemplate',
+        )}
+      </Button.Label>
+    </Button>
+  );
+}
 
 type CompletedExercise = {
   key: string;
@@ -84,8 +117,7 @@ function buildExerciseStats(sets: PerformedSet[]): ExerciseStats {
   return sets.reduce<ExerciseStats>(
     (stats, set) => {
       const { weight: weightKg, reps } = resolveSetWeightReps(set);
-      const volumeKg =
-        weightKg !== null && reps !== null ? weightKg * reps : 0;
+      const volumeKg = weightKg !== null && reps !== null ? weightKg * reps : 0;
       return {
         sets: stats.sets + 1,
         volumeKg: stats.volumeKg + volumeKg,
@@ -208,6 +240,7 @@ export function CompletedWorkoutDetails({
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const workout = useWorkoutSession(workoutId);
+  const { saveTemplate } = useWorkoutTemplates();
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
 
@@ -244,6 +277,28 @@ export function CompletedWorkoutDetails({
       </View>
     );
   }
+
+  const handleOpenTemplate = () => {
+    const openTemplate = (templateId: string) => {
+      navigation.navigate('WorkoutTemplateEditor', { templateId });
+    };
+
+    if (workout.workoutTemplateId) {
+      openTemplate(workout.workoutTemplateId);
+      return;
+    }
+
+    try {
+      const template = saveTemplate(workoutSessionToTemplateInput(workout));
+      setWorkoutSessionTemplate(workout.id, template.id);
+      openTemplate(template.id);
+    } catch {
+      Alert.alert(
+        t('completedWorkout.templateErrorTitle'),
+        t('completedWorkout.templateErrorBody'),
+      );
+    }
+  };
 
   const exercises = groupCompletedExercises(workout);
   const exerciseById = new Map(
@@ -287,6 +342,11 @@ export function CompletedWorkoutDetails({
           />
         </View>
       </View>
+
+      <CompletedWorkoutTemplateAction
+        hasTemplate={Boolean(workout.workoutTemplateId)}
+        onPress={handleOpenTemplate}
+      />
 
       {exercises.map((exercise, index) => {
         const option = exerciseById.get(exercise.exerciseId);

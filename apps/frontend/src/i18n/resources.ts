@@ -302,6 +302,7 @@ export const resources = {
         exercises: {
           title: 'Exercises',
           choose: 'Choose exercises',
+          importPrevious: 'Import from previous workout',
           emptyTitle: 'Search the exercise library',
           emptyBody:
             'Choose exercises on a dedicated page and return here to set goals and working sets.',
@@ -718,6 +719,11 @@ export const resources = {
         useExercises_one: 'Use {{count}} exercise',
         useExercises_other: 'Use {{count}} exercises',
       },
+      templateImport: {
+        title: 'Import from workout',
+        searchPlaceholder: 'Search previous workouts',
+        searchA11y: 'Search previous workouts',
+      },
       history: {
         title: 'Workout history',
         subtitle: 'Every session, set, and milestone in one place.',
@@ -777,6 +783,10 @@ export const resources = {
         backA11y: 'Back to workout history',
         notFoundTitle: 'Workout not found',
         notFoundBody: 'This workout is no longer available in your history.',
+        createTemplate: 'Turn into template',
+        editTemplate: 'Edit template',
+        templateErrorTitle: 'Could not create template',
+        templateErrorBody: 'Please try again.',
         stats: {
           duration: 'Duration',
           sets: 'Sets',
@@ -1209,6 +1219,7 @@ export const resources = {
         exercises: {
           title: 'Übungen',
           choose: 'Übungen auswählen',
+          importPrevious: 'Aus vorherigem Workout importieren',
           emptyTitle: 'Durchsuche die Übungsbibliothek',
           emptyBody:
             'Wähle Übungen auf einer eigenen Seite aus und kehre hierher zurück, um Ziele und Arbeitssätze festzulegen.',
@@ -1641,6 +1652,11 @@ export const resources = {
         useExercises_one: '{{count}} Übung verwenden',
         useExercises_other: '{{count}} Übungen verwenden',
       },
+      templateImport: {
+        title: 'Aus Workout importieren',
+        searchPlaceholder: 'Vorherige Workouts suchen',
+        searchA11y: 'Vorherige Workouts suchen',
+      },
       history: {
         title: 'Workout-Verlauf',
         subtitle:
@@ -1703,6 +1719,10 @@ export const resources = {
         notFoundTitle: 'Workout nicht gefunden',
         notFoundBody:
           'Dieses Workout ist in deinem Verlauf nicht mehr verfügbar.',
+        createTemplate: 'In Vorlage umwandeln',
+        editTemplate: 'Vorlage bearbeiten',
+        templateErrorTitle: 'Vorlage konnte nicht erstellt werden',
+        templateErrorBody: 'Bitte versuche es erneut.',
         stats: {
           duration: 'Dauer',
           sets: 'Sätze',
