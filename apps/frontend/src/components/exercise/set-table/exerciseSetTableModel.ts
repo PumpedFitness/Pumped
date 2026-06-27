@@ -46,10 +46,7 @@ import {
   type SetCardProgression,
 } from './setCardProgression';
 
-export type SetTypeOption = {
-  value: SetTypeId;
-  label: string;
-};
+export type SetTypeOption = { value: SetTypeId; label: string };
 
 type SetTypeContext = {
   setTypeOptions: SetTypeOption[];
@@ -104,8 +101,7 @@ export type ReadOnlyExerciseSetTableProps = SetTypeContext & {
 };
 
 export type ExerciseSetTableProps =
-  | EditableExerciseSetTableProps
-  | ReadOnlyExerciseSetTableProps;
+  EditableExerciseSetTableProps | ReadOnlyExerciseSetTableProps;
 
 type BaseCardField = {
   id: string;

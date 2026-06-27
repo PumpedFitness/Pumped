@@ -9,13 +9,24 @@ import { ClayIcon } from '@/components/icons/ClayIcon';
 import { WorkoutHistoryItemCard } from './workout-history-item';
 import { confirmDeleteWorkout } from './confirmDeleteWorkout';
 
-type WorkoutHistoryListProps = {
+type BaseWorkoutHistoryListProps = {
   workouts: WorkoutHistoryItem[];
   weightUnit: WeightUnit;
   hasSearchQuery: boolean;
   onWorkoutPress: (workoutId: string) => void;
+};
+
+type DeletableWorkoutHistoryListProps = BaseWorkoutHistoryListProps & {
+  deletable: true;
   onWorkoutDelete: (workoutId: string) => void;
 };
+
+type ReadOnlyWorkoutHistoryListProps = BaseWorkoutHistoryListProps & {
+  deletable?: false;
+};
+
+type WorkoutHistoryListProps =
+  DeletableWorkoutHistoryListProps | ReadOnlyWorkoutHistoryListProps;
 
 type WorkoutGroup = {
   label: string;
@@ -49,7 +60,7 @@ export function WorkoutHistoryList({
   weightUnit,
   hasSearchQuery,
   onWorkoutPress,
-  onWorkoutDelete,
+  ...deleteProps
 }: WorkoutHistoryListProps) {
   const { t, i18n } = useTranslation();
   const groups = groupWorkouts(workouts, i18n.language);
@@ -86,23 +97,32 @@ export function WorkoutHistoryList({
       {groups.map(group => (
         <View key={group.label} className="gap-3">
           <Text className="t-eyebrow px-1">{group.label}</Text>
-          {group.workouts.map(workout => (
-            <SwipeToDelete
-              key={workout.id}
-              borderRadius={22}
-              onDelete={() =>
-                confirmDeleteWorkout(t, workout.name, () =>
-                  onWorkoutDelete(workout.id),
-                )
-              }
-            >
+          {group.workouts.map(workout =>
+            deleteProps.deletable ? (
+              <SwipeToDelete
+                key={workout.id}
+                borderRadius={22}
+                onDelete={() =>
+                  confirmDeleteWorkout(t, workout.name, () =>
+                    deleteProps.onWorkoutDelete(workout.id),
+                  )
+                }
+              >
+                <WorkoutHistoryItemCard
+                  workout={workout}
+                  weightUnit={weightUnit}
+                  onPress={() => onWorkoutPress(workout.id)}
+                />
+              </SwipeToDelete>
+            ) : (
               <WorkoutHistoryItemCard
+                key={workout.id}
                 workout={workout}
                 weightUnit={weightUnit}
                 onPress={() => onWorkoutPress(workout.id)}
               />
-            </SwipeToDelete>
-          ))}
+            ),
+          )}
         </View>
       ))}
     </View>

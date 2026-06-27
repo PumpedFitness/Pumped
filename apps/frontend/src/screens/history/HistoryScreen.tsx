@@ -68,6 +68,7 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
         />
 
         <WorkoutHistoryList
+          deletable
           workouts={filteredWorkouts}
           weightUnit={profile.weightUnit}
           hasSearchQuery={searchQuery.trim().length > 0}
