@@ -70,7 +70,9 @@ export function WorkoutTemplateExercisesSection() {
           <NestedReorderableList
             data={exercises}
             scrollable={false}
-            keyExtractor={exercise => exercise.exerciseId}
+            keyExtractor={(exercise, index) =>
+              `template-exercise-${exercise.exerciseId}-${index}`
+            }
             renderItem={renderItem}
             ItemSeparatorComponent={() => <View className="h-3" />}
             onReorder={({ from, to }: ReorderableListReorderEvent) =>

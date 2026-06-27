@@ -1,0 +1,1 @@
+ALTER TABLE `performed_set` ADD `field_definitions` text DEFAULT '[]' NOT NULL;

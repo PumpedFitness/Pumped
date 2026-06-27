@@ -6,6 +6,7 @@ import { formatSetNumber } from './exerciseSetTableModel';
 type EditableNumberInputProps = {
   accessibilityLabel: string;
   value: number | null;
+  suggestedValue?: number;
   allowDecimal: boolean;
   hasError?: boolean;
   onChange: (value: number | null) => void;
@@ -14,6 +15,7 @@ type EditableNumberInputProps = {
 type ValueButtonProps = {
   accessibilityLabel: string;
   display: string;
+  isSuggested?: boolean;
   hasError?: boolean;
   onPress?: () => void;
 };
@@ -35,12 +37,14 @@ function parseInputValue(value: string, allowDecimal: boolean): number | null {
 export function EditableNumberInput({
   accessibilityLabel,
   value,
+  suggestedValue,
   allowDecimal,
   hasError = false,
   onChange,
 }: EditableNumberInputProps) {
   const [draft, setDraft] = useState(() => formatSetNumber(value));
   const isFocused = useRef(false);
+  const placeholder = formatSetNumber(suggestedValue ?? null) || '–';
 
   useEffect(() => {
     if (!isFocused.current) {
@@ -72,7 +76,7 @@ export function EditableNumberInput({
         hasError ? 'text-danger' : 'text-foreground'
       }`}
       keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
-      placeholder="–"
+      placeholder={placeholder}
       placeholderTextColor={hasError ? colors.danger : colors.muted}
       returnKeyType="done"
       selectTextOnFocus
@@ -97,19 +101,25 @@ export function EditableNumberInput({
 export function ValueButton({
   accessibilityLabel,
   display,
+  isSuggested = false,
   hasError = false,
   onPress,
 }: ValueButtonProps) {
   const textClass = `text-[17px] font-bold tabular-nums ${
-    hasError ? 'text-danger' : display ? 'text-foreground' : 'text-muted'
+    hasError
+      ? 'text-danger'
+      : display && !isSuggested
+      ? 'text-foreground'
+      : 'text-muted'
   }`;
 
   if (!onPress) {
     return (
       <Text
         accessibilityLabel={`${accessibilityLabel}: ${display || '-'}`}
-        className={textClass}
+        className={`${textClass} leading-[22px]`}
         numberOfLines={1}
+        style={{ includeFontPadding: false }}
       >
         {display || '–'}
       </Text>

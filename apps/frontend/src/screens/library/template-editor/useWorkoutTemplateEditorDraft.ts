@@ -36,6 +36,7 @@ export function createDraftSet(setType: SetTypeId = 'NORMAL'): DraftSet {
     id: randomUUID(),
     setType,
     restSeconds: null,
+    progressionGoal: undefined,
     fieldValues: [],
   };
 }
@@ -60,6 +61,7 @@ function createInitialDraft(
           id: randomUUID(),
           setType: set.setType,
           restSeconds: set.restSeconds,
+          progressionGoal: set.progressionGoal,
           fieldValues: set.fieldValues,
         })),
       })) ?? [],
@@ -90,6 +92,7 @@ function buildExerciseInput(
     sets: exercise.sets.map(set => ({
       setType: set.setType,
       restSeconds: set.restSeconds,
+      progressionGoal: set.progressionGoal,
       fieldValues: set.fieldValues,
     })),
   };
@@ -127,6 +130,9 @@ export function duplicateLastSet(sets: DraftSet[]): DraftSet[] {
     {
       ...last,
       id: randomUUID(),
+      progressionGoal: last.progressionGoal
+        ? { ...last.progressionGoal }
+        : undefined,
       fieldValues: last.fieldValues.map(value => ({ ...value })),
     },
   ];

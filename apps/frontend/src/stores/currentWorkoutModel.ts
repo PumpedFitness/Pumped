@@ -3,8 +3,12 @@ import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { IconName } from '@/components/icons/ClayIcon';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
-import type { SetFieldValue, WorkoutTemplate } from '@/types/workout';
-import type { SetTypeFieldDef } from '@/types/setType';
+import type {
+  SetFieldValue,
+  WorkoutTemplate,
+  WorkoutTemplateExercise,
+} from '@/types/workout';
+import type { ProgressionGoal, SetTypeFieldDef } from '@/types/setType';
 import {
   isSetComplete,
   snapshotActualsFromTargets,
@@ -18,6 +22,7 @@ export type CurrentWorkoutSet = {
   position: number;
   setType: SetTypeId;
   restSeconds: number | null;
+  progressionGoal?: ProgressionGoal | null;
   fieldValues: SetFieldValue[];
   isDone: boolean;
   performedAt: number | null;
@@ -26,6 +31,7 @@ export type CurrentWorkoutSet = {
 export type CurrentWorkoutExercise = {
   id: string;
   sourceTemplateExerciseId: string | null;
+  sourceTemplateExercise: WorkoutTemplateExercise | null;
   exerciseId: string;
   position: number;
   /** Resolved accent color (own, else the workout color). Never null here. */
@@ -62,7 +68,10 @@ export function currentWorkoutElapsedMs(
 }
 
 export type UpdateCurrentWorkoutSetInput = Partial<
-  Pick<CurrentWorkoutSet, 'setType' | 'restSeconds' | 'fieldValues'>
+  Pick<
+    CurrentWorkoutSet,
+    'setType' | 'restSeconds' | 'progressionGoal' | 'fieldValues'
+  >
 >;
 
 export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
@@ -72,6 +81,7 @@ export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
     position,
     setType: 'NORMAL',
     restSeconds: null,
+    progressionGoal: null,
     fieldValues: [],
     isDone: false,
     performedAt: null,
@@ -86,6 +96,7 @@ export function createCurrentWorkoutExercise(
   return {
     id: randomUUID(),
     sourceTemplateExerciseId: null,
+    sourceTemplateExercise: null,
     exerciseId,
     position,
     color,
@@ -106,6 +117,7 @@ export function createTemplateSnapshot(
     exercise => ({
       id: randomUUID(),
       sourceTemplateExerciseId: exercise.id,
+      sourceTemplateExercise: exercise,
       exerciseId: exercise.exerciseId,
       position: exercise.position,
       color: resolveExerciseColor(exercise.color, template.color),
@@ -117,6 +129,7 @@ export function createTemplateSnapshot(
         position: set.position,
         setType: set.setType,
         restSeconds: set.restSeconds,
+        progressionGoal: set.progressionGoal,
         fieldValues: snapshotActualsFromTargets(set.fieldValues),
         isDone: false,
         performedAt: null,
@@ -182,31 +195,38 @@ export function buildTemplateSyncInput(
     // structure "update template" save must not wipe the logo/photo.
     icon: template.icon,
     picture: template.picture,
-    exercises: workout.exercises.map(exercise => {
-      const sourceExercise = template.exercises.find(
-        candidate => candidate.exerciseId === exercise.exerciseId,
-      );
-      return {
-        exerciseId: exercise.exerciseId,
-        typeId: sourceExercise?.typeId ?? null,
-        // The live exercise carries a resolved color — emit it directly so a
-        // mid-session "update template" save preserves per-exercise colors.
-        color: exercise.color,
-        goal: exercise.goal,
-        notes: exercise.notes,
-        sets: exercise.sets.map(set => {
-          const source = set.sourceTemplateSetId
-            ? sourceSets.get(set.sourceTemplateSetId)
-            : null;
-          return {
-            setType: set.setType,
-            restSeconds: source?.restSeconds ?? null,
-            fieldValues: source?.fieldValues ?? [],
-          };
-        }),
-      };
-    }),
+    exercises: uniqueBy(workout.exercises, exercise => exercise.exerciseId).map(
+      exercise => {
+        const sourceExercise = template.exercises.find(
+          candidate => candidate.exerciseId === exercise.exerciseId,
+        );
+        return {
+          exerciseId: exercise.exerciseId,
+          typeId: sourceExercise?.typeId ?? null,
+          // The live exercise carries a resolved color — emit it directly so a
+          // mid-session "update template" save preserves per-exercise colors.
+          color: exercise.color,
+          goal: exercise.goal,
+          notes: exercise.notes,
+          sets: exercise.sets.map(set => {
+            const source = set.sourceTemplateSetId
+              ? sourceSets.get(set.sourceTemplateSetId)
+              : null;
+            return {
+              setType: set.setType,
+              restSeconds: source?.restSeconds ?? null,
+              progressionGoal: set.progressionGoal ?? source?.progressionGoal,
+              fieldValues: source?.fieldValues ?? [],
+            };
+          }),
+        };
+      },
+    ),
   };
+}
+
+function progressionFingerprint(goal: ProgressionGoal | null | undefined) {
+  return JSON.stringify(goal ?? null);
 }
 
 export function hasWorkoutStructureChanged(
@@ -228,7 +248,9 @@ export function hasWorkoutStructureChanged(
         return (
           !sourceSet ||
           set.sourceTemplateSetId !== sourceSet.id ||
-          set.setType !== sourceSet.setType
+          set.setType !== sourceSet.setType ||
+          progressionFingerprint(set.progressionGoal) !==
+            progressionFingerprint(sourceSet.progressionGoal)
         );
       })
     );
@@ -252,7 +274,8 @@ export function isCurrentWorkoutComplete(
   return (
     sets.length > 0 &&
     sets.every(
-      set => set.isDone && isCurrentWorkoutSetValid(set, resolveFields(set.setType)),
+      set =>
+        set.isDone && isCurrentWorkoutSetValid(set, resolveFields(set.setType)),
     )
   );
 }

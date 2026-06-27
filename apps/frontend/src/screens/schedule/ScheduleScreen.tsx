@@ -12,6 +12,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { formatScheduleSummary } from '@/components/workout/schedulePresentation';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
 import type { Schedule } from '@/types/schedule';
 
 export function ScheduleScreen() {
@@ -39,7 +40,7 @@ export function ScheduleScreen() {
           { text: t('common.cancel'), style: 'cancel' },
           {
             text: t('plan.alerts.openWorkout'),
-            onPress: () => navigation.navigate('CurrentWorkout'),
+            onPress: () => openCurrentWorkout(navigation),
           },
         ],
       );
@@ -47,7 +48,7 @@ export function ScheduleScreen() {
     }
     try {
       startTemplateWorkout(templateId);
-      navigation.navigate('CurrentWorkout');
+      openCurrentWorkout(navigation);
     } catch (error) {
       Alert.alert(
         t('plan.alerts.startFailedTitle'),

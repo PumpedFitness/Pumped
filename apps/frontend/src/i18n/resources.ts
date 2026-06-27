@@ -34,6 +34,8 @@ export const resources = {
         load: 'Load',
         start: 'Start',
         archive: 'Archive',
+        from: 'From',
+        to: 'To',
         closePopup: 'Close popup',
         noResults: 'No results',
         notSet: 'Not set',
@@ -338,6 +340,29 @@ export const resources = {
           discard: 'Discard',
         },
       },
+      progression: {
+        title: 'Progression',
+        modes: {
+          linear: 'Linear progression',
+          rangeRollover: 'Range rollover',
+          none: 'No Progression',
+        },
+        helper: {
+          linear: 'Use the set type’s linear progression settings.',
+          none: 'Suggest the values from your last completed set.',
+        },
+        summary: {
+          none: 'No progression',
+          linear: 'Linear',
+          rangeRollover: 'Range rollover',
+        },
+        suggestion: {
+          suggested: 'Suggested: {{target}}',
+          lastTime: 'Last time: {{target}}',
+          noPreviousSets: 'No previous sets',
+          noManualTarget: 'No manual target set',
+        },
+      },
       setField: {
         builtin: {
           weight: 'Weight',
@@ -386,6 +411,19 @@ export const resources = {
         fieldsLabel: 'Tracked fields',
         addField: 'Add field',
         emptyFields: 'Add a field to track values like reps or weight.',
+        progression: {
+          label: 'Progression Goal',
+          hint: 'Manual progression increases one tracked field each time.',
+          noFields: 'Add a numeric field to enable linear progression.',
+          field: 'Field',
+          increase: 'Increase by',
+          rangeField: 'Range field',
+          targetField: 'Increase field',
+          rangeMin: 'Min',
+          rangeMax: 'Max',
+          rangeIncrease: 'Range increase',
+          targetIncrease: 'Increase other field by',
+        },
         deleteSetType: 'Delete set type',
         fieldSheet: {
           addTitle: 'Add field',
@@ -476,6 +514,10 @@ export const resources = {
         swipeFinish: 'Finish',
         swipeUndo: 'Undo',
         setTypePickerTitle: 'Set type',
+        progressionTypePickerTitle: 'Progression',
+        progressionPopupText:
+          'Choose how this set progresses, then configure the field and increment.',
+        progressionReadOnly: 'Progression: {{goal}}',
         hidePrescriptions: 'Hide prescriptions',
         wheel: {
           description: 'Spin to choose a value.',
@@ -740,6 +782,11 @@ export const resources = {
           sets: 'Sets',
           volume: 'Volume',
         },
+        exerciseStats: {
+          sets: 'Sets',
+          volume: 'Volume',
+          topWeight: 'Top',
+        },
         completedSets_one: '{{count}} completed set',
         completedSets_other: '{{count}} completed sets',
         notes: 'Notes',
@@ -889,6 +936,8 @@ export const resources = {
         load: 'Laden',
         start: 'Starten',
         archive: 'Archivieren',
+        from: 'Von',
+        to: 'Bis',
         closePopup: 'Popup schließen',
         noResults: 'Keine Ergebnisse',
         notSet: 'Nicht angegeben',
@@ -1199,6 +1248,37 @@ export const resources = {
           discard: 'Verwerfen',
         },
       },
+      progression: {
+        title: 'Progression',
+        modes: {
+          linear: 'Lineare Progression',
+          rangeRollover: 'Bereich mit Wechsel',
+          none: 'Keine Progression',
+        },
+        helper: {
+          linear:
+            'Verwende die linearen Progressionseinstellungen des Satztyps.',
+          none: 'Schlage die Werte aus deinem letzten abgeschlossenen Satz vor.',
+        },
+        goal: {
+          kind: {
+            none: 'Keine Progression',
+            linear: 'Lineare Progression',
+            rangeRollover: 'Bereich mit Wechsel',
+          },
+          summary: {
+            none: 'Keine Progression',
+            linear: 'Linear',
+            rangeRollover: 'Bereich mit Wechsel',
+          },
+        },
+        suggestion: {
+          suggested: 'Vorschlag: {{target}}',
+          lastTime: 'Letztes Mal: {{target}}',
+          noPreviousSets: 'Keine vorherigen Sätze',
+          noManualTarget: 'Kein manuelles Ziel gesetzt',
+        },
+      },
       setField: {
         builtin: {
           weight: 'Gewicht',
@@ -1248,6 +1328,20 @@ export const resources = {
         addField: 'Feld hinzufügen',
         emptyFields:
           'Füge ein Feld hinzu, um Werte wie Wdh. oder Gewicht zu erfassen.',
+        progression: {
+          label: 'Progressionsziel',
+          hint: 'Die manuelle Progression steigert ein erfasstes Feld.',
+          noFields:
+            'Füge ein numerisches Feld hinzu, um lineare Progression zu aktivieren.',
+          field: 'Feld',
+          increase: 'Steigern um',
+          rangeField: 'Bereichsfeld',
+          targetField: 'Steigerungsfeld',
+          rangeMin: 'Minimum',
+          rangeMax: 'Maximum',
+          rangeIncrease: 'Bereich steigern um',
+          targetIncrease: 'Anderes Feld steigern um',
+        },
         deleteSetType: 'Satztyp löschen',
         fieldSheet: {
           addTitle: 'Feld hinzufügen',
@@ -1339,6 +1433,10 @@ export const resources = {
         swipeFinish: 'Fertig',
         swipeUndo: 'Rückgängig',
         setTypePickerTitle: 'Satztyp',
+        progressionTypePickerTitle: 'Progression',
+        progressionPopupText:
+          'Wähle, wie dieser Satz progressiert, und stelle Feld und Steigerung ein.',
+        progressionReadOnly: 'Progression: {{goal}}',
         hidePrescriptions: 'Vorgaben ausblenden',
         wheel: {
           description: 'Drehe, um einen Wert zu wählen.',
@@ -1609,6 +1707,11 @@ export const resources = {
           duration: 'Dauer',
           sets: 'Sätze',
           volume: 'Volumen',
+        },
+        exerciseStats: {
+          sets: 'Sätze',
+          volume: 'Volumen',
+          topWeight: 'Top',
         },
         completedSets_one: '{{count}} abgeschlossener Satz',
         completedSets_other: '{{count}} abgeschlossene Sätze',

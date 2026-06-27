@@ -1,5 +1,10 @@
-import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type {
+  SetFieldUnit,
+  SetTypeId,
+  WorkoutTemplateColor,
+} from '@/data/local/enums';
 import type { IconName } from '@/components/icons/ClayIcon';
+import type { ProgressionGoal } from '@/types/setType';
 
 /** Min–max span for a `range` field's target (e.g. reps 8–12). */
 export type SetFieldRange = {
@@ -18,11 +23,18 @@ export type SetFieldValue = {
   range?: SetFieldRange | null;
 };
 
+export type HistoricalSetField = {
+  fieldId: string;
+  name: string;
+  unit?: SetFieldUnit | null;
+};
+
 export type WorkoutTemplateSet = {
   id: string;
   position: number;
   setType: SetTypeId;
   restSeconds: number | null;
+  progressionGoal?: ProgressionGoal | null;
   fieldValues: SetFieldValue[];
 };
 
@@ -76,6 +88,7 @@ export type PerformedSet = {
   setPosition: number;
   setType: SetTypeId;
   restSeconds: number | null;
+  fieldDefinitions: HistoricalSetField[];
   fieldValues: SetFieldValue[];
   performedAt: number | null;
   importId: number | null;

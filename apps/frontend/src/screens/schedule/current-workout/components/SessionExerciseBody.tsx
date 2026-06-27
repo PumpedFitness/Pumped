@@ -1,12 +1,14 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
+import { useProgressionSuggestion } from '@/hooks/useProgressionSuggestion';
 import type {
   CurrentWorkoutExercise,
   CurrentWorkoutSet,
   UpdateCurrentWorkoutSetInput,
 } from '@/stores/currentWorkoutModel';
 import type { SetTypeWithFields } from '@/types/setType';
+import type { WorkoutTemplateExercise } from '@/types/workout';
 import {
   ExerciseSetTable,
   type SetTypeOption,
@@ -33,6 +35,65 @@ type SessionExerciseBodyProps = {
   addSet: (exerciseId: string) => void;
 };
 
+function fallbackTemplateExercise(
+  exercise: CurrentWorkoutExercise,
+): WorkoutTemplateExercise {
+  return {
+    id: exercise.sourceTemplateExerciseId ?? exercise.id,
+    exerciseId: exercise.exerciseId,
+    position: exercise.position,
+    typeId: null,
+    color: exercise.color,
+    goal: exercise.goal,
+    notes: exercise.notes,
+    sets: exercise.sets.map(set => ({
+      id: set.sourceTemplateSetId ?? set.id,
+      position: set.position,
+      setType: set.setType,
+      restSeconds: set.restSeconds,
+      progressionGoal: set.progressionGoal,
+      fieldValues: [],
+    })),
+  };
+}
+
+function effectiveTemplateExercise(
+  exercise: CurrentWorkoutExercise,
+): WorkoutTemplateExercise {
+  const source = exercise.sourceTemplateExercise;
+  if (!source) {
+    return fallbackTemplateExercise(exercise);
+  }
+  const sourceSets = new Map(source.sets.map(set => [set.id, set] as const));
+  return {
+    ...source,
+    sets: exercise.sets.map(set => {
+      const sourceSet = set.sourceTemplateSetId
+        ? sourceSets.get(set.sourceTemplateSetId)
+        : null;
+      return {
+        id: sourceSet?.id ?? set.sourceTemplateSetId ?? set.id,
+        position: set.position,
+        setType: set.setType,
+        restSeconds: sourceSet?.restSeconds ?? set.restSeconds,
+        progressionGoal: set.progressionGoal ?? sourceSet?.progressionGoal,
+        fieldValues: sourceSet?.fieldValues ?? [],
+      };
+    }),
+  };
+}
+
+function repeatSuggestedSets<T>(sets: T[], count: number): T[] {
+  if (sets.length >= count) {
+    return sets.slice(0, count);
+  }
+  const lastSet = sets[sets.length - 1];
+  if (!lastSet) {
+    return [];
+  }
+  return Array.from({ length: count }, (_, index) => sets[index] ?? lastSet);
+}
+
 export const SessionExerciseBody = memo(function SessionExerciseBody({
   exercise,
   weightUnit,
@@ -46,6 +107,14 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
   addSet,
 }: SessionExerciseBodyProps) {
   const { t } = useTranslation();
+  const progression = useProgressionSuggestion({
+    exerciseId: exercise.exerciseId,
+    templateExercise: effectiveTemplateExercise(exercise),
+  });
+  const suggestedSets = useMemo(
+    () => repeatSuggestedSets(progression.suggestedSets, exercise.sets.length),
+    [exercise.sets.length, progression.suggestedSets],
+  );
 
   const handleChangeSet = useCallback(
     (setId: string, values: UpdateCurrentWorkoutSetInput) =>
@@ -76,17 +145,20 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
   );
 
   return (
-    <ExerciseSetTable
-      sets={exercise.sets}
-      setTypeOptions={setTypeOptions}
-      setTypesById={setTypesById}
-      weightUnit={weightUnit}
-      onCreateSetType={onCreateSetType}
-      onAddSet={handleAddSet}
-      onChangeSet={handleChangeSet}
-      onToggleSetDone={handleToggleSetDone}
-      onRemoveSet={handleRemoveSet}
-      animateLayout={false}
-    />
+    <>
+      <ExerciseSetTable
+        sets={exercise.sets}
+        suggestedSets={suggestedSets}
+        setTypeOptions={setTypeOptions}
+        setTypesById={setTypesById}
+        weightUnit={weightUnit}
+        onCreateSetType={onCreateSetType}
+        onAddSet={handleAddSet}
+        onChangeSet={handleChangeSet}
+        onToggleSetDone={handleToggleSetDone}
+        onRemoveSet={handleRemoveSet}
+        animateLayout={false}
+      />
+    </>
   );
 });

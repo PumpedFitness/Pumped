@@ -5,6 +5,7 @@ import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import { useCurrentWorkoutStore } from '@/stores/currentWorkoutStore';
 import { currentWorkoutElapsedMs } from '@/stores/currentWorkoutModel';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
 import { CurrentWorkoutOverlay } from './CurrentWorkoutOverlay';
 
 const ELAPSED_TIME_REFRESH_MS = 30_000;
@@ -73,7 +74,7 @@ export function ConnectedCurrentWorkoutOverlay({
           ? exerciseNames.get(currentExercise.exerciseId)
           : undefined
       }
-      onOpenWorkout={() => navigation.navigate('CurrentWorkout')}
+      onOpenWorkout={() => openCurrentWorkout(navigation)}
     />
   );
 }

@@ -117,15 +117,50 @@
     {
       "idx": 16,
       "version": "6",
-      "when": 1782200000000,
-      "tag": "0016_skipped_day",
+      "when": 1782086400000,
+      "tag": "0016_progression_mode",
       "breakpoints": true
     },
     {
       "idx": 17,
       "version": "6",
-      "when": 1782300000000,
-      "tag": "0017_workout_logo",
+      "when": 1782172800000,
+      "tag": "0017_set_type_progression_goal",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1782259200000,
+      "tag": "0018_template_set_progression_goal",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1782345600000,
+      "tag": "0019_drop_progression_mode",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1782432000000,
+      "tag": "0020_performed_set_field_definitions",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1782518400000,
+      "tag": "0021_skipped_day",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1782604800000,
+      "tag": "0022_workout_logo",
       "breakpoints": true
     }
   ]

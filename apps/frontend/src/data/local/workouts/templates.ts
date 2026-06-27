@@ -7,6 +7,7 @@ import { asc, eq } from 'drizzle-orm';
 import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
 import type { IconName } from '@/components/icons/ClayIcon';
+import type { ProgressionGoal } from '@/types/setType';
 import type {
   SetFieldValue,
   WorkoutTemplate,
@@ -27,6 +28,7 @@ import { LOCAL_USER_ID, requireText } from './validation';
 export type WorkoutTemplateSetInput = {
   setType: SetTypeId;
   restSeconds?: number | null;
+  progressionGoal?: ProgressionGoal | null;
   fieldValues?: SetFieldValue[];
 };
 
@@ -231,6 +233,7 @@ function replaceTemplateChildren(
             position: setPosition,
             setType: set.setType,
             restSeconds: set.restSeconds ?? null,
+            progressionGoal: set.progressionGoal ?? null,
             fieldValues: set.fieldValues ?? [],
           })),
         )

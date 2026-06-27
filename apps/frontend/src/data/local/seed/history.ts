@@ -2,6 +2,10 @@ import type { InferInsertModel } from 'drizzle-orm';
 import type { WorkoutSetType } from '@/data/local/enums';
 import type { performedSets, workoutSessions } from '@/data/local/schema';
 import { buildBuiltInFieldValues } from '@/data/local/builtins';
+import {
+  BUILT_IN_FIELD_DEFINITIONS,
+  snapshotFieldDefinitions,
+} from '@/data/local/sets/fieldValueSnapshots';
 import { EXERCISE_IDS, LOCAL_USER_ID, sampleId, TEMPLATE_IDS } from './ids';
 
 type SessionInsert = InferInsertModel<typeof workoutSessions>;
@@ -84,7 +88,6 @@ function progression(index: number, step: number): number {
   return Math.floor(index / 4) * step;
 }
 
-
 function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
   const gain = progression(index, 2.5);
   const builders: Record<WorkoutKind, () => SetGroup[]> = {
@@ -95,7 +98,10 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
         set(8, 70 + gain, 8),
         set(7, 70 + gain, 8.5),
       ]),
-      group(EXERCISE_IDS.overheadPress, repeatedSets(3, 8, 35 + gain / 2)),
+      group(
+        EXERCISE_IDS.overheadPress,
+        orderedSets(8, [35 + gain / 2, 37.5 + gain / 2, 40 + gain / 2]),
+      ),
       group(EXERCISE_IDS.tricepsPushdown, [
         ...repeatedSets(2, 12, 25 + gain / 2),
         set(15, 17.5 + gain / 2, 9, 'MAX_EFFORT'),
@@ -104,9 +110,20 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
     pull: () => [
       group(EXERCISE_IDS.deadlift, [
         set(5, 60, 4, 'WARMUP'),
-        ...repeatedSets(3, 5, 100 + progression(index, 5), 7.5),
+        ...orderedSets(
+          5,
+          [
+            100 + progression(index, 5),
+            105 + progression(index, 5),
+            110 + progression(index, 5),
+          ],
+          7.5,
+        ),
       ]),
-      group(EXERCISE_IDS.latPulldown, repeatedSets(3, 12, 45 + gain)),
+      group(
+        EXERCISE_IDS.latPulldown,
+        orderedSets(12, [45 + gain, 47.5 + gain, 50 + gain]),
+      ),
       group(EXERCISE_IDS.dumbbellCurl, [
         ...repeatedSets(2, 12, 12 + progression(index, 1)),
         set(14, 10 + progression(index, 1), 9, 'MAX_EFFORT'),
@@ -117,7 +134,10 @@ function buildGroups(kind: WorkoutKind, index: number): SetGroup[] {
         set(8, 40, 4, 'WARMUP'),
         ...repeatedSets(3, 5, 75 + gain, 8),
       ]),
-      group(EXERCISE_IDS.romanianDeadlift, repeatedSets(3, 8, 65 + gain, 8)),
+      group(
+        EXERCISE_IDS.romanianDeadlift,
+        orderedSets(8, [65 + gain, 70 + gain, 75 + gain], 8),
+      ),
       group(EXERCISE_IDS.legPress, repeatedSets(3, 10, 120 + gain * 2)),
       group(EXERCISE_IDS.calfRaise, repeatedSets(3, 15, 50 + gain)),
     ],
@@ -175,6 +195,14 @@ function repeatedSets(
   return Array.from({ length: count }, () => set(reps, weight, rpe));
 }
 
+function orderedSets(
+  reps: number,
+  weightsKg: number[],
+  rpe = 8,
+): SetGroup['sets'] {
+  return weightsKg.map(weightKg => set(reps, weightKg, rpe));
+}
+
 function workoutStart(now: number, daysAgo: number, hour = 18): number {
   const date = new Date(now);
   date.setDate(date.getDate() - daysAgo);
@@ -201,6 +229,7 @@ function buildSession(spec: HistorySpec, index: number, now: number) {
       setGroup.sets.map((performedSet, setPosition) => {
         setIndex += 1;
         const setType = performedSet.type ?? 'NORMAL';
+        const fieldValues = buildBuiltInFieldValues(setType, performedSet);
         return {
           id: sampleId(`performed-${spec.daysAgo}-${spec.kind}-${setIndex}`),
           workoutSessionId: id,
@@ -209,7 +238,11 @@ function buildSession(spec: HistorySpec, index: number, now: number) {
           setPosition,
           setType,
           restSeconds: null,
-          fieldValues: buildBuiltInFieldValues(setType, performedSet),
+          fieldDefinitions: snapshotFieldDefinitions(
+            fieldValues,
+            BUILT_IN_FIELD_DEFINITIONS,
+          ),
+          fieldValues,
           performedAt: startedAt + (5 + setIndex * 4) * 60_000,
         } satisfies PerformedSetInsert;
       }),

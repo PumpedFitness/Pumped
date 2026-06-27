@@ -19,6 +19,7 @@ import type {
   SetCardRangeField,
   SetTypeOption,
 } from './exerciseSetTableModel';
+import { ProgressionEditorSheet } from './ProgressionEditorSheet';
 
 // Stand-in config so the wheel sheets can render before anything is selected —
 // they're always mounted (heroui needs a sheet mounted to present it), and a
@@ -35,12 +36,14 @@ const WHEEL_PLACEHOLDER: OptionalWheelPickerConfig = {
 
 export type SetSheetOpeners = {
   openSetTypePicker: (card: SetCardModel) => void;
+  openProgressionPicker: (card: SetCardModel) => void;
   openWheel: (field: SetCardNumberField) => void;
   openRange: (field: SetCardRangeField) => void;
 };
 
 const NOOP_OPENERS: SetSheetOpeners = {
   openSetTypePicker: () => {},
+  openProgressionPicker: () => {},
   openWheel: () => {},
   openRange: () => {},
 };
@@ -57,6 +60,9 @@ type SetSheetsProps = {
   setTypeCard: SetCardModel | null;
   setTypeOpen: boolean;
   onCloseSetType: () => void;
+  progressionCard: SetCardModel | null;
+  progressionOpen: boolean;
+  onCloseProgression: () => void;
   libraryItems: { id: string; name: string }[];
   onCreateSetType?: (name: string) => string;
   wheelField: SetCardNumberField | null;
@@ -71,6 +77,9 @@ function SetSheets({
   setTypeCard,
   setTypeOpen,
   onCloseSetType,
+  progressionCard,
+  progressionOpen,
+  onCloseProgression,
   libraryItems,
   onCreateSetType,
   wheelField,
@@ -98,9 +107,15 @@ function SetSheets({
         onCreate={onCreateSetType ?? (() => setTypeCard?.setType ?? 'NORMAL')}
       />
 
+      <ProgressionEditorSheet
+        card={progressionCard}
+        visible={progressionOpen}
+        onClose={onCloseProgression}
+      />
+
       <OptionalWheelPickerSheet
         visible={wheelOpen}
-        value={wheelField?.value ?? null}
+        value={wheelField?.value ?? wheelField?.suggestedValue ?? null}
         config={wheelField?.wheelConfig ?? WHEEL_PLACEHOLDER}
         onClose={onCloseWheel}
         onChange={value => wheelField?.onChange(value)}
@@ -108,7 +123,7 @@ function SetSheets({
 
       <RangeWheelPickerSheet
         visible={rangeOpen}
-        value={rangeField?.range ?? null}
+        value={rangeField?.range ?? rangeField?.suggestedRange ?? null}
         config={rangeField?.wheelConfig ?? WHEEL_PLACEHOLDER}
         onClose={onCloseRange}
         onChange={value => rangeField?.onChange(value)}
@@ -137,6 +152,10 @@ export function SetSheetHost({
 }: SetSheetHostProps) {
   const [setTypeCard, setSetTypeCard] = useState<SetCardModel | null>(null);
   const [setTypeOpen, setSetTypeOpen] = useState(false);
+  const [progressionCard, setProgressionCard] = useState<SetCardModel | null>(
+    null,
+  );
+  const [progressionOpen, setProgressionOpen] = useState(false);
   const [wheelField, setWheelField] = useState<SetCardNumberField | null>(null);
   const [wheelOpen, setWheelOpen] = useState(false);
   const [rangeField, setRangeField] = useState<SetCardRangeField | null>(null);
@@ -148,6 +167,11 @@ export function SetSheetHost({
         Keyboard.dismiss();
         setSetTypeCard(card);
         setSetTypeOpen(true);
+      },
+      openProgressionPicker: card => {
+        Keyboard.dismiss();
+        setProgressionCard(card);
+        setProgressionOpen(true);
       },
       openWheel: field => {
         Keyboard.dismiss();
@@ -177,6 +201,9 @@ export function SetSheetHost({
         setTypeCard={setTypeCard}
         setTypeOpen={setTypeOpen}
         onCloseSetType={() => setSetTypeOpen(false)}
+        progressionCard={progressionCard}
+        progressionOpen={progressionOpen}
+        onCloseProgression={() => setProgressionOpen(false)}
         libraryItems={libraryItems}
         onCreateSetType={onCreateSetType}
         wheelField={wheelField}

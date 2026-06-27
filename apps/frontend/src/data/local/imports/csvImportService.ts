@@ -2,7 +2,10 @@ import { randomUUID } from 'expo-crypto';
 import { and, asc, desc, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { i18n } from '@/i18n';
 import type { WorkoutSetType } from '@/data/local/enums';
-import { buildBuiltInFieldValues } from '@/data/local/builtins';
+import {
+  buildCsvSetFields,
+  loadSetFields,
+} from '@/data/local/sets/fieldValueSnapshots';
 import { db } from '@/data/local/database';
 import {
   exercises,
@@ -279,6 +282,7 @@ function writeImportedSessions(
   sessions: ImportSessionDraft[],
   idsByName: Map<string, string>,
   importId: number,
+  fieldRows: ReturnType<typeof loadSetFields>,
 ): number {
   let setCount = 0;
 
@@ -326,7 +330,7 @@ function writeImportedSessions(
             : fallbackPosition,
         setType: set.setType,
         restSeconds: null,
-        fieldValues: buildBuiltInFieldValues(set.setType, set),
+        ...buildCsvSetFields(set.setType, set, fieldRows),
         performedAt: null,
         importId,
       };
@@ -384,6 +388,7 @@ export function importCSV(
       sessions,
       idsByName,
       batch.id,
+      loadSetFields(),
     );
 
     return { importId: batch.id, setsImported };
