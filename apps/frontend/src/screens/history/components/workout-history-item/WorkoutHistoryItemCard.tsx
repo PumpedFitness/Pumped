@@ -6,6 +6,7 @@ import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { colors } from '@/theme/tokens';
 import { displayWeight } from '@/utils/units';
 import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { WorkoutAvatar } from '@/components/workout/WorkoutAvatar';
 
 type WorkoutHistoryItemCardProps = {
   workout: WorkoutHistoryItem;
@@ -70,9 +71,13 @@ export function WorkoutHistoryItemCard({
       onPress={onPress}
     >
       <View className="flex-row items-start gap-3">
-        <View className="h-12 w-12 items-center justify-center rounded-[16px] bg-accent-soft">
-          <ClayIcon name="dumbbell" size={22} color={colors.accent} />
-        </View>
+        <WorkoutAvatar
+          picture={workout.picture}
+          icon={workout.icon}
+          color={workout.color}
+          size={48}
+          radius={16}
+        />
         <View className="flex-1">
           <View className="flex-row items-start justify-between gap-3">
             <Text className="t-heading flex-1" numberOfLines={1}>

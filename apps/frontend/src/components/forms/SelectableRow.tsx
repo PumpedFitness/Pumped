@@ -8,6 +8,7 @@ type SelectableRowProps = {
   onPress: () => void;
   className?: string;
   accessibilityRole?: AccessibilityRole;
+  testID?: string;
 };
 
 export function SelectableRow({
@@ -16,9 +17,11 @@ export function SelectableRow({
   onPress,
   className,
   accessibilityRole = 'button',
+  testID,
 }: SelectableRowProps) {
   return (
     <Pressable
+      testID={testID}
       accessibilityRole={accessibilityRole}
       accessibilityState={{ selected }}
       className={`flex-row items-center justify-between px-4 ${

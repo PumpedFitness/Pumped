@@ -2,6 +2,8 @@ import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { useAppSettingsStore } from '@/stores/appSettingsStore';
+import { colors } from '@/theme/tokens';
+import { getWorkoutTemplateColor } from '@/components/workout/workoutTemplatePresentation';
 import { SummarySlideHeader } from './SummarySlideHeader';
 import {
   buildMonthWeeks,
@@ -68,9 +70,16 @@ export function WorkoutCalendarSummarySlide({
                 >
                   {day ? (
                     <View
-                      className={`h-6 w-6 items-center justify-center rounded-full ${
-                        day.active ? 'bg-accent' : ''
-                      }`}
+                      className="h-6 w-6 items-center justify-center rounded-full"
+                      style={
+                        day.active
+                          ? {
+                              backgroundColor: day.color
+                                ? getWorkoutTemplateColor(day.color).hex
+                                : colors.accent,
+                            }
+                          : undefined
+                      }
                     >
                       <Text className="text-[10px] font-semibold tabular-nums text-cream">
                         {day.date.getDate()}

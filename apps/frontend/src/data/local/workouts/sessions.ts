@@ -5,7 +5,8 @@
 import { randomUUID } from 'expo-crypto';
 import { asc, desc, eq } from 'drizzle-orm';
 import { i18n } from '@/i18n';
-import type { SetTypeId } from '@/data/local/enums';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { IconName } from '@/components/icons/ClayIcon';
 import type {
   PerformedSet,
   SetFieldValue,
@@ -36,6 +37,10 @@ export type SaveCompletedWorkoutInput = {
   startedAt: number;
   endedAt: number;
   notes?: string | null;
+  // Visual identity snapshotted onto the session (see schema/workoutSession.ts).
+  color?: WorkoutTemplateColor | null;
+  icon?: IconName | null;
+  picture?: string | null;
   sets: PerformedSetInput[];
 };
 
@@ -73,6 +78,19 @@ export function listWorkoutSessions(): WorkoutSession[] {
     .all();
 }
 
+export function deleteWorkoutSession(sessionId: string): void {
+  db.transaction(tx => {
+    tx.delete(performedSets)
+      .where(eq(performedSets.workoutSessionId, sessionId))
+      .run();
+    tx.delete(workoutSessions)
+      .where(eq(workoutSessions.id, sessionId))
+      .run();
+  });
+
+  notifyTableChanged(workoutSessions, performedSets);
+}
+
 export function saveCompletedWorkout(
   input: SaveCompletedWorkoutInput,
 ): WorkoutSessionDetails {
@@ -102,6 +120,9 @@ export function saveCompletedWorkout(
           startedAt: input.startedAt,
           endedAt: input.endedAt,
           notes: input.notes ?? null,
+          color: input.color ?? null,
+          icon: input.icon ?? null,
+          picture: input.picture ?? null,
         })
         .where(eq(workoutSessions.id, sessionId))
         .run();
@@ -115,6 +136,9 @@ export function saveCompletedWorkout(
           startedAt: input.startedAt,
           endedAt: input.endedAt,
           notes: input.notes ?? null,
+          color: input.color ?? null,
+          icon: input.icon ?? null,
+          picture: input.picture ?? null,
         })
         .run();
     }

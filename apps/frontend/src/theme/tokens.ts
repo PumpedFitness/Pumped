@@ -1,44 +1,49 @@
 // Clay design system tokens — use these for StyleSheet-based styling
-// where Tailwind classes aren't available (e.g. SVG, animations)
+// where Tailwind classes aren't available (e.g. SVG, animations).
+//
+// Colors are DERIVED from the single source of truth in ./palette.ts.
+// To change the theme, edit palette.ts — never hardcode colors here.
+
+import { alpha, brand, light } from './palette';
 
 export const colors = {
   // Ground & Surfaces
-  bg: '#EAE3D5',
-  bgWarm: '#E4DCCB',
-  card: '#F7F2E8',
-  cardSunk: '#EFE8DA',
+  bg: light.background,
+  bgWarm: brand.bgWarm,
+  card: light.surface,
+  cardSunk: light.default,
 
   // Moss (brand anchor)
-  moss: '#46583C',
-  mossDeep: '#3A4A32',
-  cream: '#F3EEE2',
-  creamDim: 'rgba(243, 238, 226, 0.6)',
+  moss: brand.moss,
+  mossDeep: brand.mossDeep,
+  cream: brand.cream,
+  creamDim: alpha(brand.cream, 0.6),
 
   // Text / Ink
-  ink: '#34362C',
-  ink2: '#54564A',
-  muted: '#928E7E',
-  sage: '#7E9061',
+  ink: light.foreground,
+  ink2: brand.ink2,
+  muted: light.muted,
+  sage: brand.sage,
 
   // Accent — terracotta (default)
-  accent: '#C67B52',
-  accentInk: '#3A2A1C',
-  accentSoft: 'rgba(198, 123, 82, 0.14)',
+  accent: light.accent,
+  accentInk: brand.accentInk,
+  accentSoft: light['accent-soft'],
 
   // Borders
-  line: 'rgba(52, 54, 44, 0.09)',
-  lineSoft: 'rgba(52, 54, 44, 0.06)',
-  lineOnMoss: 'rgba(243, 238, 226, 0.16)',
+  line: light.border,
+  lineSoft: light.separator,
+  lineOnMoss: alpha(brand.cream, 0.16),
 
   // Status
-  success: '#7E9061',
-  warning: '#C2974C',
-  danger: '#B26B62',
+  success: light.success,
+  warning: light.warning,
+  danger: light.danger,
 
   // Alternate accents (swap via theme)
-  accentHoney: '#C2974C',
-  accentRose: '#B26B62',
-  accentSage: '#7E9061',
+  accentHoney: brand.accentHoney,
+  accentRose: brand.accentRose,
+  accentSage: brand.accentSage,
 } as const;
 
 export const spacing = {
@@ -74,28 +79,28 @@ export const typography = {
 
 export const shadows = {
   card: {
-    shadowColor: 'rgba(52, 54, 44, 1)',
+    shadowColor: brand.ink,
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.1,
     shadowRadius: 40,
     elevation: 2,
   },
   raised: {
-    shadowColor: 'rgba(70, 88, 60, 1)',
+    shadowColor: brand.moss,
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.7,
     shadowRadius: 44,
     elevation: 8,
   },
   nav: {
-    shadowColor: 'rgba(70, 88, 60, 1)',
+    shadowColor: brand.moss,
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.6,
     shadowRadius: 34,
     elevation: 10,
   },
   accent: {
-    shadowColor: '#C67B52',
+    shadowColor: light.accent,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.9,
     shadowRadius: 22,

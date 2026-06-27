@@ -108,9 +108,10 @@ export function ExerciseOverviewHeader({
           accessibilityRole="button"
           accessibilityLabel={t('exerciseOverview.editA11y')}
           onPress={onEdit}
-          className="h-11 w-11 items-center justify-center rounded-full bg-surface-card/15 active:opacity-70"
+          className="h-11 flex-row items-center gap-2 rounded-full bg-cream/10 px-4 active:opacity-70"
         >
           <ClayIcon name="edit" size={18} color={colors.card} />
+          <Text className="t-label text-surface-card">{t('common.edit')}</Text>
         </Pressable>
       </View>
 
@@ -124,7 +125,7 @@ export function ExerciseOverviewHeader({
         onMomentumScrollEnd={handleMomentumScrollEnd}
       >
         <View
-          className="h-72 overflow-hidden rounded-[24px] bg-surface-card/15"
+          className="h-72 overflow-hidden rounded-[24px] bg-cream/10"
           style={{ width: pageWidth }}
         >
           {exercise.picture ? (
@@ -141,7 +142,7 @@ export function ExerciseOverviewHeader({
         </View>
 
         <View
-          className="h-72 items-center justify-center rounded-[24px] bg-surface-card/10 px-4 py-3"
+          className="h-72 items-center justify-center rounded-[24px] bg-cream/10 px-4 py-3"
           style={{ width: pageWidth }}
         >
           {bodyHighlights.length > 0 ? (

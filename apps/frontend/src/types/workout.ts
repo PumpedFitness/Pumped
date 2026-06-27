@@ -1,4 +1,5 @@
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { IconName } from '@/components/icons/ClayIcon';
 
 /** Min–max span for a `range` field's target (e.g. reps 8–12). */
 export type SetFieldRange = {
@@ -43,6 +44,10 @@ export type WorkoutTemplate = {
   name: string;
   description: string | null;
   color: WorkoutTemplateColor;
+  /** Optional logo glyph; null when none chosen. */
+  icon: IconName | null;
+  /** Optional device image URI; null when none chosen. */
+  picture: string | null;
   exercises: WorkoutTemplateExercise[];
   createdAt: number;
   updatedAt: number;
@@ -56,6 +61,10 @@ export type WorkoutSession = {
   startedAt: number;
   endedAt: number | null;
   notes: string | null;
+  /** Visual identity snapshotted from the template at finish time. */
+  color: WorkoutTemplateColor | null;
+  icon: IconName | null;
+  picture: string | null;
   importId: number | null;
 };
 

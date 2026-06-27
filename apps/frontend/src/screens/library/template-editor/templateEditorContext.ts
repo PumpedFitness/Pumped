@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react';
-import type { WorkoutTemplateColor } from '@/data/local/enums';
 import type { EditorExercise } from './useEditorExercises';
 
 /**
@@ -12,7 +11,6 @@ export type TemplateEditorContextValue = {
   chooseExercises: () => void;
   editExercise: (exercise: EditorExercise) => void;
   openExerciseOverview: (exercise: EditorExercise) => void;
-  setExerciseColor: (exerciseId: string, color: WorkoutTemplateColor) => void;
   reorderExercises: (from: number, to: number) => void;
   removeExercise: (exerciseId: string) => void;
 };

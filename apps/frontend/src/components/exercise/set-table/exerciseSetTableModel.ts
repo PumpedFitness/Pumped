@@ -84,6 +84,10 @@ type ReadOnlyExerciseSet = Pick<
 type ReadOnlyExerciseSetTableProps = SetTypeContext & {
   readOnly: true;
   sets: ReadOnlyExerciseSet[];
+  // Which value slot to display: 'actual' (logged history, weights stored in kg
+  // and converted to the user's unit) or 'target' (template plan, shown as-is,
+  // ranges intact). Defaults to 'actual'.
+  mode?: FieldValueMode;
 };
 
 export type ExerciseSetTableProps =
@@ -235,8 +239,9 @@ function buildCardField(
 
   const numberField = (): SetCardField => {
     let value = getNumberValue(values, field.id);
-    // History shows logged weights in the user's unit.
-    if (readOnly && field.unit === 'amount' && value != null) {
+    // History shows logged weights (stored in kg) in the user's unit. Template
+    // targets are stored as-typed, so only convert in actual mode.
+    if (readOnly && mode === 'actual' && field.unit === 'amount' && value != null) {
       value = displayWeight(value, weightUnit);
     }
     return {
@@ -390,6 +395,7 @@ export function buildReadOnlySetCards(
   t: TFunction,
   props: ReadOnlyExerciseSetTableProps,
 ): SetCardModel[] {
+  const mode = props.mode ?? 'actual';
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
     return {
@@ -401,7 +407,7 @@ export function buildReadOnlySetCards(
       setTypeColor: type?.color ?? 'terracotta',
       fields: (type?.fields ?? []).map(field =>
         buildCardField(field, set.fieldValues, {
-          mode: 'actual',
+          mode,
           readOnly: true,
           weightUnit: props.weightUnit,
           t,

@@ -13,7 +13,7 @@ appId: ${APP_ID}
 # can take ~20s — wait for onboarding before tapping (no-op in CI's baked build).
 - extendedWaitUntil:
     visible: 'Skip'
-    timeout: 45000
+    timeout: 60000
 - tapOn: 'Skip'
 - waitForAnimationToEnd
 
@@ -35,6 +35,8 @@ appId: ${APP_ID}
 - tapOn: 'e.g. Barbell Bench Press'
 - inputText: 'E2E Squat'
 - pressKey: Back
+- tapOn:
+    point: 0%, 14%
 - waitForAnimationToEnd
 - assertVisible: 'Add Exercise'
 - tapOn: 'Add Exercise'
@@ -48,11 +50,13 @@ appId: ${APP_ID}
 - assertVisible: 'Template name'
 - tapOn: 'Template name'
 - inputText: 'E2E Template'
-- hideKeyboard
+- tapOn:
+    point: 49%, 10%
 - tapOn: 'Choose exercises'
 - tapOn: 'Search name, muscle, or type'
 - inputText: 'E2E'
-- tapOn: 'E2E Squat'
+- tapOn:
+    id: 'exercise-card-E2E Squat'
 - tapOn: 'Done'
 # Header save (the "Save template" CTA sits below the fold).
 - tapOn: 'Save'
@@ -67,13 +71,15 @@ appId: ${APP_ID}
 - assertVisible: 'Schedule name'
 - tapOn: 'Schedule name'
 - inputText: 'E2E Schedule'
-- hideKeyboard
+- tapOn:
+    point: 0%, 15%
 - tapOn:
     id: 'segment-CYCLE'
 # A 1-day cycle defaults to one "Day 1" slot showing "Rest day"; tapping it
 # opens the workout picker. Assign our template so today always maps to it.
-- tapOn: 'Rest day'
-- tapOn: 'E2E Template'
+- tapOn: "Day 1, Rest day"
+- tapOn:
+    id: 'option-E2E Template'
 # Mark it the active program here (unambiguous) so it's live on save — avoids a
 # second "Activate" tap that could match the wrong schedule in the list.
 - tapOn: 'Active program'

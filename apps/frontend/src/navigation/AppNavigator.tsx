@@ -160,7 +160,7 @@ export function AppNavigator() {
         <Stack.Screen
           name="EditExercise"
           component={EditExerciseScreen}
-          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+          options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen
           name="WorkoutPlaceholder"

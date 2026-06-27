@@ -42,6 +42,7 @@ export function OptionSelectorSheet<T extends string>({
             {options.map((option, index) => (
               <SelectableRow
                 key={option.value}
+                testID={`option-${option.label}`}
                 label={option.label}
                 selected={value === option.value}
                 accessibilityRole="radio"

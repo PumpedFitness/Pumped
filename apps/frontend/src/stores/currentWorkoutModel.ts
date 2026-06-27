@@ -1,6 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { IconName } from '@/components/icons/ClayIcon';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { SetFieldValue, WorkoutTemplate } from '@/types/workout';
 import type { SetTypeFieldDef } from '@/types/setType';
@@ -45,6 +46,9 @@ export type CurrentWorkout = {
   pausedMs: number;
   /** The workout's color, used as the fallback for ad-hoc exercises. */
   color: WorkoutTemplateColor;
+  /** Template visual identity, carried through so finish can snapshot it. */
+  icon: IconName | null;
+  picture: string | null;
   exercises: CurrentWorkoutExercise[];
 };
 
@@ -174,6 +178,10 @@ export function buildTemplateSyncInput(
     name: template.name,
     description: template.description,
     color: template.color,
+    // Carried through untouched — appearance isn't edited mid-session, so a
+    // structure "update template" save must not wipe the logo/photo.
+    icon: template.icon,
+    picture: template.picture,
     exercises: workout.exercises.map(exercise => {
       const sourceExercise = template.exercises.find(
         candidate => candidate.exerciseId === exercise.exerciseId,

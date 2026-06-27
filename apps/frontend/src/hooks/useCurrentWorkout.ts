@@ -106,6 +106,9 @@ export function useCurrentWorkout() {
         startedAt: workout.startedAt,
         endedAt: Date.now(),
         notes: null,
+        color: workout.color,
+        icon: workout.icon,
+        picture: workout.picture,
         sets: workout.exercises.flatMap(exercise =>
           exercise.sets.map(set => ({
             exerciseId: exercise.exerciseId,

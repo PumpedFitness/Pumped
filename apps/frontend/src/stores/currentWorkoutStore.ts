@@ -60,6 +60,8 @@ function startWorkout(
     pausedAt: null,
     pausedMs: 0,
     color: template.color,
+    icon: template.icon,
+    picture: template.picture,
     exercises: createTemplateSnapshot(template),
   };
   setState({ currentWorkout });

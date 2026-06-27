@@ -59,31 +59,6 @@ export function WorkoutTemplateCard({
             <Text className="t-caption mt-1">{template.description}</Text>
           ) : null}
         </View>
-
-        <View className="flex-row gap-2">
-          <Button
-            accessibilityLabel={t('plan.card.editA11y', {
-              name: template.name,
-            })}
-            className="h-10 w-10 rounded-full p-0"
-            variant="secondary"
-            feedbackVariant="scale"
-            onPress={() => onEdit(template)}
-          >
-            <ClayIcon name="edit" size={17} color={colors.ink} />
-          </Button>
-
-          <Button
-            accessibilityLabel={t('plan.card.startA11y', {
-              name: template.name,
-            })}
-            className="h-10 w-10 rounded-full bg-accent p-0"
-            feedbackVariant="scale"
-            onPress={() => onStart(template)}
-          >
-            <ClayIcon name="play" size={17} color={colors.accentInk} />
-          </Button>
-        </View>
       </View>
 
       <View className="mt-4 flex-row gap-2">
@@ -107,6 +82,33 @@ export function WorkoutTemplateCard({
       ) : (
         <Text className="t-caption mt-3">{t('plan.card.noExercisesYet')}</Text>
       )}
+
+      <View className="mt-4 flex-row gap-2">
+        <Button
+          accessibilityLabel={t('plan.card.editA11y', { name: template.name })}
+          className="h-11 flex-1 rounded-full"
+          variant="secondary"
+          feedbackVariant="scale"
+          onPress={() => onEdit(template)}
+        >
+          <ClayIcon name="edit" size={16} color={colors.ink} />
+          <Button.Label className="font-semibold">
+            {t('plan.card.edit')}
+          </Button.Label>
+        </Button>
+
+        <Button
+          accessibilityLabel={t('plan.card.startA11y', { name: template.name })}
+          className="h-11 flex-1 rounded-full bg-accent"
+          feedbackVariant="scale"
+          onPress={() => onStart(template)}
+        >
+          <ClayIcon name="play" size={16} color={colors.accentInk} />
+          <Button.Label className="font-semibold text-accent-foreground">
+            {t('plan.card.start')}
+          </Button.Label>
+        </Button>
+      </View>
     </Pressable>
   );
 }

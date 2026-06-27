@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
-import type { SetTypeId } from '@/data/local/enums';
+import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { IconName } from '@/components/icons/ClayIcon';
 import type { SetFieldValue } from '@/types/workout';
 import { enumText, jsonArray } from './columns';
 import { workoutTemplates } from './workoutTemplate';
@@ -17,6 +18,12 @@ export const workoutSessions = sqliteTable(
     startedAt: integer('started_at').notNull(),
     endedAt: integer('ended_at'),
     notes: text('notes'),
+    // Visual identity snapshotted from the template at finish time, so history
+    // stays fixed even if the template is later recolored or deleted. Nullable:
+    // pre-snapshot/imported sessions fall back to the default accent.
+    color: enumText<WorkoutTemplateColor>()('color'),
+    icon: enumText<IconName>()('icon'),
+    picture: text('picture'),
     importId: integer('import_id'),
   },
   table => [index('idx_sessions_user_date').on(table.userId, table.startedAt)],

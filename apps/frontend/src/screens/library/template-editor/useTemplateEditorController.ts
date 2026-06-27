@@ -7,7 +7,6 @@ import {
   type RouteProp,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { WorkoutTemplateColor } from '@/data/local/enums';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type {
   EditableExercise,
@@ -144,12 +143,6 @@ export function useTemplateEditorController({
     [navigation],
   );
 
-  const setExerciseColor = useCallback(
-    (exerciseId: string, color: WorkoutTemplateColor) =>
-      updateExercise(exerciseId, exercise => ({ ...exercise, color })),
-    [updateExercise],
-  );
-
   const requestDelete = useCallback(() => {
     if (!template) {
       return;
@@ -184,7 +177,6 @@ export function useTemplateEditorController({
       chooseExercises,
       editExercise,
       openExerciseOverview,
-      setExerciseColor,
       reorderExercises,
       removeExercise,
     }),
@@ -193,7 +185,6 @@ export function useTemplateEditorController({
       chooseExercises,
       editExercise,
       openExerciseOverview,
-      setExerciseColor,
       reorderExercises,
       removeExercise,
     ],

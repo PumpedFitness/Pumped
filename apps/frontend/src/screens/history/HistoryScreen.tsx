@@ -23,7 +23,7 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const { profile } = useUserProfile();
-  const { workouts } = useWorkoutHistory();
+  const { workouts, deleteWorkout } = useWorkoutHistory();
 
   const filteredWorkouts = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
@@ -74,6 +74,7 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
           onWorkoutPress={workoutId =>
             navigation.navigate('CompletedWorkout', { workoutId })
           }
+          onWorkoutDelete={deleteWorkout}
         />
 
         <TabBarInsetSpacer />

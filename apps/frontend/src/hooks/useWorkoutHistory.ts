@@ -1,4 +1,6 @@
+import { useCallback } from 'react';
 import {
+  deleteWorkoutSession,
   getWorkoutSession,
   listWorkoutSessions,
 } from '@/data/local/workouts/sessions';
@@ -69,7 +71,12 @@ function buildExerciseMap(
   );
 }
 
-export function useWorkoutHistory(): { workouts: WorkoutHistoryItem[] } {
+type UseWorkoutHistoryResult = {
+  workouts: WorkoutHistoryItem[];
+  deleteWorkout: (workoutId: string) => void;
+};
+
+export function useWorkoutHistory(): UseWorkoutHistoryResult {
   const exerciseOptions = useExerciseOptions();
 
   const workouts = useTableQuery(
@@ -85,7 +92,12 @@ export function useWorkoutHistory(): { workouts: WorkoutHistoryItem[] } {
     [exerciseOptions],
   );
 
-  return { workouts };
+  const deleteWorkout = useCallback(
+    (workoutId: string) => deleteWorkoutSession(workoutId),
+    [],
+  );
+
+  return { workouts, deleteWorkout };
 }
 
 /** Loads a single completed workout without hydrating the whole history. */

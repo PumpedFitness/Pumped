@@ -225,6 +225,8 @@ export const resources = {
           fallbackExercise: 'Exercise',
           noExercisesYet: 'No exercises yet',
           morePreview: '+{{count}}',
+          edit: 'Edit',
+          start: 'Start',
           editA11y: 'Edit {{name}}',
           startA11y: 'Start {{name}}',
         },
@@ -273,6 +275,11 @@ export const resources = {
           descriptionPlaceholder: 'A short description',
         },
         appearance: {
+          logoTitle: 'Logo & photo',
+          logoHint: 'Pick a logo, or add a photo.',
+          addPhoto: 'Add photo',
+          changePhoto: 'Change photo',
+          removePhoto: 'Remove photo',
           colorTitle: 'Template color',
           colorHint: '{{color}} marks this template in the calendar.',
           colors: {
@@ -303,7 +310,7 @@ export const resources = {
           typePlaceholder: 'No type',
           typePickerTitle: 'Exercise type',
           reorderA11y: 'Drag to reorder exercise',
-          edit: 'Edit',
+          edit: 'Edit sets',
           editA11y: 'Edit {{name}}',
           noSets: 'No sets yet',
           setSummary: {
@@ -406,6 +413,10 @@ export const resources = {
           todayIs: 'Today: {{name}}',
           restToday: 'Today is a rest day',
           start: "Start today's workout",
+          skip: 'Skip today',
+          skipped: 'You skipped today',
+          startAnyway: 'Start anyway',
+          completedEyebrow: 'Completed today',
           noneTitle: 'No active schedule',
           noneBody: 'Activate a schedule below to plan your week.',
         },
@@ -683,6 +694,10 @@ export const resources = {
           viewA11y: 'View {{name}} workout',
           focus: 'Focus: {{muscles}}',
           volumeK: '{{value}}k {{unit}}',
+        },
+        alerts: {
+          deleteTitle: 'Delete {{name}}?',
+          deleteBody: 'This permanently removes the workout from your history.',
         },
         summary: {
           pageA11y: 'Show summary {{page}} of {{total}}',
@@ -1068,6 +1083,8 @@ export const resources = {
           fallbackExercise: 'Übung',
           noExercisesYet: 'Noch keine Übungen',
           morePreview: '+{{count}}',
+          edit: 'Bearbeiten',
+          start: 'Starten',
           editA11y: '{{name}} bearbeiten',
           startA11y: '{{name}} starten',
         },
@@ -1116,6 +1133,11 @@ export const resources = {
           descriptionPlaceholder: 'Eine kurze Beschreibung',
         },
         appearance: {
+          logoTitle: 'Logo & Foto',
+          logoHint: 'Wähle ein Logo oder füge ein Foto hinzu.',
+          addPhoto: 'Foto hinzufügen',
+          changePhoto: 'Foto ändern',
+          removePhoto: 'Foto entfernen',
           colorTitle: 'Vorlagenfarbe',
           colorHint: '{{color}} markiert diese Vorlage im Kalender.',
           colors: {
@@ -1148,7 +1170,7 @@ export const resources = {
           typePlaceholder: 'Kein Typ',
           typePickerTitle: 'Übungstyp',
           reorderA11y: 'Zum Umsortieren ziehen',
-          edit: 'Bearbeiten',
+          edit: 'Sätze bearbeiten',
           editA11y: '{{name}} bearbeiten',
           noSets: 'Noch keine Sätze',
           setSummary: {
@@ -1253,6 +1275,10 @@ export const resources = {
           todayIs: 'Heute: {{name}}',
           restToday: 'Heute ist ein Ruhetag',
           start: 'Heutiges Workout starten',
+          skip: 'Heute überspringen',
+          skipped: 'Heute übersprungen',
+          startAnyway: 'Trotzdem starten',
+          completedEyebrow: 'Heute erledigt',
           noneTitle: 'Kein aktiver Zeitplan',
           noneBody: 'Aktiviere unten einen Zeitplan, um deine Woche zu planen.',
         },
@@ -1536,6 +1562,11 @@ export const resources = {
           viewA11y: 'Workout {{name}} ansehen',
           focus: 'Fokus: {{muscles}}',
           volumeK: '{{value}}k {{unit}}',
+        },
+        alerts: {
+          deleteTitle: '{{name}} löschen?',
+          deleteBody:
+            'Dadurch wird das Workout dauerhaft aus deinem Verlauf entfernt.',
         },
         summary: {
           pageA11y: 'Zusammenfassung {{page}} von {{total}} anzeigen',

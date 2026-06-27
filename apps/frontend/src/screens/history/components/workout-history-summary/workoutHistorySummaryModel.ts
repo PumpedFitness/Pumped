@@ -1,3 +1,4 @@
+import type { WorkoutTemplateColor } from '@/data/local/enums';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import {
   firstDayOfWeekToIndex,
@@ -11,6 +12,8 @@ type ActivityDay = {
   date: Date;
   key: string;
   active: boolean;
+  /** Color of that day's workout (latest if several); null = none/legacy. */
+  color: WorkoutTemplateColor | null;
 };
 
 type ActivityWeek = Array<ActivityDay | null>;
@@ -93,9 +96,15 @@ export function buildMonthWeeks(
   firstDayOfWeek: FirstDayOfWeek,
   now = new Date(),
 ): ActivityWeek[] {
-  const activeDates = new Set(
-    workouts.map(workout => dateKey(new Date(workout.startedAt))),
-  );
+  // `workouts` arrives newest-first, so the first color seen for a date is that
+  // day's latest workout — what the calendar dot should show.
+  const colorByDate = new Map<string, WorkoutTemplateColor | null>();
+  workouts.forEach(workout => {
+    const key = dateKey(new Date(workout.startedAt));
+    if (!colorByDate.has(key)) {
+      colorByDate.set(key, workout.color);
+    }
+  });
   const weekStartsOn = firstDayOfWeekToIndex(firstDayOfWeek);
   const weeks: ActivityWeek[] = [makeEmptyWeek()];
   const daysInMonth = getMonthDateCount(now);
@@ -113,7 +122,8 @@ export function buildMonthWeeks(
     weeks[weekIndex][weekdayIndex] = {
       date,
       key,
-      active: activeDates.has(key),
+      active: colorByDate.has(key),
+      color: colorByDate.get(key) ?? null,
     };
   }
 

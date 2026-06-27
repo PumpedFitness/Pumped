@@ -109,6 +109,7 @@ export function ExerciseSelectionList({
           return (
             <ExerciseRowCard
               key={exercise.id}
+              testID={`exercise-card-${exercise.name}`}
               name={exercise.name}
               metadata={metadata}
               selected={selected}

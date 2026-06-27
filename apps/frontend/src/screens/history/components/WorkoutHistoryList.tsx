@@ -4,14 +4,17 @@ import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { colors } from '@/theme/tokens';
 import { EmptyState } from '@/components/clay/EmptyState';
+import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { WorkoutHistoryItemCard } from './workout-history-item';
+import { confirmDeleteWorkout } from './confirmDeleteWorkout';
 
 type WorkoutHistoryListProps = {
   workouts: WorkoutHistoryItem[];
   weightUnit: WeightUnit;
   hasSearchQuery: boolean;
   onWorkoutPress: (workoutId: string) => void;
+  onWorkoutDelete: (workoutId: string) => void;
 };
 
 type WorkoutGroup = {
@@ -46,6 +49,7 @@ export function WorkoutHistoryList({
   weightUnit,
   hasSearchQuery,
   onWorkoutPress,
+  onWorkoutDelete,
 }: WorkoutHistoryListProps) {
   const { t, i18n } = useTranslation();
   const groups = groupWorkouts(workouts, i18n.language);
@@ -83,12 +87,21 @@ export function WorkoutHistoryList({
         <View key={group.label} className="gap-3">
           <Text className="t-eyebrow px-1">{group.label}</Text>
           {group.workouts.map(workout => (
-            <WorkoutHistoryItemCard
+            <SwipeToDelete
               key={workout.id}
-              workout={workout}
-              weightUnit={weightUnit}
-              onPress={() => onWorkoutPress(workout.id)}
-            />
+              borderRadius={22}
+              onDelete={() =>
+                confirmDeleteWorkout(t, workout.name, () =>
+                  onWorkoutDelete(workout.id),
+                )
+              }
+            >
+              <WorkoutHistoryItemCard
+                workout={workout}
+                weightUnit={weightUnit}
+                onPress={() => onWorkoutPress(workout.id)}
+              />
+            </SwipeToDelete>
           ))}
         </View>
       ))}

@@ -75,7 +75,11 @@ export function WorkoutTemplateEditor({
           />
           <WorkoutTemplateAppearanceSection
             color={draft.color}
+            icon={draft.icon}
+            picture={draft.picture}
             onColorChange={color => updateDraft({ color })}
+            onIconChange={icon => updateDraft({ icon })}
+            onPictureChange={picture => updateDraft({ picture })}
           />
 
           <TemplateEditorProvider value={context}>

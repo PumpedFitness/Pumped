@@ -1,0 +1,15 @@
+# Reusable: dismiss the soft keyboard so it can't cover a button below it.
+# Branch by platform — maestro-runner's `hideKeyboard` is a no-op on Android,
+# and iOS has no hardware "Back" key (`pressKey: Back` errors there).
+# In a subdir so the suite's top-level `*.yaml` glob doesn't run it standalone.
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: Back
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - hideKeyboard

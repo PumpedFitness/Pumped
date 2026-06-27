@@ -19,6 +19,8 @@ type WorkoutTemplateEditorDraft = {
   name: string;
   description: string;
   color: WorkoutTemplateRow['color'];
+  icon: WorkoutTemplateRow['icon'];
+  picture: WorkoutTemplateRow['picture'];
   exercises: DraftExercise[];
   error: string | null;
 };
@@ -45,6 +47,8 @@ function createInitialDraft(
     name: template?.name ?? '',
     description: template?.description ?? '',
     color: template?.color ?? 'TERRACOTTA',
+    icon: template?.icon ?? null,
+    picture: template?.picture ?? null,
     exercises:
       template?.exercises.map(exercise => ({
         exerciseId: exercise.exerciseId,
@@ -100,6 +104,8 @@ function buildSaveInput(
     name: draft.name,
     description: draft.description.trim() || null,
     color: draft.color,
+    icon: draft.icon,
+    picture: draft.picture,
     exercises: draft.exercises.map(buildExerciseInput),
   };
 }

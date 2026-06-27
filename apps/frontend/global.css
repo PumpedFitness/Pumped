@@ -4,108 +4,86 @@
 @source './node_modules/heroui-native/lib';
 
 /* ── Clay Design System — Pumped ────────────────────────── */
+/* Theme colors live in src/theme/palette.ts — the block below is generated. */
 
+/* @theme-gen:start — AUTO-GENERATED from src/theme/palette.ts. Do not edit by hand. */
 @layer theme {
   /* ── Light (Clay — default) ── */
   @variant light {
     --background: #EAE3D5;
     --foreground: #34362C;
-
     --surface: #F7F2E8;
     --surface-foreground: #34362C;
-
     --overlay: #46583C;
     --overlay-foreground: #F3EEE2;
     --backdrop: rgba(52, 54, 44, 0.32);
-
     --muted: #928E7E;
     --default: #EFE8DA;
     --default-foreground: #54564A;
-
-    /* Accent — terracotta (default) */
     --accent: #C67B52;
     --accent-foreground: #3A2A1C;
     --accent-soft: rgba(198, 123, 82, 0.14);
     --accent-soft-foreground: #C67B52;
-
-    /* Form fields */
     --field-background: #F7F2E8;
     --field-foreground: #34362C;
     --field-placeholder: #928E7E;
     --field-border: rgba(52, 54, 44, 0.09);
-
-    /* Status */
     --success: #7E9061;
     --success-foreground: #F3EEE2;
     --warning: #C2974C;
     --warning-foreground: #3A2A1C;
     --danger: #B26B62;
     --danger-foreground: #F3EEE2;
-
-    /* Segments */
     --segment: #EFE8DA;
     --segment-foreground: #34362C;
-
-    /* Misc */
     --border: rgba(52, 54, 44, 0.09);
     --separator: rgba(52, 54, 44, 0.06);
     --focus: var(--accent);
     --link: var(--accent);
-
-    /* Shadows */
     --surface-shadow: 0 1px 2px rgba(52, 54, 44, 0.04), 0 18px 40px -22px rgba(52, 54, 44, 0.10);
     --overlay-shadow: 0 20px 44px -22px rgba(70, 88, 60, 0.70);
     --field-shadow: none;
   }
 
-  /* ── Dark (for future use) ── */
+  /* ── Dark ── */
   @variant dark {
     --background: #2A2C24;
     --foreground: #F3EEE2;
-
     --surface: #34362C;
     --surface-foreground: #F3EEE2;
-
     --overlay: #46583C;
     --overlay-foreground: #F3EEE2;
     --backdrop: rgba(0, 0, 0, 0.50);
-
     --muted: #928E7E;
     --default: #3A3C32;
     --default-foreground: #C8C4B8;
-
     --accent: #C67B52;
     --accent-foreground: #3A2A1C;
     --accent-soft: rgba(198, 123, 82, 0.18);
     --accent-soft-foreground: #C67B52;
-
     --field-background: #2E302A;
     --field-foreground: #F3EEE2;
     --field-placeholder: #928E7E;
     --field-border: rgba(243, 238, 226, 0.12);
-
     --success: #7E9061;
     --success-foreground: #F3EEE2;
     --warning: #C2974C;
     --warning-foreground: #3A2A1C;
     --danger: #B26B62;
     --danger-foreground: #F3EEE2;
-
     --segment: #3A3C32;
     --segment-foreground: #F3EEE2;
-
-    --border: rgba(243, 238, 226, 0.10);
+    --border: rgba(243, 238, 226, 0.1);
     --separator: rgba(243, 238, 226, 0.06);
     --focus: var(--accent);
     --link: var(--accent);
-
     --surface-shadow: none;
     --overlay-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.70);
     --field-shadow: none;
   }
 }
 
-/* ── Custom Clay tokens for Tailwind ── */
+/* ── Custom Clay tokens for Tailwind (reference the vars above) ── */
 @theme inline {
   /* Surfaces */
   --color-surface-card: var(--surface);
@@ -136,6 +114,7 @@
   --color-border-soft: rgba(52, 54, 44, 0.06);
   --color-border-on-moss: rgba(243, 238, 226, 0.16);
 }
+/* @theme-gen:end */
 
 /* ── Typography — Clay ── */
 @utility t-display {

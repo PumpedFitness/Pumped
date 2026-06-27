@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Alert } from 'react-native';
@@ -8,7 +7,8 @@ import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { ScheduleTodayHeader } from './components/ScheduleTodayHeader';
 import { ScheduleRow } from './components/ScheduleRow';
 import { useSchedules } from '@/hooks/useSchedules';
-import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
+import { useTodayWorkout } from '@/hooks/useTodayWorkout';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { formatScheduleSummary } from '@/components/workout/schedulePresentation';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -18,21 +18,16 @@ export function ScheduleScreen() {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { schedules, activeSchedule, todayTemplateIds, setActive } =
-    useSchedules();
-  const { templates } = useWorkoutTemplates();
+  const { schedules, activeSchedule, setActive } = useSchedules();
+  const { today, skip, unskip } = useTodayWorkout();
+  const { profile } = useUserProfile();
   const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
 
-  const todayWorkoutName = useMemo(() => {
-    const templateId = todayTemplateIds[0];
-    if (!templateId) {
-      return null;
-    }
-    return templates.find(template => template.id === templateId)?.name ?? null;
-  }, [todayTemplateIds, templates]);
-
   const startToday = () => {
-    const templateId = todayTemplateIds[0];
+    const templateId =
+      today.kind === 'pending' || today.kind === 'skipped'
+        ? today.templateId
+        : null;
     if (!templateId) {
       return;
     }
@@ -59,6 +54,15 @@ export function ScheduleScreen() {
         error instanceof Error ? error.message : t('common.tryAgain'),
       );
     }
+  };
+
+  const startAnyway = () => {
+    unskip();
+    startToday();
+  };
+
+  const viewWorkout = (workoutId: string) => {
+    navigation.navigate('CompletedWorkout', { workoutId });
   };
 
   const createSchedule = () => {
@@ -94,9 +98,13 @@ export function ScheduleScreen() {
         onCreate={createSchedule}
         header={
           <ScheduleTodayHeader
-            activeSchedule={activeSchedule}
-            todayWorkoutName={todayWorkoutName}
+            state={today}
+            scheduleName={activeSchedule?.name ?? null}
+            weightUnit={profile.weightUnit}
             onStart={startToday}
+            onSkip={skip}
+            onStartAnyway={startAnyway}
+            onViewWorkout={viewWorkout}
           />
         }
       />

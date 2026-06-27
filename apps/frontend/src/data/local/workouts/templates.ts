@@ -6,6 +6,7 @@ import { randomUUID } from 'expo-crypto';
 import { asc, eq } from 'drizzle-orm';
 import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { IconName } from '@/components/icons/ClayIcon';
 import type {
   SetFieldValue,
   WorkoutTemplate,
@@ -43,6 +44,8 @@ export type SaveWorkoutTemplateInput = {
   name: string;
   description?: string | null;
   color?: WorkoutTemplateColor;
+  icon?: IconName | null;
+  picture?: string | null;
   exercises: WorkoutTemplateExerciseInput[];
 };
 
@@ -133,6 +136,8 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
     name: template.name,
     description: template.description,
     color: template.color,
+    icon: template.icon,
+    picture: template.picture,
     exercises,
     createdAt: template.createdAt,
     updatedAt: template.updatedAt,
@@ -173,6 +178,8 @@ function upsertTemplateRow(
       .set({
         ...shared,
         color: input.color ?? existing.color,
+        icon: input.icon ?? null,
+        picture: input.picture ?? null,
       })
       .where(eq(workoutTemplates.id, templateId))
       .run();
@@ -183,6 +190,8 @@ function upsertTemplateRow(
         id: templateId,
         userId: LOCAL_USER_ID,
         color: input.color ?? 'TERRACOTTA',
+        icon: input.icon ?? null,
+        picture: input.picture ?? null,
         createdAt: now,
       })
       .run();

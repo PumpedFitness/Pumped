@@ -14,6 +14,7 @@ type ExerciseRowCardProps = {
   selected?: boolean;
   trailing?: ReactNode;
   pressedClassName?: string;
+  testID?: string;
 };
 
 export function ExerciseRowCard({
@@ -23,11 +24,13 @@ export function ExerciseRowCard({
   selected,
   trailing,
   pressedClassName,
+  testID,
 }: ExerciseRowCardProps) {
   const isSelectable = selected !== undefined;
 
   return (
     <Pressable
+      testID={testID}
       accessibilityRole={isSelectable ? 'checkbox' : 'button'}
       accessibilityState={isSelectable ? { checked: selected } : undefined}
       className={`min-h-20 flex-row items-center gap-3 rounded-[20px] border p-4 ${

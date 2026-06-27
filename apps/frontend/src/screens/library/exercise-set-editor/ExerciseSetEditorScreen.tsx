@@ -1,5 +1,11 @@
 import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,6 +21,8 @@ import {
   SetSheetHost,
   TemplateSetTable,
 } from '@/components/exercise/set-table';
+import { ColorSwatchPicker } from '@/screens/library/template-editor/components/ColorSwatchPicker';
+import { useWorkoutColorOptions } from '@/screens/library/template-editor/components/useWorkoutColorOptions';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutExerciseTypes } from '@/hooks/useWorkoutExerciseTypes';
@@ -51,6 +59,7 @@ export function ExerciseSetEditorScreen({
   } = useSetTypeLibrary();
   const { profile } = useUserProfile();
   const exerciseTypes = useWorkoutExerciseTypes();
+  const colorOptions = useWorkoutColorOptions();
 
   const typeName = draft.typeId
     ? exerciseTypes.items.find(item => item.id === draft.typeId)?.name
@@ -105,6 +114,17 @@ export function ExerciseSetEditorScreen({
               value={draft.goal}
               onChangeText={goal => setDraft(current => ({ ...current, goal }))}
             />
+
+            <View className="gap-2">
+              <Text className="t-label">
+                {t('templateEditor.exercises.color')}
+              </Text>
+              <ColorSwatchPicker
+                value={draft.color}
+                options={colorOptions}
+                onChange={color => setDraft(current => ({ ...current, color }))}
+              />
+            </View>
 
             <TemplateSetTable
               sets={draft.sets}

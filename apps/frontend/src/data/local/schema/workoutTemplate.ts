@@ -1,5 +1,6 @@
 import { index, sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
+import type { IconName } from '@/components/icons/ClayIcon';
 import type { SetFieldValue } from '@/types/workout';
 import { enumText, jsonArray } from './columns';
 
@@ -14,6 +15,11 @@ export const workoutTemplates = sqliteTable('workout_template', {
   color: enumText<WorkoutTemplateColor>()('color')
     .notNull()
     .default('TERRACOTTA'),
+  // Optional visual identity. `icon` is a ClayIcon glyph (logo); `picture` is a
+  // device image URI. Either, both, or neither — presentation prefers picture,
+  // then icon, then a color-tinted default. Both nullable (default = neither).
+  icon: enumText<IconName>()('icon'),
+  picture: text('picture'),
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
