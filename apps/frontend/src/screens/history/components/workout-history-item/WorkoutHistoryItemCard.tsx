@@ -21,9 +21,11 @@ type StatPillProps = {
 
 function StatPill({ icon, label }: StatPillProps) {
   return (
-    <View className="flex-1 flex-row items-center gap-2 rounded-[14px] bg-surface-sunk px-3 py-2.5">
+    <View className="min-w-0 flex-1 flex-row items-center gap-2 rounded-[16px] border border-border-soft bg-surface-sunk px-3 py-2.5">
       <ClayIcon name={icon} size={15} color={colors.muted} />
-      <Text className="t-label">{label}</Text>
+      <Text className="t-label flex-1" numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -67,7 +69,7 @@ export function WorkoutHistoryItemCard({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={t('history.item.viewA11y', { name: workout.name })}
-      className="gap-4 rounded-[22px] border border-border-hairline bg-surface-card p-4 active:bg-surface-sunk"
+      className="gap-4 rounded-[24px] border border-border-soft bg-surface-card p-4 active:bg-surface-sunk"
       onPress={onPress}
     >
       <View className="flex-row items-start gap-3">
@@ -75,17 +77,19 @@ export function WorkoutHistoryItemCard({
           picture={workout.picture}
           icon={workout.icon}
           color={workout.color}
-          size={48}
-          radius={16}
+          size={52}
+          radius={17}
         />
         <View className="flex-1">
           <View className="flex-row items-start justify-between gap-3">
             <Text className="t-heading flex-1" numberOfLines={1}>
               {workout.name}
             </Text>
-            <Text className="t-caption">
-              {formatWorkoutDate(workout.startedAt, i18n.language)}
-            </Text>
+            <View className="rounded-full bg-surface-sunk px-2.5 py-1">
+              <Text className="t-caption">
+                {formatWorkoutDate(workout.startedAt, i18n.language)}
+              </Text>
+            </View>
           </View>
           <Text className="t-caption mt-1" numberOfLines={2}>
             {exerciseSummary}
@@ -109,8 +113,7 @@ export function WorkoutHistoryItemCard({
       </View>
 
       {muscleSummary ? (
-        <View className="flex-row items-center gap-2 border-t border-border-soft pt-3">
-          <View className="h-2 w-2 rounded-full bg-sage" />
+        <View className="rounded-[16px] bg-surface-sunk px-3 py-2">
           <Text className="t-caption flex-1" numberOfLines={1}>
             {t('history.item.focus', { muscles: muscleSummary })}
           </Text>

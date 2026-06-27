@@ -56,7 +56,6 @@ function ExerciseTitle({ name, color, onOpen }: ExerciseTitleProps) {
       >
         {name}
       </Text>
-      <ClayIcon name="chevron" size={15} color={color} />
     </Pressable>
   );
 }
@@ -173,9 +172,7 @@ export function ExerciseSectionHeader({
         borderBottomWidth: 2,
         borderBottomColor: isActive
           ? tone.fg
-          : isFinished
-            ? colors.sage
-            : colors.line,
+          : colors.line,
       }}
     >
       <View
@@ -191,12 +188,14 @@ export function ExerciseSectionHeader({
       </View>
 
       <ExerciseTitle name={name} color={titleColor} onOpen={onOpen} />
-      <ExerciseStatus
-        doneCount={doneCount}
-        totalCount={totalCount}
-        isFinished={isFinished}
-        color={metaColor}
-      />
+      {!isFinished ? (
+        <ExerciseStatus
+          doneCount={doneCount}
+          totalCount={totalCount}
+          isFinished={isFinished}
+          color={metaColor}
+        />
+      ) : null}
       <ExerciseAction
         isActive={isActive}
         tone={tone}
