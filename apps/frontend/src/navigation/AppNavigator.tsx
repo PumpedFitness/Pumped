@@ -15,6 +15,7 @@ import { ScheduleEditorScreen } from '@/screens/schedule/schedule-editor/Schedul
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
 import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/CompletedWorkoutScreen';
+import { ImportWorkoutTemplateScreen } from '@/screens/library/import-workout-template/ImportWorkoutTemplateScreen';
 import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
 import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHistoryScreen';
 import { useAuthStore } from '@/stores/authStore';
@@ -33,12 +34,14 @@ export type RootStackParamList = {
   WidgetPicker: undefined;
   MetricHistory: { metric: MetricKind };
   CompletedWorkout: { workoutId: string };
+  ImportWorkoutTemplate: undefined;
   AddMetric: { metric: MetricKind };
   WorkoutTemplateEditor:
     | {
         templateId?: string;
         exerciseSelection?: ExerciseSelectionResult;
         exerciseEdit?: ExerciseEditResult;
+        importWorkoutId?: string;
       }
     | undefined;
   ExerciseSetEditor: {
@@ -108,6 +111,11 @@ export function AppNavigator() {
         <Stack.Screen
           name="CompletedWorkout"
           component={CompletedWorkoutScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="ImportWorkoutTemplate"
+          component={ImportWorkoutTemplateScreen}
           options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen

@@ -186,3 +186,15 @@ export function saveCompletedWorkout(
 
   return getWorkoutSession(sessionId)!;
 }
+
+export function setWorkoutSessionTemplate(
+  sessionId: string,
+  workoutTemplateId: string,
+): void {
+  db.update(workoutSessions)
+    .set({ workoutTemplateId })
+    .where(eq(workoutSessions.id, sessionId))
+    .run();
+
+  notifyTableChanged(workoutSessions);
+}

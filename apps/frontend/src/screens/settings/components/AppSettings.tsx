@@ -63,6 +63,74 @@ function FirstDayOfWeekSetting() {
   );
 }
 
+type PreferencesSettingsSectionProps = {
+  weightUnit: WeightUnit;
+  setWeightUnit: (weightUnit: WeightUnit) => void;
+  restTimerFullscreen: boolean;
+  setRestTimerFullscreen: (enabled: boolean) => void;
+};
+
+function PreferencesSettingsSection({
+  weightUnit,
+  setWeightUnit,
+  restTimerFullscreen,
+  setRestTimerFullscreen,
+}: PreferencesSettingsSectionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <SettingsSection label={t('profile.sections.preferences')}>
+      <ListRow
+        icon={<ClayIcon name="settings" size={18} color={colors.accent} />}
+        label={t('profile.units')}
+        paddingVertical={10}
+        trailing={
+          <View className="w-40">
+            <SegmentedControl
+              options={[
+                { value: 'kg', label: 'kg' },
+                { value: 'lbs', label: 'lbs' },
+              ]}
+              value={weightUnit}
+              onChange={value => setWeightUnit(value as WeightUnit)}
+            />
+          </View>
+        }
+      />
+      <ListRow
+        icon={<ClayIcon name="swap" size={18} color={colors.accent} />}
+        label={t('settings.language')}
+        paddingVertical={10}
+        divider
+        trailing={
+          <View className="w-40 items-end">
+            <LanguageSwitcher compact />
+          </View>
+        }
+      />
+      <FirstDayOfWeekSetting />
+      <ListRow
+        icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
+        label={t('settings.restTimerFullscreen.label')}
+        paddingVertical={10}
+        divider
+        trailing={
+          <View className="w-32">
+            <SegmentedControl
+              options={[
+                { value: 'on', label: t('settings.restTimerFullscreen.on') },
+                { value: 'off', label: t('settings.restTimerFullscreen.off') },
+              ]}
+              value={restTimerFullscreen ? 'on' : 'off'}
+              onChange={value => setRestTimerFullscreen(value === 'on')}
+            />
+          </View>
+        }
+      />
+    </SettingsSection>
+  );
+}
+
 export function AppSettings() {
   const { t } = useTranslation();
   const navigation =
@@ -141,55 +209,12 @@ export function AppSettings() {
   return (
     <>
       {/* ── Preferences ──────────────────────── */}
-      <SettingsSection label={t('profile.sections.preferences')}>
-        <ListRow
-          icon={<ClayIcon name="settings" size={18} color={colors.accent} />}
-          label={t('profile.units')}
-          paddingVertical={10}
-          trailing={
-            <View className="w-40">
-              <SegmentedControl
-                options={[
-                  { value: 'kg', label: 'kg' },
-                  { value: 'lbs', label: 'lbs' },
-                ]}
-                value={weightUnit}
-                onChange={value => setWeightUnit(value as WeightUnit)}
-              />
-            </View>
-          }
-        />
-        <ListRow
-          icon={<ClayIcon name="swap" size={18} color={colors.accent} />}
-          label={t('settings.language')}
-          paddingVertical={10}
-          divider
-          trailing={
-            <View className="w-40 items-end">
-              <LanguageSwitcher compact />
-            </View>
-          }
-        />
-        <FirstDayOfWeekSetting />
-        <ListRow
-          icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
-          label={t('settings.restTimerFullscreen.label')}
-          paddingVertical={10}
-          divider
-          trailing={
-            <View className="w-32">
-              <SegmentedControl
-                options={[
-                  { value: 'on', label: t('settings.restTimerFullscreen.on') },
-                  { value: 'off', label: t('settings.restTimerFullscreen.off') },
-                ]}
-                value={restTimerFullscreen ? 'on' : 'off'}
-                onChange={value => setRestTimerFullscreen(value === 'on')}
-              />
-            </View>
-          }
-        />
-      </SettingsSection>
+      <PreferencesSettingsSection
+        weightUnit={weightUnit}
+        setWeightUnit={setWeightUnit}
+        restTimerFullscreen={restTimerFullscreen}
+        setRestTimerFullscreen={setRestTimerFullscreen}
+      />
 
       {/* ── Data ─────────────────────────────── */}
       <SettingsSection label={t('profile.sections.data')}>
