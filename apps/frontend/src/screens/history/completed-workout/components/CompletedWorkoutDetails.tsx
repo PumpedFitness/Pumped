@@ -237,6 +237,7 @@ export function CompletedWorkoutDetails({
         return (
           <CompletedExerciseHistorySection
             key={exercise.key}
+            collapseControlPosition="overview"
             index={index}
             name={option?.name ?? t('common.unknownExercise')}
             sets={exercise.sets}

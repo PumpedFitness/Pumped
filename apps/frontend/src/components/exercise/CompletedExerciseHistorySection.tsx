@@ -29,6 +29,7 @@ type CompletedExerciseHistorySectionProps = {
   setTypesById: ExerciseSetTableProps['setTypesById'];
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
+  collapseControlPosition?: 'header' | 'overview';
   edgeToEdge?: boolean;
   showHeader?: boolean;
   onOpen?: () => void;
@@ -115,6 +116,7 @@ export function CompletedExerciseHistorySection({
   isCollapsed,
   edgeToEdge = true,
   showHeader = true,
+  collapseControlPosition = showHeader ? 'header' : 'overview',
   onOpen,
   onToggleCollapsed,
 }: CompletedExerciseHistorySectionProps) {
@@ -131,6 +133,7 @@ export function CompletedExerciseHistorySection({
   const statsRowClassName = edgeToEdge
     ? 'border-b border-border-hairline bg-surface-card px-4 py-2.5'
     : 'border-b border-border-hairline px-4 py-2.5';
+  const showOverviewCollapseControl = collapseControlPosition === 'overview';
 
   return (
     <View className={containerClassName}>
@@ -143,11 +146,13 @@ export function CompletedExerciseHistorySection({
           state="finished"
           onOpen={onOpen}
           isCollapsed={isCollapsed}
-          onToggleCollapsed={onToggleCollapsed}
+          onToggleCollapsed={
+            collapseControlPosition === 'header' ? onToggleCollapsed : undefined
+          }
         />
       ) : null}
       <View className={statsRowClassName}>
-        {showHeader ? (
+        {!showOverviewCollapseControl ? (
           <ExerciseStatsOverview
             stats={stats}
             topWeight={topWeight}

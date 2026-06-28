@@ -56,12 +56,12 @@ export function ExerciseHistorySection({
         {t('exerciseOverview.history.subtitle')}
       </Text>
 
-      <View className="mt-4 -mx-[18px]">
+      <View className="mt-2 -mx-[18px]">
         {history.length > 0 ? (
           history.map((entry, index) => (
             <View
               key={entry.workoutId}
-              className={`gap-4 px-[18px] py-5 ${index > 0 ? 'border-t border-border-hairline' : ''}`}
+              className={`gap-4 px-[18px] pt-5 ${index > 0 ? 'border-t border-border-hairline' : ''}`}
             >
               <Pressable
                 accessibilityRole="button"
@@ -82,7 +82,6 @@ export function ExerciseHistorySection({
                     {formatDate(entry.startedAt, i18n.language)}
                   </Text>
                 </View>
-                <ClayIcon name="chevron" size={16} color={colors.muted} />
               </Pressable>
 
               <View className="-mx-[18px]">
