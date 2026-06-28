@@ -91,6 +91,7 @@ export function ExerciseHistorySection({
                   index={0}
                   name={exerciseName}
                   sets={entry.sets}
+                  previousSets={history[index + 1]?.sets}
                   isCollapsed={!expandedWorkoutIds.has(entry.workoutId)}
                   onToggleCollapsed={() =>
                     toggleWorkoutExpanded(entry.workoutId)

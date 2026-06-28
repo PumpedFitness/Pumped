@@ -8,6 +8,7 @@ import { ExerciseSetTable } from '@/components/exercise/set-table';
 import type { ExerciseSetTableProps } from '@/components/exercise/set-table/exerciseSetTableModel';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
+import type { PerformedSet } from '@/types/workout';
 
 type ExerciseStats = {
   sets: number;
@@ -24,6 +25,7 @@ type CompletedExerciseHistorySectionProps = {
   index: number;
   name: string;
   sets: ExerciseSetTableProps['sets'];
+  previousSets?: PerformedSet[];
   weightUnit: WeightUnit;
   setTypeOptions: ExerciseSetTableProps['setTypeOptions'];
   setTypesById: ExerciseSetTableProps['setTypesById'];
@@ -110,6 +112,7 @@ export function CompletedExerciseHistorySection({
   index,
   name,
   sets,
+  previousSets,
   weightUnit,
   setTypeOptions,
   setTypesById,
@@ -187,6 +190,7 @@ export function CompletedExerciseHistorySection({
           <ExerciseSetTable
             readOnly
             sets={sets}
+            previousSets={previousSets}
             setTypeOptions={setTypeOptions}
             setTypesById={setTypesById}
             weightUnit={weightUnit}

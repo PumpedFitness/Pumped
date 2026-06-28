@@ -9,9 +9,11 @@ import { setWorkoutSessionTemplate } from '@/data/local/workouts/sessions';
 import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import {
+  useWorkoutHistory,
   useWorkoutSession,
   type WorkoutHistoryItem,
 } from '@/hooks/useWorkoutHistory';
+import type { PerformedSet } from '@/types/workout';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { displayWeight } from '@/utils/units';
 import { CompletedExerciseHistorySection } from '@/components/exercise/CompletedExerciseHistorySection';
@@ -59,6 +61,23 @@ type CompletedExercise = {
   exerciseId: string;
   sets: WorkoutHistoryItem['sets'];
 };
+
+function previousSetsForExercise(
+  exerciseId: string,
+  beforeTimestamp: number,
+  allWorkouts: WorkoutHistoryItem[],
+): PerformedSet[] | undefined {
+  let best: WorkoutHistoryItem | undefined;
+  for (const workout of allWorkouts) {
+    if (workout.startedAt >= beforeTimestamp) continue;
+    if (!workout.sets.some(s => s.exerciseId === exerciseId)) continue;
+    if (!best || workout.startedAt > best.startedAt) best = workout;
+  }
+  if (!best) return undefined;
+  return best.sets
+    .filter(s => s.exerciseId === exerciseId)
+    .sort((a, b) => a.setPosition - b.setPosition);
+}
 
 function groupCompletedExercises(
   workout: WorkoutHistoryItem,
@@ -122,6 +141,7 @@ export function CompletedWorkoutDetails({
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const workout = useWorkoutSession(workoutId);
+  const { workouts: allWorkouts } = useWorkoutHistory();
   const { saveTemplate } = useWorkoutTemplates();
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
@@ -241,6 +261,11 @@ export function CompletedWorkoutDetails({
             index={index}
             name={option?.name ?? t('common.unknownExercise')}
             sets={exercise.sets}
+            previousSets={previousSetsForExercise(
+              exercise.exerciseId,
+              workout.startedAt,
+              allWorkouts,
+            )}
             isCollapsed={isCollapsed}
             onOpen={
               option
