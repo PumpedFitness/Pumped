@@ -81,7 +81,7 @@ type EditableExerciseSetTableProps = BaseTableProps & {
   onCreateSetType: (name: string) => string;
 };
 
-type ReadOnlyExerciseSet = Pick<
+export type ReadOnlyExerciseSet = Pick<
   PerformedSet,
   'id' | 'setType' | 'restSeconds' | 'fieldValues'
 > & {
@@ -94,6 +94,9 @@ type ReadOnlyExerciseSet = Pick<
 export type ReadOnlyExerciseSetTableProps = SetTypeContext & {
   readOnly: true;
   sets: ReadOnlyExerciseSet[];
+  // Sets from a previous session to diff against. Matched by position. When
+  // provided, each card shows a comparison hint like "+1 reps, +2.5 kg".
+  previousSets?: ReadOnlyExerciseSet[];
   // Which value slot to display: 'actual' (logged history, weights stored in kg
   // and converted to the user's unit) or 'target' (template plan, shown as-is,
   // ranges intact). Defaults to 'actual'.
@@ -112,6 +115,8 @@ type BaseCardField = {
   /** Whether a value is required to complete the set (drives the marker). */
   required: boolean;
   readOnly: boolean;
+  /** Delta vs. the previous session's same set, shown below the value in read-only mode. */
+  comparisonHint?: { label: string; positive: boolean; neutral: boolean };
 };
 
 export type SetCardField =
@@ -239,6 +244,8 @@ type FieldBuildOptions = {
   t: TFunction;
   onChange: (next: SetFieldValue[]) => void;
   suggestion?: SuggestedSetValues;
+  /** Field values from the previous session's matching set, used to compute deltas. */
+  previousValues?: SetFieldValue[];
 };
 
 export function buildCardField(
@@ -246,7 +253,8 @@ export function buildCardField(
   values: SetFieldValue[],
   options: FieldBuildOptions,
 ): SetCardField {
-  const { mode, readOnly, weightUnit, t, onChange, suggestion } = options;
+  const { mode, readOnly, weightUnit, t, onChange, suggestion, previousValues } =
+    options;
   const unit = unitSuffix(field.unit, weightUnit);
   const base = {
     id: field.id,
@@ -269,10 +277,43 @@ export function buildCardField(
     ) {
       value = displayWeight(value, weightUnit);
     }
+
+    let comparisonHint:
+      | { label: string; positive: boolean; neutral: boolean }
+      | undefined;
+    if (readOnly && mode === 'actual' && previousValues != null) {
+      const currRaw = getNumberValue(values, field.id);
+      const prevRaw = getNumberValue(previousValues, field.id);
+      if (currRaw != null && prevRaw != null) {
+        let delta: number;
+        if (field.unit === 'amount') {
+          delta =
+            displayWeight(currRaw, weightUnit) -
+            displayWeight(prevRaw, weightUnit);
+        } else {
+          delta = currRaw - prevRaw;
+        }
+        delta = Math.round(delta * 10) / 10;
+        const sign = delta >= 0 ? '+' : '';
+        let label: string;
+        if (field.unit === 'amount') {
+          label = `${sign}${formatSetNumber(delta)} ${weightUnit}`;
+        } else if (field.unit === 'percentage') {
+          label = `${sign}${formatSetNumber(delta)}%`;
+        } else if (field.unit === 'seconds') {
+          label = `${sign}${formatSetNumber(delta)}s`;
+        } else {
+          label = `${sign}${formatSetNumber(delta)}`;
+        }
+        comparisonHint = { label, positive: delta > 0, neutral: delta === 0 };
+      }
+    }
+
     return {
       ...base,
       kind: 'number',
       value,
+      comparisonHint,
       suggestedValue: suggestedNumberValue(field, suggestion, weightUnit),
       input: isBoundedNumber(field.config) ? 'wheel' : 'keyboard',
       allowDecimal: (field.config.decimals ?? 0) > 0,

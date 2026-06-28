@@ -25,6 +25,9 @@ export function buildReadOnlySetCards(
             set.fieldDefinitions ?? [],
           )
         : type?.fields ?? [];
+
+    const previousValues = props.previousSets?.[index]?.fieldValues;
+
     return {
       key: set.id,
       index,
@@ -39,6 +42,7 @@ export function buildReadOnlySetCards(
           weightUnit: props.weightUnit,
           t,
           onChange: () => undefined,
+          previousValues,
         }),
       ),
       rest:

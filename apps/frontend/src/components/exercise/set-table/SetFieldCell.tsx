@@ -87,6 +87,24 @@ function CellShell({
   );
 }
 
+type ComparisonHintProps = {
+  hint: SetCardField['comparisonHint'];
+};
+
+function ComparisonHint({ hint }: ComparisonHintProps) {
+  if (!hint) return null;
+  const colorClass = hint.neutral
+    ? 'text-muted'
+    : hint.positive
+      ? 'text-moss'
+      : 'text-danger';
+  return (
+    <Text className={`mt-0.5 text-[12px] font-bold ${colorClass}`}>
+      {hint.label}
+    </Text>
+  );
+}
+
 type BooleanCellProps = {
   field: Extract<SetCardField, { kind: 'boolean' }>;
   label: ReactNode;
@@ -155,46 +173,126 @@ function TextFieldCell({ field, label, hasError }: TextCellProps) {
 }
 
 type NumberCellProps = {
-  field: Extract<SetCardField, { kind: 'number' }>;
+  field: SetCardNumberField;
   label: ReactNode;
   hasError: boolean;
 };
 
-function NumberFieldCell({ field, label, hasError }: NumberCellProps) {
+/**
+ * Canonical read-only renderer for all number fields regardless of input type.
+ * Uses Text (not TextInput) so sizing is platform-consistent — TextInput carries
+ * Android default padding that shifts the baseline relative to Text.
+ */
+function ReadOnlyNumberCell({ field, label, hasError }: NumberCellProps) {
+  return (
+    <CellShell hasError={hasError}>
+      {label}
+      <View className="flex-row items-baseline gap-1">
+        <Text
+          className="text-[17px] font-bold leading-[22px] tabular-nums text-foreground"
+          style={{ includeFontPadding: false }}
+        >
+          {formatSetNumber(field.value) || '–'}
+        </Text>
+        {field.unit ? (
+          <Text
+            className={`text-[11px] font-semibold leading-[14px] ${
+              hasError ? 'text-danger' : 'text-muted'
+            }`}
+            style={{ includeFontPadding: false }}
+          >
+            {field.unit}
+          </Text>
+        ) : null}
+      </View>
+      <ComparisonHint hint={field.comparisonHint} />
+    </CellShell>
+  );
+}
+
+/** Editable keyboard number field. */
+function EditableKeyboardNumberCell({ field, label, hasError }: NumberCellProps) {
   const hasSuggestion = field.value === null && field.suggestedValue != null;
   return (
     <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
       {label}
-      <View
-        className={`flex-row items-baseline gap-1 ${
-          field.readOnly && field.unit ? 'mt-1' : ''
-        }`}
-      >
-        {field.readOnly ? (
-          <Text
-            className="text-[17px] font-bold leading-[22px] tabular-nums text-foreground"
-            style={{ includeFontPadding: false }}
-          >
-            {formatSetNumber(field.value) || '–'}
-          </Text>
-        ) : (
-          <EditableNumberInput
-            accessibilityLabel={field.label}
-            value={field.value}
-            suggestedValue={field.suggestedValue}
-            allowDecimal={field.allowDecimal}
-            hasError={hasError}
-            onChange={field.onChange}
-          />
-        )}
+      <View className="flex-row items-baseline gap-1">
+        <EditableNumberInput
+          accessibilityLabel={field.label}
+          value={field.value}
+          suggestedValue={field.suggestedValue}
+          allowDecimal={field.allowDecimal}
+          hasError={hasError}
+          onChange={field.onChange}
+        />
         {field.unit ? (
           <Text
             className={`text-[11px] font-semibold ${
-              field.readOnly ? 'leading-[14px]' : ''
-            } ${
               hasError ? 'text-danger' : 'text-muted'
             }`}
-            style={field.readOnly ? { includeFontPadding: false } : undefined}
+          >
+            {field.unit}
+          </Text>
+        ) : null}
+      </View>
+    </CellShell>
+  );
+}
+
+type WheelNumberCellProps = {
+  field: SetCardNumberField;
+  label: ReactNode;
+  hasError: boolean;
+  onPress: () => void;
+};
+
+/** Editable wheel-picker number field. */
+function EditableWheelNumberCell({
+  field,
+  label,
+  hasError,
+  onPress,
+}: WheelNumberCellProps) {
+  const hasSuggestion = field.value === null && field.suggestedValue != null;
+  const display = formatSetNumber(field.value);
+  const placeholder = hasSuggestion
+    ? formatSetNumber(field.suggestedValue ?? null)
+    : '–';
+  const valueInput = (
+    <TextInput
+      accessibilityLabel={field.label}
+      className={`min-w-12 text-[17px] font-bold tabular-nums ${
+        hasError
+          ? 'text-danger'
+          : display
+            ? 'text-foreground'
+            : 'text-muted'
+      }`}
+      editable={false}
+      placeholder={placeholder}
+      placeholderTextColor={hasError ? colors.danger : colors.muted}
+      pointerEvents="none"
+      value={display}
+    />
+  );
+
+  return (
+    <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
+      {label}
+      <View className="flex-row items-baseline gap-1">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${field.label}: ${display || placeholder}`}
+          hitSlop={6}
+          onPress={onPress}
+        >
+          {valueInput}
+        </Pressable>
+        {field.unit ? (
+          <Text
+            className={`text-[11px] font-semibold ${
+              hasError ? 'text-danger' : 'text-muted'
+            }`}
           >
             {field.unit}
           </Text>
@@ -234,72 +332,6 @@ function ButtonFieldCell({
   );
 }
 
-type WheelNumberCellProps = {
-  field: SetCardNumberField;
-  label: ReactNode;
-  hasError: boolean;
-  onPress?: () => void;
-};
-
-function WheelNumberFieldCell({
-  field,
-  label,
-  hasError,
-  onPress,
-}: WheelNumberCellProps) {
-  const hasSuggestion = field.value === null && field.suggestedValue != null;
-  const display = formatSetNumber(field.value);
-  const placeholder = hasSuggestion
-    ? formatSetNumber(field.suggestedValue ?? null)
-    : '–';
-  const valueInput = (
-    <TextInput
-      accessibilityLabel={field.label}
-      className={`min-w-12 text-[17px] font-bold tabular-nums ${
-        hasError
-          ? 'text-danger'
-          : display
-            ? 'text-foreground'
-            : 'text-muted'
-      }`}
-      editable={false}
-      placeholder={placeholder}
-      placeholderTextColor={hasError ? colors.danger : colors.muted}
-      pointerEvents="none"
-      value={display}
-    />
-  );
-
-  return (
-    <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
-      {label}
-      <View className="flex-row items-baseline gap-1">
-        {onPress ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${field.label}: ${display || placeholder}`}
-            hitSlop={6}
-            onPress={onPress}
-          >
-            {valueInput}
-          </Pressable>
-        ) : (
-          valueInput
-        )}
-        {field.unit ? (
-          <Text
-            className={`text-[11px] font-semibold ${
-              hasError ? 'text-danger' : 'text-muted'
-            }`}
-          >
-            {field.unit}
-          </Text>
-        ) : null}
-      </View>
-    </CellShell>
-  );
-}
-
 export function SetFieldCell({
   field,
   hasError,
@@ -334,16 +366,25 @@ export function SetFieldCell({
       />
     );
   }
-  if (field.input === 'wheel') {
-    const wheelField = field;
+
+  // Number fields: read-only uses Text (platform-consistent height);
+  // editable splits on keyboard vs wheel (interaction concern only).
+  if (field.readOnly) {
     return (
-      <WheelNumberFieldCell
+      <ReadOnlyNumberCell field={field} label={label} hasError={hasError} />
+    );
+  }
+  if (field.input === 'wheel') {
+    return (
+      <EditableWheelNumberCell
         field={field}
         label={label}
         hasError={hasError}
-        onPress={field.readOnly ? undefined : () => onOpenWheel(wheelField)}
+        onPress={() => onOpenWheel(field)}
       />
     );
   }
-  return <NumberFieldCell field={field} label={label} hasError={hasError} />;
+  return (
+    <EditableKeyboardNumberCell field={field} label={label} hasError={hasError} />
+  );
 }
