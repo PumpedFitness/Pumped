@@ -153,17 +153,22 @@ function TextFieldCell({ field, label, hasError }: TextCellProps) {
       {label}
       {field.readOnly ? (
         <Text
-          className="text-[15px] font-bold text-foreground"
-          numberOfLines={1}
+          className="text-[15px] font-bold leading-[20px] text-foreground"
+          numberOfLines={2}
+          style={{ includeFontPadding: false }}
         >
           {field.value || '–'}
         </Text>
       ) : (
         <TextInput
           accessibilityLabel={field.label}
-          className="text-[15px] font-semibold text-foreground"
+          className="min-h-7 p-0 text-[15px] font-semibold leading-[20px] text-foreground"
+          multiline
+          numberOfLines={2}
           placeholder="–"
           placeholderTextColor={hasError ? colors.danger : colors.muted}
+          scrollEnabled={false}
+          textAlignVertical="top"
           value={field.value}
           onChangeText={field.onChange}
         />
@@ -211,7 +216,11 @@ function ReadOnlyNumberCell({ field, label, hasError }: NumberCellProps) {
 }
 
 /** Editable keyboard number field. */
-function EditableKeyboardNumberCell({ field, label, hasError }: NumberCellProps) {
+function EditableKeyboardNumberCell({
+  field,
+  label,
+  hasError,
+}: NumberCellProps) {
   const hasSuggestion = field.value === null && field.suggestedValue != null;
   return (
     <CellShell hasError={hasError} hasSuggestion={hasSuggestion}>
@@ -262,11 +271,7 @@ function EditableWheelNumberCell({
     <TextInput
       accessibilityLabel={field.label}
       className={`min-w-12 text-[17px] font-bold tabular-nums ${
-        hasError
-          ? 'text-danger'
-          : display
-            ? 'text-foreground'
-            : 'text-muted'
+        hasError ? 'text-danger' : display ? 'text-foreground' : 'text-muted'
       }`}
       editable={false}
       placeholder={placeholder}
@@ -385,6 +390,10 @@ export function SetFieldCell({
     );
   }
   return (
-    <EditableKeyboardNumberCell field={field} label={label} hasError={hasError} />
+    <EditableKeyboardNumberCell
+      field={field}
+      label={label}
+      hasError={hasError}
+    />
   );
 }
