@@ -11,6 +11,18 @@ export function buildReadOnlySetCards(
   props: ReadOnlyExerciseSetTableProps,
 ): SetCardModel[] {
   const mode = props.mode ?? 'actual';
+
+  // Group previous sets by type so we match by (setType, within-type order)
+  // rather than by absolute position. This ensures adding or removing a set
+  // type (e.g. Warmup) doesn't shift the comparison for all other set types.
+  const previousByType = new Map<string, ReadOnlyExerciseSet[]>();
+  for (const prev of props.previousSets ?? []) {
+    const bucket = previousByType.get(prev.setType) ?? [];
+    bucket.push(prev);
+    previousByType.set(prev.setType, bucket);
+  }
+  const seenByType = new Map<string, number>();
+
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
     // History ('actual') reconstructs fields from the snapshot taken when the
@@ -26,7 +38,12 @@ export function buildReadOnlySetCards(
           )
         : type?.fields ?? [];
 
-    const previousValues = props.previousSets?.[index]?.fieldValues;
+    const typeOrder = seenByType.get(set.setType) ?? 0;
+    seenByType.set(set.setType, typeOrder + 1);
+
+    const matchingPrev = previousByType.get(set.setType)?.[typeOrder];
+    const previousValues = matchingPrev?.fieldValues;
+    const isAdditionalSet = props.previousSets != null && matchingPrev == null;
 
     return {
       key: set.id,
@@ -53,6 +70,10 @@ export function buildReadOnlySetCards(
               readOnly: true,
               onChange: () => undefined,
             },
+      progressionBadgeText: isAdditionalSet
+        ? t('progression.additionalSet')
+        : undefined,
+      progressionBadgeVariant: isAdditionalSet ? 'positive' : undefined,
       tone: 'default',
       isCurrent: false,
       canRemove: false,

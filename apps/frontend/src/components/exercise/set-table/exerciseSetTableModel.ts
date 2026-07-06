@@ -167,6 +167,7 @@ export type SetCardModel = {
   rest: SetCardRest | null;
   progression?: SetCardProgression;
   progressionBadgeText?: string;
+  progressionBadgeVariant?: 'default' | 'positive';
   tone: 'default' | 'completed';
   isDone?: boolean;
   isCurrent: boolean;

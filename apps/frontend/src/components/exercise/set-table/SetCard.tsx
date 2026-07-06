@@ -123,9 +123,19 @@ function SetCardHeader({
             onOpenProgressionPicker={onOpenProgressionPicker}
           />
         ) : card.progressionBadgeText ? (
-          <View className="min-w-0 shrink rounded-full bg-surface-sunk px-2.5 py-1">
+          <View
+            className={`min-w-0 shrink rounded-full px-2.5 py-1 ${
+              card.progressionBadgeVariant === 'positive'
+                ? 'bg-sage/25'
+                : 'bg-surface-sunk'
+            }`}
+          >
             <Text
-              className="text-[10px] font-bold text-muted"
+              className={`text-[10px] font-bold ${
+                card.progressionBadgeVariant === 'positive'
+                  ? 'text-moss'
+                  : 'text-muted'
+              }`}
               numberOfLines={1}
             >
               {card.progressionBadgeText}

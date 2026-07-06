@@ -61,19 +61,46 @@ function ExerciseSetTableDemo() {
   });
 
   return (
-    <View className="mt-6 gap-2">
-      <Text className="text-[12px] font-bold uppercase tracking-[0.8px] text-muted px-5">
-        Set delta demo
-      </Text>
-      <View className="px-5">
-        <ExerciseSetTable
-          readOnly
-          sets={[makeSet('demo-a', 8, 80), makeSet('demo-b', 7, 80)]}
-          previousSets={[makeSet('prev-a', 7, 77.5), makeSet('prev-b', 8, 80)]}
-          setTypeOptions={setTypeOptions}
-          setTypesById={setTypesById}
-          weightUnit="kg"
-        />
+    <View className="mt-6 gap-6">
+      <View className="gap-2">
+        <Text className="text-[12px] font-bold uppercase tracking-[0.8px] text-muted px-5">
+          Set delta demo
+        </Text>
+        <View className="px-5">
+          <ExerciseSetTable
+            readOnly
+            sets={[makeSet('demo-a', 8, 80), makeSet('demo-b', 7, 80)]}
+            previousSets={[makeSet('prev-a', 7, 77.5), makeSet('prev-b', 8, 80)]}
+            setTypeOptions={setTypeOptions}
+            setTypesById={setTypesById}
+            weightUnit="kg"
+          />
+        </View>
+      </View>
+
+      <View className="gap-2">
+        <Text className="text-[12px] font-bold uppercase tracking-[0.8px] text-muted px-5">
+          Additional set demo
+        </Text>
+        <View className="px-5">
+          <ExerciseSetTable
+            readOnly
+            sets={[
+              makeSet('demo-x', 8, 80),
+              makeSet('demo-y', 8, 80),
+              makeSet('demo-z', 8, 80),
+              makeSet('demo-w', 8, 82.5),
+            ]}
+            previousSets={[
+              makeSet('prev-x', 8, 77.5),
+              makeSet('prev-y', 7, 77.5),
+              makeSet('prev-z', 8, 77.5),
+            ]}
+            setTypeOptions={setTypeOptions}
+            setTypesById={setTypesById}
+            weightUnit="kg"
+          />
+        </View>
       </View>
     </View>
   );
