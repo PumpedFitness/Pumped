@@ -87,6 +87,7 @@ export function EditExerciseScreen({
           weightUnit={profile.weightUnit}
         />
         <ExerciseHistorySection
+          exerciseName={exercise.name}
           history={analytics.history}
           weightUnit={profile.weightUnit}
           onOpenWorkout={workoutId =>

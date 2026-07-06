@@ -32,6 +32,16 @@ type ProgressionPillsProps = {
   onOpenProgressionPicker: () => void;
 };
 
+type SetCardProgressionSlotProps = {
+  card: SetCardModel;
+  onOpenProgressionPicker: () => void;
+};
+
+type SetCardActionsProps = {
+  card: SetCardModel;
+  onToggleDone: () => void;
+};
+
 function ProgressionPills({
   card,
   onOpenProgressionPicker,
@@ -61,6 +71,84 @@ function ProgressionPills({
         <ClayIcon name="chevronDown" size={11} color={colors.muted} />
       ) : null}
     </Pressable>
+  );
+}
+
+function SetCardProgressionSlot({
+  card,
+  onOpenProgressionPicker,
+}: SetCardProgressionSlotProps) {
+  if (card.progression) {
+    return (
+      <ProgressionPills
+        card={card}
+        onOpenProgressionPicker={onOpenProgressionPicker}
+      />
+    );
+  }
+  if (!card.progressionBadgeText) {
+    return null;
+  }
+
+  const isPositive = card.progressionBadgeVariant === 'positive';
+  return (
+    <View
+      className={`min-w-0 shrink rounded-full px-2.5 py-1 ${
+        isPositive ? 'bg-sage/25' : 'bg-surface-sunk'
+      }`}
+    >
+      <Text
+        className={`text-[10px] font-bold ${
+          isPositive ? 'text-moss' : 'text-muted'
+        }`}
+        numberOfLines={1}
+      >
+        {card.progressionBadgeText}
+      </Text>
+    </View>
+  );
+}
+
+function SetCardCompletionToggle({ card, onToggleDone }: SetCardActionsProps) {
+  const { t } = useTranslation();
+  if (!card.onToggleDone) {
+    return null;
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: card.isDone }}
+      accessibilityLabel={
+        card.isDone
+          ? t('setTable.a11y.markSetIncomplete', {
+              number: card.index + 1,
+            })
+          : t('setTable.a11y.markSetComplete', {
+              number: card.index + 1,
+            })
+      }
+      className="h-8 w-8 items-center justify-center rounded-full active:bg-surface-sunk"
+      onPress={onToggleDone}
+    >
+      <View
+        className={`h-7 w-7 items-center justify-center rounded-full ${
+          card.isDone ? 'bg-moss' : 'border-2 border-border-soft bg-background'
+        }`}
+      >
+        {card.isDone && (
+          <ClayIcon name="check" size={15} color={colors.cream} />
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
+function SetCardActions({ card, onToggleDone }: SetCardActionsProps) {
+  return (
+    <View className="shrink-0 flex-row items-center gap-2">
+      <SetCardCompletionToggle card={card} onToggleDone={onToggleDone} />
+    </View>
   );
 }
 
@@ -117,62 +205,13 @@ function SetCardHeader({
           )}
         </Pressable>
 
-        {card.progression ? (
-          <ProgressionPills
-            card={card}
-            onOpenProgressionPicker={onOpenProgressionPicker}
-          />
-        ) : card.progressionBadgeText ? (
-          <View className="min-w-0 shrink rounded-full bg-surface-sunk px-2.5 py-1">
-            <Text
-              className="text-[10px] font-bold text-muted"
-              numberOfLines={1}
-            >
-              {card.progressionBadgeText}
-            </Text>
-          </View>
-        ) : null}
+        <SetCardProgressionSlot
+          card={card}
+          onOpenProgressionPicker={onOpenProgressionPicker}
+        />
       </View>
 
-      <View className="shrink-0 flex-row items-center gap-2">
-        {card.isCurrent && card.onToggleDone ? (
-          <View className="rounded-full bg-accent-soft px-2 py-1">
-            <Text className="text-[9px] font-bold uppercase tracking-[0.6px] text-accent">
-              {t('currentWorkout.now')}
-            </Text>
-          </View>
-        ) : null}
-
-        {card.onToggleDone ? (
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: card.isDone }}
-            accessibilityLabel={
-              card.isDone
-                ? t('setTable.a11y.markSetIncomplete', {
-                    number: card.index + 1,
-                  })
-                : t('setTable.a11y.markSetComplete', {
-                    number: card.index + 1,
-                  })
-            }
-            className="h-8 w-8 items-center justify-center rounded-full active:bg-surface-sunk"
-            onPress={onToggleDone}
-          >
-            <View
-              className={`h-7 w-7 items-center justify-center rounded-full ${
-                card.isDone
-                  ? 'bg-moss'
-                  : 'border-2 border-border-soft bg-background'
-              }`}
-            >
-              {card.isDone && (
-                <ClayIcon name="check" size={15} color={colors.cream} />
-              )}
-            </View>
-          </Pressable>
-        ) : null}
-      </View>
+      <SetCardActions card={card} onToggleDone={onToggleDone} />
     </View>
   );
 }
@@ -185,6 +224,43 @@ type SetCardFieldsProps = {
   onOpenRange: (field: SetCardRangeField) => void;
 };
 
+type SetCardFieldRow = {
+  key: string;
+  cells: SetCardField[];
+};
+
+function buildFieldRows(cells: SetCardField[]): SetCardFieldRow[] {
+  const rows: SetCardFieldRow[] = [];
+  let inlineCells: SetCardField[] = [];
+  const orderedCells = [
+    ...cells.filter(cell => cell.layout === 'inline'),
+    ...cells.filter(cell => cell.layout === 'fullWidth'),
+  ];
+
+  const flushInlineRow = () => {
+    if (inlineCells.length === 0) {
+      return;
+    }
+    rows.push({
+      key: inlineCells.map(field => field.id).join(':'),
+      cells: inlineCells,
+    });
+    inlineCells = [];
+  };
+
+  for (const cell of orderedCells) {
+    if (cell.layout === 'fullWidth') {
+      flushInlineRow();
+      rows.push({ key: cell.id, cells: [cell] });
+      continue;
+    }
+    inlineCells.push(cell);
+  }
+
+  flushInlineRow();
+  return rows;
+}
+
 function SetCardFields({
   cells,
   showValidation,
@@ -195,19 +271,29 @@ function SetCardFields({
   if (cells.length === 0) {
     return null;
   }
+  const rows = buildFieldRows(cells);
   return (
-    <View className="flex-row overflow-hidden rounded-[14px] bg-surface-sunk">
-      {cells.map((field, index) => (
-        <Fragment key={field.id}>
-          {index > 0 ? <View className="my-2.5 w-px bg-border-soft" /> : null}
-          <SetFieldCell
-            field={field}
-            hasError={showValidation && field.isValid === false}
-            showRequired={showRequired}
-            onOpenWheel={onOpenWheel}
-            onOpenRange={onOpenRange}
-          />
-        </Fragment>
+    <View className="gap-2">
+      {rows.map(row => (
+        <View
+          key={row.key}
+          className="flex-row overflow-hidden rounded-[14px] bg-surface-sunk"
+        >
+          {row.cells.map((field, index) => (
+            <Fragment key={field.id}>
+              {index > 0 ? (
+                <View className="my-2.5 w-px bg-border-soft" />
+              ) : null}
+              <SetFieldCell
+                field={field}
+                hasError={showValidation && field.isValid === false}
+                showRequired={showRequired}
+                onOpenWheel={onOpenWheel}
+                onOpenRange={onOpenRange}
+              />
+            </Fragment>
+          ))}
+        </View>
       ))}
     </View>
   );
@@ -270,6 +356,7 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
         kind: 'number',
         id: '__rest__',
         label: t('setTable.columns.rest'),
+        layout: 'inline',
         unit: 's',
         value: card.rest.value,
         input: 'keyboard',
@@ -302,8 +389,8 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
   const containerClass = card.isDone
     ? 'border border-moss bg-sage/15'
     : card.isCurrent
-    ? 'border-2 border-accent bg-surface-card'
-    : 'border border-border-soft bg-surface-card';
+      ? 'border-2 border-accent bg-surface-card'
+      : 'border border-border-soft bg-surface-card';
 
   const content = (
     <View className={`gap-3 rounded-[20px] p-3 ${containerClass}`}>

@@ -357,6 +357,7 @@ export const resources = {
           linear: 'Linear',
           rangeRollover: 'Range rollover',
         },
+        additionalSet: 'Additional set',
         suggestion: {
           suggested: 'Suggested: {{target}}',
           lastTime: 'Last time: {{target}}',
@@ -1283,6 +1284,7 @@ export const resources = {
             rangeRollover: 'Bereich mit Wechsel',
           },
         },
+        additionalSet: 'Zusätzlicher Satz',
         suggestion: {
           suggested: 'Vorschlag: {{target}}',
           lastTime: 'Letztes Mal: {{target}}',
