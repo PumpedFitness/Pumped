@@ -6,6 +6,7 @@ import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { useHomescreenStore } from '@/stores/homescreenStore';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { RestTimerTopbarMockups } from './components/RestTimerTopbarMockups';
 
 function getDayGreeting(t: TFunction, language: string): string {
   const now = new Date();
@@ -36,18 +37,17 @@ export function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-6"
       >
-        {/* Header */}
         <View className="px-5 pt-4 pb-5">
-          <Text className="text-[12.5px] text-muted font-medium mb-1">
+          <Text className="mb-1 text-[12.5px] font-medium text-muted">
             {timeLabel}
           </Text>
-          <Text className="text-[30px] font-bold text-foreground tracking-[-0.5px]">
+          <Text className="text-[30px] font-bold tracking-[-0.5px] text-foreground">
             {greeting}
           </Text>
         </View>
 
-        {/* Widget Grid */}
         <View className="px-5">
+          <RestTimerTopbarMockups />
           <WidgetGrid layout={layout} />
         </View>
 

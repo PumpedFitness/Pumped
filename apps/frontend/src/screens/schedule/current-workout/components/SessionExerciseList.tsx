@@ -34,7 +34,8 @@ type SessionExerciseListProps = {
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
   toggleSetDone: (exerciseId: string, setId: string) => boolean;
-  restStart: (seconds: number) => void;
+  restStart: (seconds: number, sourceSetId?: string) => void;
+  activeRestSetId: string | null;
   removeSet: (exerciseId: string, setId: string) => void;
   removeExercise: (exerciseId: string) => void;
   onChooseExercises: (selectedExerciseIds: string[]) => void;
@@ -58,13 +59,19 @@ export function SessionExerciseList({
   updateSet,
   toggleSetDone,
   restStart,
+  activeRestSetId,
   removeSet,
   removeExercise,
   onChooseExercises,
 }: SessionExerciseListProps) {
   const { t } = useTranslation();
-  const { activeId, setOffset, scrollProps, onViewportLayout, onContentSizeChange } =
-    useExerciseSnap(exercises);
+  const {
+    activeId,
+    setOffset,
+    scrollProps,
+    onViewportLayout,
+    onContentSizeChange,
+  } = useExerciseSnap(exercises);
 
   const nameFor = (id: string) =>
     optionById.get(id)?.name ?? t('plan.card.fallbackExercise');
@@ -110,6 +117,7 @@ export function SessionExerciseList({
           updateSet={updateSet}
           toggleSetDone={toggleSetDone}
           restStart={restStart}
+          activeRestSetId={activeRestSetId}
           removeSet={removeSet}
           addSet={addSet}
         />

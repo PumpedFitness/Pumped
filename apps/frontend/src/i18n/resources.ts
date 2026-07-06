@@ -165,6 +165,21 @@ export const resources = {
         dayGreeting: '{{day}} {{timeOfDay}}',
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
+        restTimerMockups: {
+          title: 'Rest timer topbar mockups',
+          count: '5 options',
+          setType: 'Working',
+          progression: 'Linear',
+          running: 'Running',
+          idle: 'Idle',
+          variants: {
+            statusBlock: 'Active rest block',
+            restRail: 'Rest rail module',
+            cornerTab: 'Corner status tab',
+            tileBar: 'Box tile topbar',
+            idleSlot: 'Idle configured slot',
+          },
+        },
       },
       widgets: {
         names: {
@@ -1080,6 +1095,21 @@ export const resources = {
         dayGreeting: '{{day}}{{timeOfDay}}',
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
+        restTimerMockups: {
+          title: 'Pausentimer-Topbar-Mockups',
+          count: '5 Optionen',
+          setType: 'Arbeitssatz',
+          progression: 'Linear',
+          running: 'Läuft',
+          idle: 'Bereit',
+          variants: {
+            statusBlock: 'Aktiver Pausenblock',
+            restRail: 'Pausenmodul rechts',
+            cornerTab: 'Status-Tab in der Ecke',
+            tileBar: 'Boxige Kachel-Topbar',
+            idleSlot: 'Bereiter Pausenslot',
+          },
+        },
       },
       widgets: {
         names: {

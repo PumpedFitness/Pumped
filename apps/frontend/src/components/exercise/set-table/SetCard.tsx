@@ -1,13 +1,11 @@
 import { Fragment, memo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import * as Haptics from 'expo-haptics';
-import { colors } from '@/theme/tokens';
 import { SwipeTo, type SwipeAction } from '@/components/clay/SwipeTo';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { SetCardHeader } from './SetCardHeader';
 import { SetFieldCell } from './SetFieldCell';
-import { setTypeColorTokens } from './setTypeColors';
 import { useSetSheetOpeners } from './SetSheets';
 import type {
   SetCardField,
@@ -19,202 +17,6 @@ import type {
 type SetCardProps = {
   card: SetCardModel;
 };
-
-type SetCardHeaderProps = {
-  card: SetCardModel;
-  onOpenSetTypePicker: () => void;
-  onOpenProgressionPicker: () => void;
-  onToggleDone: () => void;
-};
-
-type ProgressionPillsProps = {
-  card: SetCardModel;
-  onOpenProgressionPicker: () => void;
-};
-
-type SetCardProgressionSlotProps = {
-  card: SetCardModel;
-  onOpenProgressionPicker: () => void;
-};
-
-type SetCardActionsProps = {
-  card: SetCardModel;
-  onToggleDone: () => void;
-};
-
-function ProgressionPills({
-  card,
-  onOpenProgressionPicker,
-}: ProgressionPillsProps) {
-  const { t } = useTranslation();
-  const progression = card.progression;
-
-  if (!progression) {
-    return null;
-  }
-  const goal = progression.goal;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={progression.readOnly}
-      className="h-8 min-w-0 max-w-[42%] flex-row items-center gap-1.5 rounded-full bg-surface-sunk px-2.5 active:bg-surface-card"
-      onPress={progression.readOnly ? undefined : onOpenProgressionPicker}
-    >
-      <Text
-        className="min-w-0 shrink text-[11px] font-bold text-muted"
-        numberOfLines={1}
-      >
-        {t(`progression.summary.${goal.kind}`)}
-      </Text>
-      {!progression.readOnly ? (
-        <ClayIcon name="chevronDown" size={11} color={colors.muted} />
-      ) : null}
-    </Pressable>
-  );
-}
-
-function SetCardProgressionSlot({
-  card,
-  onOpenProgressionPicker,
-}: SetCardProgressionSlotProps) {
-  if (card.progression) {
-    return (
-      <ProgressionPills
-        card={card}
-        onOpenProgressionPicker={onOpenProgressionPicker}
-      />
-    );
-  }
-  if (!card.progressionBadgeText) {
-    return null;
-  }
-
-  const isPositive = card.progressionBadgeVariant === 'positive';
-  return (
-    <View
-      className={`min-w-0 shrink rounded-full px-2.5 py-1 ${
-        isPositive ? 'bg-sage/25' : 'bg-surface-sunk'
-      }`}
-    >
-      <Text
-        className={`text-[10px] font-bold ${
-          isPositive ? 'text-moss' : 'text-muted'
-        }`}
-        numberOfLines={1}
-      >
-        {card.progressionBadgeText}
-      </Text>
-    </View>
-  );
-}
-
-function SetCardCompletionToggle({ card, onToggleDone }: SetCardActionsProps) {
-  const { t } = useTranslation();
-  if (!card.onToggleDone) {
-    return null;
-  }
-
-  return (
-    <Pressable
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: card.isDone }}
-      accessibilityLabel={
-        card.isDone
-          ? t('setTable.a11y.markSetIncomplete', {
-              number: card.index + 1,
-            })
-          : t('setTable.a11y.markSetComplete', {
-              number: card.index + 1,
-            })
-      }
-      className="h-8 w-8 items-center justify-center rounded-full active:bg-surface-sunk"
-      onPress={onToggleDone}
-    >
-      <View
-        className={`h-7 w-7 items-center justify-center rounded-full ${
-          card.isDone ? 'bg-moss' : 'border-2 border-border-soft bg-background'
-        }`}
-      >
-        {card.isDone && (
-          <ClayIcon name="check" size={15} color={colors.cream} />
-        )}
-      </View>
-    </Pressable>
-  );
-}
-
-function SetCardActions({ card, onToggleDone }: SetCardActionsProps) {
-  return (
-    <View className="shrink-0 flex-row items-center gap-2">
-      <SetCardCompletionToggle card={card} onToggleDone={onToggleDone} />
-    </View>
-  );
-}
-
-function SetCardHeader({
-  card,
-  onOpenSetTypePicker,
-  onOpenProgressionPicker,
-  onToggleDone,
-}: SetCardHeaderProps) {
-  const { t } = useTranslation();
-  const tone = setTypeColorTokens(card.setTypeColor);
-
-  return (
-    <View className="flex-row items-center gap-2">
-      <View
-        className="h-7 w-7 shrink-0 items-center justify-center rounded-full"
-        style={{
-          backgroundColor: card.isCurrent ? colors.ink : colors.cardSunk,
-        }}
-      >
-        <Text
-          className="text-[12px] font-bold tabular-nums"
-          style={{ color: card.isCurrent ? colors.cream : colors.muted }}
-        >
-          {card.index + 1}
-        </Text>
-      </View>
-
-      <View className="min-w-0 flex-1 flex-row items-center gap-1.5">
-        <Pressable
-          accessibilityRole={card.readOnly ? undefined : 'button'}
-          accessibilityLabel={t('setTable.a11y.setType', {
-            number: card.index + 1,
-          })}
-          disabled={card.readOnly}
-          className="min-w-0 max-w-[58%] flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
-          style={{ backgroundColor: tone.soft }}
-          onPress={card.readOnly ? undefined : onOpenSetTypePicker}
-        >
-          <ClayIcon
-            name={card.setTypeIcon ?? 'target'}
-            size={14}
-            color={tone.fg}
-          />
-          <Text
-            className="min-w-0 shrink text-[13px] font-bold"
-            style={{ color: tone.fg }}
-            numberOfLines={1}
-          >
-            {card.setTypeLabel}
-          </Text>
-          {!card.readOnly && (
-            <ClayIcon name="chevronDown" size={12} color={tone.fg} />
-          )}
-        </Pressable>
-
-        <SetCardProgressionSlot
-          card={card}
-          onOpenProgressionPicker={onOpenProgressionPicker}
-        />
-      </View>
-
-      <SetCardActions card={card} onToggleDone={onToggleDone} />
-    </View>
-  );
-}
 
 type SetCardFieldsProps = {
   cells: SetCardField[];
@@ -351,24 +153,6 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
     useSetSheetOpeners();
   const [showValidation, setShowValidation] = useState(false);
 
-  const restField: SetCardField | null = card.rest
-    ? {
-        kind: 'number',
-        id: '__rest__',
-        label: t('setTable.columns.rest'),
-        layout: 'inline',
-        unit: 's',
-        value: card.rest.value,
-        input: 'keyboard',
-        allowDecimal: false,
-        readOnly: card.rest.readOnly,
-        isValid: true,
-        required: false,
-        onChange: card.rest.onChange,
-      }
-    : null;
-  const cells = restField ? [...card.fields, restField] : card.fields;
-
   const attemptDone = () => {
     if (!card.onToggleDone) {
       return;
@@ -389,8 +173,8 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
   const containerClass = card.isDone
     ? 'border border-moss bg-sage/15'
     : card.isCurrent
-      ? 'border-2 border-accent bg-surface-card'
-      : 'border border-border-soft bg-surface-card';
+    ? 'border-2 border-accent bg-surface-card'
+    : 'border border-border-soft bg-surface-card';
 
   const content = (
     <View className={`gap-3 rounded-[20px] p-3 ${containerClass}`}>
@@ -401,7 +185,7 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
         onToggleDone={attemptDone}
       />
       <SetCardFields
-        cells={cells}
+        cells={card.fields}
         showValidation={showValidation}
         showRequired={card.onToggleDone != null}
         onOpenWheel={openWheel}

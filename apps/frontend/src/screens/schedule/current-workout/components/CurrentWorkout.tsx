@@ -188,6 +188,7 @@ export function CurrentWorkout({
           updateSet={updateSet}
           toggleSetDone={toggleSetDone}
           restStart={rest.start}
+          activeRestSetId={rest.isRunning ? rest.sourceSetId : null}
           removeSet={removeSet}
           removeExercise={removeExercise}
           onChooseExercises={onChooseExercises}
