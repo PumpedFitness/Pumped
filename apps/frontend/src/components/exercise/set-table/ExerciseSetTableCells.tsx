@@ -72,7 +72,7 @@ export function EditableNumberInput({
   return (
     <TextInput
       accessibilityLabel={accessibilityLabel}
-      className={`min-w-12 text-[17px] font-bold tabular-nums ${
+      className={`min-w-12 p-0 text-[17px] font-bold leading-[22px] tabular-nums ${
         hasError ? 'text-danger' : 'text-foreground'
       }`}
       keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
@@ -80,6 +80,7 @@ export function EditableNumberInput({
       placeholderTextColor={hasError ? colors.danger : colors.muted}
       returnKeyType="done"
       selectTextOnFocus
+      style={{ includeFontPadding: false }}
       value={draft}
       onBlur={() => {
         isFocused.current = false;
