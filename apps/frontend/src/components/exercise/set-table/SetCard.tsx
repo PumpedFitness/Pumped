@@ -145,17 +145,8 @@ function SetCardCompletionToggle({ card, onToggleDone }: SetCardActionsProps) {
 }
 
 function SetCardActions({ card, onToggleDone }: SetCardActionsProps) {
-  const { t } = useTranslation();
   return (
     <View className="shrink-0 flex-row items-center gap-2">
-      {card.isCurrent && card.onToggleDone ? (
-        <View className="rounded-full bg-accent-soft px-2 py-1">
-          <Text className="text-[9px] font-bold uppercase tracking-[0.6px] text-accent">
-            {t('currentWorkout.now')}
-          </Text>
-        </View>
-      ) : null}
-
       <SetCardCompletionToggle card={card} onToggleDone={onToggleDone} />
     </View>
   );

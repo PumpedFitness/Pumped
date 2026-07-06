@@ -11,6 +11,7 @@ import {
   type SetCardNumberField,
   type SetCardRangeField,
 } from './exerciseSetTableModel';
+import { SetTextFieldCell } from './SetTextFieldCell';
 
 type SetFieldCellProps = {
   field: SetCardField;
@@ -137,42 +138,6 @@ function BooleanFieldCell({ field, label, hasError }: BooleanCellProps) {
           {field.value ? t('setField.boolean.on') : t('setField.boolean.off')}
         </Text>
       </Pressable>
-    </CellShell>
-  );
-}
-
-type TextCellProps = {
-  field: Extract<SetCardField, { kind: 'text' }>;
-  label: ReactNode;
-  hasError: boolean;
-};
-
-function TextFieldCell({ field, label, hasError }: TextCellProps) {
-  return (
-    <CellShell hasError={hasError}>
-      {label}
-      {field.readOnly ? (
-        <Text
-          className="text-[15px] font-bold leading-[20px] text-foreground"
-          numberOfLines={2}
-          style={{ includeFontPadding: false }}
-        >
-          {field.value || '–'}
-        </Text>
-      ) : (
-        <TextInput
-          accessibilityLabel={field.label}
-          className="min-h-7 p-0 text-[15px] font-semibold leading-[20px] text-foreground"
-          multiline
-          numberOfLines={2}
-          placeholder="–"
-          placeholderTextColor={hasError ? colors.danger : colors.muted}
-          scrollEnabled={false}
-          textAlignVertical="top"
-          value={field.value}
-          onChangeText={field.onChange}
-        />
-      )}
     </CellShell>
   );
 }
@@ -357,7 +322,7 @@ export function SetFieldCell({
     return <BooleanFieldCell field={field} label={label} hasError={hasError} />;
   }
   if (field.kind === 'text') {
-    return <TextFieldCell field={field} label={label} hasError={hasError} />;
+    return <SetTextFieldCell field={field} label={label} hasError={hasError} />;
   }
   if (field.kind === 'range') {
     const rangeField = field;
