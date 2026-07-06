@@ -1,14 +1,18 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
-import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
-import { displayWeight } from '@/utils/units';
+import { getNumberValue } from '@/data/local/sets/fieldValues';
+import { historicalFieldsForSet } from '@/data/local/sets/fieldValueSnapshots';
+import { displayWeight, formatWeight } from '@/utils/units';
 import { ExerciseSectionHeader } from '@/components/exercise/ExerciseSectionHeader';
 import { ExerciseSetTable } from '@/components/exercise/set-table';
-import type { ExerciseSetTableProps } from '@/components/exercise/set-table/exerciseSetTableModel';
+import type {
+  ReadOnlyExerciseSet,
+  ReadOnlyExerciseSetTableProps,
+} from '@/components/exercise/set-table/exerciseSetTableModel';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
-import type { PerformedSet } from '@/types/workout';
+import type { SetTypeFieldDef } from '@/types/setType';
 
 type ExerciseStats = {
   sets: number;
@@ -24,11 +28,11 @@ type StatTileProps = {
 type CompletedExerciseHistorySectionProps = {
   index: number;
   name: string;
-  sets: ExerciseSetTableProps['sets'];
-  previousSets?: PerformedSet[];
+  sets: ReadOnlyExerciseSet[];
+  previousSets?: ReadOnlyExerciseSet[];
   weightUnit: WeightUnit;
-  setTypeOptions: ExerciseSetTableProps['setTypeOptions'];
-  setTypesById: ExerciseSetTableProps['setTypesById'];
+  setTypeOptions: ReadOnlyExerciseSetTableProps['setTypeOptions'];
+  setTypesById: ReadOnlyExerciseSetTableProps['setTypesById'];
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
   collapseControlPosition?: 'header' | 'overview';
@@ -37,14 +41,50 @@ type CompletedExerciseHistorySectionProps = {
   onOpen?: () => void;
 };
 
+function historicalFields(
+  set: ReadOnlyExerciseSet,
+  setTypesById: ReadOnlyExerciseSetTableProps['setTypesById'],
+): SetTypeFieldDef[] {
+  const type = setTypesById.get(set.setType);
+  return historicalFieldsForSet(
+    type?.fields ?? [],
+    set.setType,
+    set.fieldValues,
+    set.fieldDefinitions ?? [],
+  );
+}
+
+function resolveHistoricalSetWeightReps(
+  set: ReadOnlyExerciseSet,
+  setTypesById: ReadOnlyExerciseSetTableProps['setTypesById'],
+): { weight: number | null; reps: number } {
+  const fields = historicalFields(set, setTypesById);
+  const weightField = fields.find(field => field.unit === 'amount');
+  const repsField = fields.find(
+    field => field.dataType === 'number' && field.unit === null,
+  );
+
+  return {
+    weight: weightField
+      ? getNumberValue(set.fieldValues, weightField.id)
+      : null,
+    reps:
+      (repsField ? getNumberValue(set.fieldValues, repsField.id) : null) ?? 0,
+  };
+}
+
 function buildExerciseStats(
-  sets: ExerciseSetTableProps['sets'],
+  sets: ReadOnlyExerciseSet[],
+  setTypesById: ReadOnlyExerciseSetTableProps['setTypesById'],
 ): ExerciseStats {
   return sets.reduce<ExerciseStats>(
     (stats, set) => {
-      const { weight, reps } = resolveSetWeightReps(set);
+      const { weight, reps } = resolveHistoricalSetWeightReps(
+        set,
+        setTypesById,
+      );
       const weightKg = weight ?? 0;
-      const volumeKg = weight !== null && reps !== null ? weight * reps : 0;
+      const volumeKg = weight !== null ? weight * reps : 0;
 
       return {
         sets: stats.sets + 1,
@@ -124,12 +164,12 @@ export function CompletedExerciseHistorySection({
   onToggleCollapsed,
 }: CompletedExerciseHistorySectionProps) {
   const { t } = useTranslation();
-  const stats = buildExerciseStats(sets);
+  const stats = buildExerciseStats(sets, setTypesById);
   const setCount = stats.sets;
   const topWeight =
     stats.topWeightKg == null
       ? t('common.notAvailable')
-      : `${displayWeight(stats.topWeightKg, weightUnit)}`;
+      : formatWeight(stats.topWeightKg, weightUnit);
   const containerClassName = edgeToEdge
     ? '-mx-5 overflow-hidden border-y border-border-hairline bg-background'
     : 'overflow-hidden';
