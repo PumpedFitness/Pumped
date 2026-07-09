@@ -30,9 +30,16 @@ appId: ${APP_ID}
 - assertVisible: 'Exercise Library'
 - tapOn: 'Search name, muscle, or type'
 - inputText: 'Maestro'
+# The soft keyboard covers the "Use N exercises" footer CTA (CI emulators show
+# the IME; local ones with a host keyboard don't).
+- hideKeyboard
 - assertVisible: 'Maestro Exercise'
 - tapOn: 'Maestro Exercise'
 - tapOn: 'Use 1 exercise'
-- assertVisible: 'Maestro Exercise'
-- tapOn: 'Save template'
+# Back on the template editor. The exercise list entry sits below the fold on
+# small screens; the always-visible EXERCISES section counter proves the add.
+- assertVisible: '1 exercise'
+# The bottom "Save template" CTA sits below the fold once exercises are added;
+# the header "Save" button is always visible.
+- tapOn: 'Save'
 - assertVisible: 'Maestro Workout'
