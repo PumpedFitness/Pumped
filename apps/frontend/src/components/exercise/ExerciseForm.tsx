@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { Button } from '@/components/clay/Button';
@@ -106,9 +107,16 @@ function FormFooter({
   onSave,
 }: FormFooterProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 flex-col gap-2 px-5 pb-5 pt-3 border-t border-border-hairline bg-background">
+    <View
+      className="absolute bottom-0 left-0 right-0 flex-col gap-2 px-5 pt-3 border-t border-border-hairline bg-background"
+      // Keep the save button clear of the system navigation bar — the screen
+      // draws edge-to-edge, and a button under the (translucent) bar looks
+      // tappable but the bar consumes the touches.
+      style={{ paddingBottom: Math.max(insets.bottom + 8, 20) }}
+    >
       {displayHandoverResult && (
         <Text>
           {t('exerciseForm.handoverResult', {

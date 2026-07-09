@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet, Button, Input } from 'heroui-native';
+import { AppBottomSheet } from '@/components/forms/AppBottomSheet';
 import { randomUUID } from 'expo-crypto';
 import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
@@ -139,10 +140,10 @@ function UnitControl({ unit, onChange }: UnitControlProps) {
             value === 'none'
               ? t('setTypeEditor.fieldSheet.unitNone', { defaultValue: 'None' })
               : value === 'amount'
-                ? t('setTypeEditor.fieldSheet.unit.weight', {
-                    defaultValue: 'Weight (settings)',
-                  })
-                : t(`setField.unit.${value}`),
+              ? t('setTypeEditor.fieldSheet.unit.weight', {
+                  defaultValue: 'Weight (settings)',
+                })
+              : t(`setField.unit.${value}`),
         }))}
         value={unit}
         onChange={value => onChange(value as SetFieldUnit | 'none')}
@@ -179,7 +180,9 @@ function ActionButtons({ canSave, onSave, onRemove }: ActionButtonsProps) {
   return (
     <>
       <Button
-        className={`h-13 rounded-full ${canSave ? 'bg-accent' : 'bg-surface-sunk'}`}
+        className={`h-13 rounded-full ${
+          canSave ? 'bg-accent' : 'bg-surface-sunk'
+        }`}
         feedbackVariant="scale"
         isDisabled={!canSave}
         onPress={onSave}
@@ -271,64 +274,55 @@ export function SetTypeFieldEditorSheet({
   };
 
   return (
-    <BottomSheet
-      isOpen={visible}
-      onOpenChange={open => {
-        if (!open) onClose();
-      }}
-    >
-      <BottomSheet.Portal>
-        <BottomSheet.Overlay />
-        <BottomSheet.Content backgroundClassName="bg-background">
-          <BottomSheet.Title className="text-[21px] font-bold text-foreground">
-            {field
-              ? t('setTypeEditor.fieldSheet.editTitle')
-              : t('setTypeEditor.fieldSheet.addTitle')}
-          </BottomSheet.Title>
+    <AppBottomSheet open={visible} onClose={onClose}>
+      <BottomSheet.Overlay />
+      <AppBottomSheet.Content backgroundClassName="bg-background">
+        <BottomSheet.Title className="text-[21px] font-bold text-foreground">
+          {field
+            ? t('setTypeEditor.fieldSheet.editTitle')
+            : t('setTypeEditor.fieldSheet.addTitle')}
+        </BottomSheet.Title>
 
-          <View className="mt-4 gap-4">
-            <FieldControl label={t('setTypeEditor.fieldSheet.nameLabel')}>
-              <Input
-                className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
-                placeholder={t('setTypeEditor.fieldSheet.namePlaceholder')}
-                value={name}
-                onChangeText={setName}
-              />
-            </FieldControl>
-
-            <DataTypeControl dataType={dataType} onChange={setNextDataType} />
-
-            {hasNumberFormat(dataType) && (
-              <NumberFormatControl
-                numberFormat={numberFormat}
-                onChange={setNumberFormat}
-              />
-            )}
-
-            {hasUnit(dataType) && (
-              <UnitControl unit={unit} onChange={setUnit} />
-            )}
-
-            <RequiredToggle
-              required={required}
-              onToggle={() => setRequired(current => !current)}
+        <View className="mt-4 gap-4">
+          <FieldControl label={t('setTypeEditor.fieldSheet.nameLabel')}>
+            <Input
+              className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
+              placeholder={t('setTypeEditor.fieldSheet.namePlaceholder')}
+              value={name}
+              onChangeText={setName}
             />
+          </FieldControl>
 
-            <ActionButtons
-              canSave={canSave}
-              onSave={save}
-              onRemove={
-                onRemove
-                  ? () => {
-                      onRemove();
-                      onClose();
-                    }
-                  : undefined
-              }
+          <DataTypeControl dataType={dataType} onChange={setNextDataType} />
+
+          {hasNumberFormat(dataType) && (
+            <NumberFormatControl
+              numberFormat={numberFormat}
+              onChange={setNumberFormat}
             />
-          </View>
-        </BottomSheet.Content>
-      </BottomSheet.Portal>
-    </BottomSheet>
+          )}
+
+          {hasUnit(dataType) && <UnitControl unit={unit} onChange={setUnit} />}
+
+          <RequiredToggle
+            required={required}
+            onToggle={() => setRequired(current => !current)}
+          />
+
+          <ActionButtons
+            canSave={canSave}
+            onSave={save}
+            onRemove={
+              onRemove
+                ? () => {
+                    onRemove();
+                    onClose();
+                  }
+                : undefined
+            }
+          />
+        </View>
+      </AppBottomSheet.Content>
+    </AppBottomSheet>
   );
 }
