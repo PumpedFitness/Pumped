@@ -28,7 +28,7 @@ export function OptionSelectorSheet<T extends string>({
   return (
     <AppBottomSheet open={visible} onClose={onClose}>
       <BottomSheet.Overlay />
-      <BottomSheet.Content backgroundClassName="bg-background">
+      <AppBottomSheet.Content backgroundClassName="bg-background">
         <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
           {title}
         </BottomSheet.Title>
@@ -51,7 +51,7 @@ export function OptionSelectorSheet<T extends string>({
             />
           ))}
         </View>
-      </BottomSheet.Content>
+      </AppBottomSheet.Content>
     </AppBottomSheet>
   );
 }

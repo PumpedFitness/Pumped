@@ -276,7 +276,7 @@ export function SetTypeFieldEditorSheet({
   return (
     <AppBottomSheet open={visible} onClose={onClose}>
       <BottomSheet.Overlay />
-      <BottomSheet.Content backgroundClassName="bg-background">
+      <AppBottomSheet.Content backgroundClassName="bg-background">
         <BottomSheet.Title className="text-[21px] font-bold text-foreground">
           {field
             ? t('setTypeEditor.fieldSheet.editTitle')
@@ -322,7 +322,7 @@ export function SetTypeFieldEditorSheet({
             }
           />
         </View>
-      </BottomSheet.Content>
+      </AppBottomSheet.Content>
     </AppBottomSheet>
   );
 }

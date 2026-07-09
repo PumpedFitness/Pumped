@@ -95,7 +95,7 @@ function LibraryPickerContent({
   const snapPoints = useMemo(() => ['50%', '80%'], []);
 
   return (
-    <BottomSheet.Content
+    <AppBottomSheet.Content
       backgroundClassName="bg-background"
       snapPoints={snapPoints}
       enableDynamicSizing={false}
@@ -171,7 +171,7 @@ function LibraryPickerContent({
           </Pressable>
         </View>
       )}
-    </BottomSheet.Content>
+    </AppBottomSheet.Content>
   );
 }
 

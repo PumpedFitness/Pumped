@@ -73,7 +73,7 @@ export function RangeWheelPickerSheet({
   return (
     <AppBottomSheet open={visible} onClose={onClose}>
       <BottomSheet.Overlay />
-      <BottomSheet.Content backgroundClassName="bg-background">
+      <AppBottomSheet.Content backgroundClassName="bg-background">
         <View className="items-center">
           <BottomSheet.Title className="text-[21px] font-bold text-foreground">
             {config.title}
@@ -135,7 +135,7 @@ export function RangeWheelPickerSheet({
             </Button.Label>
           </Button>
         </View>
-      </BottomSheet.Content>
+      </AppBottomSheet.Content>
     </AppBottomSheet>
   );
 }

@@ -173,7 +173,7 @@ export function UserSettings() {
         onClose={() => setBirthdateSheet(false)}
       >
         <BottomSheet.Overlay />
-        <BottomSheet.Content backgroundClassName="bg-background">
+        <AppBottomSheet.Content backgroundClassName="bg-background">
           <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
             {t('profile.birthdateSheetTitle')}
           </BottomSheet.Title>
@@ -200,7 +200,7 @@ export function UserSettings() {
               {t('common.save')}
             </Button.Label>
           </Button>
-        </BottomSheet.Content>
+        </AppBottomSheet.Content>
       </AppBottomSheet>
     </>
   );
