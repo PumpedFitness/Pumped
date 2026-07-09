@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from 'heroui-native';
 import type { ExerciseOption } from '@/types/exercise';
 import { colors } from '@/theme/tokens';
@@ -26,6 +27,7 @@ export function ExerciseSelectionList({
   onCreateExercise,
 }: ExerciseSelectionListProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState(initialSelectedExerciseIds);
   const filteredExercises = useMemo(
@@ -139,7 +141,13 @@ export function ExerciseSelectionList({
         )}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 border-t border-border-soft bg-background px-5 pb-5 pt-3">
+      <View
+        className="absolute bottom-0 left-0 right-0 border-t border-border-soft bg-background px-5 pt-3"
+        // Keep the CTA clear of the system navigation bar — the screen draws
+        // edge-to-edge, and a button under the (translucent) bar looks
+        // tappable but the bar consumes the touches.
+        style={{ paddingBottom: Math.max(insets.bottom + 8, 20) }}
+      >
         <Button
           className="h-14 rounded-full bg-accent"
           feedbackVariant="scale"

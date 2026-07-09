@@ -34,5 +34,7 @@ appId: ${APP_ID}
 - tapOn: 'Maestro Exercise'
 - tapOn: 'Use 1 exercise'
 - assertVisible: 'Maestro Exercise'
-- tapOn: 'Save template'
+# The bottom "Save template" CTA sits below the fold once exercises are added;
+# the header "Save" button is always visible.
+- tapOn: 'Save'
 - assertVisible: 'Maestro Workout'

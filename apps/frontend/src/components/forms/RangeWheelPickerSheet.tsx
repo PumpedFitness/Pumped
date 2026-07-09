@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet, Button } from 'heroui-native';
+import { AppBottomSheet } from './AppBottomSheet';
 import type { SetFieldRange } from '@/types/workout';
 import type { OptionalWheelPickerConfig } from './OptionalWheelPickerSheet';
 import { WheelPicker } from './WheelPicker';
@@ -70,76 +71,71 @@ export function RangeWheelPickerSheet({
   const orderedMax = Math.max(minValue, maxValue);
 
   return (
-    <BottomSheet
-      isOpen={visible}
-      onOpenChange={open => {
-        if (!open) onClose();
-      }}
-    >
-      <BottomSheet.Portal>
-        <BottomSheet.Overlay />
-        <BottomSheet.Content backgroundClassName="bg-background">
+    <AppBottomSheet open={visible} onClose={onClose}>
+      <BottomSheet.Overlay />
+      <BottomSheet.Content backgroundClassName="bg-background">
+        <View className="items-center">
+          <BottomSheet.Title className="text-[21px] font-bold text-foreground">
+            {config.title}
+          </BottomSheet.Title>
+          <BottomSheet.Description className="mt-1 text-center text-[13px] text-muted">
+            {t('setTable.wheel.rangeDescription')}
+          </BottomSheet.Description>
+        </View>
+
+        <Text className="mt-4 text-center text-[34px] font-bold tabular-nums text-foreground">
+          {`${config.formatValue(orderedMin)} – ${config.formatValue(
+            orderedMax,
+          )}`}
+        </Text>
+
+        <View className="mt-4 flex-row items-center justify-center gap-4">
           <View className="items-center">
-            <BottomSheet.Title className="text-[21px] font-bold text-foreground">
-              {config.title}
-            </BottomSheet.Title>
-            <BottomSheet.Description className="mt-1 text-center text-[13px] text-muted">
-              {t('setTable.wheel.rangeDescription')}
-            </BottomSheet.Description>
+            <Text className="t-caption mb-1">{t('setTable.wheel.min')}</Text>
+            <WheelPicker
+              items={items}
+              selectedIndex={minIndex}
+              onChange={setMinIndex}
+              width={140}
+            />
           </View>
-
-          <Text className="mt-4 text-center text-[34px] font-bold tabular-nums text-foreground">
-            {`${config.formatValue(orderedMin)} – ${config.formatValue(orderedMax)}`}
-          </Text>
-
-          <View className="mt-4 flex-row items-center justify-center gap-4">
-            <View className="items-center">
-              <Text className="t-caption mb-1">{t('setTable.wheel.min')}</Text>
-              <WheelPicker
-                items={items}
-                selectedIndex={minIndex}
-                onChange={setMinIndex}
-                width={140}
-              />
-            </View>
-            <View className="items-center">
-              <Text className="t-caption mb-1">{t('setTable.wheel.max')}</Text>
-              <WheelPicker
-                items={items}
-                selectedIndex={maxIndex}
-                onChange={setMaxIndex}
-                width={140}
-              />
-            </View>
+          <View className="items-center">
+            <Text className="t-caption mb-1">{t('setTable.wheel.max')}</Text>
+            <WheelPicker
+              items={items}
+              selectedIndex={maxIndex}
+              onChange={setMaxIndex}
+              width={140}
+            />
           </View>
+        </View>
 
-          <View className="mt-6 flex-row gap-2">
-            <Button
-              className="h-13 flex-1 rounded-full"
-              variant="ghost"
-              feedbackVariant="scale"
-              onPress={() => {
-                onChange(null);
-                onClose();
-              }}
-            >
-              <Button.Label>{t('common.clear')}</Button.Label>
-            </Button>
-            <Button
-              className="h-13 flex-1 rounded-full bg-accent"
-              feedbackVariant="scale"
-              onPress={() => {
-                onChange({ min: orderedMin, max: orderedMax });
-                onClose();
-              }}
-            >
-              <Button.Label className="font-bold text-accent-foreground">
-                {t('common.apply')}
-              </Button.Label>
-            </Button>
-          </View>
-        </BottomSheet.Content>
-      </BottomSheet.Portal>
-    </BottomSheet>
+        <View className="mt-6 flex-row gap-2">
+          <Button
+            className="h-13 flex-1 rounded-full"
+            variant="ghost"
+            feedbackVariant="scale"
+            onPress={() => {
+              onChange(null);
+              onClose();
+            }}
+          >
+            <Button.Label>{t('common.clear')}</Button.Label>
+          </Button>
+          <Button
+            className="h-13 flex-1 rounded-full bg-accent"
+            feedbackVariant="scale"
+            onPress={() => {
+              onChange({ min: orderedMin, max: orderedMax });
+              onClose();
+            }}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              {t('common.apply')}
+            </Button.Label>
+          </Button>
+        </View>
+      </BottomSheet.Content>
+    </AppBottomSheet>
   );
 }

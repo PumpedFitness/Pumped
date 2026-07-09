@@ -6,6 +6,7 @@ import { BottomSheet } from 'heroui-native';
 import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { SearchInput } from './SearchInput';
+import { AppBottomSheet } from './AppBottomSheet';
 import { SelectableRow } from './SelectableRow';
 
 type LibraryItem = {
@@ -178,21 +179,10 @@ export function LibraryPicker({
   visible,
   ...contentProps
 }: LibraryPickerProps) {
-  const handleClose = () => {
-    contentProps.onClose();
-  };
-
   return (
-    <BottomSheet
-      isOpen={visible}
-      onOpenChange={open => {
-        if (!open) handleClose();
-      }}
-    >
-      <BottomSheet.Portal>
-        <BottomSheet.Overlay />
-        <LibraryPickerContent visible={visible} {...contentProps} />
-      </BottomSheet.Portal>
-    </BottomSheet>
+    <AppBottomSheet open={visible} onClose={contentProps.onClose}>
+      <BottomSheet.Overlay />
+      <LibraryPickerContent visible={visible} {...contentProps} />
+    </AppBottomSheet>
   );
 }
