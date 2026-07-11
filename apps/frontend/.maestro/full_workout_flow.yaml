@@ -32,10 +32,11 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_exercise'
 - assertVisible: 'e.g. Barbell Bench Press'
+# Settle the auto-focus keyboard animation before typing (see create_workout).
+- waitForAnimationToEnd
 - tapOn: 'e.g. Barbell Bench Press'
 - inputText: 'E2E Squat'
-# hideKeyboard, not `pressKey: Back` — iOS has no Back key.
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn:
     point: 0%, 14%
 - waitForAnimationToEnd
@@ -49,11 +50,11 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_workout'
 - assertVisible: 'Template name'
+# Settle the auto-focus keyboard animation before typing (see create_workout).
+- waitForAnimationToEnd
 - tapOn: 'Template name'
 - inputText: 'E2E Template'
-# A point-tap on the header doesn't blur the input on Android, so the soft
-# keyboard would keep covering "Choose exercises" below.
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Choose exercises'
 - tapOn: 'Search name, muscle, or type'
 - inputText: 'E2E'
@@ -71,10 +72,11 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_schedule'
 - assertVisible: 'Schedule name'
+# Settle the auto-focus keyboard animation before typing (see create_workout).
+- waitForAnimationToEnd
 - tapOn: 'Schedule name'
 - inputText: 'E2E Schedule'
-# See above — hide the keyboard instead of point-tapping to blur.
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn:
     id: 'segment-CYCLE'
 # A 1-day cycle defaults to one "Day 1" slot showing "Rest day"; tapping it
@@ -94,15 +96,14 @@ appId: ${APP_ID}
 - assertVisible: 'E2E Squat'
 
 # ── 5. Log a set (weight + reps, then mark it done) ───
-# Cells are text inputs; hideKeyboard closes the soft keyboard so the next
-# control isn't covered (`pressKey: Back` would break iOS — no Back key).
-# Set 1's cells are the first Weight/Reps on screen.
+# Cells are text inputs; dismiss the keyboard after each so the next control
+# isn't covered. Set 1's cells are the first Weight/Reps on screen.
 - tapOn: 'Weight'
 - inputText: '50'
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Reps'
 - inputText: '5'
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Mark set 1 complete'
 
 # ── 6. End the workout (discard the session) ──────────

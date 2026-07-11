@@ -16,23 +16,25 @@ appId: ${APP_ID}
     id: 'create_workout'
 
 - assertVisible: 'New template'
+# The name fields auto-focus with a delay; tapping/typing while that keyboard
+# animation is in flight drops keystrokes on slow simulators — settle first.
+- waitForAnimationToEnd
 - tapOn: 'Template name'
 - inputText: 'Maestro Workout'
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Choose exercises'
 - assertVisible: 'Exercise Library'
 - tapOn: 'Create exercise'
 - assertVisible: 'New Exercise'
+- waitForAnimationToEnd
 - tapOn: 'e.g. Barbell Bench Press'
 - inputText: 'Maestro Exercise'
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Add Exercise'
 - assertVisible: 'Exercise Library'
 - tapOn: 'Search name, muscle, or type'
 - inputText: 'Maestro'
-# The soft keyboard covers the "Use N exercises" footer CTA (CI emulators show
-# the IME; local ones with a host keyboard don't).
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - assertVisible: 'Maestro Exercise'
 - tapOn: 'Maestro Exercise'
 - tapOn: 'Use 1 exercise'
