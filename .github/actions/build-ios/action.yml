@@ -67,9 +67,18 @@ runs:
       # install emits that codegen outside Pods/, so a Pods-only restore would
       # leave xcodebuild missing those sources. The dir check also self-heals a
       # stale/partial cache by falling back to a full pod install.
+      #
+      # The Manifest.lock comparison mirrors xcodebuild's "[CP] Check Pods
+      # Manifest.lock" phase: a cached Pods/ can carry a Manifest.lock that no
+      # longer matches the committed Podfile.lock (an earlier run's pod install
+      # rewrote the lock — e.g. after a CocoaPods version change — and the
+      # mismatched Pods were cached under the committed lock's hash). Building
+      # from such a cache fails with "The sandbox is not in sync with the
+      # Podfile.lock", so fall back to pod install instead.
       run: |
         if [ "${{ steps.pods-cache.outputs.cache-hit }}" = "true" ] \
-           && [ -d build/generated/ios/ReactCodegen ]; then
+           && [ -d build/generated/ios/ReactCodegen ] \
+           && cmp -s Podfile.lock Pods/Manifest.lock; then
           echo "Pods + RN codegen restored from cache — skipping pod install"
         else
           pod install
