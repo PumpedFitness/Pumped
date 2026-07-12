@@ -32,9 +32,13 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_exercise'
 - assertVisible: 'e.g. Barbell Bench Press'
+# Settle the auto-focus keyboard animation before typing (see create_workout).
+- waitForAnimationToEnd
 - tapOn: 'e.g. Barbell Bench Press'
+# First text entry of the flow — see the subflow header for why.
+- runFlow: subflows/warmup-keyboard.yaml
 - inputText: 'E2E Squat'
-- pressKey: Back
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn:
     point: 0%, 14%
 - waitForAnimationToEnd
@@ -48,11 +52,11 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_workout'
 - assertVisible: 'Template name'
+# Settle the auto-focus keyboard animation before typing (see create_workout).
+- waitForAnimationToEnd
 - tapOn: 'Template name'
 - inputText: 'E2E Template'
-# A point-tap on the header doesn't blur the input on Android, so the soft
-# keyboard would keep covering "Choose exercises" below.
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Choose exercises'
 - tapOn: 'Search name, muscle, or type'
 - inputText: 'E2E'
@@ -70,17 +74,19 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_schedule'
 - assertVisible: 'Schedule name'
+# Settle the auto-focus keyboard animation before typing (see create_workout).
+- waitForAnimationToEnd
 - tapOn: 'Schedule name'
 - inputText: 'E2E Schedule'
-# See above — hide the keyboard instead of point-tapping to blur.
-- hideKeyboard
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn:
     id: 'segment-CYCLE'
 # A 1-day cycle defaults to one "Day 1" slot showing "Rest day"; tapping it
 # opens the workout picker. Assign our template so today always maps to it.
 - tapOn: "Day 1, Rest day"
-- tapOn:
-    id: 'option-E2E Template'
+# By visible text, not the option-* testID — iOS flattens the row into its
+# label and doesn't expose the identifier. Unique while the picker is open.
+- tapOn: 'E2E Template'
 # Mark it the active program here (unambiguous) so it's live on save — avoids a
 # second "Activate" tap that could match the wrong schedule in the list.
 - tapOn: 'Active program'
@@ -92,21 +98,23 @@ appId: ${APP_ID}
 - assertVisible: 'E2E Squat'
 
 # ── 5. Log a set (weight + reps, then mark it done) ───
-# Cells are text inputs; pressKey Back closes the soft keyboard so the next
-# control isn't covered. Set 1's cells are the first Weight/Reps on screen.
+# Cells are text inputs; dismiss the keyboard after each so the next control
+# isn't covered. Set 1's cells are the first Weight/Reps on screen.
 - tapOn: 'Weight'
 - inputText: '50'
-- pressKey: Back
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Reps'
 - inputText: '5'
-- pressKey: Back
+- runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Mark set 1 complete'
 
 # ── 6. End the workout (discard the session) ──────────
 # A successful "Finish" requires every set completed; discarding exercises the
 # end-of-session path reliably regardless of how many sets the template seeds.
-- tapOn: 'Cancel'
-- assertVisible: 'Discard workout'
+# By the button's a11y label — iOS exposes only the label (not the visible
+# "Cancel" text), Android matches it via content-desc.
+- tapOn: 'Discard workout'
+- assertVisible: 'Discard workout?'
 - tapOn: 'Discard'
 - assertVisible:
     id: 'screen-schedule'

@@ -53,6 +53,14 @@ type AppBottomSheetContentProps = ComponentProps<typeof BottomSheet.Content>;
 /**
  * `BottomSheet.Content` whose container ignores touches while the owning
  * AppBottomSheet is closed — see the note on AppBottomSheet.
+ *
+ * `accessible` is toggled with the open state. The sheet library marks the
+ * container as a single accessible element ("Bottom Sheet"), which on iOS
+ * collapses the whole sheet into one opaque node — while open, VoiceOver and
+ * UI tests couldn't reach anything inside it, so expose the children instead.
+ * While closed, keep the container opaque: otherwise every parked sheet leaks
+ * its full contents (e.g. hundreds of wheel-picker values) into the
+ * accessibility tree of whatever screen mounts it.
  */
 function AppBottomSheetContent({
   style,
@@ -62,6 +70,7 @@ function AppBottomSheetContent({
 
   return (
     <BottomSheet.Content
+      accessible={!open}
       {...props}
       style={[style, { pointerEvents: open ? 'auto' : 'none' }]}
     />

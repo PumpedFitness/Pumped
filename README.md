@@ -88,8 +88,11 @@ Reports (HTML · JSON · JUnit · Allure) are written to `apps/frontend/reports/
 [`apps/frontend/.maestro/README.md`](apps/frontend/.maestro/README.md) for
 details and how to add flows.
 
-**CI:** [`.github/workflows/e2e.yml`](.github/workflows/e2e.yml) runs the flows
-on GitHub Actions — Android on `ubuntu-latest`, iOS on `macos-latest`.
+**CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint,
+typecheck and unit tests on every PR. The native builds and Maestro e2e suites
+(Android on `ubuntu-latest`, iOS on `macos-latest`) only run on pushes to
+`main` and on manual dispatch — to run them for a branch:
+`gh workflow run ci.yml --ref <branch> -f force_frontend=true`.
 
 ## Handover
 

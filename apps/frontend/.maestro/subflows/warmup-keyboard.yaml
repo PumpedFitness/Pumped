@@ -1,0 +1,15 @@
+# Reusable: run after focusing the first text field a flow types into.
+# iOS: the first-ever keyboard bring-up of a fresh simulator boot stalls while
+# keyboard assets load, and typing into that stall drops keystrokes (a name
+# like "Maestro Workout" arrives as just "M"). Type a throwaway string and
+# erase it so the real input lands on a demonstrably live keyboard.
+# Android is skipped: its input doesn't need warming, and eraseText there
+# swallows the next keystroke instead.
+# In a subdir so the suite's top-level `*.yaml` glob doesn't run it standalone.
+---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - inputText: 'warmup'
+      - eraseText
