@@ -35,6 +35,8 @@ appId: ${APP_ID}
 # Settle the auto-focus keyboard animation before typing (see create_workout).
 - waitForAnimationToEnd
 - tapOn: 'e.g. Barbell Bench Press'
+# First text entry of the flow — see the subflow header for why.
+- runFlow: subflows/warmup-keyboard.yaml
 - inputText: 'E2E Squat'
 - runFlow: subflows/dismiss-keyboard.yaml
 - tapOn:

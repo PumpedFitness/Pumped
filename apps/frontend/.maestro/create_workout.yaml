@@ -20,6 +20,8 @@ appId: ${APP_ID}
 # animation is in flight drops keystrokes on slow simulators — settle first.
 - waitForAnimationToEnd
 - tapOn: 'Template name'
+# First text entry of the flow — see the subflow header for why.
+- runFlow: subflows/warmup-keyboard.yaml
 - inputText: 'Maestro Workout'
 - runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Choose exercises'
