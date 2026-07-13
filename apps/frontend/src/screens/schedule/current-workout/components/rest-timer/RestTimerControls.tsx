@@ -16,7 +16,11 @@ type AdjustButtonProps = {
   onPress: () => void;
 };
 
-function AdjustButton({ label, accessibilityLabel, onPress }: AdjustButtonProps) {
+function AdjustButton({
+  label,
+  accessibilityLabel,
+  onPress,
+}: AdjustButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -24,7 +28,9 @@ function AdjustButton({ label, accessibilityLabel, onPress }: AdjustButtonProps)
       onPress={onPress}
       className="h-14 w-14 items-center justify-center rounded-full border border-[rgba(243,238,226,0.18)] bg-[rgba(243,238,226,0.08)] active:bg-[rgba(243,238,226,0.16)]"
     >
-      <Text className="text-[14px] font-bold text-cream tabular-nums">{label}</Text>
+      <Text className="text-[14px] font-bold text-cream tabular-nums">
+        {label}
+      </Text>
     </Pressable>
   );
 }

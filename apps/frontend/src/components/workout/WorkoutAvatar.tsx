@@ -33,7 +33,10 @@ export function WorkoutAvatar({
 
   if (picture) {
     return (
-      <Image source={{ uri: picture }} style={{ width: size, height: size, borderRadius }} />
+      <Image
+        source={{ uri: picture }}
+        style={{ width: size, height: size, borderRadius }}
+      />
     );
   }
 
@@ -41,9 +44,18 @@ export function WorkoutAvatar({
   return (
     <View
       className="items-center justify-center"
-      style={{ width: size, height: size, borderRadius, backgroundColor: withAlpha(hex, 0.16) }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius,
+        backgroundColor: withAlpha(hex, 0.16),
+      }}
     >
-      <ClayIcon name={icon ?? 'dumbbell'} size={Math.round(size * 0.46)} color={hex} />
+      <ClayIcon
+        name={icon ?? 'dumbbell'}
+        size={Math.round(size * 0.46)}
+        color={hex}
+      />
     </View>
   );
 }

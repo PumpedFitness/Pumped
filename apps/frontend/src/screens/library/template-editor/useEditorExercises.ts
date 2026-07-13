@@ -91,7 +91,8 @@ export function useEditorExercises(
           optionsById.get(exercise.exerciseId)?.name ??
           t('common.unknownExercise'),
         type: exercise.typeId
-          ? exerciseTypes.items.find(item => item.id === exercise.typeId) ?? null
+          ? exerciseTypes.items.find(item => item.id === exercise.typeId) ??
+            null
           : null,
         color: exercise.color,
         goal: exercise.goal,

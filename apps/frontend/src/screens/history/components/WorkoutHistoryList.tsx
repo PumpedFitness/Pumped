@@ -26,7 +26,8 @@ type ReadOnlyWorkoutHistoryListProps = BaseWorkoutHistoryListProps & {
 };
 
 type WorkoutHistoryListProps =
-  DeletableWorkoutHistoryListProps | ReadOnlyWorkoutHistoryListProps;
+  | DeletableWorkoutHistoryListProps
+  | ReadOnlyWorkoutHistoryListProps;
 
 type WorkoutGroup = {
   label: string;

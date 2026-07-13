@@ -87,9 +87,7 @@ export function deleteWorkoutSession(sessionId: string): void {
     tx.delete(performedSets)
       .where(eq(performedSets.workoutSessionId, sessionId))
       .run();
-    tx.delete(workoutSessions)
-      .where(eq(workoutSessions.id, sessionId))
-      .run();
+    tx.delete(workoutSessions).where(eq(workoutSessions.id, sessionId)).run();
   });
 
   notifyTableChanged(workoutSessions, performedSets);

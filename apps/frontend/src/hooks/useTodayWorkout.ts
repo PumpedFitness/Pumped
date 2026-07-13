@@ -7,7 +7,10 @@ import {
   skipDay,
   unskipDay,
 } from '@/data/local/schedules/skippedDays';
-import { useWorkoutHistory, type WorkoutHistoryItem } from './useWorkoutHistory';
+import {
+  useWorkoutHistory,
+  type WorkoutHistoryItem,
+} from './useWorkoutHistory';
 import { useWorkoutTemplates } from './useWorkoutTemplates';
 import { useSchedules } from './useSchedules';
 
@@ -28,7 +31,11 @@ type UseTodayWorkoutResult = {
 };
 
 export function useTodayWorkout(): UseTodayWorkoutResult {
-  const { today: todayIndex, todayTemplateIds, activeSchedule } = useSchedules();
+  const {
+    today: todayIndex,
+    todayTemplateIds,
+    activeSchedule,
+  } = useSchedules();
   const { templates } = useWorkoutTemplates();
   const { workouts } = useWorkoutHistory();
 
