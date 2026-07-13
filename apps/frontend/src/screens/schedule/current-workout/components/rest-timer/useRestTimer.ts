@@ -86,7 +86,11 @@ export function useRestTimer(): RestTimerController {
 
   // Auto-complete: flipping to IDLE clears the running guard, so this fires once.
   useEffect(() => {
-    if (state.status === 'running' && state.endsAt != null && now >= state.endsAt) {
+    if (
+      state.status === 'running' &&
+      state.endsAt != null &&
+      now >= state.endsAt
+    ) {
       fireRestDoneHaptic();
       setState(IDLE);
     }
@@ -101,8 +105,7 @@ export function useRestTimer(): RestTimerController {
     const startedAt = Date.now();
     setNow(startedAt);
     // "Never show again" (fullscreen off) opens straight to the bottom bar.
-    const startMinimized =
-      !useAppSettingsStore.getState().restTimerFullscreen;
+    const startMinimized = !useAppSettingsStore.getState().restTimerFullscreen;
     setState({
       status: 'running',
       endsAt: startedAt + totalMs,
@@ -145,7 +148,12 @@ export function useRestTimer(): RestTimerController {
       const nextRemaining = clampRestMs(current + deltaSeconds * 1000);
       const totalMs = Math.max(prev.totalMs, nextRemaining);
       if (prev.status === 'running') {
-        return { ...prev, endsAt: t + nextRemaining, remainingMs: nextRemaining, totalMs };
+        return {
+          ...prev,
+          endsAt: t + nextRemaining,
+          remainingMs: nextRemaining,
+          totalMs,
+        };
       }
       return { ...prev, remainingMs: nextRemaining, totalMs };
     });
@@ -153,7 +161,10 @@ export function useRestTimer(): RestTimerController {
 
   const skip = useCallback(() => setState(IDLE), []);
   const minimize = useCallback(
-    () => setState(prev => (prev.status === 'idle' ? prev : { ...prev, isMinimized: true })),
+    () =>
+      setState(prev =>
+        prev.status === 'idle' ? prev : { ...prev, isMinimized: true },
+      ),
     [],
   );
   const expand = useCallback(

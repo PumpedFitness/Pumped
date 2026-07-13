@@ -50,7 +50,9 @@ function SetTypeRow({ type, onPress }: SetTypeRowProps) {
           {summary}
         </Text>
       </View>
-      {onPress ? <ClayIcon name="chevron" size={16} color={colors.muted} /> : null}
+      {onPress ? (
+        <ClayIcon name="chevron" size={16} color={colors.muted} />
+      ) : null}
     </>
   );
 

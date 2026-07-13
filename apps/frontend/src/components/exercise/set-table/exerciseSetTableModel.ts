@@ -95,7 +95,8 @@ export type ReadOnlyExerciseSetTableProps = SetTypeContext & {
 };
 
 export type ExerciseSetTableProps =
-  EditableExerciseSetTableProps | ReadOnlyExerciseSetTableProps;
+  | EditableExerciseSetTableProps
+  | ReadOnlyExerciseSetTableProps;
 
 export type SetCardRest = {
   value: number | null;

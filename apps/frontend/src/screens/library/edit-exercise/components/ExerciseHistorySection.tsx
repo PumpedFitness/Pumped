@@ -61,7 +61,9 @@ export function ExerciseHistorySection({
           history.map((entry, index) => (
             <View
               key={entry.workoutId}
-              className={`gap-4 px-[18px] pt-5 ${index > 0 ? 'border-t border-border-hairline' : ''}`}
+              className={`gap-4 px-[18px] pt-5 ${
+                index > 0 ? 'border-t border-border-hairline' : ''
+              }`}
             >
               <Pressable
                 accessibilityRole="button"

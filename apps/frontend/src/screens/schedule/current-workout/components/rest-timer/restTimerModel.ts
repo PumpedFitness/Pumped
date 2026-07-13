@@ -24,7 +24,10 @@ export function formatRestClock(ms: number): string {
 }
 
 /** 0–100 ring fill: the share of the target duration still remaining. */
-export function restRingPercentage(remainingMs: number, totalMs: number): number {
+export function restRingPercentage(
+  remainingMs: number,
+  totalMs: number,
+): number {
   if (totalMs <= 0) {
     return 0;
   }

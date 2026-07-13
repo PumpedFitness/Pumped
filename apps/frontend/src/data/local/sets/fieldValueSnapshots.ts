@@ -89,8 +89,8 @@ function csvScalarField(
       key === 'rpe'
         ? { min: 0, max: 10, step: 0.5, decimals: 1 }
         : key === 'reps'
-          ? { min: 0, decimals: 0 }
-          : { min: 0, decimals: 2 },
+        ? { min: 0, decimals: 0 }
+        : { min: 0, decimals: 2 },
   };
 }
 

@@ -63,8 +63,13 @@ export function SessionExerciseList({
   onChooseExercises,
 }: SessionExerciseListProps) {
   const { t } = useTranslation();
-  const { activeId, setOffset, scrollProps, onViewportLayout, onContentSizeChange } =
-    useExerciseSnap(exercises);
+  const {
+    activeId,
+    setOffset,
+    scrollProps,
+    onViewportLayout,
+    onContentSizeChange,
+  } = useExerciseSnap(exercises);
 
   const nameFor = (id: string) =>
     optionById.get(id)?.name ?? t('plan.card.fallbackExercise');

@@ -389,8 +389,8 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
   const containerClass = card.isDone
     ? 'border border-moss bg-sage/15'
     : card.isCurrent
-      ? 'border-2 border-accent bg-surface-card'
-      : 'border border-border-soft bg-surface-card';
+    ? 'border-2 border-accent bg-surface-card'
+    : 'border border-border-soft bg-surface-card';
 
   const content = (
     <View className={`gap-3 rounded-[20px] p-3 ${containerClass}`}>

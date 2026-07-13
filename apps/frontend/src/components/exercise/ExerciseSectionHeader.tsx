@@ -33,11 +33,7 @@ type ExerciseTitleProps = {
 function ExerciseTitle({ name, color, onOpen }: ExerciseTitleProps) {
   if (!onOpen) {
     return (
-      <Text
-        className="t-heading flex-1"
-        numberOfLines={1}
-        style={{ color }}
-      >
+      <Text className="t-heading flex-1" numberOfLines={1} style={{ color }}>
         {name}
       </Text>
     );
@@ -170,9 +166,7 @@ export function ExerciseSectionHeader({
       style={{
         backgroundColor: isActive ? tone.fg : colors.cardSunk,
         borderBottomWidth: 2,
-        borderBottomColor: isActive
-          ? tone.fg
-          : colors.line,
+        borderBottomColor: isActive ? tone.fg : colors.line,
       }}
     >
       <View

@@ -131,7 +131,8 @@ export const dark = {
 /** Per-theme shadow CSS strings (multi-value, kept verbatim). */
 export const shadowVars = {
   light: {
-    surface: '0 1px 2px rgba(52, 54, 44, 0.04), 0 18px 40px -22px rgba(52, 54, 44, 0.10)',
+    surface:
+      '0 1px 2px rgba(52, 54, 44, 0.04), 0 18px 40px -22px rgba(52, 54, 44, 0.10)',
     overlay: '0 20px 44px -22px rgba(70, 88, 60, 0.70)',
     field: 'none',
   },

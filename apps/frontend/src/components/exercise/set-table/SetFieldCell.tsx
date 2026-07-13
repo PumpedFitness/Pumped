@@ -81,8 +81,8 @@ function CellShell({
   const backgroundClass = hasError
     ? 'bg-danger/10'
     : hasSuggestion
-      ? 'bg-foreground/5'
-      : '';
+    ? 'bg-foreground/5'
+    : '';
   return (
     <View className={`flex-1 px-3 py-2.5 ${backgroundClass}`}>{children}</View>
   );
@@ -97,8 +97,8 @@ function ComparisonHint({ hint }: ComparisonHintProps) {
   const colorClass = hint.neutral
     ? 'text-muted'
     : hint.positive
-      ? 'text-moss'
-      : 'text-danger';
+    ? 'text-moss'
+    : 'text-danger';
   return (
     <Text className={`mt-0.5 text-[12px] font-bold ${colorClass}`}>
       {hint.label}
