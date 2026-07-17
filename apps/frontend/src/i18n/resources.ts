@@ -64,6 +64,7 @@ export const resources = {
           on: 'On',
           off: 'Off',
         },
+        homeMessageTone: 'Home-screen voice',
       },
       tabs: {
         home: 'Home',
@@ -168,6 +169,32 @@ export const resources = {
         dayGreeting: '{{day}} {{timeOfDay}}',
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
+        swapMessage: 'Show another message',
+        messageTones: {
+          supportive: 'Supportive',
+          tough: 'Tough love',
+          savage: 'Savage',
+        },
+        messages: {
+          supportive: {
+            first: "Let's move",
+            second: 'You have got this',
+            third: 'Make yourself proud',
+            fourth: 'Stronger every session',
+          },
+          tough: {
+            first: 'No excuses today',
+            second: 'Show up. Do the work.',
+            third: 'Comfort can wait',
+            fourth: 'Earn your rest',
+          },
+          savage: {
+            first: 'Your excuses are weak',
+            second: 'Still thinking about it?',
+            third: 'That weight will not lift itself',
+            fourth: 'Prove you are not all talk',
+          },
+        },
         restTimerMockups: {
           title: 'Rest timer topbar mockups',
           count: '5 options',
@@ -203,8 +230,8 @@ export const resources = {
           start: 'Start',
         },
         lastSession: {
-          caption: 'Last session · Tuesday',
-          title: 'Pull Day — 52 min',
+          caption: 'Last session',
+          title: 'No completed sessions yet',
           prs: '{{count}} PRs',
         },
         streak: {
@@ -999,6 +1026,7 @@ export const resources = {
           on: 'An',
           off: 'Aus',
         },
+        homeMessageTone: 'Stimme auf dem Home-Screen',
       },
       tabs: {
         home: 'Home',
@@ -1105,6 +1133,32 @@ export const resources = {
         dayGreeting: '{{day}}{{timeOfDay}}',
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
+        swapMessage: 'Andere Nachricht anzeigen',
+        messageTones: {
+          supportive: 'Motivierend',
+          tough: 'Streng',
+          savage: 'Gnadenlos',
+        },
+        messages: {
+          supportive: {
+            first: "Auf geht's",
+            second: 'Du packst das',
+            third: 'Mach dich stolz',
+            fourth: 'Mit jedem Training stärker',
+          },
+          tough: {
+            first: 'Heute gibt es keine Ausreden',
+            second: 'Antreten. Durchziehen.',
+            third: 'Komfort kann warten',
+            fourth: 'Verdien dir deine Pause',
+          },
+          savage: {
+            first: 'Deine Ausreden sind schwach',
+            second: 'Denkst du immer noch nach?',
+            third: 'Das Gewicht hebt sich nicht selbst',
+            fourth: 'Zeig, dass du nicht nur redest',
+          },
+        },
         restTimerMockups: {
           title: 'Pausentimer-Topbar-Mockups',
           count: '5 Optionen',
@@ -1140,8 +1194,8 @@ export const resources = {
           start: 'Start',
         },
         lastSession: {
-          caption: 'Letzte Einheit · Dienstag',
-          title: 'Pull Day — 52 min',
+          caption: 'Letzte Einheit',
+          title: 'Noch keine abgeschlossene Einheit',
           prs: '{{count}} PRs',
         },
         streak: {

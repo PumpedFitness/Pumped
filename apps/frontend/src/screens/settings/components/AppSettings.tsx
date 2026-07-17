@@ -12,6 +12,7 @@ import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useAuthStore } from '@/stores/authStore';
 import {
   type FirstDayOfWeek,
+  type HomeMessageTone,
   useAppSettingsStore,
 } from '@/stores/appSettingsStore';
 import { resetAllData } from '@/data/local/resetAllData';
@@ -63,6 +64,39 @@ function FirstDayOfWeekSetting() {
   );
 }
 
+function HomeMessageToneSetting() {
+  const { t } = useTranslation();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const tone = useAppSettingsStore(state => state.homeMessageTone);
+  const setTone = useAppSettingsStore(state => state.setHomeMessageTone);
+  const options: { value: HomeMessageTone; label: string }[] = [
+    { value: 'supportive', label: t('home.messageTones.supportive') },
+    { value: 'tough', label: t('home.messageTones.tough') },
+    { value: 'savage', label: t('home.messageTones.savage') },
+  ];
+
+  return (
+    <>
+      <ListRow
+        icon={<ClayIcon name="bolt" size={18} color={colors.accent} />}
+        label={t('settings.homeMessageTone')}
+        detail={options.find(option => option.value === tone)?.label}
+        trailing={chevron}
+        divider
+        onPress={() => setSheetOpen(true)}
+      />
+      <OptionSelectorSheet
+        visible={sheetOpen}
+        title={t('settings.homeMessageTone')}
+        value={tone}
+        options={options}
+        onClose={() => setSheetOpen(false)}
+        onChange={setTone}
+      />
+    </>
+  );
+}
+
 type PreferencesSettingsSectionProps = {
   weightUnit: WeightUnit;
   setWeightUnit: (weightUnit: WeightUnit) => void;
@@ -109,6 +143,7 @@ function PreferencesSettingsSection({
         }
       />
       <FirstDayOfWeekSetting />
+      <HomeMessageToneSetting />
       <ListRow
         icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
         label={t('settings.restTimerFullscreen.label')}

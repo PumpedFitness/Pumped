@@ -11,13 +11,19 @@ import {
 import { AnimatedView, StyledWebView } from '@/components/uniwind';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
+import { useHomeWidgetData } from '@/hooks/useHomeWidgetData';
+import { useAppSettingsStore } from '@/stores/appSettingsStore';
+import { displayWeight } from '@/utils/units';
 
 type ChartWidgetProps = {
   colSpan: number;
   width: number;
 };
 
-function buildChartHtml(language: string): string {
+function buildChartHtml(
+  language: string,
+  data: Array<{ time: string; value: number }>,
+): string {
   // Localized short month names injected into the chart's tick formatter
   const months = JSON.stringify(
     Array.from({ length: 12 }, (_, month) =>
@@ -106,20 +112,7 @@ function buildChartHtml(language: string): string {
       lastValueVisible: false,
     });
 
-    // Generate uptrending data (last 30 days)
-    var data = [];
-    var value = 14200;
-    var now = new Date();
-    for (var i = 29; i >= 0; i--) {
-      var d = new Date(now);
-      d.setDate(d.getDate() - i);
-      var year = d.getFullYear();
-      var month = String(d.getMonth() + 1).padStart(2, '0');
-      var day = String(d.getDate()).padStart(2, '0');
-      value += (Math.random() - 0.25) * 600;
-      value = Math.max(value, 12000);
-      data.push({ time: year + '-' + month + '-' + day, value: Math.round(value) });
-    }
+    var data = ${JSON.stringify(data)};
 
     areaSeries.setData(data);
 
@@ -158,9 +151,27 @@ function buildChartHtml(language: string): string {
 
 export function ChartWidget(_props: ChartWidgetProps) {
   const { t, i18n } = useTranslation();
+  const { dailyVolume } = useHomeWidgetData();
+  const weightUnit = useAppSettingsStore(state => state.weightUnit);
+  const displayData = useMemo(
+    () =>
+      dailyVolume.map(point => ({
+        ...point,
+        value: displayWeight(point.value, weightUnit),
+      })),
+    [dailyVolume, weightUnit],
+  );
+  const total = displayData.reduce((sum, point) => sum + point.value, 0);
+  const maxVolume = Math.max(...displayData.map(point => point.value), 0);
+  const chartLabels = [1, 0.5, 0].map(multiplier => {
+    const value = maxVolume * multiplier;
+    return value >= 1000
+      ? `${(value / 1000).toFixed(value >= 10_000 ? 0 : 1)}k`
+      : Math.round(value).toLocaleString(i18n.language);
+  });
   const chartHtml = useMemo(
-    () => buildChartHtml(i18n.language),
-    [i18n.language],
+    () => buildChartHtml(i18n.language, displayData),
+    [displayData, i18n.language],
   );
   const chartOpacity = useSharedValue(0);
   const chartTranslateY = useSharedValue(8);
@@ -191,9 +202,8 @@ export function ChartWidget(_props: ChartWidgetProps) {
         </View>
         <View className="flex-row items-baseline gap-1">
           <Text className="text-[15px] font-bold text-foreground tabular-nums">
-            24,840
+            {Math.round(total).toLocaleString(i18n.language)} {weightUnit}
           </Text>
-          <Text className="text-[11px] font-medium text-sage">+18%</Text>
         </View>
       </View>
 
@@ -216,15 +226,14 @@ export function ChartWidget(_props: ChartWidgetProps) {
           className="absolute right-2 top-1.5 bottom-5 justify-between pointer-events-none"
           style={chartAnimStyle}
         >
-          <Text className="text-[11px] font-medium text-text-secondary">
-            18k
-          </Text>
-          <Text className="text-[11px] font-medium text-text-secondary">
-            16k
-          </Text>
-          <Text className="text-[11px] font-medium text-text-secondary">
-            14k
-          </Text>
+          {chartLabels.map((label, index) => (
+            <Text
+              key={`${label}-${index}`}
+              className="text-[11px] font-medium text-text-secondary"
+            >
+              {label}
+            </Text>
+          ))}
         </AnimatedView>
       </View>
     </View>

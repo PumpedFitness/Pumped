@@ -13,8 +13,10 @@ const LANGUAGE_KEY = 'language';
 const WEIGHT_UNIT_KEY = 'weight_unit';
 const FIRST_DAY_OF_WEEK_KEY = 'first_day_of_week';
 const REST_TIMER_FULLSCREEN_KEY = 'rest_timer_fullscreen';
+const HOME_MESSAGE_TONE_KEY = 'home_message_tone';
 
 export type FirstDayOfWeek = 'sunday' | 'monday';
+export type HomeMessageTone = 'supportive' | 'tough' | 'savage';
 
 function isSupportedLanguage(language: string): language is SupportedLanguage {
   return supportedLanguages.some(
@@ -94,15 +96,26 @@ function writeRestTimerFullscreen(enabled: boolean): void {
   storage.set(REST_TIMER_FULLSCREEN_KEY, enabled);
 }
 
+function readHomeMessageTone(): HomeMessageTone {
+  const value = storage.getString(HOME_MESSAGE_TONE_KEY);
+  return value === 'tough' || value === 'savage' ? value : 'supportive';
+}
+
+function writeHomeMessageTone(tone: HomeMessageTone): void {
+  storage.set(HOME_MESSAGE_TONE_KEY, tone);
+}
+
 type AppSettingsState = {
   language: SupportedLanguage;
   weightUnit: WeightUnit;
   firstDayOfWeek: FirstDayOfWeek;
   restTimerFullscreen: boolean;
+  homeMessageTone: HomeMessageTone;
   setLanguage: (language: SupportedLanguage) => void;
   setWeightUnit: (weightUnit: WeightUnit) => void;
   setFirstDayOfWeek: (firstDayOfWeek: FirstDayOfWeek) => void;
   setRestTimerFullscreen: (enabled: boolean) => void;
+  setHomeMessageTone: (tone: HomeMessageTone) => void;
 };
 
 export const useAppSettingsStore = create<AppSettingsState>(set => ({
@@ -110,6 +123,7 @@ export const useAppSettingsStore = create<AppSettingsState>(set => ({
   weightUnit: readWeightUnit(),
   firstDayOfWeek: readFirstDayOfWeek(),
   restTimerFullscreen: readRestTimerFullscreen(),
+  homeMessageTone: readHomeMessageTone(),
   setLanguage: language => {
     writeLanguagePreference(language);
     set({ language });
@@ -125,5 +139,9 @@ export const useAppSettingsStore = create<AppSettingsState>(set => ({
   setRestTimerFullscreen: enabled => {
     writeRestTimerFullscreen(enabled);
     set({ restTimerFullscreen: enabled });
+  },
+  setHomeMessageTone: tone => {
+    writeHomeMessageTone(tone);
+    set({ homeMessageTone: tone });
   },
 }));

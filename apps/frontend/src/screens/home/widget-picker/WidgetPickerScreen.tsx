@@ -45,6 +45,7 @@ export function WidgetPickerScreen() {
             key={type}
             type={type}
             isPlaced={placedTypes.has(type)}
+            placedSpan={layout.find(widget => widget.type === type)?.colSpan}
           />
         ))}
       </ScrollView>

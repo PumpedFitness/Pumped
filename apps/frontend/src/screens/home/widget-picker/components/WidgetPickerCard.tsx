@@ -1,4 +1,5 @@
-import { View, Text, Dimensions } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Dimensions, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/clay/Card';
 import { Button } from '@/components/clay/Button';
@@ -22,17 +23,23 @@ function previewWidth(colSpan: number): number {
 type WidgetPickerCardProps = {
   type: WidgetType;
   isPlaced: boolean;
+  placedSpan?: number;
 };
 
-export function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
+export function WidgetPickerCard({
+  type,
+  isPlaced,
+  placedSpan,
+}: WidgetPickerCardProps) {
   const { t } = useTranslation();
   const addWidget = useHomescreenStore(s => s.addWidget);
+  const setWidgetSpan = useHomescreenStore(s => s.setWidgetSpan);
   const entry = widgetRegistry[type];
-
-  if (!entry) return null;
-
   const { meta, component: WidgetComponent } = entry;
-  const span = meta.defaultSpan;
+  const [selectedSpan, setSelectedSpan] = useState(
+    placedSpan ?? meta.defaultSpan,
+  );
+  const span = selectedSpan;
   const width = previewWidth(span);
 
   return (
@@ -53,6 +60,39 @@ export function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
           </Text>
         </View>
       </View>
+
+      {meta.allowedSpans.length > 1 && (
+        <View className="flex-row gap-2 px-4 pb-3">
+          {meta.allowedSpans.map(option => {
+            const selected = option === selectedSpan;
+            return (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                onPress={() => {
+                  setSelectedSpan(option);
+                  if (isPlaced) setWidgetSpan(type, option);
+                }}
+                className={`flex-1 items-center rounded-full border py-2 active:opacity-70 ${
+                  selected
+                    ? 'border-foreground bg-foreground'
+                    : 'border-border-soft bg-surface-sunk'
+                }`}
+              >
+                <Text
+                  className={`text-[12.5px] font-semibold ${
+                    selected ? 'text-cream' : 'text-muted'
+                  }`}
+                >
+                  {option === 3
+                    ? t('widgetPicker.fullWidth')
+                    : t('widgetPicker.columnsOf3', { count: option })}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
 
       <View className="items-center px-4 pb-1">
         <View
@@ -80,7 +120,7 @@ export function WidgetPickerCard({ type, isPlaced }: WidgetPickerCardProps) {
           }
           onPress={() => {
             if (!isPlaced) {
-              addWidget(type, span);
+              addWidget(type, selectedSpan);
             }
           }}
         >

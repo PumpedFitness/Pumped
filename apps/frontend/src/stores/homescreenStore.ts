@@ -19,17 +19,17 @@ const DEFAULT_LAYOUT: WidgetPlacement[] = [
 function normalizeLayout(layout: WidgetPlacement[]): WidgetPlacement[] {
   return layout
     .filter(item => item.type in widgetRegistry)
-    .map(item => ({
-      ...item,
-      colSpan: widgetRegistry[item.type].meta.defaultSpan,
-      column:
-        typeof item.column === 'number'
-          ? Math.max(
-              0,
-              Math.min(3 - widgetRegistry[item.type].meta.defaultSpan, item.column),
-            )
-          : undefined,
-    }));
+    .map(item => {
+      const meta = widgetRegistry[item.type].meta;
+      const colSpan = meta.allowedSpans.includes(item.colSpan)
+        ? item.colSpan
+        : meta.defaultSpan;
+      return {
+        ...item,
+        colSpan,
+        column: undefined,
+      };
+    });
 }
 
 function persist(layout: WidgetPlacement[]) {
@@ -41,6 +41,7 @@ type HomescreenState = {
   initialize: () => void;
   setLayout: (layout: WidgetPlacement[]) => void;
   addWidget: (type: WidgetType, colSpan: number) => void;
+  setWidgetSpan: (type: WidgetType, colSpan: number) => void;
   removeWidget: (id: string) => void;
   moveWidget: (fromIndex: number, toIndex: number) => void;
   reorderByIds: (orderedIds: string[]) => void;
@@ -72,12 +73,24 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
     set({ layout });
   },
 
-  addWidget: (type: WidgetType, _colSpan: number) => {
-    const fixedSpan = widgetRegistry[type].meta.defaultSpan;
+  addWidget: (type: WidgetType, colSpan: number) => {
+    const meta = widgetRegistry[type].meta;
+    const resolvedSpan = meta.allowedSpans.includes(colSpan)
+      ? colSpan
+      : meta.defaultSpan;
     const layout = [
       ...get().layout,
-      { id: randomUUID(), type, colSpan: fixedSpan },
+      { id: randomUUID(), type, colSpan: resolvedSpan },
     ];
+    persist(layout);
+    set({ layout });
+  },
+
+  setWidgetSpan: (type: WidgetType, colSpan: number) => {
+    if (!widgetRegistry[type].meta.allowedSpans.includes(colSpan)) return;
+    const layout = get().layout.map(widget =>
+      widget.type === type ? { ...widget, colSpan, column: undefined } : widget,
+    );
     persist(layout);
     set({ layout });
   },

@@ -39,25 +39,21 @@ function acceptHover(hover: { current: HoverState }, id: string): boolean {
 type PlacedWidget = WidgetPlacement & {
   row: number;
   column: number;
-  spacerColumns: number;
 };
 
 function placeWidgets(layout: WidgetPlacement[]): PlacedWidget[] {
   let row = 0;
   let nextColumn = 0;
   return layout.map(item => {
-    const maxColumn = COLS - item.colSpan;
-    const preferred = Math.max(0, Math.min(maxColumn, item.column ?? nextColumn));
-    if (nextColumn + item.colSpan > COLS || preferred < nextColumn) {
+    if (nextColumn + item.colSpan > COLS) {
       row += 1;
       nextColumn = 0;
     }
-    const column = item.column == null ? nextColumn : preferred;
+    const column = nextColumn;
     const placed = {
       ...item,
       row,
       column,
-      spacerColumns: column - nextColumn,
     };
     nextColumn = column + item.colSpan;
     return placed;
@@ -75,8 +71,8 @@ function moveOneStep(
   const nextIndex = fromIndex + Math.sign(toIndex - fromIndex);
   const next = [...layout];
   const [dragged] = next.splice(fromIndex, 1);
-  next.splice(nextIndex, 0, dragged);
-  return next;
+  next.splice(nextIndex, 0, { ...dragged, column: undefined });
+  return next.map(item => ({ ...item, column: undefined }));
 }
 
 function findDropTarget(
@@ -89,37 +85,13 @@ function findDropTarget(
     if (id === draggedId) continue;
     const insetX = frame.width * DROP_ZONE_INSET;
     const insetY = frame.height * DROP_ZONE_INSET;
-    const insideX = x >= frame.x + insetX && x <= frame.x + frame.width - insetX;
-    const insideY = y >= frame.y + insetY && y <= frame.y + frame.height - insetY;
+    const insideX =
+      x >= frame.x + insetX && x <= frame.x + frame.width - insetX;
+    const insideY =
+      y >= frame.y + insetY && y <= frame.y + frame.height - insetY;
     if (insideX && insideY) return id;
   }
   return null;
-}
-
-function findEmptyTarget(
-  placed: PlacedWidget[],
-  frames: ReadonlyMap<string, ItemFrame>,
-  id: string,
-  x: number,
-  y: number,
-  unitWidth: number,
-): { key: string; column: number } | null {
-  const dragged = placed.find(item => item.id === id);
-  const frame = frames.get(id);
-  if (!dragged || !frame || y < frame.y || y > frame.y + frame.height) return null;
-  const column = Math.max(
-    0,
-    Math.min(COLS - dragged.colSpan, Math.floor(x / (unitWidth + GAP))),
-  );
-  const occupied = placed.some(
-    item =>
-      item.id !== id &&
-      item.row === dragged.row &&
-      column < item.column + item.colSpan &&
-      column + dragged.colSpan > item.column,
-  );
-  if (occupied || column === dragged.column) return null;
-  return { key: `empty-${dragged.row}-${column}`, column };
 }
 
 type WidgetGridItemProps = {
@@ -154,10 +126,7 @@ function WidgetGridItem({
   return (
     <Animated.View
       layout={active ? undefined : PREVIEW_TRANSITION}
-      style={[
-        { width, marginLeft: item.spacerColumns * (unitWidth + GAP) },
-        active ? ACTIVE_LAYER : INACTIVE_LAYER,
-      ]}
+      style={[{ width }, active ? ACTIVE_LAYER : INACTIVE_LAYER]}
       onLayout={event => onLayout(item.id, event)}
     >
       <DraggableWidget
@@ -207,11 +176,20 @@ export function WidgetGrid({
   });
   const previewRef = useRef(previewLayout);
   const placed = useMemo(() => placeWidgets(previewLayout), [previewLayout]);
-  const placedRef = useRef(placed);
-  placedRef.current = placed;
   useEffect(() => {
     previewRef.current = previewLayout;
   }, [previewLayout]);
+
+  const updatePreview = useCallback(
+    (update: (current: WidgetPlacement[]) => WidgetPlacement[]) => {
+      setPreviewLayout(current => {
+        const next = update(current);
+        previewRef.current = next;
+        return next;
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!draggedIdRef.current) setPreviewLayout(layout);
@@ -251,40 +229,16 @@ export function WidgetGrid({
     (id: string, absoluteX: number, absoluteY: number) => {
       const localX = absoluteX - containerOriginRef.current.x;
       const localY = absoluteY - containerOriginRef.current.y;
-      const targetId = findDropTarget(
-        framesRef.current,
-        id,
-        localX,
-        localY,
-      );
+      const targetId = findDropTarget(framesRef.current, id, localX, localY);
       if (!targetId) {
-        const empty = findEmptyTarget(
-          placedRef.current,
-          framesRef.current,
-          id,
-          localX,
-          localY,
-          unitWidth,
-        );
-        if (!empty) {
-          hoverRef.current = { id: null, since: 0 };
-          return;
-        }
-        if (!acceptHover(hoverRef, empty.key)) return;
-        setPreviewLayout(current =>
-          current.map(item =>
-            item.id === id ? { ...item, column: empty.column } : item,
-          ),
-        );
+        hoverRef.current = { id: null, since: 0 };
         return;
       }
       const resolvedTargetId = targetId;
       if (!acceptHover(hoverRef, resolvedTargetId)) return;
-      setPreviewLayout(current =>
-        moveOneStep(current, id, resolvedTargetId),
-      );
+      updatePreview(current => moveOneStep(current, id, resolvedTargetId));
     },
-    [unitWidth],
+    [updatePreview],
   );
 
   const finishDrag = useCallback(() => {
@@ -294,20 +248,17 @@ export function WidgetGrid({
     onLayoutChange(previewRef.current);
   }, [onLayoutChange]);
 
-  const recordPosition = useCallback(
-    (id: string, event: LayoutChangeEvent) => {
-      const { x, y, width, height } = event.nativeEvent.layout;
-      framesRef.current.set(id, { x, y, width, height });
-      setPositions(current => {
-        const previous = current.get(id);
-        if (previous?.x === x && previous.y === y) return current;
-        const next = new Map(current);
-        next.set(id, { x, y });
-        return next;
-      });
-    },
-    [],
-  );
+  const recordPosition = useCallback((id: string, event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    framesRef.current.set(id, { x, y, width, height });
+    setPositions(current => {
+      const previous = current.get(id);
+      if (previous?.x === x && previous.y === y) return current;
+      const next = new Map(current);
+      next.set(id, { x, y });
+      return next;
+    });
+  }, []);
 
   if (containerWidth === 0) {
     return (
