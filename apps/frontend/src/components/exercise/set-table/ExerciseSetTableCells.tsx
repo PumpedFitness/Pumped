@@ -9,6 +9,7 @@ type EditableNumberInputProps = {
   suggestedValue?: number;
   allowDecimal: boolean;
   hasError?: boolean;
+  inputClassName?: string;
   onChange: (value: number | null) => void;
 };
 
@@ -40,6 +41,7 @@ export function EditableNumberInput({
   suggestedValue,
   allowDecimal,
   hasError = false,
+  inputClassName,
   onChange,
 }: EditableNumberInputProps) {
   const [draft, setDraft] = useState(() => formatSetNumber(value));
@@ -72,14 +74,18 @@ export function EditableNumberInput({
   return (
     <TextInput
       accessibilityLabel={accessibilityLabel}
-      className={`min-w-12 text-[17px] font-bold tabular-nums ${
-        hasError ? 'text-danger' : 'text-foreground'
-      }`}
+      className={
+        inputClassName ??
+        `min-w-12 p-0 text-[17px] font-bold leading-[22px] tabular-nums ${
+          hasError ? 'text-danger' : 'text-foreground'
+        }`
+      }
       keyboardType={allowDecimal ? 'decimal-pad' : 'number-pad'}
       placeholder={placeholder}
       placeholderTextColor={hasError ? colors.danger : colors.muted}
       returnKeyType="done"
       selectTextOnFocus
+      style={{ includeFontPadding: false }}
       value={draft}
       onBlur={() => {
         isFocused.current = false;

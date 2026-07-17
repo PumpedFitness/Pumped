@@ -30,7 +30,8 @@ type SessionExerciseBodyProps = {
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
   toggleSetDone: (exerciseId: string, setId: string) => boolean;
-  restStart: (seconds: number) => void;
+  restStart: (seconds: number, sourceSetId?: string) => void;
+  activeRestSetId: string | null;
   removeSet: (exerciseId: string, setId: string) => void;
   addSet: (exerciseId: string) => void;
 };
@@ -103,6 +104,7 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
   updateSet,
   toggleSetDone,
   restStart,
+  activeRestSetId,
   removeSet,
   addSet,
 }: SessionExerciseBodyProps) {
@@ -133,7 +135,7 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
       const wasDone = set?.isDone ?? false;
       const ok = toggleSetDone(exercise.id, setId);
       if (ok && !wasDone && set?.restSeconds && set.restSeconds > 0) {
-        restStart(set.restSeconds);
+        restStart(set.restSeconds, set.id);
       }
       return ok;
     },
@@ -157,7 +159,9 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
         onChangeSet={handleChangeSet}
         onToggleSetDone={handleToggleSetDone}
         onRemoveSet={handleRemoveSet}
+        activeRestSetId={activeRestSetId}
         animateLayout={false}
+        iconOnlySetType
       />
     </>
   );

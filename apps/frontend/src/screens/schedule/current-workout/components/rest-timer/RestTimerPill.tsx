@@ -154,7 +154,7 @@ export function RestTimerPill({
           barStyle,
         ]}
       >
-        <View className="flex-row items-center gap-2.5 px-4 py-2.5">
+        <View className="flex-row items-center gap-2.5 px-5 py-3">
           {canExpand ? (
             <Pressable
               accessibilityRole="button"

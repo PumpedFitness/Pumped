@@ -13,6 +13,7 @@ export type OptionalWheelPickerConfig = {
   step: number;
   defaultValue: number;
   formatValue: (value: number) => string;
+  values?: number[];
 };
 
 type OptionalWheelPickerSheetProps = {
@@ -24,6 +25,9 @@ type OptionalWheelPickerSheetProps = {
 };
 
 function buildValues(config: OptionalWheelPickerConfig): number[] {
+  if (config.values) {
+    return config.values;
+  }
   const { minValue, maxValue, step } = config;
   const values: number[] = [];
   // Accumulate via the step count to avoid floating point drift on

@@ -69,6 +69,8 @@ type EditableExerciseSetTableProps = BaseTableProps & {
   onToggleSetDone: (setId: string) => boolean;
   onRemoveSet: (set: CurrentWorkoutSet) => DeleteResult;
   onCreateSetType: (name: string) => string;
+  activeRestSetId?: string | null;
+  iconOnlySetType?: boolean;
 };
 
 export type ReadOnlyExerciseSet = Pick<
@@ -101,6 +103,7 @@ export type ExerciseSetTableProps =
 export type SetCardRest = {
   value: number | null;
   readOnly: boolean;
+  isRunning?: boolean;
   onChange: (value: number | null) => void;
 };
 
@@ -168,6 +171,7 @@ export function buildTemplateSetCards(
       rest: {
         value: set.restSeconds,
         readOnly: false,
+        isRunning: false,
         onChange: value =>
           props.onChangeSet(index, { ...set, restSeconds: value }),
       },
@@ -222,6 +226,7 @@ export function buildWorkoutSetCards(
       rest: {
         value: set.restSeconds,
         readOnly: false,
+        isRunning: props.activeRestSetId === set.id,
         onChange: value => props.onChangeSet(set.id, { restSeconds: value }),
       },
       progression: buildSetCardProgression(set, type, progressionGoal =>

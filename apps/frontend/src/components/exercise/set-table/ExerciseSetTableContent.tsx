@@ -32,6 +32,7 @@ type ExerciseSetTableContentProps = {
   onAddSet?: () => void;
   onDuplicateSet?: () => void;
   animateLayout?: boolean;
+  iconOnlySetType?: boolean;
 };
 
 // The set-type / wheel / range sheets are NOT here — they live once per screen
@@ -43,6 +44,7 @@ export function ExerciseSetTableContent({
   onAddSet,
   onDuplicateSet,
   animateLayout = true,
+  iconOnlySetType = false,
 }: ExerciseSetTableContentProps) {
   const { t } = useTranslation();
 
@@ -60,7 +62,7 @@ export function ExerciseSetTableContent({
           }
           exiting={FadeOut.duration(motion.fast)}
         >
-          <SetCard card={card} />
+          <SetCard card={card} iconOnlySetType={iconOnlySetType} />
         </Animated.View>
       ))}
 

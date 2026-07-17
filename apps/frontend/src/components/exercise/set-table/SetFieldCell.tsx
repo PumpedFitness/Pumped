@@ -201,9 +201,10 @@ function EditableKeyboardNumberCell({
         />
         {field.unit ? (
           <Text
-            className={`text-[11px] font-semibold ${
+            className={`text-[11px] font-semibold leading-[14px] ${
               hasError ? 'text-danger' : 'text-muted'
             }`}
+            style={{ includeFontPadding: false }}
           >
             {field.unit}
           </Text>
@@ -235,13 +236,14 @@ function EditableWheelNumberCell({
   const valueInput = (
     <TextInput
       accessibilityLabel={field.label}
-      className={`min-w-12 text-[17px] font-bold tabular-nums ${
+      className={`min-w-12 p-0 text-[17px] font-bold leading-[22px] tabular-nums ${
         hasError ? 'text-danger' : display ? 'text-foreground' : 'text-muted'
       }`}
       editable={false}
       placeholder={placeholder}
       placeholderTextColor={hasError ? colors.danger : colors.muted}
       pointerEvents="none"
+      style={{ includeFontPadding: false }}
       value={display}
     />
   );
@@ -260,9 +262,10 @@ function EditableWheelNumberCell({
         </Pressable>
         {field.unit ? (
           <Text
-            className={`text-[11px] font-semibold ${
+            className={`text-[11px] font-semibold leading-[14px] ${
               hasError ? 'text-danger' : 'text-muted'
             }`}
+            style={{ includeFontPadding: false }}
           >
             {field.unit}
           </Text>

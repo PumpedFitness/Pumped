@@ -165,6 +165,21 @@ export const resources = {
         dayGreeting: '{{day}} {{timeOfDay}}',
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
+        restTimerMockups: {
+          title: 'Rest timer topbar mockups',
+          count: '5 options',
+          setType: 'Working',
+          progression: 'Linear',
+          running: 'Running',
+          idle: 'Idle',
+          variants: {
+            statusBlock: 'Active rest block',
+            restRail: 'Rest rail module',
+            cornerTab: 'Corner status tab',
+            tileBar: 'Box tile topbar',
+            idleSlot: 'Idle configured slot',
+          },
+        },
       },
       widgets: {
         names: {
@@ -559,6 +574,10 @@ export const resources = {
         resumeWorkoutA11y: 'Resume timer',
         rest: {
           title: 'Rest',
+          pickerTitle: 'Rest time',
+          pickerDescription: 'Choose how long to rest after this set.',
+          durationMinutes: '{{minutes}} min {{seconds}}s',
+          durationSeconds: '{{seconds}}s',
           pause: 'Pause',
           resume: 'Resume',
           skip: 'Skip rest',
@@ -1080,6 +1099,21 @@ export const resources = {
         dayGreeting: '{{day}}{{timeOfDay}}',
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
+        restTimerMockups: {
+          title: 'Pausentimer-Topbar-Mockups',
+          count: '5 Optionen',
+          setType: 'Arbeitssatz',
+          progression: 'Linear',
+          running: 'Läuft',
+          idle: 'Bereit',
+          variants: {
+            statusBlock: 'Aktiver Pausenblock',
+            restRail: 'Pausenmodul rechts',
+            cornerTab: 'Status-Tab in der Ecke',
+            tileBar: 'Boxige Kachel-Topbar',
+            idleSlot: 'Bereiter Pausenslot',
+          },
+        },
       },
       widgets: {
         names: {
@@ -1489,6 +1523,10 @@ export const resources = {
         resumeWorkoutA11y: 'Timer fortsetzen',
         rest: {
           title: 'Pause',
+          pickerTitle: 'Pausenzeit',
+          pickerDescription: 'Wähle die Pause nach diesem Satz.',
+          durationMinutes: '{{minutes}} Min. {{seconds}} Sek.',
+          durationSeconds: '{{seconds}} Sek.',
           pause: 'Pausieren',
           resume: 'Fortsetzen',
           skip: 'Pause überspringen',
