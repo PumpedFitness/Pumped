@@ -22,6 +22,13 @@ function normalizeLayout(layout: WidgetPlacement[]): WidgetPlacement[] {
     .map(item => ({
       ...item,
       colSpan: widgetRegistry[item.type].meta.defaultSpan,
+      column:
+        typeof item.column === 'number'
+          ? Math.max(
+              0,
+              Math.min(3 - widgetRegistry[item.type].meta.defaultSpan, item.column),
+            )
+          : undefined,
     }));
 }
 

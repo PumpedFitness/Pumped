@@ -23,6 +23,47 @@ type ItemFrame = {
   height: number;
 };
 
+type HoverState = { id: string | null; since: number };
+
+function acceptHover(hover: { current: HoverState }, id: string): boolean {
+  const now = Date.now();
+  if (hover.current.id !== id) {
+    hover.current = { id, since: now };
+    return false;
+  }
+  if (now - hover.current.since < DROP_HOVER_MS) return false;
+  hover.current = { id: null, since: 0 };
+  return true;
+}
+
+type PlacedWidget = WidgetPlacement & {
+  row: number;
+  column: number;
+  spacerColumns: number;
+};
+
+function placeWidgets(layout: WidgetPlacement[]): PlacedWidget[] {
+  let row = 0;
+  let nextColumn = 0;
+  return layout.map(item => {
+    const maxColumn = COLS - item.colSpan;
+    const preferred = Math.max(0, Math.min(maxColumn, item.column ?? nextColumn));
+    if (nextColumn + item.colSpan > COLS || preferred < nextColumn) {
+      row += 1;
+      nextColumn = 0;
+    }
+    const column = item.column == null ? nextColumn : preferred;
+    const placed = {
+      ...item,
+      row,
+      column,
+      spacerColumns: column - nextColumn,
+    };
+    nextColumn = column + item.colSpan;
+    return placed;
+  });
+}
+
 function moveOneStep(
   layout: WidgetPlacement[],
   draggedId: string,
@@ -55,11 +96,91 @@ function findDropTarget(
   return null;
 }
 
+function findEmptyTarget(
+  placed: PlacedWidget[],
+  frames: ReadonlyMap<string, ItemFrame>,
+  id: string,
+  x: number,
+  y: number,
+  unitWidth: number,
+): { key: string; column: number } | null {
+  const dragged = placed.find(item => item.id === id);
+  const frame = frames.get(id);
+  if (!dragged || !frame || y < frame.y || y > frame.y + frame.height) return null;
+  const column = Math.max(
+    0,
+    Math.min(COLS - dragged.colSpan, Math.floor(x / (unitWidth + GAP))),
+  );
+  const occupied = placed.some(
+    item =>
+      item.id !== id &&
+      item.row === dragged.row &&
+      column < item.column + item.colSpan &&
+      column + dragged.colSpan > item.column,
+  );
+  if (occupied || column === dragged.column) return null;
+  return { key: `empty-${dragged.row}-${column}`, column };
+}
+
+type WidgetGridItemProps = {
+  item: PlacedWidget;
+  active: boolean;
+  editing: boolean;
+  unitWidth: number;
+  position: { x: number; y: number };
+  onLayout: (id: string, event: LayoutChangeEvent) => void;
+  onDragStart: (id: string) => void;
+  onDragMove: (id: string, x: number, y: number) => void;
+  onDrop: () => void;
+  onRemove: (id: string) => void;
+};
+
+function WidgetGridItem({
+  item,
+  active,
+  editing,
+  unitWidth,
+  position,
+  onLayout,
+  onDragStart,
+  onDragMove,
+  onDrop,
+  onRemove,
+}: WidgetGridItemProps) {
+  const entry = widgetRegistry[item.type];
+  if (!entry) return null;
+  const Component = entry.component;
+  const width = item.colSpan * unitWidth + (item.colSpan - 1) * GAP;
+  return (
+    <Animated.View
+      layout={active ? undefined : PREVIEW_TRANSITION}
+      style={[
+        { width, marginLeft: item.spacerColumns * (unitWidth + GAP) },
+        active ? ACTIVE_LAYER : INACTIVE_LAYER,
+      ]}
+      onLayout={event => onLayout(item.id, event)}
+    >
+      <DraggableWidget
+        id={item.id}
+        editing={editing}
+        layoutX={position.x}
+        layoutY={position.y}
+        onDragStart={() => onDragStart(item.id)}
+        onDragMove={onDragMove}
+        onDrop={onDrop}
+        onRemove={onRemove}
+      >
+        <Component colSpan={item.colSpan} width={width} />
+      </DraggableWidget>
+    </Animated.View>
+  );
+}
+
 type WidgetGridProps = {
   layout: WidgetPlacement[];
   editing: boolean;
   onEditStart: () => void;
-  onReorder: (orderedIds: string[]) => void;
+  onLayoutChange: (layout: WidgetPlacement[]) => void;
   onRemove: (id: string) => void;
 };
 
@@ -67,7 +188,7 @@ export function WidgetGrid({
   layout,
   editing,
   onEditStart,
-  onReorder,
+  onLayoutChange,
   onRemove,
 }: WidgetGridProps) {
   const [containerWidth, setContainerWidth] = useState(0);
@@ -80,11 +201,14 @@ export function WidgetGrid({
   const containerRef = useRef<View>(null);
   const containerOriginRef = useRef({ x: 0, y: 0 });
   const draggedIdRef = useRef<string | null>(null);
-  const hoverRef = useRef<{ id: string | null; since: number }>({
+  const hoverRef = useRef<HoverState>({
     id: null,
     since: 0,
   });
   const previewRef = useRef(previewLayout);
+  const placed = useMemo(() => placeWidgets(previewLayout), [previewLayout]);
+  const placedRef = useRef(placed);
+  placedRef.current = placed;
   useEffect(() => {
     previewRef.current = previewLayout;
   }, [previewLayout]);
@@ -125,37 +249,50 @@ export function WidgetGrid({
 
   const moveDrag = useCallback(
     (id: string, absoluteX: number, absoluteY: number) => {
+      const localX = absoluteX - containerOriginRef.current.x;
+      const localY = absoluteY - containerOriginRef.current.y;
       const targetId = findDropTarget(
         framesRef.current,
         id,
-        absoluteX - containerOriginRef.current.x,
-        absoluteY - containerOriginRef.current.y,
+        localX,
+        localY,
       );
       if (!targetId) {
-        hoverRef.current = { id: null, since: 0 };
+        const empty = findEmptyTarget(
+          placedRef.current,
+          framesRef.current,
+          id,
+          localX,
+          localY,
+          unitWidth,
+        );
+        if (!empty) {
+          hoverRef.current = { id: null, since: 0 };
+          return;
+        }
+        if (!acceptHover(hoverRef, empty.key)) return;
+        setPreviewLayout(current =>
+          current.map(item =>
+            item.id === id ? { ...item, column: empty.column } : item,
+          ),
+        );
         return;
       }
       const resolvedTargetId = targetId;
-      const now = Date.now();
-      if (hoverRef.current.id !== resolvedTargetId) {
-        hoverRef.current = { id: resolvedTargetId, since: now };
-        return;
-      }
-      if (now - hoverRef.current.since < DROP_HOVER_MS) return;
-      hoverRef.current = { id: null, since: 0 };
+      if (!acceptHover(hoverRef, resolvedTargetId)) return;
       setPreviewLayout(current =>
         moveOneStep(current, id, resolvedTargetId),
       );
     },
-    [],
+    [unitWidth],
   );
 
   const finishDrag = useCallback(() => {
     draggedIdRef.current = null;
     hoverRef.current = { id: null, since: 0 };
     setActiveId(null);
-    onReorder(previewRef.current.map(item => item.id));
-  }, [onReorder]);
+    onLayoutChange(previewRef.current);
+  }, [onLayoutChange]);
 
   const recordPosition = useCallback(
     (id: string, event: LayoutChangeEvent) => {
@@ -185,36 +322,22 @@ export function WidgetGrid({
       onLayout={onLayout}
       className="flex-row flex-wrap gap-3"
     >
-      {previewLayout.map(item => {
-        const entry = widgetRegistry[item.type];
-        if (!entry) return null;
-        const Component = entry.component;
-        const width = item.colSpan * unitWidth + (item.colSpan - 1) * GAP;
+      {placed.map(item => {
         const position = positions.get(item.id) ?? { x: 0, y: 0 };
         return (
-          <Animated.View
+          <WidgetGridItem
             key={item.id}
-            layout={
-              activeId === item.id
-                ? undefined
-                : PREVIEW_TRANSITION
-            }
-            style={[{ width }, activeId === item.id ? ACTIVE_LAYER : INACTIVE_LAYER]}
-            onLayout={event => recordPosition(item.id, event)}
-          >
-            <DraggableWidget
-              id={item.id}
-              editing={editing}
-              layoutX={position.x}
-              layoutY={position.y}
-              onDragStart={() => startDrag(item.id)}
-              onDragMove={moveDrag}
-              onDrop={finishDrag}
-              onRemove={onRemove}
-            >
-              <Component colSpan={item.colSpan} width={width} />
-            </DraggableWidget>
-          </Animated.View>
+            item={item}
+            active={activeId === item.id}
+            editing={editing}
+            unitWidth={unitWidth}
+            position={position}
+            onLayout={recordPosition}
+            onDragStart={startDrag}
+            onDragMove={moveDrag}
+            onDrop={finishDrag}
+            onRemove={onRemove}
+          />
         );
       })}
     </View>

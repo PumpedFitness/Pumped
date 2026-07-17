@@ -29,7 +29,7 @@ export function HomeScreen() {
   const navigation = useNavigation();
   const [editing, setEditing] = useState(false);
   const layout = useHomescreenStore(s => s.layout);
-  const reorderByIds = useHomescreenStore(s => s.reorderByIds);
+  const setLayout = useHomescreenStore(s => s.setLayout);
   const removeWidget = useHomescreenStore(s => s.removeWidget);
   const { profile } = useUserProfile();
 
@@ -82,7 +82,7 @@ export function HomeScreen() {
             layout={layout}
             editing={editing}
             onEditStart={startEditing}
-            onReorder={reorderByIds}
+            onLayoutChange={setLayout}
             onRemove={removeWidget}
           />
         </View>

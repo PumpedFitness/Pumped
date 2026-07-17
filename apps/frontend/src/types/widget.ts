@@ -14,6 +14,8 @@ export type WidgetPlacement = {
   id: string;
   type: WidgetType;
   colSpan: number; // 1, 2, or 3
+  /** Preferred zero-based starting column. Omitted layouts pack left-to-right. */
+  column?: number;
 };
 
 export type WidgetNameKey = `widgets.names.${Extract<
