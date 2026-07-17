@@ -8,8 +8,8 @@ import { widgetRegistry } from './registry';
 
 const GAP = spacing[3];
 const COLS = 3;
-const DROP_ZONE_INSET = 0.35;
-const DROP_HOVER_MS = 200;
+const DROP_ZONE_INSET = 0.32;
+const DROP_HOVER_MS = 160;
 const PREVIEW_TRANSITION = LinearTransition.duration(260).easing(
   Easing.out(Easing.cubic),
 );
