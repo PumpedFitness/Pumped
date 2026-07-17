@@ -157,6 +157,9 @@ export const resources = {
         },
       },
       home: {
+        addWidget: 'Add widget',
+        doneEditing: 'Done',
+        removeWidget: 'Remove widget',
         timeOfDay: {
           morning: 'morning',
           afternoon: 'afternoon',
@@ -1091,6 +1094,9 @@ export const resources = {
         },
       },
       home: {
+        addWidget: 'Widget hinzufügen',
+        doneEditing: 'Fertig',
+        removeWidget: 'Widget entfernen',
         timeOfDay: {
           morning: 'morgen',
           afternoon: 'nachmittag',

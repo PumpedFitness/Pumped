@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import type { WidgetPlacement } from '@/types/widget';
 import { widgetRegistry } from './registry';
+import { DraggableWidget } from './DraggableWidget';
 import { spacing } from '@/theme/tokens';
 
-const GAP = spacing[3]; // 12 — keep in sync with the gap-3 classes below
+const GAP = spacing[3];
 const COLS = 3;
 
 type RowItem = WidgetPlacement & { width: number; flatIndex: number };
@@ -29,7 +30,7 @@ function packRows(
     if (currentCols + span > COLS) {
       if (currentRow.length > 0) {
         rows.push({
-          key: currentRow.map(r => r.id).join('-'),
+          key: currentRow.map(item => item.id).join('-'),
           items: currentRow,
         });
       }
@@ -43,7 +44,10 @@ function packRows(
   }
 
   if (currentRow.length > 0) {
-    rows.push({ key: currentRow.map(r => r.id).join('-'), items: currentRow });
+    rows.push({
+      key: currentRow.map(item => item.id).join('-'),
+      items: currentRow,
+    });
   }
 
   return rows;
@@ -51,14 +55,57 @@ function packRows(
 
 type WidgetGridProps = {
   layout: WidgetPlacement[];
+  editing: boolean;
+  onEditStart: () => void;
+  onMove: (fromIndex: number, toIndex: number) => void;
+  onRemove: (id: string) => void;
 };
 
-export function WidgetGrid({ layout }: WidgetGridProps) {
+export function WidgetGrid({
+  layout,
+  editing,
+  onEditStart,
+  onMove,
+  onRemove,
+}: WidgetGridProps) {
   const [containerWidth, setContainerWidth] = useState(0);
+  const itemRefs = useRef(new Map<string, View>());
 
-  const onLayout = useCallback((e: LayoutChangeEvent) => {
-    setContainerWidth(e.nativeEvent.layout.width);
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    setContainerWidth(event.nativeEvent.layout.width);
   }, []);
+
+  const onDrop = useCallback(
+    (draggedId: string, absoluteX: number, absoluteY: number) => {
+      const fromIndex = layout.findIndex(item => item.id === draggedId);
+      if (fromIndex < 0) return;
+
+      let pending = itemRefs.current.size;
+      let nearestId = draggedId;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      if (pending === 0) return;
+
+      itemRefs.current.forEach((view, id) => {
+        view.measureInWindow((x, y, width, height) => {
+          const dx = absoluteX - (x + width / 2);
+          const dy = absoluteY - (y + height / 2);
+          const distance = dx * dx + dy * dy;
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestId = id;
+          }
+          pending -= 1;
+          if (pending === 0) {
+            const toIndex = layout.findIndex(item => item.id === nearestId);
+            if (toIndex >= 0 && toIndex !== fromIndex) {
+              onMove(fromIndex, toIndex);
+            }
+          }
+        });
+      });
+    },
+    [layout, onMove],
+  );
 
   if (containerWidth === 0) {
     return <View onLayout={onLayout} className="min-h-[1px]" />;
@@ -75,8 +122,24 @@ export function WidgetGrid({ layout }: WidgetGridProps) {
             if (!entry) return null;
             const Component = entry.component;
             return (
-              <View key={item.id} style={{ width: item.width }}>
-                <Component colSpan={item.colSpan} width={item.width} />
+              <View
+                key={item.id}
+                ref={view => {
+                  if (view) itemRefs.current.set(item.id, view);
+                  else itemRefs.current.delete(item.id);
+                }}
+                collapsable={false}
+                style={{ width: item.width }}
+              >
+                <DraggableWidget
+                  id={item.id}
+                  editing={editing}
+                  onDragStart={onEditStart}
+                  onDrop={onDrop}
+                  onRemove={onRemove}
+                >
+                  <Component colSpan={item.colSpan} width={item.width} />
+                </DraggableWidget>
               </View>
             );
           })}

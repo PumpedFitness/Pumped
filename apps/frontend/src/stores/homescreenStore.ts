@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createMMKV } from 'react-native-mmkv';
 import { randomUUID } from 'expo-crypto';
 import type { WidgetPlacement, WidgetType } from '@/types/widget';
+import { widgetRegistry } from '@/components/widgets/registry';
 
 const storage = createMMKV({ id: 'homescreen-storage' });
 
@@ -14,6 +15,15 @@ const DEFAULT_LAYOUT: WidgetPlacement[] = [
   { id: 'default-weeklyVolume', type: 'weeklyVolume', colSpan: 1 },
   { id: 'default-chart', type: 'chart', colSpan: 3 },
 ];
+
+function normalizeLayout(layout: WidgetPlacement[]): WidgetPlacement[] {
+  return layout
+    .filter(item => item.type in widgetRegistry)
+    .map(item => ({
+      ...item,
+      colSpan: widgetRegistry[item.type].meta.defaultSpan,
+    }));
+}
 
 function persist(layout: WidgetPlacement[]) {
   storage.set(LAYOUT_KEY, JSON.stringify(layout));
@@ -34,9 +44,20 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
   layout: DEFAULT_LAYOUT,
 
   initialize: () => {
-    // TODO: restore MMKV persistence once layout is stable
-    storage.remove(LAYOUT_KEY);
-    set({ layout: DEFAULT_LAYOUT });
+    const stored = storage.getString(LAYOUT_KEY);
+    if (!stored) {
+      set({ layout: DEFAULT_LAYOUT });
+      return;
+    }
+    try {
+      const parsed = JSON.parse(stored) as WidgetPlacement[];
+      const layout = normalizeLayout(parsed);
+      persist(layout);
+      set({ layout });
+    } catch {
+      persist(DEFAULT_LAYOUT);
+      set({ layout: DEFAULT_LAYOUT });
+    }
   },
 
   setLayout: (layout: WidgetPlacement[]) => {
@@ -44,8 +65,12 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
     set({ layout });
   },
 
-  addWidget: (type: WidgetType, colSpan: number) => {
-    const layout = [...get().layout, { id: randomUUID(), type, colSpan }];
+  addWidget: (type: WidgetType, _colSpan: number) => {
+    const fixedSpan = widgetRegistry[type].meta.defaultSpan;
+    const layout = [
+      ...get().layout,
+      { id: randomUUID(), type, colSpan: fixedSpan },
+    ];
     persist(layout);
     set({ layout });
   },
