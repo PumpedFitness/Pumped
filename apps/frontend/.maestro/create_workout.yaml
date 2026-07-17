@@ -34,7 +34,10 @@ appId: ${APP_ID}
 - runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Add Exercise'
 - assertVisible: 'Exercise Library'
+# The auto-focused search input can retain stray text while the create screen
+# is pushed above it. Always replace its contents instead of appending a query.
 - tapOn: 'Search name, muscle, or type'
+- eraseText
 - inputText: 'Maestro'
 - runFlow: subflows/dismiss-keyboard.yaml
 - assertVisible: 'Maestro Exercise'

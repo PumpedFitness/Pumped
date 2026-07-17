@@ -247,4 +247,15 @@ derived id reaches the rendered tree. Proof/spec lives in
 - `bun run db:generate` — drizzle migrations
 - `bun run e2e` / `e2e:android` — Maestro flows via `maestro-runner` (single
   Go binary, no JVM); `.maestro/`, needs a booted device with the app installed
-  — see `.maestro/README.md`. CI: `.github/workflows/e2e.yml`.
+  — see `.maestro/README.md`. CI: `.github/workflows/ci.yml`.
+
+## Verification before committing
+
+- After major frontend changes and before committing, run `bun run typecheck`,
+  `bun run lint`, `bun run test`, and the complete Maestro suite with
+  `bun run e2e` or `bun run e2e:android` on an installed app.
+- Changes to navigation, persistence, native UI, platform-specific behavior,
+  or Maestro flows must be verified on both iOS and Android.
+- Do not treat typecheck, lint, and unit tests alone as complete verification.
+  If a required local simulator/emulator is unavailable, say that E2E is
+  unverified and do not commit unless the user explicitly accepts that gap.

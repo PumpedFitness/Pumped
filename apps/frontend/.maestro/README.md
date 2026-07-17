@@ -77,8 +77,9 @@ this to collect the JUnit report).
 
 ## In CI
 
-`.github/workflows/e2e.yml` runs these flows on GitHub Actions — Android on
-`ubuntu-latest` (build APK → emulator), iOS on `macos-latest` (build → simulator).
+`.github/workflows/ci.yml` runs these flows on GitHub Actions for pushes to
+`main` and manual dispatches — Android on Ubuntu (build APK → emulator), iOS on
+macOS (build → simulator).
 
 ## Adding a flow
 
