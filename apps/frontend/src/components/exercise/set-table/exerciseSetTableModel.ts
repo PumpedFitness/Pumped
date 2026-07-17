@@ -70,6 +70,7 @@ type EditableExerciseSetTableProps = BaseTableProps & {
   onRemoveSet: (set: CurrentWorkoutSet) => DeleteResult;
   onCreateSetType: (name: string) => string;
   activeRestSetId?: string | null;
+  iconOnlySetType?: boolean;
 };
 
 export type ReadOnlyExerciseSet = Pick<

@@ -2,28 +2,27 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@/theme/tokens';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import { EditableNumberInput } from './ExerciseSetTableCells';
-import {
-  formatSetNumber,
-  type SetCardModel,
-  type SetCardRest,
-} from './exerciseSetTableModel';
+import type { SetCardModel, SetCardRest } from './exerciseSetTableModel';
 import { setTypeColorTokens } from './setTypeColors';
 
 type SetCardHeaderProps = {
   card: SetCardModel;
+  iconOnlySetType: boolean;
   onOpenSetTypePicker: () => void;
   onOpenProgressionPicker: () => void;
+  onOpenRestPicker: () => void;
   onToggleDone: () => void;
 };
 
 type ProgressionPillsProps = {
   card: SetCardModel;
+  iconOnlySetType: boolean;
   onOpenProgressionPicker: () => void;
 };
 
 type SetCardProgressionSlotProps = {
   card: SetCardModel;
+  iconOnlySetType: boolean;
   onOpenProgressionPicker: () => void;
 };
 
@@ -34,10 +33,23 @@ type SetCardActionsProps = {
 
 type RestTimerSlotProps = {
   rest: SetCardRest | null;
+  onOpenRestPicker: () => void;
 };
+
+function formatRestValue(value: number | null): string {
+  if (value == null) {
+    return '–';
+  }
+  const minutes = Math.floor(value / 60);
+  const seconds = value % 60;
+  return minutes > 0
+    ? `${minutes}:${seconds.toString().padStart(2, '0')}`
+    : `${seconds}s`;
+}
 
 function ProgressionPills({
   card,
+  iconOnlySetType,
   onOpenProgressionPicker,
 }: ProgressionPillsProps) {
   const { t } = useTranslation();
@@ -52,9 +64,12 @@ function ProgressionPills({
     <Pressable
       accessibilityRole="button"
       disabled={progression.readOnly}
-      className="h-8 min-w-0 max-w-[42%] flex-row items-center gap-1.5 rounded-full bg-surface-sunk px-2.5 active:bg-surface-card"
+      className={`h-8 min-w-0 flex-row items-center gap-1 rounded-full bg-surface-sunk px-2 active:bg-surface-card ${
+        iconOnlySetType ? 'max-w-[72%]' : 'max-w-[42%]'
+      }`}
       onPress={progression.readOnly ? undefined : onOpenProgressionPicker}
     >
+      <ClayIcon name="trend" size={12} color={colors.muted} />
       <Text
         className="min-w-0 shrink text-[11px] font-bold text-muted"
         numberOfLines={1}
@@ -70,12 +85,14 @@ function ProgressionPills({
 
 function SetCardProgressionSlot({
   card,
+  iconOnlySetType,
   onOpenProgressionPicker,
 }: SetCardProgressionSlotProps) {
   if (card.progression) {
     return (
       <ProgressionPills
         card={card}
+        iconOnlySetType={iconOnlySetType}
         onOpenProgressionPicker={onOpenProgressionPicker}
       />
     );
@@ -146,7 +163,7 @@ function SetCardActions({ card, onToggleDone }: SetCardActionsProps) {
   );
 }
 
-function RestTimerSlot({ rest }: RestTimerSlotProps) {
+function RestTimerSlot({ rest, onOpenRestPicker }: RestTimerSlotProps) {
   const { t } = useTranslation();
   if (!rest) {
     return null;
@@ -157,53 +174,49 @@ function RestTimerSlot({ rest }: RestTimerSlotProps) {
     ? 'border-accent bg-accent-soft'
     : 'border-border-soft bg-background';
   const iconColor = active ? colors.accent : colors.muted;
+  const hasValue = rest.value != null;
 
   return (
-    <View
-      className={`h-10 w-[76px] shrink-0 flex-row items-center overflow-hidden rounded-[12px] border ${borderClass}`}
+    <Pressable
+      accessibilityRole={rest.readOnly ? undefined : 'button'}
+      accessibilityLabel={t('setTable.columns.rest')}
+      disabled={rest.readOnly}
+      className={`h-11 shrink-0 items-center overflow-hidden rounded-[14px] border ${borderClass} ${
+        hasValue ? 'w-[88px] flex-row' : 'w-11 justify-center'
+      }`}
+      onPress={rest.readOnly ? undefined : onOpenRestPicker}
     >
-      <View className="h-full w-8 items-center justify-center bg-surface-sunk">
-        <ClayIcon name="rest" size={13} color={iconColor} />
+      <View
+        className={`h-full items-center justify-center bg-surface-sunk ${
+          hasValue ? 'w-8' : 'w-full'
+        }`}
+      >
+        <ClayIcon name="rest" size={14} color={iconColor} />
         {active ? (
           <View className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
         ) : null}
       </View>
-      <View className="flex-row items-baseline px-1.5">
-        {rest.readOnly ? (
+      {hasValue ? (
+        <View className="flex-1 flex-row items-baseline justify-center px-2">
           <Text
-            accessibilityLabel={`${t('setTable.columns.rest')}: ${
-              rest.value ?? '-'
-            }`}
-            className={`w-7 text-[13px] font-black leading-[17px] tabular-nums ${valueClass}`}
-            numberOfLines={1}
+            className={`text-[13px] font-black leading-[17px] tabular-nums ${valueClass}`}
+            numberOfLines={rest.readOnly ? 1 : undefined}
             style={{ includeFontPadding: false }}
           >
-            {formatSetNumber(rest.value) || '–'}
+            {formatRestValue(rest.value)}
           </Text>
-        ) : (
-          <EditableNumberInput
-            accessibilityLabel={t('setTable.columns.rest')}
-            value={rest.value}
-            allowDecimal={false}
-            inputClassName={`w-7 p-0 text-[13px] font-black leading-[17px] tabular-nums ${valueClass}`}
-            onChange={rest.onChange}
-          />
-        )}
-        <Text
-          className={`ml-0.5 text-[11px] font-bold leading-[14px] ${valueClass}`}
-          style={{ includeFontPadding: false }}
-        >
-          s
-        </Text>
-      </View>
-    </View>
+        </View>
+      ) : null}
+    </Pressable>
   );
 }
 
 export function SetCardHeader({
   card,
+  iconOnlySetType,
   onOpenSetTypePicker,
   onOpenProgressionPicker,
+  onOpenRestPicker,
   onToggleDone,
 }: SetCardHeaderProps) {
   const { t } = useTranslation();
@@ -232,34 +245,41 @@ export function SetCardHeader({
             number: card.index + 1,
           })}
           disabled={card.readOnly}
-          className="min-w-0 max-w-[58%] flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
+          className={
+            iconOnlySetType
+              ? 'h-9 w-9 items-center justify-center rounded-full'
+              : 'min-w-0 max-w-[58%] flex-row items-center gap-1.5 rounded-full px-3 py-1.5'
+          }
           style={{ backgroundColor: tone.soft }}
           onPress={card.readOnly ? undefined : onOpenSetTypePicker}
         >
           <ClayIcon
             name={card.setTypeIcon ?? 'target'}
-            size={14}
+            size={iconOnlySetType ? 16 : 14}
             color={tone.fg}
           />
-          <Text
-            className="min-w-0 shrink text-[13px] font-bold"
-            style={{ color: tone.fg }}
-            numberOfLines={1}
-          >
-            {card.setTypeLabel}
-          </Text>
-          {!card.readOnly && (
+          {!iconOnlySetType ? (
+            <Text
+              className="min-w-0 shrink text-[13px] font-bold"
+              style={{ color: tone.fg }}
+              numberOfLines={1}
+            >
+              {card.setTypeLabel}
+            </Text>
+          ) : null}
+          {!iconOnlySetType && !card.readOnly && (
             <ClayIcon name="chevronDown" size={12} color={tone.fg} />
           )}
         </Pressable>
 
         <SetCardProgressionSlot
           card={card}
+          iconOnlySetType={iconOnlySetType}
           onOpenProgressionPicker={onOpenProgressionPicker}
         />
       </View>
 
-      <RestTimerSlot rest={card.rest} />
+      <RestTimerSlot rest={card.rest} onOpenRestPicker={onOpenRestPicker} />
 
       <SetCardActions card={card} onToggleDone={onToggleDone} />
     </View>

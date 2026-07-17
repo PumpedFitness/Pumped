@@ -16,6 +16,7 @@ import type {
 
 type SetCardProps = {
   card: SetCardModel;
+  iconOnlySetType?: boolean;
 };
 
 type SetCardFieldsProps = {
@@ -147,10 +148,18 @@ function buildSwipeActions(
 
 // Memoized: with a stable `card` (and the stable open-handlers from the table
 // host) an edit to one set re-renders only that set's card, not its siblings.
-export const SetCard = memo(function SetCard({ card }: SetCardProps) {
+export const SetCard = memo(function SetCard({
+  card,
+  iconOnlySetType = false,
+}: SetCardProps) {
   const { t } = useTranslation();
-  const { openSetTypePicker, openProgressionPicker, openWheel, openRange } =
-    useSetSheetOpeners();
+  const {
+    openSetTypePicker,
+    openProgressionPicker,
+    openWheel,
+    openRange,
+    openRestPicker,
+  } = useSetSheetOpeners();
   const [showValidation, setShowValidation] = useState(false);
 
   const attemptDone = () => {
@@ -180,8 +189,14 @@ export const SetCard = memo(function SetCard({ card }: SetCardProps) {
     <View className={`gap-3 rounded-[20px] p-3 ${containerClass}`}>
       <SetCardHeader
         card={card}
+        iconOnlySetType={iconOnlySetType}
         onOpenSetTypePicker={() => openSetTypePicker(card)}
         onOpenProgressionPicker={() => openProgressionPicker(card)}
+        onOpenRestPicker={() => {
+          if (card.rest) {
+            openRestPicker(card.rest);
+          }
+        }}
         onToggleDone={attemptDone}
       />
       <SetCardFields

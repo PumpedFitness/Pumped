@@ -574,6 +574,10 @@ export const resources = {
         resumeWorkoutA11y: 'Resume timer',
         rest: {
           title: 'Rest',
+          pickerTitle: 'Rest time',
+          pickerDescription: 'Choose how long to rest after this set.',
+          durationMinutes: '{{minutes}} min {{seconds}}s',
+          durationSeconds: '{{seconds}}s',
           pause: 'Pause',
           resume: 'Resume',
           skip: 'Skip rest',
@@ -1519,6 +1523,10 @@ export const resources = {
         resumeWorkoutA11y: 'Timer fortsetzen',
         rest: {
           title: 'Pause',
+          pickerTitle: 'Pausenzeit',
+          pickerDescription: 'Wähle die Pause nach diesem Satz.',
+          durationMinutes: '{{minutes}} Min. {{seconds}} Sek.',
+          durationSeconds: '{{seconds}} Sek.',
           pause: 'Pausieren',
           resume: 'Fortsetzen',
           skip: 'Pause überspringen',

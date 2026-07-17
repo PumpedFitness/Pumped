@@ -7,6 +7,7 @@ import {
 } from 'react';
 import { Keyboard } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { LibraryPicker } from '@/components/forms/LibraryPicker';
 import {
   OptionalWheelPickerSheet,
@@ -17,6 +18,7 @@ import type {
   SetCardModel,
   SetCardNumberField,
   SetCardRangeField,
+  SetCardRest,
   SetTypeOption,
 } from './exerciseSetTableModel';
 import { ProgressionEditorSheet } from './ProgressionEditorSheet';
@@ -34,11 +36,49 @@ const WHEEL_PLACEHOLDER: OptionalWheelPickerConfig = {
   formatValue: value => `${value}`,
 };
 
+const REST_PICKER_VALUES = Array.from({ length: 40 }, (_, index) =>
+  (index + 1) * 15,
+);
+
+function formatRestDuration(
+  t: TFunction,
+  seconds: number,
+): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return minutes > 0
+    ? t('currentWorkout.rest.durationMinutes', { minutes, seconds: remainder })
+    : t('currentWorkout.rest.durationSeconds', { seconds });
+}
+
+function buildRestPickerConfig(
+  t: TFunction,
+  rest: SetCardRest | null,
+): OptionalWheelPickerConfig {
+  const currentValue = rest?.value;
+  const values = currentValue == null
+    ? REST_PICKER_VALUES
+    : [...new Set([...REST_PICKER_VALUES, currentValue])].sort(
+        (left, right) => left - right,
+      );
+  return {
+    title: t('currentWorkout.rest.pickerTitle'),
+    description: t('currentWorkout.rest.pickerDescription'),
+    minValue: values[0] ?? 15,
+    maxValue: values.at(-1) ?? 600,
+    step: 15,
+    defaultValue: currentValue ?? 90,
+    values,
+    formatValue: seconds => formatRestDuration(t, seconds),
+  };
+}
+
 export type SetSheetOpeners = {
   openSetTypePicker: (card: SetCardModel) => void;
   openProgressionPicker: (card: SetCardModel) => void;
   openWheel: (field: SetCardNumberField) => void;
   openRange: (field: SetCardRangeField) => void;
+  openRestPicker: (rest: SetCardRest) => void;
 };
 
 const NOOP_OPENERS: SetSheetOpeners = {
@@ -46,6 +86,7 @@ const NOOP_OPENERS: SetSheetOpeners = {
   openProgressionPicker: () => {},
   openWheel: () => {},
   openRange: () => {},
+  openRestPicker: () => {},
 };
 
 const SetSheetContext = createContext<SetSheetOpeners>(NOOP_OPENERS);
@@ -71,7 +112,31 @@ type SetSheetsProps = {
   rangeField: SetCardRangeField | null;
   rangeOpen: boolean;
   onCloseRange: () => void;
+  rest: SetCardRest | null;
+  restOpen: boolean;
+  onCloseRest: () => void;
 };
+
+type RestPickerSheetProps = {
+  rest: SetCardRest | null;
+  visible: boolean;
+  onClose: () => void;
+};
+
+function RestPickerSheet({ rest, visible, onClose }: RestPickerSheetProps) {
+  const { t } = useTranslation();
+  const config = useMemo(() => buildRestPickerConfig(t, rest), [rest, t]);
+
+  return (
+    <OptionalWheelPickerSheet
+      visible={visible}
+      value={rest?.value ?? null}
+      config={config}
+      onClose={onClose}
+      onChange={value => rest?.onChange(value)}
+    />
+  );
+}
 
 function SetSheets({
   setTypeCard,
@@ -88,6 +153,9 @@ function SetSheets({
   rangeField,
   rangeOpen,
   onCloseRange,
+  rest,
+  restOpen,
+  onCloseRest,
 }: SetSheetsProps) {
   const { t } = useTranslation();
   return (
@@ -128,6 +196,8 @@ function SetSheets({
         onClose={onCloseRange}
         onChange={value => rangeField?.onChange(value)}
       />
+
+      <RestPickerSheet rest={rest} visible={restOpen} onClose={onCloseRest} />
     </>
   );
 }
@@ -160,6 +230,8 @@ export function SetSheetHost({
   const [wheelOpen, setWheelOpen] = useState(false);
   const [rangeField, setRangeField] = useState<SetCardRangeField | null>(null);
   const [rangeOpen, setRangeOpen] = useState(false);
+  const [rest, setRest] = useState<SetCardRest | null>(null);
+  const [restOpen, setRestOpen] = useState(false);
 
   const openers = useMemo<SetSheetOpeners>(
     () => ({
@@ -182,6 +254,15 @@ export function SetSheetHost({
         Keyboard.dismiss();
         setRangeField(field);
         setRangeOpen(true);
+      },
+      openRestPicker: restValue => {
+        Keyboard.dismiss();
+        const value = restValue.value ?? 90;
+        if (restValue.value == null) {
+          restValue.onChange(value);
+        }
+        setRest({ ...restValue, value });
+        setRestOpen(true);
       },
     }),
     [],
@@ -212,6 +293,9 @@ export function SetSheetHost({
         rangeField={rangeField}
         rangeOpen={rangeOpen}
         onCloseRange={() => setRangeOpen(false)}
+        rest={rest}
+        restOpen={restOpen}
+        onCloseRest={() => setRestOpen(false)}
       />
     </SetSheetContext.Provider>
   );
