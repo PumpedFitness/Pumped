@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  type SharedValue,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -21,9 +22,12 @@ type DraggableWidgetProps = {
   dragging: boolean;
   settling: boolean;
   settleTranslation: { x: number; y: number };
+  baseX: SharedValue<number>;
+  baseY: SharedValue<number>;
   onDragStart: () => void;
   onDragMove: (id: string, translationX: number, translationY: number) => void;
   onDragFinalize: () => void;
+  onSettleComplete: () => void;
   onRemove: (id: string) => void;
 };
 
@@ -34,9 +38,12 @@ export function DraggableWidget({
   dragging,
   settling,
   settleTranslation,
+  baseX,
+  baseY,
   onDragStart,
   onDragMove,
   onDragFinalize,
+  onSettleComplete,
   onRemove,
 }: DraggableWidgetProps) {
   const { t } = useTranslation();
@@ -50,9 +57,19 @@ export function DraggableWidget({
       translateX.value = withTiming(settleTranslation.x, {
         duration: DROP_SETTLE_MS,
       });
-      translateY.value = withTiming(settleTranslation.y, {
-        duration: DROP_SETTLE_MS,
-      });
+      translateY.value = withTiming(
+        settleTranslation.y,
+        { duration: DROP_SETTLE_MS },
+        finished => {
+          if (finished) {
+            baseX.value += settleTranslation.x;
+            baseY.value += settleTranslation.y;
+            translateX.value = 0;
+            translateY.value = 0;
+            runOnJS(onSettleComplete)();
+          }
+        },
+      );
       return;
     }
     if (!dragging) {
@@ -61,6 +78,9 @@ export function DraggableWidget({
     }
   }, [
     dragging,
+    baseX,
+    baseY,
+    onSettleComplete,
     settleTranslation.x,
     settleTranslation.y,
     settling,

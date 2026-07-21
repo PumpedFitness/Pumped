@@ -1,85 +1,39 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
-import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import type { WidgetPlacement } from '@/types/widget';
 import { spacing } from '@/theme/tokens';
 import { DraggableWidget } from './DraggableWidget';
 import { widgetRegistry } from '@/components/widgets/registry';
 import {
-  GRID_COLUMNS,
   createOccupancyGrid,
   moveWidgetToTarget,
   targetColumnFromCenter,
   targetRowFromCenter,
 } from './widgetGridModel';
+import {
+  buildGridGeometry,
+  placementPoint as resolvePlacementPoint,
+  type GridGeometry,
+  type Point,
+} from './widgetGridGeometry';
 
 const GAP = spacing[3];
 const EMPTY_ROW_HEIGHT = 112;
 const VIRTUAL_ROWS = 2;
-const DROP_SETTLE_MS = 300;
-const PREVIEW_TRANSITION = LinearTransition.duration(220).easing(
-  Easing.out(Easing.cubic),
-);
+const POSITION_TRANSITION_MS = 220;
 const ACTIVE_LAYER = { zIndex: 100, elevation: 12 };
 const INACTIVE_LAYER = { zIndex: 0, elevation: 0 };
-
-type Point = { x: number; y: number };
-type TimerRef = { current: ReturnType<typeof setTimeout> | null };
-
-function useTimerCleanup(timerRef: TimerRef) {
-  useEffect(
-    () => () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    },
-    [timerRef],
-  );
-}
-
-type GridGeometry = {
-  height: number;
-  rowHeights: number[];
-  rowTops: number[];
-  unitWidth: number;
-};
-
-function buildGeometry(
-  placements: WidgetPlacement[],
-  measuredHeights: ReadonlyMap<string, number>,
-  containerWidth: number,
-  dragging: boolean,
-): GridGeometry {
-  const contentRows = placements.reduce(
-    (max, placement) => Math.max(max, placement.row + 1),
-    1,
-  );
-  const rowCount = contentRows + (dragging ? VIRTUAL_ROWS : 0);
-  const rowHeights = Array<number>(rowCount).fill(EMPTY_ROW_HEIGHT);
-  placements.forEach(placement => {
-    rowHeights[placement.row] = Math.max(
-      rowHeights[placement.row],
-      measuredHeights.get(placement.id) ?? EMPTY_ROW_HEIGHT,
-    );
-  });
-  const rowTops: number[] = [];
-  rowHeights.forEach((height, row) => {
-    rowTops[row] = row === 0 ? 0 : rowTops[row - 1] + rowHeights[row - 1] + GAP;
-  });
-  return {
-    height: rowTops[rowCount - 1] + rowHeights[rowCount - 1],
-    rowHeights,
-    rowTops,
-    unitWidth: (containerWidth - (GRID_COLUMNS - 1) * GAP) / GRID_COLUMNS,
-  };
-}
 
 function placementPoint(
   placement: WidgetPlacement,
   geometry: GridGeometry,
 ): Point {
-  return {
-    x: placement.column * (geometry.unitWidth + GAP),
-    y: geometry.rowTops[placement.row] ?? 0,
-  };
+  return resolvePlacementPoint(placement, geometry, GAP);
 }
 
 type GridItemProps = {
@@ -94,6 +48,7 @@ type GridItemProps = {
   onDragStart: (id: string) => void;
   onDragMove: (id: string, translationX: number, translationY: number) => void;
   onDragFinalize: () => void;
+  onSettleComplete: () => void;
   onRemove: (id: string) => void;
 };
 
@@ -109,16 +64,30 @@ function GridItem({
   onDragStart,
   onDragMove,
   onDragFinalize,
+  onSettleComplete,
   onRemove,
 }: GridItemProps) {
   const Component = widgetRegistry[placement.type].component;
   const width = placement.colSpan * unitWidth + (placement.colSpan - 1) * GAP;
+  const baseX = useSharedValue(point.x);
+  const baseY = useSharedValue(point.y);
+  const positionStyle = useAnimatedStyle(() => ({
+    left: baseX.value,
+    top: baseY.value,
+  }));
+
+  useEffect(() => {
+    if (active || settling) return;
+    baseX.value = withTiming(point.x, { duration: POSITION_TRANSITION_MS });
+    baseY.value = withTiming(point.y, { duration: POSITION_TRANSITION_MS });
+  }, [active, baseX, baseY, point.x, point.y, settling]);
+
   return (
     <Animated.View
-      layout={active || settling ? undefined : PREVIEW_TRANSITION}
       onLayout={event => onHeight(placement.id, event)}
       style={[
-        { position: 'absolute', left: point.x, top: point.y, width },
+        { position: 'absolute', width },
+        positionStyle,
         active ? ACTIVE_LAYER : INACTIVE_LAYER,
       ]}
     >
@@ -128,9 +97,12 @@ function GridItem({
         dragging={active}
         settling={settling}
         settleTranslation={settleTranslation}
+        baseX={baseX}
+        baseY={baseY}
         onDragStart={() => onDragStart(placement.id)}
         onDragMove={onDragMove}
         onDragFinalize={onDragFinalize}
+        onSettleComplete={onSettleComplete}
         onRemove={onRemove}
       >
         <Component colSpan={placement.colSpan} width={width} />
@@ -160,6 +132,7 @@ type GridContentProps = {
   onDragStart: GridItemProps['onDragStart'];
   onDragMove: GridItemProps['onDragMove'];
   onDragFinalize: GridItemProps['onDragFinalize'];
+  onSettleComplete: GridItemProps['onSettleComplete'];
   onRemove: GridItemProps['onRemove'];
 };
 
@@ -176,6 +149,7 @@ function GridContent({
   onDragStart,
   onDragMove,
   onDragFinalize,
+  onSettleComplete,
   onRemove,
 }: GridContentProps) {
   const activePreview = previewLayout.find(item => item.id === activeId);
@@ -236,6 +210,7 @@ function GridContent({
             onDragStart={onDragStart}
             onDragMove={onDragMove}
             onDragFinalize={onDragFinalize}
+            onSettleComplete={onSettleComplete}
             onRemove={onRemove}
           />
         );
@@ -278,8 +253,6 @@ export function WidgetGrid({
   const dragCenterRef = useRef<Point | null>(null);
   const dragOriginRef = useRef<Point | null>(null);
   const targetRef = useRef<string | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useTimerCleanup(settleTimerRef);
 
   useEffect(() => {
     if (!activeIdRef.current) {
@@ -290,11 +263,14 @@ export function WidgetGrid({
 
   const geometry = useMemo(
     () =>
-      buildGeometry(
+      buildGridGeometry(
         previewLayout,
         measuredHeights,
         containerWidth,
         activeId !== null,
+        GAP,
+        EMPTY_ROW_HEIGHT,
+        VIRTUAL_ROWS,
       ),
     [activeId, containerWidth, measuredHeights, previewLayout],
   );
@@ -364,13 +340,13 @@ export function WidgetGrid({
     setSettlingId(droppedId);
     dragCenterRef.current = null;
     targetRef.current = null;
-    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-    settleTimerRef.current = setTimeout(() => {
-      dragOriginRef.current = null;
-      setActiveId(null);
-      setSettlingId(null);
-    }, DROP_SETTLE_MS);
   }, [onLayoutChange]);
+
+  const completeSettle = useCallback(() => {
+    dragOriginRef.current = null;
+    setActiveId(null);
+    setSettlingId(null);
+  }, []);
 
   const recordHeight = useCallback((id: string, event: LayoutChangeEvent) => {
     const height = event.nativeEvent.layout.height;
@@ -409,6 +385,7 @@ export function WidgetGrid({
         onDragStart={startDrag}
         onDragMove={moveDrag}
         onDragFinalize={finalizeDrag}
+        onSettleComplete={completeSettle}
         onRemove={onRemove}
       />
     </View>
