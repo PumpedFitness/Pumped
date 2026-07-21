@@ -67,11 +67,23 @@ function normalizeLayout(layout: StoredWidgetPlacement[]): WidgetPlacement[] {
       normalized.map(({ row: _row, column: _column, ...item }) => item),
     );
   }
-  return normalized.map(item => ({
+  const positioned = normalized.map(item => ({
     ...item,
     row: Math.max(0, item.row!),
     column: Math.max(0, Math.min(3 - item.colSpan, item.column!)),
   }));
+  const maxRow = positioned.reduce((max, item) => Math.max(max, item.row), 0);
+
+  // Repair layouts affected by the edge-scroll bug that could create an
+  // unbounded trail of empty rows. Normal user-created gaps remain untouched.
+  if (maxRow >= positioned.length) {
+    return packPlacements(
+      [...positioned]
+        .sort((a, b) => a.row - b.row || a.column - b.column)
+        .map(({ row: _row, column: _column, ...item }) => item),
+    );
+  }
+  return positioned;
 }
 
 function persist(layout: WidgetPlacement[]) {

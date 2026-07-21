@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -21,10 +22,11 @@ import {
   type GridGeometry,
   type Point,
 } from './widgetGridGeometry';
+import { useMeasuredWidgetHeights } from './useMeasuredWidgetHeights';
 
 const GAP = spacing[3];
 const EMPTY_ROW_HEIGHT = 112;
-const VIRTUAL_ROWS = 2;
+const VIRTUAL_ROWS = 1;
 const POSITION_TRANSITION_MS = 220;
 const ACTIVE_LAYER = { zIndex: 100, elevation: 12 };
 const INACTIVE_LAYER = { zIndex: 0, elevation: 0 };
@@ -36,20 +38,30 @@ function placementPoint(
   return resolvePlacementPoint(placement, geometry, GAP);
 }
 
+function lastDragTargetRow(layout: WidgetPlacement[]) {
+  const contentRows = layout.reduce(
+    (max, placement) => Math.max(max, placement.row + 1),
+    1,
+  );
+  return contentRows + VIRTUAL_ROWS - 1;
+}
+
 type GridItemProps = {
   placement: WidgetPlacement;
   active: boolean;
   settling: boolean;
   editing: boolean;
   point: Point;
-  settleTranslation: Point;
+  settlePoint: Point;
   unitWidth: number;
   onHeight: (id: string, event: LayoutChangeEvent) => void;
   onDragStart: (id: string) => void;
   onDragMove: (id: string, translationX: number, translationY: number) => void;
+  onDragPosition: (absoluteY: number) => void;
   onDragFinalize: () => void;
   onSettleComplete: () => void;
   onRemove: (id: string) => void;
+  scrollOffset: SharedValue<number>;
 };
 
 function GridItem({
@@ -58,14 +70,16 @@ function GridItem({
   settling,
   editing,
   point,
-  settleTranslation,
+  settlePoint,
   unitWidth,
   onHeight,
   onDragStart,
   onDragMove,
+  onDragPosition,
   onDragFinalize,
   onSettleComplete,
   onRemove,
+  scrollOffset,
 }: GridItemProps) {
   const Component = widgetRegistry[placement.type].component;
   const width = placement.colSpan * unitWidth + (placement.colSpan - 1) * GAP;
@@ -96,14 +110,16 @@ function GridItem({
         editing={editing}
         dragging={active}
         settling={settling}
-        settleTranslation={settleTranslation}
+        settlePoint={settlePoint}
         baseX={baseX}
         baseY={baseY}
         onDragStart={() => onDragStart(placement.id)}
         onDragMove={onDragMove}
+        onDragPosition={onDragPosition}
         onDragFinalize={onDragFinalize}
         onSettleComplete={onSettleComplete}
         onRemove={onRemove}
+        scrollOffset={scrollOffset}
       >
         <Component colSpan={placement.colSpan} width={width} />
       </DraggableWidget>
@@ -115,6 +131,9 @@ type WidgetGridProps = {
   layout: WidgetPlacement[];
   editing: boolean;
   onEditStart: () => void;
+  scrollOffset: SharedValue<number>;
+  onDragPosition: (absoluteY: number) => void;
+  onDragEnd: () => void;
   onLayoutChange: (layout: WidgetPlacement[]) => void;
   onRemove: (id: string) => void;
 };
@@ -131,9 +150,11 @@ type GridContentProps = {
   onHeight: GridItemProps['onHeight'];
   onDragStart: GridItemProps['onDragStart'];
   onDragMove: GridItemProps['onDragMove'];
+  onDragPosition: GridItemProps['onDragPosition'];
   onDragFinalize: GridItemProps['onDragFinalize'];
   onSettleComplete: GridItemProps['onSettleComplete'];
   onRemove: GridItemProps['onRemove'];
+  scrollOffset: SharedValue<number>;
 };
 
 function GridContent({
@@ -148,9 +169,11 @@ function GridContent({
   onHeight,
   onDragStart,
   onDragMove,
+  onDragPosition,
   onDragFinalize,
   onSettleComplete,
   onRemove,
+  scrollOffset,
 }: GridContentProps) {
   const activePreview = previewLayout.find(item => item.id === activeId);
   const activePreviewPoint = activePreview
@@ -179,7 +202,7 @@ function GridContent({
         const active = previewPlacement.id === activeId;
         const settling = previewPlacement.id === settlingId;
         const renderedPlacement = active
-          ? (baseById.get(previewPlacement.id) ?? previewPlacement)
+          ? baseById.get(previewPlacement.id) ?? previewPlacement
           : previewPlacement;
         return (
           <GridItem
@@ -193,25 +216,16 @@ function GridContent({
                 ? activeOrigin
                 : placementPoint(renderedPlacement, geometry)
             }
-            settleTranslation={
-              active && activeOrigin
-                ? {
-                    x:
-                      placementPoint(previewPlacement, geometry).x -
-                      activeOrigin.x,
-                    y:
-                      placementPoint(previewPlacement, geometry).y -
-                      activeOrigin.y,
-                  }
-                : { x: 0, y: 0 }
-            }
+            settlePoint={placementPoint(previewPlacement, geometry)}
             unitWidth={geometry.unitWidth}
             onHeight={onHeight}
             onDragStart={onDragStart}
             onDragMove={onDragMove}
+            onDragPosition={onDragPosition}
             onDragFinalize={onDragFinalize}
             onSettleComplete={onSettleComplete}
             onRemove={onRemove}
+            scrollOffset={scrollOffset}
           />
         );
       })}
@@ -236,7 +250,10 @@ function GridContent({
 export function WidgetGrid({
   layout,
   editing,
+  scrollOffset,
   onEditStart,
+  onDragPosition,
+  onDragEnd,
   onLayoutChange,
   onRemove,
 }: WidgetGridProps) {
@@ -245,14 +262,13 @@ export function WidgetGrid({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [settlingId, setSettlingId] = useState<string | null>(null);
   const activeIdRef = useRef<string | null>(null);
-  const [measuredHeights, setMeasuredHeights] = useState<
-    ReadonlyMap<string, number>
-  >(() => new Map());
+  const { heights: measuredHeights, recordHeight } = useMeasuredWidgetHeights();
   const previewRef = useRef(layout);
   const dragBaseRef = useRef(layout);
   const dragCenterRef = useRef<Point | null>(null);
   const dragOriginRef = useRef<Point | null>(null);
   const targetRef = useRef<string | null>(null);
+  const maxTargetRowRef = useRef(0);
 
   useEffect(() => {
     if (!activeIdRef.current) {
@@ -298,6 +314,7 @@ export function WidgetGrid({
       };
       dragOriginRef.current = point;
       targetRef.current = `${placement.row}:${placement.column}`;
+      maxTargetRowRef.current = lastDragTargetRow(layout);
       activeIdRef.current = id;
       setActiveId(id);
       onEditStart();
@@ -311,10 +328,13 @@ export function WidgetGrid({
       const moving = dragBaseRef.current.find(placement => placement.id === id);
       if (!center || !moving) return;
       const target = {
-        row: targetRowFromCenter(
-          center.y + translationY,
-          geometry.rowTops,
-          geometry.rowHeights,
+        row: Math.min(
+          maxTargetRowRef.current,
+          targetRowFromCenter(
+            center.y + translationY,
+            geometry.rowTops,
+            geometry.rowHeights,
+          ),
         ),
         column: targetColumnFromCenter(
           center.x + translationX,
@@ -334,28 +354,19 @@ export function WidgetGrid({
   );
 
   const finalizeDrag = useCallback(() => {
+    onDragEnd();
     const droppedId = activeIdRef.current;
     activeIdRef.current = null;
     onLayoutChange(previewRef.current);
     setSettlingId(droppedId);
     dragCenterRef.current = null;
     targetRef.current = null;
-  }, [onLayoutChange]);
+  }, [onDragEnd, onLayoutChange]);
 
   const completeSettle = useCallback(() => {
     dragOriginRef.current = null;
     setActiveId(null);
     setSettlingId(null);
-  }, []);
-
-  const recordHeight = useCallback((id: string, event: LayoutChangeEvent) => {
-    const height = event.nativeEvent.layout.height;
-    setMeasuredHeights(current => {
-      if (current.get(id) === height) return current;
-      const next = new Map(current);
-      next.set(id, height);
-      return next;
-    });
   }, []);
 
   if (containerWidth === 0) {
@@ -384,9 +395,11 @@ export function WidgetGrid({
         onHeight={recordHeight}
         onDragStart={startDrag}
         onDragMove={moveDrag}
+        onDragPosition={onDragPosition}
         onDragFinalize={finalizeDrag}
         onSettleComplete={completeSettle}
         onRemove={onRemove}
+        scrollOffset={scrollOffset}
       />
     </View>
   );
