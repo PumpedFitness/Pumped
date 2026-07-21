@@ -3,7 +3,10 @@ import { createMMKV } from 'react-native-mmkv';
 import { randomUUID } from 'expo-crypto';
 import type { WidgetPlacement, WidgetType } from '@/types/widget';
 import { widgetRegistry } from '@/components/widgets/registry';
-import { packPlacements } from '@/components/widgets/grid/widgetGridModel';
+import {
+  packPlacements,
+  removeLeadingEmptyRows,
+} from '@/components/widgets/grid/widgetGridModel';
 
 const storage = createMMKV({ id: 'homescreen-storage' });
 
@@ -83,7 +86,7 @@ function normalizeLayout(layout: StoredWidgetPlacement[]): WidgetPlacement[] {
         .map(({ row: _row, column: _column, ...item }) => item),
     );
   }
-  return positioned;
+  return removeLeadingEmptyRows(positioned);
 }
 
 function persist(layout: WidgetPlacement[]) {

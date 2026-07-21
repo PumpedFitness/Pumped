@@ -80,6 +80,22 @@ export function packPlacements(
   });
 }
 
+export function removeLeadingEmptyRows(
+  placements: WidgetPlacement[],
+): WidgetPlacement[] {
+  const firstOccupiedRow = placements.reduce(
+    (minimum, placement) => Math.min(minimum, placement.row),
+    Number.POSITIVE_INFINITY,
+  );
+  if (!Number.isFinite(firstOccupiedRow) || firstOccupiedRow === 0) {
+    return placements;
+  }
+  return placements.map(placement => ({
+    ...placement,
+    row: placement.row - firstOccupiedRow,
+  }));
+}
+
 export function moveWidgetToTarget(
   placements: WidgetPlacement[],
   widgetId: string,
@@ -105,7 +121,9 @@ export function moveWidgetToTarget(
   });
 
   const byId = new Map(resolved.map(placement => [placement.id, placement]));
-  return placements.map(placement => byId.get(placement.id) ?? placement);
+  return removeLeadingEmptyRows(
+    placements.map(placement => byId.get(placement.id) ?? placement),
+  );
 }
 
 export function targetColumnFromCenter(

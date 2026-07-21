@@ -2,6 +2,7 @@ import {
   createOccupancyGrid,
   moveWidgetToTarget,
   packPlacements,
+  removeLeadingEmptyRows,
   targetColumnFromCenter,
   targetRowFromCenter,
 } from '../widgetGridModel';
@@ -55,6 +56,28 @@ describe('widgetGridModel', () => {
       placements[1],
       { ...placements[2], row: 0, column: 0 },
     ]);
+  });
+
+  it('removes an empty leading row while preserving relative spacing', () => {
+    const shifted = removeLeadingEmptyRows([
+      { ...placements[0], row: 2 },
+      { ...placements[1], row: 2 },
+      { ...placements[2], row: 4 },
+    ]);
+    expect(shifted.map(item => item.row)).toEqual([0, 0, 2]);
+  });
+
+  it('cannot create an empty top row by moving its only widget down', () => {
+    const fullWidth: WidgetPlacement[] = [
+      { id: 'full', type: 'trendFull', colSpan: 3, row: 0, column: 0 },
+      { id: 'small', type: 'timeCompact', colSpan: 1, row: 1, column: 0 },
+    ];
+    const result = moveWidgetToTarget(fullWidth, 'full', {
+      row: 3,
+      column: 0,
+    });
+    expect(result.find(item => item.id === 'small')?.row).toBe(0);
+    expect(result.find(item => item.id === 'full')?.row).toBe(2);
   });
 
   it('maps a widget center to valid anchors and virtual rows', () => {
