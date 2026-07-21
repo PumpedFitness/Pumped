@@ -105,6 +105,13 @@ function GridItem({
         active ? ACTIVE_LAYER : INACTIVE_LAYER,
       ]}
     >
+      <View
+        accessible
+        accessibilityLabel={`${placement.type} widget position`}
+        pointerEvents="none"
+        testID={`home-widget-${placement.type}`}
+        className="absolute left-0 top-0 h-6 w-6"
+      />
       <DraggableWidget
         id={placement.id}
         editing={editing}
