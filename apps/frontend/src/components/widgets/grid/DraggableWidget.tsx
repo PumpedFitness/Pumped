@@ -7,16 +7,20 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
 
 const LONG_PRESS_MS = 350;
+const DROP_SETTLE_MS = 300;
 type DraggableWidgetProps = {
   id: string;
   editing: boolean;
   children: React.ReactNode;
+  dragging: boolean;
   settling: boolean;
+  settleTranslation: { x: number; y: number };
   onDragStart: () => void;
   onDragMove: (id: string, translationX: number, translationY: number) => void;
   onDragFinalize: () => void;
@@ -27,7 +31,9 @@ export function DraggableWidget({
   id,
   editing,
   children,
+  dragging,
   settling,
+  settleTranslation,
   onDragStart,
   onDragMove,
   onDragFinalize,
@@ -40,10 +46,27 @@ export function DraggableWidget({
   const active = useSharedValue(false);
 
   useLayoutEffect(() => {
-    if (!settling) return;
-    translateX.value = 0;
-    translateY.value = 0;
-  }, [settling, translateX, translateY]);
+    if (settling) {
+      translateX.value = withTiming(settleTranslation.x, {
+        duration: DROP_SETTLE_MS,
+      });
+      translateY.value = withTiming(settleTranslation.y, {
+        duration: DROP_SETTLE_MS,
+      });
+      return;
+    }
+    if (!dragging) {
+      translateX.value = 0;
+      translateY.value = 0;
+    }
+  }, [
+    dragging,
+    settleTranslation.x,
+    settleTranslation.y,
+    settling,
+    translateX,
+    translateY,
+  ]);
   const startDrag = useCallback(() => {
     onDragStart();
   }, [onDragStart]);

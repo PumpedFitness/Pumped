@@ -16,7 +16,7 @@ import {
 const GAP = spacing[3];
 const EMPTY_ROW_HEIGHT = 112;
 const VIRTUAL_ROWS = 2;
-const DROP_HANDOFF_MS = 32;
+const DROP_SETTLE_MS = 300;
 const PREVIEW_TRANSITION = LinearTransition.duration(220).easing(
   Easing.out(Easing.cubic),
 );
@@ -88,6 +88,7 @@ type GridItemProps = {
   settling: boolean;
   editing: boolean;
   point: Point;
+  settleTranslation: Point;
   unitWidth: number;
   onHeight: (id: string, event: LayoutChangeEvent) => void;
   onDragStart: (id: string) => void;
@@ -102,6 +103,7 @@ function GridItem({
   settling,
   editing,
   point,
+  settleTranslation,
   unitWidth,
   onHeight,
   onDragStart,
@@ -123,7 +125,9 @@ function GridItem({
       <DraggableWidget
         id={placement.id}
         editing={editing}
+        dragging={active}
         settling={settling}
+        settleTranslation={settleTranslation}
         onDragStart={() => onDragStart(placement.id)}
         onDragMove={onDragMove}
         onDragFinalize={onDragFinalize}
@@ -184,7 +188,7 @@ function GridContent({
   );
   return (
     <>
-      {activePreview && (
+      {activePreview && !settlingId && (
         <View
           className="absolute rounded-[22px] border-2 border-dashed border-accent bg-accent-soft"
           style={{
@@ -214,6 +218,18 @@ function GridContent({
               active && activeOrigin
                 ? activeOrigin
                 : placementPoint(renderedPlacement, geometry)
+            }
+            settleTranslation={
+              active && activeOrigin
+                ? {
+                    x:
+                      placementPoint(previewPlacement, geometry).x -
+                      activeOrigin.x,
+                    y:
+                      placementPoint(previewPlacement, geometry).y -
+                      activeOrigin.y,
+                  }
+                : { x: 0, y: 0 }
             }
             unitWidth={geometry.unitWidth}
             onHeight={onHeight}
@@ -346,15 +362,14 @@ export function WidgetGrid({
     activeIdRef.current = null;
     onLayoutChange(previewRef.current);
     setSettlingId(droppedId);
-    setActiveId(null);
     dragCenterRef.current = null;
-    dragOriginRef.current = null;
     targetRef.current = null;
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-    settleTimerRef.current = setTimeout(
-      () => setSettlingId(null),
-      DROP_HANDOFF_MS,
-    );
+    settleTimerRef.current = setTimeout(() => {
+      dragOriginRef.current = null;
+      setActiveId(null);
+      setSettlingId(null);
+    }, DROP_SETTLE_MS);
   }, [onLayoutChange]);
 
   const recordHeight = useCallback((id: string, event: LayoutChangeEvent) => {
