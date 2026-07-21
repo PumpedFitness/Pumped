@@ -8,19 +8,28 @@ import { useHomescreenStore } from '@/stores/homescreenStore';
 import { colors } from '@/theme/tokens';
 import type { WidgetType } from '@/types/widget';
 
-type SizeIndicatorProps = { colSpan: number };
+const PREVIEW_WIDTH_BY_SPAN = { 1: 108, 2: 228, 3: 348 } as const;
+const PREVIEW_SCALE_BY_SPAN = { 1: 0.7, 2: 0.52, 3: 0.36 } as const;
 
-function SizeIndicator({ colSpan }: SizeIndicatorProps) {
+type WidgetVariantPreviewProps = { type: WidgetType };
+
+function WidgetVariantPreview({ type }: WidgetVariantPreviewProps) {
+  const { component: Component, meta } = widgetRegistry[type];
+  const colSpan = meta.colSpan as keyof typeof PREVIEW_WIDTH_BY_SPAN;
+  const width = PREVIEW_WIDTH_BY_SPAN[colSpan];
+  const scale = PREVIEW_SCALE_BY_SPAN[colSpan];
+
   return (
-    <View className="h-7 w-14 flex-row gap-1 rounded-lg bg-surface-sunk p-1">
-      {Array.from({ length: 3 }, (_, column) => (
-        <View
-          key={column}
-          className={`flex-1 rounded-[3px] ${
-            column < colSpan ? 'bg-accent' : 'bg-border-soft'
-          }`}
-        />
-      ))}
+    <View pointerEvents="none" className="h-[82px] w-[126px] overflow-hidden">
+      <View
+        style={{
+          width,
+          transform: [{ scale }],
+          transformOrigin: 'top left',
+        }}
+      >
+        <Component colSpan={colSpan} width={width} />
+      </View>
     </View>
   );
 }
@@ -56,8 +65,8 @@ export function WidgetGroupCard({
           meta.colSpan === 1
             ? t('widgetPicker.compact')
             : meta.colSpan === 2
-              ? t('widgetPicker.wide')
-              : t('widgetPicker.fullWidth');
+            ? t('widgetPicker.wide')
+            : t('widgetPicker.fullWidth');
         return (
           <View
             key={type}
@@ -65,7 +74,7 @@ export function WidgetGroupCard({
               index > 0 ? 'border-t border-border-hairline' : ''
             }`}
           >
-            <SizeIndicator colSpan={meta.colSpan} />
+            <WidgetVariantPreview type={type} />
             <View className="flex-1">
               <Text className="text-[14px] font-semibold text-foreground">
                 {sizeLabel}
