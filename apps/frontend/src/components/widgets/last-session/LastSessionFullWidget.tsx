@@ -3,14 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/clay/Card';
 import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
+import { useHomeWidgetData } from '@/hooks/useHomeWidgetData';
 
 type NextWorkoutWidgetProps = {
   colSpan: number;
   width: number;
 };
 
-export function NextWorkoutWidget(_props: NextWorkoutWidgetProps) {
+export function LastSessionFullWidget(_props: NextWorkoutWidgetProps) {
   const { t } = useTranslation();
+  const { lastWorkout } = useHomeWidgetData();
 
   return (
     <Card variant="card" radius="2xl" pad={18}>
@@ -24,14 +26,16 @@ export function NextWorkoutWidget(_props: NextWorkoutWidgetProps) {
             {t('widgets.lastSession.caption')}
           </Text>
           <Text className="text-[15px] font-bold text-foreground mt-[2px]">
-            {t('widgets.lastSession.title')}
+            {lastWorkout?.name ?? t('widgets.lastSession.title')}
           </Text>
         </View>
 
         <View className="flex-row items-center gap-1">
           <ClayIcon name="award" size={16} color={colors.sage} />
           <Text className="text-[13.5px] font-semibold text-sage">
-            {t('widgets.lastSession.prs', { count: 2 })}
+            {lastWorkout
+              ? t('common.minutesShort', { count: lastWorkout.durationMinutes })
+              : t('widgets.lastSession.prs', { count: 0 })}
           </Text>
         </View>
       </View>

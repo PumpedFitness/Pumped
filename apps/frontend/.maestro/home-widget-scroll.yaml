@@ -1,0 +1,79 @@
+# Regression: ordinary scrolling over draggable home widgets must never be
+# finalized as a widget drag or mutate the widgets' animated grid positions.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Skip'
+    timeout: 60000
+- tapOn: 'Skip'
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'screen-home'
+- assertVisible: 'recoveryFull widget position'
+
+# Ordinary swipes stay below the widget long-press duration. Before the
+# regression fix, each failed pan finalized with the ScrollView delta and moved
+# whichever widget the swipe began on.
+- repeat:
+    times: 2
+    commands:
+      - swipe:
+          start: 50%, 75%
+          end: 50%, 35%
+          duration: 200
+      - swipe:
+          start: 50%, 35%
+          end: 50%, 75%
+          duration: 200
+- scrollUntilVisible:
+    element:
+      text: 'recoveryFull widget position'
+    direction: UP
+- waitForAnimationToEnd
+
+# Visibility alone is insufficient: displaced widgets remained visible while
+# overlapping neighboring rows. Verify the default grid's vertical ordering.
+- assertVisible:
+    text: 'lastSessionFull widget position'
+    below:
+      text: 'recoveryFull widget position'
+- assertVisible:
+    text: 'streakWide widget position'
+    below:
+      text: 'lastSessionFull widget position'
+- assertVisible:
+    text: 'trendFull widget position'
+    below:
+      text: 'streakWide widget position'
+
+# Long-hold the compact weekly-volume widget, drag it into the first row, and
+# verify collision resolution moves every full row down without overlap.
+- longPressOn: 'weeklyVolumeCompact widget position'
+- swipe:
+    start: 82%, 63%
+    end: 82%, 28%
+    duration: 500
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: 'weeklyVolumeCompact widget position'
+    direction: UP
+- assertVisible:
+    text: 'recoveryFull widget position'
+    below:
+      text: 'weeklyVolumeCompact widget position'
+- assertVisible:
+    text: 'lastSessionFull widget position'
+    below:
+      text: 'recoveryFull widget position'
+
+# The reordered layout is persisted, not merely an in-memory drag preview.
+- launchApp
+- assertVisible:
+    id: 'screen-home'
+- assertVisible:
+    text: 'recoveryFull widget position'
+    below:
+      text: 'weeklyVolumeCompact widget position'

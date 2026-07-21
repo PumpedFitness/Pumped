@@ -64,6 +64,7 @@ export const resources = {
           on: 'On',
           off: 'Off',
         },
+        homeMessageTone: 'Home-screen voice',
       },
       tabs: {
         home: 'Home',
@@ -157,6 +158,9 @@ export const resources = {
         },
       },
       home: {
+        addWidget: 'Add widget',
+        doneEditing: 'Done',
+        removeWidget: 'Remove widget',
         timeOfDay: {
           morning: 'morning',
           afternoon: 'afternoon',
@@ -165,6 +169,34 @@ export const resources = {
         dayGreeting: '{{day}} {{timeOfDay}}',
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
+        swapMessage: 'Show another message',
+        tonePickerDescription:
+          'Choose how your home-screen message talks to you.',
+        messageTones: {
+          supportive: 'Supportive',
+          tough: 'Tough love',
+          savage: 'Savage',
+        },
+        messages: {
+          supportive: {
+            first: "Let's move",
+            second: 'You have got this',
+            third: 'Make yourself proud',
+            fourth: 'Stronger every session',
+          },
+          tough: {
+            first: 'No excuses today',
+            second: 'Show up. Do the work.',
+            third: 'Comfort can wait',
+            fourth: 'Earn your rest',
+          },
+          savage: {
+            first: 'Your excuses are weak',
+            second: 'Still thinking about it?',
+            third: 'That weight will not lift itself',
+            fourth: 'Prove you are not all talk',
+          },
+        },
         restTimerMockups: {
           title: 'Rest timer topbar mockups',
           count: '5 options',
@@ -190,6 +222,13 @@ export const resources = {
           time: 'Time',
           weeklyVolume: 'Weekly Volume',
           trend: 'Trend',
+          exerciseProgress: 'Exercise Progress',
+          personalRecords: 'Personal Records',
+          muscleBalance: 'Muscle Balance',
+          weeklyGoal: 'Weekly Goal',
+          consistency: 'Consistency',
+          quickStart: 'Quick Start',
+          milestones: 'Milestones',
         },
         recovery: {
           ready: 'READY',
@@ -200,8 +239,8 @@ export const resources = {
           start: 'Start',
         },
         lastSession: {
-          caption: 'Last session · Tuesday',
-          title: 'Pull Day — 52 min',
+          caption: 'Last session',
+          title: 'No completed sessions yet',
           prs: '{{count}} PRs',
         },
         streak: {
@@ -217,6 +256,45 @@ export const resources = {
         chart: {
           title: 'Volume Trend',
         },
+        exerciseProgress: {
+          title: 'Exercise progress',
+          empty: 'Complete a weighted exercise',
+          first: 'First result',
+          change: '{{value}} {{unit}} vs last time',
+          caption: 'Estimated one-rep max from your recent sessions',
+        },
+        personalRecords: {
+          title: 'Latest personal record',
+          empty: 'No records yet',
+          prs: 'PRs',
+        },
+        muscleBalance: {
+          title: 'Muscle balance · 4 weeks',
+          empty: 'No muscle data yet',
+          caption: 'Your most trained areas',
+        },
+        weeklyGoal: {
+          title: 'Weekly goal',
+          summary_one: '{{count}} workout to go',
+          summary_other: '{{count}} workouts to go',
+        },
+        consistency: {
+          title: 'Consistency',
+          summary_one: '{{count}} active day',
+          summary_other: '{{count}} active days',
+          range: 'Last 8 weeks',
+        },
+        quickStart: {
+          title: 'Quick start',
+          empty: 'Create a workout first',
+          start: 'Start',
+          resume: 'Resume',
+        },
+        milestones: {
+          title: 'Workouts',
+          remaining_one: '{{count}} to {{target}}',
+          remaining_other: '{{count}} to {{target}}',
+        },
       },
       widgetPicker: {
         title: 'Add Widgets',
@@ -224,8 +302,11 @@ export const resources = {
         sizesAvailable_one: '{{count}} size available',
         sizesAvailable_other: '{{count}} sizes available',
         fullWidth: 'Full width',
+        compact: 'Compact',
+        wide: 'Wide',
         columnsOf3: '{{count}} of 3 columns',
         alreadyAdded: 'Already added',
+        added: 'Added',
         addWidget: 'Add Widget',
       },
       plan: {
@@ -996,6 +1077,7 @@ export const resources = {
           on: 'An',
           off: 'Aus',
         },
+        homeMessageTone: 'Stimme auf dem Home-Screen',
       },
       tabs: {
         home: 'Home',
@@ -1091,6 +1173,9 @@ export const resources = {
         },
       },
       home: {
+        addWidget: 'Widget hinzufügen',
+        doneEditing: 'Fertig',
+        removeWidget: 'Widget entfernen',
         timeOfDay: {
           morning: 'morgen',
           afternoon: 'nachmittag',
@@ -1099,6 +1184,34 @@ export const resources = {
         dayGreeting: '{{day}}{{timeOfDay}}',
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
+        swapMessage: 'Andere Nachricht anzeigen',
+        tonePickerDescription:
+          'Wähle, wie die Nachricht auf deinem Home-Screen mit dir spricht.',
+        messageTones: {
+          supportive: 'Motivierend',
+          tough: 'Streng',
+          savage: 'Gnadenlos',
+        },
+        messages: {
+          supportive: {
+            first: "Auf geht's",
+            second: 'Du packst das',
+            third: 'Mach dich stolz',
+            fourth: 'Mit jedem Training stärker',
+          },
+          tough: {
+            first: 'Heute gibt es keine Ausreden',
+            second: 'Antreten. Durchziehen.',
+            third: 'Komfort kann warten',
+            fourth: 'Verdien dir deine Pause',
+          },
+          savage: {
+            first: 'Deine Ausreden sind schwach',
+            second: 'Denkst du immer noch nach?',
+            third: 'Das Gewicht hebt sich nicht selbst',
+            fourth: 'Zeig, dass du nicht nur redest',
+          },
+        },
         restTimerMockups: {
           title: 'Pausentimer-Topbar-Mockups',
           count: '5 Optionen',
@@ -1124,6 +1237,13 @@ export const resources = {
           time: 'Zeit',
           weeklyVolume: 'Wochenvolumen',
           trend: 'Trend',
+          exerciseProgress: 'Übungsfortschritt',
+          personalRecords: 'Persönliche Rekorde',
+          muscleBalance: 'Muskelbalance',
+          weeklyGoal: 'Wochenziel',
+          consistency: 'Konstanz',
+          quickStart: 'Schnellstart',
+          milestones: 'Meilensteine',
         },
         recovery: {
           ready: 'BEREIT',
@@ -1134,8 +1254,8 @@ export const resources = {
           start: 'Start',
         },
         lastSession: {
-          caption: 'Letzte Einheit · Dienstag',
-          title: 'Pull Day — 52 min',
+          caption: 'Letzte Einheit',
+          title: 'Noch keine abgeschlossene Einheit',
           prs: '{{count}} PRs',
         },
         streak: {
@@ -1151,6 +1271,45 @@ export const resources = {
         chart: {
           title: 'Volumentrend',
         },
+        exerciseProgress: {
+          title: 'Übungsfortschritt',
+          empty: 'Schließe eine Übung mit Gewicht ab',
+          first: 'Erstes Ergebnis',
+          change: '{{value}} {{unit}} zum letzten Mal',
+          caption: 'Geschätztes 1RM aus deinen letzten Einheiten',
+        },
+        personalRecords: {
+          title: 'Letzter persönlicher Rekord',
+          empty: 'Noch keine Rekorde',
+          prs: 'PRs',
+        },
+        muscleBalance: {
+          title: 'Muskelbalance · 4 Wochen',
+          empty: 'Noch keine Muskeldaten',
+          caption: 'Deine meisttrainierten Bereiche',
+        },
+        weeklyGoal: {
+          title: 'Wochenziel',
+          summary_one: 'Noch {{count}} Training',
+          summary_other: 'Noch {{count}} Trainings',
+        },
+        consistency: {
+          title: 'Konstanz',
+          summary_one: '{{count}} aktiver Tag',
+          summary_other: '{{count}} aktive Tage',
+          range: 'Letzte 8 Wochen',
+        },
+        quickStart: {
+          title: 'Schnellstart',
+          empty: 'Erstelle zuerst ein Workout',
+          start: 'Start',
+          resume: 'Weiter',
+        },
+        milestones: {
+          title: 'Workouts',
+          remaining_one: '{{count}} bis {{target}}',
+          remaining_other: '{{count}} bis {{target}}',
+        },
       },
       widgetPicker: {
         title: 'Widgets hinzufügen',
@@ -1159,8 +1318,11 @@ export const resources = {
         sizesAvailable_one: '{{count}} Größe verfügbar',
         sizesAvailable_other: '{{count}} Größen verfügbar',
         fullWidth: 'Volle Breite',
+        compact: 'Kompakt',
+        wide: 'Breit',
         columnsOf3: '{{count}} von 3 Spalten',
         alreadyAdded: 'Bereits hinzugefügt',
+        added: 'Hinzugefügt',
         addWidget: 'Widget hinzufügen',
       },
       plan: {

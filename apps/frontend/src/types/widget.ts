@@ -2,18 +2,46 @@ import type { IconName } from '@/components/icons/ClayIcon';
 import type { TranslationResource } from '@/i18n/resources';
 
 export type WidgetType =
+  | 'recoveryFull'
+  | 'lastSessionFull'
+  | 'streakCompact'
+  | 'streakWide'
+  | 'scheduleWide'
+  | 'scheduleFull'
+  | 'timeCompact'
+  | 'weeklyVolumeCompact'
+  | 'trendWide'
+  | 'trendFull'
+  | 'exerciseProgressFull'
+  | 'personalRecordsWide'
+  | 'muscleBalanceFull'
+  | 'weeklyGoalWide'
+  | 'consistencyFull'
+  | 'quickStartWide'
+  | 'milestonesCompact';
+
+export type WidgetGroup =
   | 'recovery'
-  | 'nextWorkout'
+  | 'lastSession'
   | 'streak'
   | 'schedule'
   | 'time'
   | 'weeklyVolume'
-  | 'chart';
+  | 'trend'
+  | 'exerciseProgress'
+  | 'personalRecords'
+  | 'muscleBalance'
+  | 'weeklyGoal'
+  | 'consistency'
+  | 'quickStart'
+  | 'milestones';
 
 export type WidgetPlacement = {
   id: string;
   type: WidgetType;
   colSpan: number; // 1, 2, or 3
+  row: number;
+  column: number;
 };
 
 export type WidgetNameKey = `widgets.names.${Extract<
@@ -23,8 +51,8 @@ export type WidgetNameKey = `widgets.names.${Extract<
 
 export type WidgetMeta = {
   type: WidgetType;
+  group: WidgetGroup;
   nameKey: WidgetNameKey;
   icon: IconName;
-  allowedSpans: number[];
-  defaultSpan: number;
+  colSpan: 1 | 2 | 3;
 };

@@ -36,7 +36,7 @@ const DOT_CLASSES: Record<DayStatus, string> = {
   upcoming: 'bg-text-secondary',
 };
 
-export function ScheduleWidget(_props: ScheduleWidgetProps) {
+export function ScheduleWidgetContent(_props: ScheduleWidgetProps) {
   const { t, i18n } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -80,7 +80,7 @@ export function ScheduleWidget(_props: ScheduleWidgetProps) {
 
   const todayName =
     todayTemplateIds.length > 0
-      ? templateNames.get(todayTemplateIds[0]) ?? null
+      ? (templateNames.get(todayTemplateIds[0]) ?? null)
       : null;
 
   const onPress = () => {
