@@ -170,6 +170,8 @@ export const resources = {
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
         swapMessage: 'Show another message',
+        tonePickerDescription:
+          'Choose how your home-screen message talks to you.',
         messageTones: {
           supportive: 'Supportive',
           tough: 'Tough love',
@@ -254,8 +256,11 @@ export const resources = {
         sizesAvailable_one: '{{count}} size available',
         sizesAvailable_other: '{{count}} sizes available',
         fullWidth: 'Full width',
+        compact: 'Compact',
+        wide: 'Wide',
         columnsOf3: '{{count}} of 3 columns',
         alreadyAdded: 'Already added',
+        added: 'Added',
         addWidget: 'Add Widget',
       },
       plan: {
@@ -1134,6 +1139,8 @@ export const resources = {
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
         swapMessage: 'Andere Nachricht anzeigen',
+        tonePickerDescription:
+          'Wähle, wie die Nachricht auf deinem Home-Screen mit dir spricht.',
         messageTones: {
           supportive: 'Motivierend',
           tough: 'Streng',
@@ -1219,8 +1226,11 @@ export const resources = {
         sizesAvailable_one: '{{count}} Größe verfügbar',
         sizesAvailable_other: '{{count}} Größen verfügbar',
         fullWidth: 'Volle Breite',
+        compact: 'Kompakt',
+        wide: 'Breit',
         columnsOf3: '{{count}} von 3 Spalten',
         alreadyAdded: 'Bereits hinzugefügt',
+        added: 'Hinzugefügt',
         addWidget: 'Widget hinzufügen',
       },
       plan: {

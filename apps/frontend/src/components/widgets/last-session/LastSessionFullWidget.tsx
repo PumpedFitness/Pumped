@@ -10,7 +10,7 @@ type NextWorkoutWidgetProps = {
   width: number;
 };
 
-export function NextWorkoutWidget(_props: NextWorkoutWidgetProps) {
+export function LastSessionFullWidget(_props: NextWorkoutWidgetProps) {
   const { t } = useTranslation();
   const { lastWorkout } = useHomeWidgetData();
 

@@ -19,7 +19,7 @@ type RecoveryWidgetProps = {
   width: number;
 };
 
-export function RecoveryWidget(_props: RecoveryWidgetProps) {
+export function RecoveryFullWidget(_props: RecoveryWidgetProps) {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();

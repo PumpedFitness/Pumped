@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import { useAppSettingsStore } from '@/stores/appSettingsStore';
+import { OptionPopup } from '@/components/clay/option-popup';
+import {
+  type HomeMessageTone,
+  useAppSettingsStore,
+} from '@/stores/appSettingsStore';
 import { colors } from '@/theme/tokens';
 
 type HomeMessageProps = {
@@ -12,6 +16,8 @@ type HomeMessageProps = {
 export function HomeMessage({ name }: HomeMessageProps) {
   const { t } = useTranslation();
   const tone = useAppSettingsStore(state => state.homeMessageTone);
+  const setTone = useAppSettingsStore(state => state.setHomeMessageTone);
+  const [toneMenuOpen, setToneMenuOpen] = useState(false);
   const [messageIndex, setMessageIndex] = useState(() => new Date().getDate());
   const messages = {
     supportive: [
@@ -39,31 +45,54 @@ export function HomeMessage({ name }: HomeMessageProps) {
     tough: '😤',
     savage: '💀',
   } as const;
+  const toneOptions: Array<{ value: HomeMessageTone; label: string }> = [
+    { value: 'supportive', label: t('home.messageTones.supportive') },
+    { value: 'tough', label: t('home.messageTones.tough') },
+    { value: 'savage', label: t('home.messageTones.savage') },
+  ];
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={t('home.swapMessage')}
-      onPress={() => setMessageIndex(index => index + 1)}
-      className="flex-1 active:opacity-70"
-    >
-      <View className="mb-1.5 flex-row items-center gap-1.5">
+    <View className="flex-1">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('settings.homeMessageTone')}
+        onPress={() => setToneMenuOpen(true)}
+        className="mb-1.5 self-start flex-row items-center gap-1.5 active:opacity-70"
+      >
         <View className="h-5 w-5 items-center justify-center rounded-full bg-accent-soft">
           <Text className="text-[12px] leading-[16px]">{toneEmoji[tone]}</Text>
         </View>
         <Text className="text-[11px] font-bold uppercase tracking-[1.2px] text-accent">
           {t(`home.messageTones.${tone}`)}
         </Text>
-        <ClayIcon name="swap" size={12} color={colors.muted} />
-      </View>
-      <Text
-        numberOfLines={2}
-        adjustsFontSizeToFit
-        className="h-[70px] text-[30px] font-bold leading-[35px] tracking-[-0.6px] text-foreground"
+        <ClayIcon name="chevron" size={12} color={colors.muted} />
+      </Pressable>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('home.swapMessage')}
+        onPress={() => setMessageIndex(index => index + 1)}
+        className="active:opacity-70"
       >
-        {message}
-        {name ? `, ${name}` : ''}
-      </Text>
-    </Pressable>
+        <Text
+          numberOfLines={2}
+          adjustsFontSizeToFit
+          className="h-[70px] text-[30px] font-bold leading-[35px] tracking-[-0.6px] text-foreground"
+        >
+          {message}
+          {name ? `, ${name}` : ''}
+        </Text>
+      </Pressable>
+
+      <OptionPopup
+        visible={toneMenuOpen}
+        title={t('settings.homeMessageTone')}
+        text={t('home.tonePickerDescription')}
+        options={toneOptions}
+        selectedValue={tone}
+        onClose={() => setToneMenuOpen(false)}
+        onSelect={setTone}
+      />
+    </View>
   );
 }

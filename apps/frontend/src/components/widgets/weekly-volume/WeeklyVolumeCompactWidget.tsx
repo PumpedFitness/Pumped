@@ -10,7 +10,7 @@ type WeeklyVolumeWidgetProps = {
   width: number;
 };
 
-export function WeeklyVolumeWidget(_props: WeeklyVolumeWidgetProps) {
+export function WeeklyVolumeCompactWidget(_props: WeeklyVolumeWidgetProps) {
   const { t } = useTranslation();
   const { weeklyVolumeKg } = useHomeWidgetData();
   const weightUnit = useAppSettingsStore(state => state.weightUnit);

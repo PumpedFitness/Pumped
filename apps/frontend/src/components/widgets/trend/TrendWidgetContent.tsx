@@ -149,7 +149,7 @@ function buildChartHtml(
 `;
 }
 
-export function ChartWidget(_props: ChartWidgetProps) {
+export function TrendWidgetContent(_props: ChartWidgetProps) {
   const { t, i18n } = useTranslation();
   const { dailyVolume } = useHomeWidgetData();
   const weightUnit = useAppSettingsStore(state => state.weightUnit);

@@ -3,33 +3,75 @@ import { createMMKV } from 'react-native-mmkv';
 import { randomUUID } from 'expo-crypto';
 import type { WidgetPlacement, WidgetType } from '@/types/widget';
 import { widgetRegistry } from '@/components/widgets/registry';
+import { packPlacements } from '@/components/widgets/grid/widgetGridModel';
 
 const storage = createMMKV({ id: 'homescreen-storage' });
 
 const LAYOUT_KEY = 'widget_layout';
 
-const DEFAULT_LAYOUT: WidgetPlacement[] = [
-  { id: 'default-recovery', type: 'recovery', colSpan: 3 },
-  { id: 'default-nextWorkout', type: 'nextWorkout', colSpan: 3 },
-  { id: 'default-streak', type: 'streak', colSpan: 2 },
-  { id: 'default-weeklyVolume', type: 'weeklyVolume', colSpan: 1 },
-  { id: 'default-chart', type: 'chart', colSpan: 3 },
-];
+const DEFAULT_LAYOUT = packPlacements([
+  { id: 'default-recovery', type: 'recoveryFull', colSpan: 3 },
+  { id: 'default-lastSession', type: 'lastSessionFull', colSpan: 3 },
+  { id: 'default-streak', type: 'streakWide', colSpan: 2 },
+  {
+    id: 'default-weeklyVolume',
+    type: 'weeklyVolumeCompact',
+    colSpan: 1,
+  },
+  { id: 'default-trend', type: 'trendFull', colSpan: 3 },
+]);
 
-function normalizeLayout(layout: WidgetPlacement[]): WidgetPlacement[] {
-  return layout
-    .filter(item => item.type in widgetRegistry)
-    .map(item => {
-      const meta = widgetRegistry[item.type].meta;
-      const colSpan = meta.allowedSpans.includes(item.colSpan)
-        ? item.colSpan
-        : meta.defaultSpan;
-      return {
-        ...item,
-        colSpan,
-        column: undefined,
-      };
-    });
+type LegacyWidgetType =
+  | 'recovery'
+  | 'nextWorkout'
+  | 'streak'
+  | 'schedule'
+  | 'time'
+  | 'weeklyVolume'
+  | 'chart';
+
+type StoredWidgetPlacement = {
+  id: string;
+  type: string;
+  colSpan: number;
+  row?: number;
+  column?: number;
+};
+
+function migrateType(type: string, colSpan: number): WidgetType | null {
+  if (type in widgetRegistry) return type as WidgetType;
+  const legacyVariants: Record<LegacyWidgetType, WidgetType> = {
+    recovery: 'recoveryFull',
+    nextWorkout: 'lastSessionFull',
+    streak: colSpan === 1 ? 'streakCompact' : 'streakWide',
+    schedule: colSpan === 3 ? 'scheduleFull' : 'scheduleWide',
+    time: 'timeCompact',
+    weeklyVolume: 'weeklyVolumeCompact',
+    chart: colSpan === 2 ? 'trendWide' : 'trendFull',
+  };
+  return legacyVariants[type as LegacyWidgetType] ?? null;
+}
+
+function normalizeLayout(layout: StoredWidgetPlacement[]): WidgetPlacement[] {
+  const normalized = layout.flatMap(item => {
+    const type = migrateType(item.type, item.colSpan);
+    return type
+      ? [{ ...item, type, colSpan: widgetRegistry[type].meta.colSpan }]
+      : [];
+  });
+  const hasCompleteGrid = normalized.every(
+    item => Number.isInteger(item.row) && Number.isInteger(item.column),
+  );
+  if (!hasCompleteGrid) {
+    return packPlacements(
+      normalized.map(({ row: _row, column: _column, ...item }) => item),
+    );
+  }
+  return normalized.map(item => ({
+    ...item,
+    row: Math.max(0, item.row!),
+    column: Math.max(0, Math.min(3 - item.colSpan, item.column!)),
+  }));
 }
 
 function persist(layout: WidgetPlacement[]) {
@@ -40,11 +82,8 @@ type HomescreenState = {
   layout: WidgetPlacement[];
   initialize: () => void;
   setLayout: (layout: WidgetPlacement[]) => void;
-  addWidget: (type: WidgetType, colSpan: number) => void;
-  setWidgetSpan: (type: WidgetType, colSpan: number) => void;
+  addWidget: (type: WidgetType) => void;
   removeWidget: (id: string) => void;
-  moveWidget: (fromIndex: number, toIndex: number) => void;
-  reorderByIds: (orderedIds: string[]) => void;
   resetToDefault: () => void;
 };
 
@@ -58,7 +97,7 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
       return;
     }
     try {
-      const parsed = JSON.parse(stored) as WidgetPlacement[];
+      const parsed = JSON.parse(stored) as StoredWidgetPlacement[];
       const layout = normalizeLayout(parsed);
       persist(layout);
       set({ layout });
@@ -73,52 +112,27 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
     set({ layout });
   },
 
-  addWidget: (type: WidgetType, colSpan: number) => {
+  addWidget: (type: WidgetType) => {
     const meta = widgetRegistry[type].meta;
-    const resolvedSpan = meta.allowedSpans.includes(colSpan)
-      ? colSpan
-      : meta.defaultSpan;
     const layout = [
       ...get().layout,
-      { id: randomUUID(), type, colSpan: resolvedSpan },
+      {
+        id: randomUUID(),
+        type,
+        colSpan: meta.colSpan,
+        row: get().layout.reduce(
+          (max, widget) => Math.max(max, widget.row + 1),
+          0,
+        ),
+        column: 0,
+      },
     ];
-    persist(layout);
-    set({ layout });
-  },
-
-  setWidgetSpan: (type: WidgetType, colSpan: number) => {
-    if (!widgetRegistry[type].meta.allowedSpans.includes(colSpan)) return;
-    const layout = get().layout.map(widget =>
-      widget.type === type ? { ...widget, colSpan, column: undefined } : widget,
-    );
     persist(layout);
     set({ layout });
   },
 
   removeWidget: (id: string) => {
     const layout = get().layout.filter(w => w.id !== id);
-    persist(layout);
-    set({ layout });
-  },
-
-  moveWidget: (fromIndex: number, toIndex: number) => {
-    const layout = [...get().layout];
-    const [moved] = layout.splice(fromIndex, 1);
-    layout.splice(toIndex, 0, moved);
-    persist(layout);
-    set({ layout });
-  },
-
-  reorderByIds: (orderedIds: string[]) => {
-    const current = get().layout;
-    const byId = new Map(current.map(w => [w.id, w]));
-    const layout = orderedIds
-      .map(id => byId.get(id))
-      .filter((w): w is WidgetPlacement => w !== undefined);
-    // Append any items not in orderedIds (safety net)
-    for (const w of current) {
-      if (!orderedIds.includes(w.id)) layout.push(w);
-    }
     persist(layout);
     set({ layout });
   },

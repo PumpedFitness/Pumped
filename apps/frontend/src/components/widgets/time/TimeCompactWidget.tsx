@@ -25,7 +25,7 @@ function formatTime(
   return { time, period };
 }
 
-export function TimeWidget(_props: TimeWidgetProps) {
+export function TimeCompactWidget(_props: TimeWidgetProps) {
   const { i18n } = useTranslation();
   const [now, setNow] = useState(() => new Date());
 

@@ -3,19 +3,16 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/AppShell';
 import { ClayIcon } from '@/components/icons/ClayIcon';
-import { widgetRegistry } from '@/components/widgets/registry';
+import { widgetGroups } from '@/components/widgets/registry';
 import { useHomescreenStore } from '@/stores/homescreenStore';
 import { colors } from '@/theme/tokens';
-import type { WidgetType } from '@/types/widget';
-import { WidgetPickerCard } from './components/WidgetPickerCard';
+import { WidgetGroupCard } from './components/WidgetGroupCard';
 
 export function WidgetPickerScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const layout = useHomescreenStore(s => s.layout);
-  const placedTypes = new Set(layout.map(w => w.type));
-
-  const allTypes = Object.keys(widgetRegistry) as WidgetType[];
+  const placedTypes = new Set(layout.map(widget => widget.type));
 
   return (
     <AppShell showTabBar={false} padTop padHorizontal={0}>
@@ -31,21 +28,20 @@ export function WidgetPickerScreen() {
       </View>
 
       {/* Subtitle */}
-      <Text className="text-[15px] text-muted text-center px-10 mb-5">
+      <Text className="mb-4 px-10 text-center text-[14px] text-muted">
         {t('widgetPicker.subtitle')}
       </Text>
 
       {/* Widget gallery */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="px-5 pb-10"
+        contentContainerClassName="px-5 pb-8"
       >
-        {allTypes.map(type => (
-          <WidgetPickerCard
-            key={type}
-            type={type}
-            isPlaced={placedTypes.has(type)}
-            placedSpan={layout.find(widget => widget.type === type)?.colSpan}
+        {widgetGroups.map(({ group, variants }) => (
+          <WidgetGroupCard
+            key={group}
+            variants={variants}
+            placedTypes={placedTypes}
           />
         ))}
       </ScrollView>

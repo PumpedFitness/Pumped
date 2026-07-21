@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { AppShell } from '@/components/layout/AppShell';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
-import { WidgetGrid } from '@/components/widgets/WidgetGrid';
+import { WidgetGrid } from '@/components/widgets/grid/WidgetGrid';
 import { useHomescreenStore } from '@/stores/homescreenStore';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { ClayIcon } from '@/components/icons/ClayIcon';

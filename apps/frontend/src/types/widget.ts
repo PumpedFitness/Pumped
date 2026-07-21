@@ -2,20 +2,32 @@ import type { IconName } from '@/components/icons/ClayIcon';
 import type { TranslationResource } from '@/i18n/resources';
 
 export type WidgetType =
+  | 'recoveryFull'
+  | 'lastSessionFull'
+  | 'streakCompact'
+  | 'streakWide'
+  | 'scheduleWide'
+  | 'scheduleFull'
+  | 'timeCompact'
+  | 'weeklyVolumeCompact'
+  | 'trendWide'
+  | 'trendFull';
+
+export type WidgetGroup =
   | 'recovery'
-  | 'nextWorkout'
+  | 'lastSession'
   | 'streak'
   | 'schedule'
   | 'time'
   | 'weeklyVolume'
-  | 'chart';
+  | 'trend';
 
 export type WidgetPlacement = {
   id: string;
   type: WidgetType;
   colSpan: number; // 1, 2, or 3
-  /** Preferred zero-based starting column. Omitted layouts pack left-to-right. */
-  column?: number;
+  row: number;
+  column: number;
 };
 
 export type WidgetNameKey = `widgets.names.${Extract<
@@ -25,8 +37,8 @@ export type WidgetNameKey = `widgets.names.${Extract<
 
 export type WidgetMeta = {
   type: WidgetType;
+  group: WidgetGroup;
   nameKey: WidgetNameKey;
   icon: IconName;
-  allowedSpans: number[];
-  defaultSpan: number;
+  colSpan: 1 | 2 | 3;
 };

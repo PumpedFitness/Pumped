@@ -16,7 +16,7 @@ function weekdayLabel(language: string, daysAgo: number): string {
   return date.toLocaleDateString(language, { weekday: 'short' }).slice(0, 2);
 }
 
-export function StreakWidget({ colSpan }: StreakWidgetProps) {
+export function StreakWidgetContent({ colSpan }: StreakWidgetProps) {
   const { t, i18n } = useTranslation();
   const { streak, weeklyActivity } = useHomeWidgetData();
 
