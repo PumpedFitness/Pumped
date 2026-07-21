@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -12,11 +12,11 @@ import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
 
 const LONG_PRESS_MS = 350;
-
 type DraggableWidgetProps = {
   id: string;
   editing: boolean;
   children: React.ReactNode;
+  settling: boolean;
   onDragStart: () => void;
   onDragMove: (id: string, translationX: number, translationY: number) => void;
   onDragFinalize: () => void;
@@ -27,6 +27,7 @@ export function DraggableWidget({
   id,
   editing,
   children,
+  settling,
   onDragStart,
   onDragMove,
   onDragFinalize,
@@ -37,6 +38,12 @@ export function DraggableWidget({
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
   const active = useSharedValue(false);
+
+  useLayoutEffect(() => {
+    if (!settling) return;
+    translateX.value = 0;
+    translateY.value = 0;
+  }, [settling, translateX, translateY]);
   const startDrag = useCallback(() => {
     onDragStart();
   }, [onDragStart]);
@@ -57,8 +64,6 @@ export function DraggableWidget({
         })
         .onFinalize(() => {
           active.value = false;
-          translateX.value = 0;
-          translateY.value = 0;
           scale.value = withSpring(1);
           runOnJS(onDragFinalize)();
         }),

@@ -16,6 +16,7 @@ import {
 const GAP = spacing[3];
 const EMPTY_ROW_HEIGHT = 112;
 const VIRTUAL_ROWS = 2;
+const DROP_HANDOFF_MS = 32;
 const PREVIEW_TRANSITION = LinearTransition.duration(220).easing(
   Easing.out(Easing.cubic),
 );
@@ -23,6 +24,16 @@ const ACTIVE_LAYER = { zIndex: 100, elevation: 12 };
 const INACTIVE_LAYER = { zIndex: 0, elevation: 0 };
 
 type Point = { x: number; y: number };
+type TimerRef = { current: ReturnType<typeof setTimeout> | null };
+
+function useTimerCleanup(timerRef: TimerRef) {
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [timerRef],
+  );
+}
 
 type GridGeometry = {
   height: number;
@@ -74,6 +85,7 @@ function placementPoint(
 type GridItemProps = {
   placement: WidgetPlacement;
   active: boolean;
+  settling: boolean;
   editing: boolean;
   point: Point;
   unitWidth: number;
@@ -87,6 +99,7 @@ type GridItemProps = {
 function GridItem({
   placement,
   active,
+  settling,
   editing,
   point,
   unitWidth,
@@ -100,7 +113,7 @@ function GridItem({
   const width = placement.colSpan * unitWidth + (placement.colSpan - 1) * GAP;
   return (
     <Animated.View
-      layout={active ? undefined : PREVIEW_TRANSITION}
+      layout={active || settling ? undefined : PREVIEW_TRANSITION}
       onLayout={event => onHeight(placement.id, event)}
       style={[
         { position: 'absolute', left: point.x, top: point.y, width },
@@ -110,6 +123,7 @@ function GridItem({
       <DraggableWidget
         id={placement.id}
         editing={editing}
+        settling={settling}
         onDragStart={() => onDragStart(placement.id)}
         onDragMove={onDragMove}
         onDragFinalize={onDragFinalize}
@@ -132,6 +146,7 @@ type WidgetGridProps = {
 type GridContentProps = {
   activeId: string | null;
   activeOrigin: Point | null;
+  settlingId: string | null;
   baseById: ReadonlyMap<string, WidgetPlacement>;
   editing: boolean;
   geometry: GridGeometry;
@@ -147,6 +162,7 @@ type GridContentProps = {
 function GridContent({
   activeId,
   activeOrigin,
+  settlingId,
   baseById,
   editing,
   geometry,
@@ -183,6 +199,7 @@ function GridContent({
       )}
       {previewLayout.map(previewPlacement => {
         const active = previewPlacement.id === activeId;
+        const settling = previewPlacement.id === settlingId;
         const renderedPlacement = active
           ? (baseById.get(previewPlacement.id) ?? previewPlacement)
           : previewPlacement;
@@ -191,6 +208,7 @@ function GridContent({
             key={previewPlacement.id}
             placement={renderedPlacement}
             active={active}
+            settling={settling}
             editing={editing}
             point={
               active && activeOrigin
@@ -234,6 +252,7 @@ export function WidgetGrid({
   const [containerWidth, setContainerWidth] = useState(0);
   const [previewLayout, setPreviewLayout] = useState(layout);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [settlingId, setSettlingId] = useState<string | null>(null);
   const activeIdRef = useRef<string | null>(null);
   const [measuredHeights, setMeasuredHeights] = useState<
     ReadonlyMap<string, number>
@@ -243,6 +262,8 @@ export function WidgetGrid({
   const dragCenterRef = useRef<Point | null>(null);
   const dragOriginRef = useRef<Point | null>(null);
   const targetRef = useRef<string | null>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useTimerCleanup(settleTimerRef);
 
   useEffect(() => {
     if (!activeIdRef.current) {
@@ -321,12 +342,19 @@ export function WidgetGrid({
   );
 
   const finalizeDrag = useCallback(() => {
+    const droppedId = activeIdRef.current;
     activeIdRef.current = null;
     onLayoutChange(previewRef.current);
+    setSettlingId(droppedId);
     setActiveId(null);
     dragCenterRef.current = null;
     dragOriginRef.current = null;
     targetRef.current = null;
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(
+      () => setSettlingId(null),
+      DROP_HANDOFF_MS,
+    );
   }, [onLayoutChange]);
 
   const recordHeight = useCallback((id: string, event: LayoutChangeEvent) => {
@@ -356,6 +384,7 @@ export function WidgetGrid({
       <GridContent
         activeId={activeId}
         activeOrigin={dragOriginRef.current}
+        settlingId={settlingId}
         baseById={baseById}
         editing={editing}
         geometry={geometry}
