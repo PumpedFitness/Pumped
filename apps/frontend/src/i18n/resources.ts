@@ -222,6 +222,13 @@ export const resources = {
           time: 'Time',
           weeklyVolume: 'Weekly Volume',
           trend: 'Trend',
+          exerciseProgress: 'Exercise Progress',
+          personalRecords: 'Personal Records',
+          muscleBalance: 'Muscle Balance',
+          weeklyGoal: 'Weekly Goal',
+          consistency: 'Consistency',
+          quickStart: 'Quick Start',
+          milestones: 'Milestones',
         },
         recovery: {
           ready: 'READY',
@@ -248,6 +255,45 @@ export const resources = {
         },
         chart: {
           title: 'Volume Trend',
+        },
+        exerciseProgress: {
+          title: 'Exercise progress',
+          empty: 'Complete a weighted exercise',
+          first: 'First result',
+          change: '{{value}} {{unit}} vs last time',
+          caption: 'Estimated one-rep max from your recent sessions',
+        },
+        personalRecords: {
+          title: 'Latest personal record',
+          empty: 'No records yet',
+          prs: 'PRs',
+        },
+        muscleBalance: {
+          title: 'Muscle balance · 4 weeks',
+          empty: 'No muscle data yet',
+          caption: 'Your most trained areas',
+        },
+        weeklyGoal: {
+          title: 'Weekly goal',
+          summary_one: '{{count}} workout to go',
+          summary_other: '{{count}} workouts to go',
+        },
+        consistency: {
+          title: 'Consistency',
+          summary_one: '{{count}} active day',
+          summary_other: '{{count}} active days',
+          range: 'Last 8 weeks',
+        },
+        quickStart: {
+          title: 'Quick start',
+          empty: 'Create a workout first',
+          start: 'Start',
+          resume: 'Resume',
+        },
+        milestones: {
+          title: 'Workouts',
+          remaining_one: '{{count}} to {{target}}',
+          remaining_other: '{{count}} to {{target}}',
         },
       },
       widgetPicker: {
@@ -1191,6 +1237,13 @@ export const resources = {
           time: 'Zeit',
           weeklyVolume: 'Wochenvolumen',
           trend: 'Trend',
+          exerciseProgress: 'Übungsfortschritt',
+          personalRecords: 'Persönliche Rekorde',
+          muscleBalance: 'Muskelbalance',
+          weeklyGoal: 'Wochenziel',
+          consistency: 'Konstanz',
+          quickStart: 'Schnellstart',
+          milestones: 'Meilensteine',
         },
         recovery: {
           ready: 'BEREIT',
@@ -1217,6 +1270,45 @@ export const resources = {
         },
         chart: {
           title: 'Volumentrend',
+        },
+        exerciseProgress: {
+          title: 'Übungsfortschritt',
+          empty: 'Schließe eine Übung mit Gewicht ab',
+          first: 'Erstes Ergebnis',
+          change: '{{value}} {{unit}} zum letzten Mal',
+          caption: 'Geschätztes 1RM aus deinen letzten Einheiten',
+        },
+        personalRecords: {
+          title: 'Letzter persönlicher Rekord',
+          empty: 'Noch keine Rekorde',
+          prs: 'PRs',
+        },
+        muscleBalance: {
+          title: 'Muskelbalance · 4 Wochen',
+          empty: 'Noch keine Muskeldaten',
+          caption: 'Deine meisttrainierten Bereiche',
+        },
+        weeklyGoal: {
+          title: 'Wochenziel',
+          summary_one: 'Noch {{count}} Training',
+          summary_other: 'Noch {{count}} Trainings',
+        },
+        consistency: {
+          title: 'Konstanz',
+          summary_one: '{{count}} aktiver Tag',
+          summary_other: '{{count}} aktive Tage',
+          range: 'Letzte 8 Wochen',
+        },
+        quickStart: {
+          title: 'Schnellstart',
+          empty: 'Erstelle zuerst ein Workout',
+          start: 'Start',
+          resume: 'Weiter',
+        },
+        milestones: {
+          title: 'Workouts',
+          remaining_one: '{{count}} bis {{target}}',
+          remaining_other: '{{count}} bis {{target}}',
         },
       },
       widgetPicker: {

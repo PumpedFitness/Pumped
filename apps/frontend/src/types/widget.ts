@@ -11,7 +11,14 @@ export type WidgetType =
   | 'timeCompact'
   | 'weeklyVolumeCompact'
   | 'trendWide'
-  | 'trendFull';
+  | 'trendFull'
+  | 'exerciseProgressFull'
+  | 'personalRecordsWide'
+  | 'muscleBalanceFull'
+  | 'weeklyGoalWide'
+  | 'consistencyFull'
+  | 'quickStartWide'
+  | 'milestonesCompact';
 
 export type WidgetGroup =
   | 'recovery'
@@ -20,7 +27,14 @@ export type WidgetGroup =
   | 'schedule'
   | 'time'
   | 'weeklyVolume'
-  | 'trend';
+  | 'trend'
+  | 'exerciseProgress'
+  | 'personalRecords'
+  | 'muscleBalance'
+  | 'weeklyGoal'
+  | 'consistency'
+  | 'quickStart'
+  | 'milestones';
 
 export type WidgetPlacement = {
   id: string;

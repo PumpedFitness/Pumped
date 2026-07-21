@@ -1,10 +1,30 @@
 import { useMemo } from 'react';
 import { localDayIndex } from '@/data/local/schedules/scheduleResolution';
 import { useWorkoutHistory } from './useWorkoutHistory';
+import { useExerciseOptions } from './useExerciseOptions';
+import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
 
 const DAY_MS = 86_400_000;
 
 type DailyVolume = { time: string; value: number };
+
+type ExerciseProgress = {
+  exerciseId: string;
+  name: string;
+  latestEstimateKg: number;
+  changeKg: number | null;
+};
+
+type RecentPr = {
+  exerciseId: string;
+  exerciseName: string;
+  estimateKg: number;
+  achievedAt: number;
+};
+
+function estimatedOneRepMax(weight: number, reps: number): number {
+  return weight * (1 + reps / 30);
+}
 
 function dateKey(timestamp: number): string {
   const date = new Date(timestamp);
@@ -17,6 +37,7 @@ function dateKey(timestamp: number): string {
 
 export function useHomeWidgetData() {
   const { workouts } = useWorkoutHistory();
+  const exerciseOptions = useExerciseOptions();
 
   return useMemo(() => {
     const now = new Date();
@@ -55,6 +76,100 @@ export function useHomeWidgetData() {
       },
     );
 
+    const exerciseNames = new Map(
+      exerciseOptions.map(exercise => [exercise.id, exercise.name]),
+    );
+    const sessionsByExercise = new Map<
+      string,
+      Array<{ startedAt: number; estimateKg: number }>
+    >();
+    workouts.forEach(workout => {
+      const bestByExercise = new Map<string, number>();
+      workout.sets.forEach(set => {
+        const { weight, reps } = resolveSetWeightReps(set);
+        if (!weight || reps <= 0) return;
+        const estimate = estimatedOneRepMax(weight, reps);
+        bestByExercise.set(
+          set.exerciseId,
+          Math.max(bestByExercise.get(set.exerciseId) ?? 0, estimate),
+        );
+      });
+      bestByExercise.forEach((estimateKg, exerciseId) => {
+        const entries = sessionsByExercise.get(exerciseId) ?? [];
+        entries.push({ startedAt: workout.startedAt, estimateKg });
+        sessionsByExercise.set(exerciseId, entries);
+      });
+    });
+
+    let exerciseProgress: ExerciseProgress | null = null;
+    let recentPr: RecentPr | null = null;
+    let recentPrCount = 0;
+    sessionsByExercise.forEach((entries, exerciseId) => {
+      const chronological = [...entries].sort(
+        (a, b) => a.startedAt - b.startedAt,
+      );
+      let best = 0;
+      chronological.forEach(entry => {
+        if (entry.estimateKg > best) {
+          if (entry.startedAt === workouts[0]?.startedAt) recentPrCount += 1;
+          if (!recentPr || entry.startedAt > recentPr.achievedAt) {
+            recentPr = {
+              exerciseId,
+              exerciseName: exerciseNames.get(exerciseId) ?? '—',
+              estimateKg: entry.estimateKg,
+              achievedAt: entry.startedAt,
+            };
+          }
+          best = entry.estimateKg;
+        }
+      });
+
+      const latest = entries[0];
+      const previous = entries[1];
+      if (
+        latest &&
+        (!exerciseProgress ||
+          entries.length >
+            (sessionsByExercise.get(exerciseProgress.exerciseId)?.length ?? 0))
+      ) {
+        exerciseProgress = {
+          exerciseId,
+          name: exerciseNames.get(exerciseId) ?? '—',
+          latestEstimateKg: latest.estimateKg,
+          changeKg: previous ? latest.estimateKg - previous.estimateKg : null,
+        };
+      }
+    });
+
+    const muscleCounts = new Map<string, number>();
+    workouts
+      .filter(workout => workout.startedAt >= now.getTime() - 28 * DAY_MS)
+      .forEach(workout => {
+        workout.muscleGroupNames.forEach(name =>
+          muscleCounts.set(name, (muscleCounts.get(name) ?? 0) + 1),
+        );
+      });
+    const muscleTotal = [...muscleCounts.values()].reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+    const muscleFocus = [...muscleCounts]
+      .map(([name, count]) => ({
+        name,
+        count,
+        share: muscleTotal ? count / muscleTotal : 0,
+      }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+    const activityDays = Array.from({ length: 56 }, (_, offset) =>
+      activeDays.has(today - (55 - offset)),
+    );
+    // These values are selected while iterating maps above. Preserve their
+    // declared nullable types across TypeScript's callback control-flow edge.
+    const selectedExerciseProgress =
+      exerciseProgress as ExerciseProgress | null;
+    const selectedRecentPr = recentPr as RecentPr | null;
+
     return {
       workouts,
       lastWorkout: workouts[0] ?? null,
@@ -64,6 +179,12 @@ export function useHomeWidgetData() {
       ),
       weeklyVolumeKg,
       dailyVolume,
+      exerciseProgress: selectedExerciseProgress,
+      recentPr: selectedRecentPr,
+      recentPrCount,
+      muscleFocus,
+      activityDays,
+      lifetimeWorkoutCount: workouts.length,
     };
-  }, [workouts]);
+  }, [exerciseOptions, workouts]);
 }

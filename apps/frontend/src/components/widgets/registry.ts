@@ -10,6 +10,13 @@ import { TimeCompactWidget } from './time/TimeCompactWidget';
 import { WeeklyVolumeCompactWidget } from './weekly-volume/WeeklyVolumeCompactWidget';
 import { TrendWideWidget } from './trend/TrendWideWidget';
 import { TrendFullWidget } from './trend/TrendFullWidget';
+import { ExerciseProgressFullWidget } from './exercise-progress/ExerciseProgressFullWidget';
+import { PersonalRecordsWideWidget } from './personal-records/PersonalRecordsWideWidget';
+import { MuscleBalanceFullWidget } from './muscle-balance/MuscleBalanceFullWidget';
+import { WeeklyGoalWideWidget } from './weekly-goal/WeeklyGoalWideWidget';
+import { ConsistencyFullWidget } from './consistency/ConsistencyFullWidget';
+import { QuickStartWideWidget } from './quick-start/QuickStartWideWidget';
+import { MilestonesCompactWidget } from './milestones/MilestonesCompactWidget';
 
 type WidgetComponentProps = {
   colSpan: number;
@@ -122,6 +129,76 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       colSpan: 3,
     },
   },
+  exerciseProgressFull: {
+    component: ExerciseProgressFullWidget,
+    meta: {
+      type: 'exerciseProgressFull',
+      group: 'exerciseProgress',
+      nameKey: 'widgets.names.exerciseProgress',
+      icon: 'trend',
+      colSpan: 3,
+    },
+  },
+  personalRecordsWide: {
+    component: PersonalRecordsWideWidget,
+    meta: {
+      type: 'personalRecordsWide',
+      group: 'personalRecords',
+      nameKey: 'widgets.names.personalRecords',
+      icon: 'award',
+      colSpan: 2,
+    },
+  },
+  muscleBalanceFull: {
+    component: MuscleBalanceFullWidget,
+    meta: {
+      type: 'muscleBalanceFull',
+      group: 'muscleBalance',
+      nameKey: 'widgets.names.muscleBalance',
+      icon: 'target',
+      colSpan: 3,
+    },
+  },
+  weeklyGoalWide: {
+    component: WeeklyGoalWideWidget,
+    meta: {
+      type: 'weeklyGoalWide',
+      group: 'weeklyGoal',
+      nameKey: 'widgets.names.weeklyGoal',
+      icon: 'target',
+      colSpan: 2,
+    },
+  },
+  consistencyFull: {
+    component: ConsistencyFullWidget,
+    meta: {
+      type: 'consistencyFull',
+      group: 'consistency',
+      nameKey: 'widgets.names.consistency',
+      icon: 'calendar',
+      colSpan: 3,
+    },
+  },
+  quickStartWide: {
+    component: QuickStartWideWidget,
+    meta: {
+      type: 'quickStartWide',
+      group: 'quickStart',
+      nameKey: 'widgets.names.quickStart',
+      icon: 'play',
+      colSpan: 2,
+    },
+  },
+  milestonesCompact: {
+    component: MilestonesCompactWidget,
+    meta: {
+      type: 'milestonesCompact',
+      group: 'milestones',
+      nameKey: 'widgets.names.milestones',
+      icon: 'star',
+      colSpan: 1,
+    },
+  },
 };
 
 export const widgetGroups: Array<{
@@ -135,4 +212,11 @@ export const widgetGroups: Array<{
   { group: 'time', variants: ['timeCompact'] },
   { group: 'weeklyVolume', variants: ['weeklyVolumeCompact'] },
   { group: 'trend', variants: ['trendWide', 'trendFull'] },
+  { group: 'exerciseProgress', variants: ['exerciseProgressFull'] },
+  { group: 'personalRecords', variants: ['personalRecordsWide'] },
+  { group: 'muscleBalance', variants: ['muscleBalanceFull'] },
+  { group: 'weeklyGoal', variants: ['weeklyGoalWide'] },
+  { group: 'consistency', variants: ['consistencyFull'] },
+  { group: 'quickStart', variants: ['quickStartWide'] },
+  { group: 'milestones', variants: ['milestonesCompact'] },
 ];
