@@ -13,22 +13,27 @@ appId: ${APP_ID}
 - tapOn:
     point: 92%,92%
 
-- tapOn: 'Schedule'
+- tapOn:
+    text: '^Schedule$'
 - assertVisible:
     id: 'screen-schedule'
 
-- tapOn: 'Library'
+- tapOn:
+    text: '^Library$'
 - assertVisible:
     id: 'screen-library'
 
-- tapOn: 'History'
+- tapOn:
+    text: '^History$'
 - assertVisible:
     id: 'screen-history'
 
-- tapOn: 'User'
+- tapOn:
+    text: '^User$'
 - assertVisible:
     id: 'screen-profile'
 
-- tapOn: 'Home'
+- tapOn:
+    text: '^Home$'
 - assertVisible:
     id: 'screen-home'
