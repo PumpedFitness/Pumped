@@ -15,16 +15,14 @@ import { ClayIcon } from '@/components/icons/ClayIcon';
 import { colors } from '@/theme/tokens';
 
 const LONG_PRESS_MS = 350;
+const EDITING_LONG_PRESS_MS = 120;
 const PRE_HOLD_MOVEMENT_LIMIT = 12;
 const DROP_SETTLE_MS = 300;
 
 function createWidgetPanGesture(editing: boolean) {
-  const gesture = Gesture.Pan();
-  return editing
-    ? gesture.activateAfterLongPress(1)
-    : gesture
-        .failOffsetY([-PRE_HOLD_MOVEMENT_LIMIT, PRE_HOLD_MOVEMENT_LIMIT])
-        .activateAfterLongPress(LONG_PRESS_MS);
+  return Gesture.Pan()
+    .failOffsetY([-PRE_HOLD_MOVEMENT_LIMIT, PRE_HOLD_MOVEMENT_LIMIT])
+    .activateAfterLongPress(editing ? EDITING_LONG_PRESS_MS : LONG_PRESS_MS);
 }
 
 type DraggableWidgetProps = {
