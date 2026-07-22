@@ -36,14 +36,12 @@ const WHEEL_PLACEHOLDER: OptionalWheelPickerConfig = {
   formatValue: value => `${value}`,
 };
 
-const REST_PICKER_VALUES = Array.from({ length: 40 }, (_, index) =>
-  (index + 1) * 15,
+const REST_PICKER_VALUES = Array.from(
+  { length: 40 },
+  (_, index) => (index + 1) * 15,
 );
 
-function formatRestDuration(
-  t: TFunction,
-  seconds: number,
-): string {
+function formatRestDuration(t: TFunction, seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remainder = seconds % 60;
   return minutes > 0
@@ -56,11 +54,12 @@ function buildRestPickerConfig(
   rest: SetCardRest | null,
 ): OptionalWheelPickerConfig {
   const currentValue = rest?.value;
-  const values = currentValue == null
-    ? REST_PICKER_VALUES
-    : [...new Set([...REST_PICKER_VALUES, currentValue])].sort(
-        (left, right) => left - right,
-      );
+  const values =
+    currentValue == null
+      ? REST_PICKER_VALUES
+      : [...new Set([...REST_PICKER_VALUES, currentValue])].sort(
+          (left, right) => left - right,
+        );
   return {
     title: t('currentWorkout.rest.pickerTitle'),
     description: t('currentWorkout.rest.pickerDescription'),

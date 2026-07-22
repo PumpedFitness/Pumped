@@ -49,8 +49,15 @@ jobs:
           filters: |
             frontend:
               - 'apps/frontend/**'
+              - 'scripts/**'
+              - 'package.json'
+              - '.github/actions/**'
+              - '.github/workflows/ci.yml'
             handover:
               - 'apps/handover/**'
+              - '.github/actions/deploy-handover/**'
+              - '.github/actions/setup-app/**'
+              - '.github/workflows/ci.yml'
 
   # ─── 2. Frontend verify + unit tests (PRs stop here) ──────────────────────
   frontend_verify:

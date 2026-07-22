@@ -28,12 +28,8 @@ apps/
 │       ├── screens/       # Feature-grouped screens
 │       ├── stores/        # Zustand stores
 │       └── theme/         # Design tokens
-├── handover/          # Cloudflare Worker — device-to-device handover (see below)
-└── backend/           # Kotlin/Spring Boot API — currently unused
+└── handover/          # Cloudflare Worker — optional device sharing (see below)
 ```
-
-The **backend is not used right now** — the app is fully offline-first and no
-feature depends on it.
 
 ## Prerequisites
 
@@ -65,6 +61,24 @@ Android build errors run `bun run frontend:setup:android`. The other scripts
 (`frontend:lint`, `frontend:typecheck`, `frontend:format`, `frontend:test`,
 `frontend:e2e`, `frontend:db:generate`) live in the root `package.json` under
 the `frontend:*` prefix.
+
+## Repository checks
+
+Run the same formatting, lint, and type checks as CI:
+
+```bash
+bun run check:verify
+```
+
+Before committing, include unit tests with `bun run check:precommit`. For an
+agent handoff, `bun run check:finish` also checks the Git diff. Pass `ios` or
+`android` to include the matching Maestro suite when a built app and simulator
+or emulator are available:
+
+```bash
+bun run check:finish -- ios
+bun run check:finish -- android
+```
 
 ## End-to-end tests (Maestro)
 

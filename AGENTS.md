@@ -8,7 +8,7 @@ Pumped is an **offline-first** strength-training app. It works without internet 
 
 ```
 apps/frontend/   # React Native mobile app (iOS + Android) — the main app
-apps/backend/    # Kotlin/Spring Boot API — optional, not required for any features
+apps/handover/   # Optional Cloudflare Worker for device-to-device sharing
 ```
 
 **Package manager:** Bun (workspaces in `apps/*`)
@@ -16,8 +16,12 @@ apps/backend/    # Kotlin/Spring Boot API — optional, not required for any fea
 ### Commands (run from root)
 
 - `bun run frontend` / `frontend:ios` / `frontend:android` — start Metro / run on device
-- `bun run backend` — starts Docker services + bootRun
-- `bun run backend:build` / `backend:test` — Gradle build/test
+- `bun run check:verify` — formatting, lint, and TypeScript (matches CI)
+- `bun run check:precommit` — verify + unit tests
+- `bun run check:finish -- [ios|android]` — precommit + diff check, optionally Maestro
+
+Agents should run `bun run check:finish` before handing work back. Include the
+platform argument when the change affects a user flow and a device is available.
 
 ## Code Quality Rules
 

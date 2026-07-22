@@ -18,13 +18,11 @@
     "frontend:prepare": "bun --cwd=apps/frontend run dev:prepare",
     "frontend:setup:ios": "bun --cwd=apps/frontend run setup:ios",
     "frontend:setup:android": "bun --cwd=apps/frontend run setup:android",
-    "backend": "docker compose -f apps/backend/docker-compose.dev.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
-    "backend:build": "./apps/backend/gradlew -p apps/backend build",
-    "backend:test": "./apps/backend/gradlew -p apps/backend test",
-    "backend:restart": "lsof -ti :8080 | xargs kill -9 2>/dev/null; docker compose -f apps/backend/docker-compose.dev.yml up -d && ./apps/backend/gradlew -p apps/backend bootRun",
-    "services:up": "docker compose -f apps/backend/docker-compose.dev.yml up -d",
-    "services:down": "docker compose -f apps/backend/docker-compose.dev.yml down",
-    "services:logs": "docker compose -f apps/backend/docker-compose.dev.yml logs -f",
+    "check:verify": "bun run frontend:format:check && bun run frontend:lint && bun run frontend:typecheck",
+    "check:precommit": "bun run check:verify && bun run frontend:test",
+    "check:finish": "bash scripts/agent-check.sh",
+    "check:e2e:ios": "bun run frontend:e2e",
+    "check:e2e:android": "bun run frontend:e2e:android",
     "install:all": "cd apps/frontend && bun install"
   }
 }

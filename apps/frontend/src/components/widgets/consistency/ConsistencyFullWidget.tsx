@@ -31,7 +31,9 @@ export function ConsistencyFullWidget(_props: ConsistencyFullWidgetProps) {
             {days.slice(week * 7, week * 7 + 7).map((active, day) => (
               <View
                 key={day}
-                className={`aspect-square w-full rounded-[4px] ${active ? 'bg-accent' : 'bg-surface-sunk'}`}
+                className={`aspect-square w-full rounded-[4px] ${
+                  active ? 'bg-accent' : 'bg-surface-sunk'
+                }`}
               />
             ))}
           </View>

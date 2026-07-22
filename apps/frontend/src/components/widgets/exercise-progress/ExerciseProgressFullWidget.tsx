@@ -56,7 +56,9 @@ export function ExerciseProgressFullWidget(
                 <Text className="t-caption text-muted">{weightUnit}</Text>
               </Text>
               <Text
-                className={`t-caption font-semibold ${change != null && change > 0 ? 'text-sage' : 'text-muted'}`}
+                className={`t-caption font-semibold ${
+                  change != null && change > 0 ? 'text-sage' : 'text-muted'
+                }`}
               >
                 {change == null
                   ? t('widgets.exerciseProgress.first')
