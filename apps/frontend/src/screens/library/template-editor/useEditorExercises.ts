@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import {
   formatExerciseSetSummary,
@@ -46,7 +47,7 @@ export type EditorExercise = {
 };
 
 function buildSetView(
-  t: ReturnType<typeof useTranslation>['t'],
+  t: TFunction,
   set: EditableExerciseSet,
   setType: SetTypeWithFields | undefined,
   weightUnit: WeightUnit,

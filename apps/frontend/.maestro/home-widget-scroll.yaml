@@ -51,10 +51,13 @@ appId: ${APP_ID}
 # Long-hold the compact weekly-volume widget, drag it into the first row, and
 # verify collision resolution moves every full row down without overlap.
 - longPressOn: 'weeklyVolumeCompact widget position'
+# Edit mode still requires a brief hold before a tile grabs the gesture so an
+# ordinary swipe scrolls. Move slowly enough for that hold to activate before
+# crossing the pre-hold movement threshold, then complete the reorder.
 - swipe:
     start: 82%, 63%
     end: 82%, 28%
-    duration: 500
+    duration: 8000
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
