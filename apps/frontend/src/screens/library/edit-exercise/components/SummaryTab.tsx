@@ -10,6 +10,7 @@ import {
 type SummaryTabProps = {
   picture: string | null;
   description: string | null;
+  howTo: string | null;
   createdAt: number | undefined;
   typeName: string | null;
   muscleGroupNames: string[];
@@ -76,36 +77,18 @@ function SummaryMedia({ picture, muscleGroupNames }: SummaryMediaProps) {
   );
 }
 
-type MusclesCardProps = {
-  muscleGroupNames: string[];
+type SummaryTextCardProps = {
+  title: string;
+  body: string;
 };
 
-function MusclesCard({ muscleGroupNames }: MusclesCardProps) {
-  const { t } = useTranslation();
-
+function SummaryTextCard({ title, body }: SummaryTextCardProps) {
   return (
     <View className="rounded-[20px] border border-border-hairline bg-surface-card p-4">
-      <Text className="text-[13.5px] font-bold text-foreground">
-        {t('exerciseOverview.summary.musclesWorked')}
+      <Text className="text-[13.5px] font-bold text-foreground">{title}</Text>
+      <Text className="mt-2 text-[13.5px] leading-[20px] text-text-secondary">
+        {body}
       </Text>
-      {muscleGroupNames.length > 0 ? (
-        <View className="mt-3 gap-[10px]">
-          {muscleGroupNames.map(name => (
-            <View key={name}>
-              <Text className="mb-1 text-[12.5px] font-semibold text-foreground">
-                {name}
-              </Text>
-              <View className="h-[7px] overflow-hidden rounded-full bg-surface-sunk">
-                <View className="h-full w-full rounded-full bg-accent" />
-              </View>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <Text className="mt-2 text-[13.5px] text-text-secondary">
-          {t('exerciseOverview.noMuscleGroups')}
-        </Text>
-      )}
     </View>
   );
 }
@@ -113,6 +96,7 @@ function MusclesCard({ muscleGroupNames }: MusclesCardProps) {
 export function SummaryTab({
   picture,
   description,
+  howTo,
   createdAt,
   typeName,
   muscleGroupNames,
@@ -142,17 +126,17 @@ export function SummaryTab({
         />
       </View>
 
-      <View className="rounded-[20px] border border-border-hairline bg-surface-card p-4">
-        <Text className="text-[13.5px] font-bold text-foreground">
-          {t('exerciseOverview.summary.about')}
-        </Text>
-        <Text className="mt-2 text-[13.5px] leading-[20px] text-text-secondary">
-          {description?.trim() ||
-            t('exerciseOverview.details.emptyDescription')}
-        </Text>
-      </View>
+      <SummaryTextCard
+        title={t('exerciseOverview.summary.about')}
+        body={
+          description?.trim() || t('exerciseOverview.details.emptyDescription')
+        }
+      />
 
-      <MusclesCard muscleGroupNames={muscleGroupNames} />
+      <SummaryTextCard
+        title={t('exerciseOverview.summary.howTo')}
+        body={howTo?.trim() || t('exerciseOverview.summary.howToEmpty')}
+      />
     </ScrollView>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
@@ -67,37 +67,25 @@ export function EditExerciseScreen({
     );
   }
 
-  const muscleLabel = muscleGroupNames.join(' · ');
-  const workoutLabel = t('exerciseOverview.details.workouts', {
-    count: analytics.history.length,
-  });
-
   return (
     <AppView edges={['top']}>
       <ScreenHeader
         title={exercise.name}
         onBack={() => navigation.goBack()}
         backAccessibilityLabel={t('exerciseOverview.backA11y')}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('exerciseOverview.editA11y')}
+            onPress={() => setIsEditing(true)}
+            className="h-9 w-9 items-center justify-center rounded-full bg-accent-soft active:opacity-70"
+          >
+            <ClayIcon name="edit" size={17} color={colors.accent} />
+          </Pressable>
+        }
       />
 
-      <View className="flex-row items-center gap-3 px-4 py-3">
-        <Text
-          className="min-w-0 flex-1 text-[12px] font-medium text-muted"
-          numberOfLines={1}
-        >
-          {muscleLabel ? `${muscleLabel}  •  ${workoutLabel}` : workoutLabel}
-        </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('exerciseOverview.editA11y')}
-          onPress={() => setIsEditing(true)}
-          className="h-9 w-9 items-center justify-center rounded-full bg-accent-soft active:opacity-70"
-        >
-          <ClayIcon name="edit" size={17} color={colors.accent} />
-        </Pressable>
-      </View>
-
-      <View className="px-4 pb-3">
+      <View className="px-4 pb-3 pt-3">
         <SegmentedControl
           value={tab}
           onChange={value => setTab(value as ExerciseTab)}
@@ -116,6 +104,7 @@ export function EditExerciseScreen({
         <SummaryTab
           picture={exercise.picture}
           description={exercise.description}
+          howTo={exercise.howTo}
           createdAt={exercise.createdAt}
           typeName={exerciseOption?.typeName ?? null}
           muscleGroupNames={muscleGroupNames}
@@ -123,6 +112,7 @@ export function EditExerciseScreen({
       ) : null}
       {tab === 'history' ? (
         <HistoryTab
+          exerciseName={exercise.name}
           history={analytics.history}
           weightUnit={profile.weightUnit}
           onOpenWorkout={workoutId =>
