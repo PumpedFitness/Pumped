@@ -23,6 +23,19 @@ apps/handover/   # Optional Cloudflare Worker for device-to-device sharing
 Agents should run `bun run check:finish` before handing work back. Include the
 platform argument when the change affects a user flow and a device is available.
 
+### Device helpers
+
+- `bun run device:doctor` — check local mobile tooling
+- `bun run dev:ready -- ios|android` — boot/check a device, Metro, and app
+- `bun run device:status -- ios|android` — concise device readiness
+- `bun run device:launch -- ios|android` / `device:reload` — no rebuild
+- `bun run device:screenshot -- ios|android` — writes under `.artifacts/`
+- `bun run device:logs -- ios|android` — stream app-only logs
+- `bun run device:reset -- ios|android --yes` — clear local app data
+- `bun run e2e:flow -- ios|android <flow>` — run one Maestro flow
+
+Pass `--device <id>` after the platform when multiple devices are active.
+
 ## Code Quality Rules
 
 - Named exports only — no `export default`

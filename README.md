@@ -80,6 +80,23 @@ bun run check:finish -- ios
 bun run check:finish -- android
 ```
 
+## Device helpers
+
+Agents and contributors can inspect and control an already-built app without
+remembering platform-specific `adb` or `simctl` commands:
+
+```bash
+bun run device:doctor
+bun run dev:ready -- android
+bun run device:screenshot -- android
+bun run e2e:flow -- android home-widget-scroll
+```
+
+Use `device:status`, `device:launch`, `device:reload`, and `device:logs` for the
+common debugging loop. `device:reset` requires `--yes` because it clears local
+app data. Generated screenshots, logs, and Maestro reports go to the ignored
+`.artifacts/` directory.
+
 ## End-to-end tests (Maestro)
 
 Mobile E2E flows live in [`apps/frontend/.maestro/`](apps/frontend/.maestro/)

@@ -47,6 +47,7 @@ yarn-error.log*
 # Testing
 coverage/
 reports/
+.artifacts/
 
 # Temporary
 *.tmp

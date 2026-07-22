@@ -23,6 +23,17 @@
     "check:finish": "bash scripts/agent-check.sh",
     "check:e2e:ios": "bun run frontend:e2e",
     "check:e2e:android": "bun run frontend:e2e:android",
+    "device:doctor": "bash scripts/device.sh doctor",
+    "device:status": "bash scripts/device.sh status",
+    "device:boot": "bash scripts/device.sh boot",
+    "device:launch": "bash scripts/device.sh launch",
+    "device:reload": "bash scripts/device.sh reload",
+    "device:screenshot": "bash scripts/device.sh screenshot",
+    "device:logs": "bash scripts/device.sh logs",
+    "device:reset": "bash scripts/device.sh reset",
+    "dev:ready": "bash scripts/device.sh ready",
+    "e2e:flow": "bash scripts/e2e-flow.sh",
+    "e2e:smoke": "bash scripts/e2e-flow.sh",
     "install:all": "cd apps/frontend && bun install"
   }
 }
