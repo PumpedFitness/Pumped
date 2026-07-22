@@ -161,6 +161,8 @@ export function ExerciseForm({
     setName,
     description,
     setDescription,
+    howTo,
+    setHowTo,
     picture,
     typeId,
     setTypeId,
@@ -244,6 +246,14 @@ export function ExerciseForm({
             value={description}
             onChangeText={setDescription}
             placeholder={t('exerciseForm.descriptionPlaceholder')}
+            multiline
+          />
+
+          <LabeledField
+            label={t('exerciseForm.howToLabel')}
+            value={howTo}
+            onChangeText={setHowTo}
+            placeholder={t('exerciseForm.howToPlaceholder')}
             multiline
           />
 
