@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SegmentedControl } from '@pumped/ui';
-import { AppShell } from '@/components/layout/AppShell';
-import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
+import { AppView } from '@/components/layout/AppView';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -64,13 +63,13 @@ export function TrendsScreen() {
       : t(`trends.metricTitle.${metric}`);
 
   return (
-    <AppShell showTabBar>
+    <AppView>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-5 px-5 pb-8 pt-7"
+        contentContainerClassName="gap-5 px-5 pb-12 pt-2"
         showsVerticalScrollIndicator={false}
       >
-        <TrendsHeader />
+        <TrendsHeader onBack={() => navigation.goBack()} />
 
         <SegmentedControl
           options={options}
@@ -105,9 +104,7 @@ export function TrendsScreen() {
           }
           onWorkoutDelete={deleteWorkout}
         />
-
-        <TabBarInsetSpacer />
       </ScrollView>
-    </AppShell>
+    </AppView>
   );
 }
