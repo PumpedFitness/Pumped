@@ -21,9 +21,10 @@ import { useHandover } from '@/hooks/useHandover';
 import { Input } from 'heroui-native';
 import { Button } from '@pumped/ui/clay/Button';
 import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
+import { IndexRowChevron } from './IndexRowChevron';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
-const chevron = <ClayIcon name="chevron" size={16} color={colors.muted} />;
+const chevron = <IndexRowChevron />;
 
 function FirstDayOfWeekSetting() {
   const { t } = useTranslation();

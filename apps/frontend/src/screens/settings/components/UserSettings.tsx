@@ -12,6 +12,7 @@ import { EditableRow } from '@pumped/ui/clay/EditableRow';
 import { ListRow } from '@pumped/ui/clay/ListRow';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
+import { IndexRowChevron } from './IndexRowChevron';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useRepository } from '@/data/local/useRepository';
 import type { Gender } from '@/data/local/schema/userProfile';
@@ -49,7 +50,7 @@ function formatBirthdate(
   });
 }
 
-const chevron = <ClayIcon name="chevron" size={16} color={colors.muted} />;
+const chevron = <IndexRowChevron />;
 
 export function UserSettings() {
   const { t, i18n } = useTranslation();

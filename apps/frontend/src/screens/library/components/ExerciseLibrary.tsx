@@ -3,15 +3,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { ExerciseRowCard } from '@/components/exercise/ExerciseRowCard';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { useUndoToast } from '@/components/feedback/UndoToast';
 import { useRepository } from '@/data/local/useRepository';
 import { exercises } from '@/data/local/schema';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
-import { colors } from '@pumped/ui/theme/tokens';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { ExerciseOption } from '@/types/exercise';
+import { IndexRowChevron } from './IndexRowChevron';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
 
 export function ExerciseLibrary() {
@@ -45,13 +44,13 @@ export function ExerciseLibrary() {
         favorited={isFavorite(exercise.id)}
         onToggleFavorite={() => toggleFavorite(exercise.id)}
         onDelete={() => deleteExercise(exercise)}
-        borderRadius={20}
+        borderRadius={24}
       >
         <ExerciseRowCard
           name={exercise.name}
           metadata={metadata}
           pressedClassName="active:bg-surface-sunk"
-          trailing={<ClayIcon name="chevron" size={16} color={colors.muted} />}
+          trailing={<IndexRowChevron />}
           onPress={() =>
             navigation.navigate('EditExercise', { exerciseId: exercise.id })
           }
@@ -76,7 +75,7 @@ export function ExerciseLibrary() {
       namespace="library"
       emptyIconName="search"
       stickySearch
-      itemGap={8}
+      itemGap={10}
       createTestID="create_exercise"
       onCreate={() => navigation.navigate('CreateExercise')}
     />

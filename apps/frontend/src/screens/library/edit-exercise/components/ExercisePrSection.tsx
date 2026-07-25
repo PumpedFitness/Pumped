@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Card } from '@pumped/ui/clay/Card';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type {
@@ -15,17 +16,17 @@ type ExercisePrSectionProps = {
   weightUnit: WeightUnit;
 };
 
-function getPrLabel(
-  t: ReturnType<typeof useTranslation>['t'],
-  kind: ExercisePrKind,
-): string {
-  const labels = {
-    volumeSet: t('exerciseOverview.pr.types.volumeSet'),
-    topWeight: t('exerciseOverview.pr.types.topWeight'),
-    estimated1Rm: t('exerciseOverview.pr.types.estimated1Rm'),
-    maxReps: t('exerciseOverview.pr.types.maxReps'),
-  };
-  return labels[kind];
+function getPrLabel(t: TFunction, kind: ExercisePrKind): string {
+  switch (kind) {
+    case 'volumeSet':
+      return t('exerciseOverview.pr.types.volumeSet');
+    case 'topWeight':
+      return t('exerciseOverview.pr.types.topWeight');
+    case 'estimated1Rm':
+      return t('exerciseOverview.pr.types.estimated1Rm');
+    case 'maxReps':
+      return t('exerciseOverview.pr.types.maxReps');
+  }
 }
 
 function formatDate(timestamp: number, language: string): string {
@@ -37,7 +38,7 @@ function formatDate(timestamp: number, language: string): string {
 }
 
 function formatPrValue(
-  t: ReturnType<typeof useTranslation>['t'],
+  t: TFunction,
   pr: ExerciseDerivedPr,
   weightUnit: WeightUnit,
 ): string {
@@ -56,7 +57,7 @@ function formatPrValue(
 }
 
 function formatSetSummary(
-  t: ReturnType<typeof useTranslation>['t'],
+  t: TFunction,
   pr: ExerciseDerivedPr,
   weightUnit: WeightUnit,
 ): string {

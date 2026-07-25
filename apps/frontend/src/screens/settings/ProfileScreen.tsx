@@ -1,7 +1,8 @@
-import { Text, ScrollView } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/AppShell';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
+import { IndexScreenHeader } from './components/IndexScreenHeader';
 import { UserSettings } from './components/UserSettings';
 import { AppSettings } from './components/AppSettings';
 
@@ -15,9 +16,12 @@ export function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text className="text-[30px] font-bold text-foreground tracking-[-0.6px] mb-6">
-          {t('profile.title')}
-        </Text>
+        <View className="mb-6">
+          <IndexScreenHeader
+            kicker={t('profile.kicker')}
+            title={t('profile.title')}
+          />
+        </View>
 
         <UserSettings />
         <AppSettings />

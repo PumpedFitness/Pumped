@@ -12,16 +12,23 @@ export * from './uniwind';
 export { ClayIcon, type IconName } from './icons/ClayIcon';
 
 // Clay primitives
+export * from './clay/BarRow';
 export * from './clay/Button';
 export * from './clay/CTAButton';
 export * from './clay/Card';
 export * from './clay/EditableRow';
 export * from './clay/EmptyState';
+export * from './clay/FloatingTabBar';
+export * from './clay/LineChart';
 export * from './clay/ListRow';
+export { Badge, DeltaChip, Pill } from './clay/Pill';
+export * from './clay/PlayCircle';
 export * from './clay/RingGauge';
 export * from './clay/SegmentedControl';
 export * from './clay/SettingsSection';
+export * from './clay/Sparkline';
 export * from './clay/StepDots';
+export * from './clay/StepperField';
 export * from './clay/SwipeTo';
 export * from './clay/SwipeToDelete';
 export * from './clay/SwipeToFavorize';

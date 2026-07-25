@@ -75,6 +75,7 @@ export const resources = {
         schedule: 'Schedule',
         library: 'Library',
         history: 'History',
+        trends: 'Trends',
         user: 'User',
       },
       tour: {
@@ -170,6 +171,98 @@ export const resources = {
         dayGreeting: '{{day}} {{timeOfDay}}',
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
+        blockStatus: 'Meso 2 · hypertrophy · week 3 of 8',
+        headline: {
+          readyFor: 'Ready for',
+          restLead: 'Rest and',
+          restSubject: 'recover.',
+        },
+        hero: {
+          blockProgress: 'Block progress',
+          setsCount: '{{count}} sets',
+          minutes: '~{{count}} min',
+          tonnageTarget: '{{value}} t target',
+          liftsCount: '{{count}} lifts',
+          startA11y: 'Start {{name}}',
+        },
+        quick: {
+          logLift: 'Log lift',
+          timer: 'Timer',
+          weighIn: 'Weigh in',
+          trends: 'Trends',
+        },
+        summary: {
+          title: 'Summary',
+          daily: 'Daily',
+          weekly: 'Weekly',
+          monthly: 'Monthly',
+        },
+        units: {
+          tonnes: 't',
+          days28: '28d',
+        },
+        edit: {
+          editPill: 'Edit',
+          donePill: 'Done',
+          banner: 'Drag cards to reorder · ⇱ resize · ✕ remove',
+          addModule: '+ Add module',
+          removeA11y: 'Remove module',
+          resizeA11y: 'Toggle module width',
+          reorderA11y: 'Drag to reorder module',
+        },
+        modules: {
+          tonnage: {
+            name: 'Tonnage',
+            description: 'Computed · sum of sets × reps × load',
+          },
+          e1rm: {
+            name: 'Squat e1RM',
+            description: 'Per lift · Epley formula',
+            empty: 'Log a few sessions to see your estimated 1RM.',
+          },
+          readiness: {
+            name: 'Readiness',
+            description: 'Computed · acute:chronic load × HRV',
+            emptyTitle: 'No readiness data',
+            emptyBody:
+              'Connect HRV and load tracking to see your readiness band.',
+          },
+          adherence: {
+            name: 'Adherence',
+            description: '28-day completion grid',
+          },
+          bodyweight: {
+            name: 'Bodyweight',
+            description: 'Seven-day rolling mean',
+            empty: 'Add weigh-ins to track your bodyweight trend.',
+            trend: '{{delta}} {{unit}} / wk · on target',
+          },
+          muscleVolume: {
+            name: 'Weekly sets by muscle',
+            description: 'Volume split across muscle groups',
+            empty: 'No sets logged this week yet.',
+          },
+          custom: {
+            error: '—',
+          },
+        },
+        addSheet: {
+          title: 'Add module',
+          buildComputed: 'Build a computed field',
+        },
+        computedSheet: {
+          title: 'Computed field',
+          nameLabel: 'Name',
+          namePlaceholder: 'Push volume',
+          expressionLabel: 'Expression',
+          expressionEmpty: 'Tap the chips below to build a formula',
+          unitLabel: 'Unit',
+          unitPlaceholder: 't · kg · %',
+          previewLabel: 'Preview',
+          add: 'Add to dashboard',
+          defaultName: 'Custom field',
+          backspaceA11y: 'Delete last token',
+        },
       },
       widgets: {
         names: {
@@ -636,7 +729,48 @@ export const resources = {
           progressA11y: '{{name}}, {{completed}} of {{total}} sets completed',
         },
       },
+      trends: {
+        title: 'Trends',
+        window: 'Last 8 weeks',
+        metric: {
+          strength: 'Strength',
+          volume: 'Volume',
+          bodyweight: 'Bodyweight',
+        },
+        metricTitle: {
+          strength: 'Estimated 1RM',
+          strengthNamed: 'Estimated 1RM · {{name}}',
+          volume: 'Weekly volume',
+          bodyweight: 'Bodyweight',
+        },
+        deltaSuffix: '8 wk',
+        noData: 'Log a few more sessions to see this trend.',
+        calc: {
+          label: 'How this is calculated',
+          strength:
+            'Epley: load × (1 + reps ÷ 30), taken from your best working set each session, then smoothed over a 3-session rolling max.',
+          volume:
+            'Sum of sets × reps × load across the week, warm-up sets excluded, converted to metric tonnes.',
+          bodyweight:
+            'Mean of your last seven morning weigh-ins, with readings more than two standard deviations out dropped.',
+        },
+        prs: {
+          title: 'Personal records',
+          subtitle: 'For {{name}}',
+          topWeight: 'Top weight',
+          estimated1Rm: 'Estimated 1RM',
+          volumeSet: 'Best set volume',
+          maxReps: 'Most reps',
+          load: '{{weight}} {{unit}} × {{reps}}',
+          reps: '{{reps}} reps',
+        },
+        history: {
+          title: 'History',
+        },
+      },
       library: {
+        title: 'Library',
+        kicker: 'Workouts · exercises · set types',
         searchA11y: 'Search exercises',
         searchPlaceholder: 'Search name, muscle, or type',
         createA11y: 'Create exercise',
@@ -821,6 +955,7 @@ export const resources = {
       },
       profile: {
         title: 'Settings',
+        kicker: 'Account · data · preferences',
         sections: {
           profile: 'Profile',
           bodyTracking: 'Body Tracking',
@@ -1004,6 +1139,7 @@ export const resources = {
         schedule: 'Plan',
         library: 'Bibliothek',
         history: 'Verlauf',
+        trends: 'Trends',
         user: 'Profil',
       },
       tour: {
@@ -1101,6 +1237,98 @@ export const resources = {
         dayGreeting: '{{day}}{{timeOfDay}}',
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
+        blockStatus: 'Meso 2 · Hypertrophie · Woche 3 von 8',
+        headline: {
+          readyFor: 'Bereit für',
+          restLead: 'Erhol dich und',
+          restSubject: 'regeneriere.',
+        },
+        hero: {
+          blockProgress: 'Block-Fortschritt',
+          setsCount: '{{count}} Sätze',
+          minutes: '~{{count}} Min',
+          tonnageTarget: '{{value}} t Ziel',
+          liftsCount: '{{count}} Übungen',
+          startA11y: '{{name}} starten',
+        },
+        quick: {
+          logLift: 'Satz loggen',
+          timer: 'Timer',
+          weighIn: 'Wiegen',
+          trends: 'Trends',
+        },
+        summary: {
+          title: 'Übersicht',
+          daily: 'Täglich',
+          weekly: 'Wöchentlich',
+          monthly: 'Monatlich',
+        },
+        units: {
+          tonnes: 't',
+          days28: '28T',
+        },
+        edit: {
+          editPill: 'Bearbeiten',
+          donePill: 'Fertig',
+          banner: 'Karten ziehen zum Sortieren · ⇱ Größe · ✕ Entfernen',
+          addModule: '+ Modul hinzufügen',
+          removeA11y: 'Modul entfernen',
+          resizeA11y: 'Modulbreite umschalten',
+          reorderA11y: 'Zum Sortieren ziehen',
+        },
+        modules: {
+          tonnage: {
+            name: 'Tonnage',
+            description: 'Berechnet · Summe aus Sätze × Wdh. × Last',
+          },
+          e1rm: {
+            name: 'Kniebeuge e1RM',
+            description: 'Pro Übung · Epley-Formel',
+            empty: 'Logge ein paar Einheiten, um dein geschätztes 1RM zu sehen.',
+          },
+          readiness: {
+            name: 'Bereitschaft',
+            description: 'Berechnet · akute:chronische Last × HRV',
+            emptyTitle: 'Keine Bereitschaftsdaten',
+            emptyBody:
+              'Verbinde HRV- und Last-Tracking, um deine Bereitschaft zu sehen.',
+          },
+          adherence: {
+            name: 'Konsistenz',
+            description: '28-Tage-Raster deiner Einheiten',
+          },
+          bodyweight: {
+            name: 'Körpergewicht',
+            description: 'Gleitender 7-Tage-Mittelwert',
+            empty: 'Trage Wiegungen ein, um deinen Gewichtstrend zu sehen.',
+            trend: '{{delta}} {{unit}} / Wo · im Ziel',
+          },
+          muscleVolume: {
+            name: 'Wöchentliche Sätze pro Muskel',
+            description: 'Volumen aufgeteilt nach Muskelgruppen',
+            empty: 'Diese Woche noch keine Sätze geloggt.',
+          },
+          custom: {
+            error: '—',
+          },
+        },
+        addSheet: {
+          title: 'Modul hinzufügen',
+          buildComputed: 'Berechnetes Feld erstellen',
+        },
+        computedSheet: {
+          title: 'Berechnetes Feld',
+          nameLabel: 'Name',
+          namePlaceholder: 'Push-Volumen',
+          expressionLabel: 'Formel',
+          expressionEmpty: 'Tippe unten auf die Chips, um eine Formel zu bauen',
+          unitLabel: 'Einheit',
+          unitPlaceholder: 't · kg · %',
+          previewLabel: 'Vorschau',
+          add: 'Zum Dashboard hinzufügen',
+          defaultName: 'Eigenes Feld',
+          backspaceA11y: 'Letztes Element löschen',
+        },
       },
       widgets: {
         names: {
@@ -1585,7 +1813,48 @@ export const resources = {
             '{{name}}, {{completed}} von {{total}} Sätzen abgeschlossen',
         },
       },
+      trends: {
+        title: 'Trends',
+        window: 'Letzte 8 Wochen',
+        metric: {
+          strength: 'Kraft',
+          volume: 'Volumen',
+          bodyweight: 'Körpergewicht',
+        },
+        metricTitle: {
+          strength: 'Geschätztes 1RM',
+          strengthNamed: 'Geschätztes 1RM · {{name}}',
+          volume: 'Wöchentliches Volumen',
+          bodyweight: 'Körpergewicht',
+        },
+        deltaSuffix: '8 Wo.',
+        noData: 'Logge noch ein paar Sessions, um diesen Trend zu sehen.',
+        calc: {
+          label: 'So wird das berechnet',
+          strength:
+            'Epley: Last × (1 + Wdh. ÷ 30), aus deinem besten Arbeitssatz jeder Session, geglättet über ein gleitendes 3-Session-Maximum.',
+          volume:
+            'Summe aus Sätze × Wdh. × Last über die Woche, ohne Aufwärmsätze, in metrische Tonnen umgerechnet.',
+          bodyweight:
+            'Mittelwert deiner letzten sieben Morgen-Messungen; Werte mit mehr als zwei Standardabweichungen Abstand werden verworfen.',
+        },
+        prs: {
+          title: 'Persönliche Rekorde',
+          subtitle: 'Für {{name}}',
+          topWeight: 'Höchstes Gewicht',
+          estimated1Rm: 'Geschätztes 1RM',
+          volumeSet: 'Bestes Satz-Volumen',
+          maxReps: 'Meiste Wdh.',
+          load: '{{weight}} {{unit}} × {{reps}}',
+          reps: '{{reps}} Wdh.',
+        },
+        history: {
+          title: 'Verlauf',
+        },
+      },
       library: {
+        title: 'Bibliothek',
+        kicker: 'Workouts · Übungen · Satztypen',
         searchA11y: 'Übungen durchsuchen',
         searchPlaceholder: 'Nach Name, Muskel oder Typ suchen',
         createA11y: 'Übung erstellen',
@@ -1774,6 +2043,7 @@ export const resources = {
       },
       profile: {
         title: 'Einstellungen',
+        kicker: 'Konto · Daten · Präferenzen',
         sections: {
           profile: 'Profil',
           bodyTracking: 'Körperdaten',

@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { AppShell } from '@/components/layout/AppShell';
 import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { motion } from '@pumped/ui/theme/tokens';
+import { IndexScreenHeader } from './components/IndexScreenHeader';
 import { WorkoutsLibrary } from './components/WorkoutsLibrary';
 import { ExerciseLibrary } from './components/ExerciseLibrary';
 import { SetTypeLibrary } from './set-type-library/SetTypeLibrary';
@@ -29,7 +30,13 @@ export function LibraryScreen() {
 
   return (
     <AppShell showTabBar>
-      <View className="bg-background px-5 pt-4">{segmentedControl}</View>
+      <View className="bg-background px-5 pt-4 gap-5">
+        <IndexScreenHeader
+          kicker={t('library.kicker')}
+          title={t('library.title')}
+        />
+        {segmentedControl}
+      </View>
       <Animated.View
         key={segment}
         className="flex-1"

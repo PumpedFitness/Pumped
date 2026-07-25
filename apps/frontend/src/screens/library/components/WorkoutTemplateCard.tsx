@@ -2,7 +2,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import type { WorkoutTemplate } from '@/types/workout';
-import { colors } from '@pumped/ui/theme/tokens';
+import { shadows, colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import {
   countTemplateSets,
@@ -42,7 +42,8 @@ export function WorkoutTemplateCard({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={t('plan.card.editA11y', { name: template.name })}
-      className="overflow-hidden rounded-[24px] border border-border-hairline bg-surface-card p-5 active:bg-surface-sunk"
+      className="overflow-hidden rounded-[24px] bg-surface-card p-[18px] active:bg-surface-sunk"
+      style={shadows.row}
       onPress={() => onEdit(template)}
     >
       <View className="flex-row items-start gap-3">
@@ -54,9 +55,13 @@ export function WorkoutTemplateCard({
         </View>
 
         <View className="flex-1">
-          <Text className="t-heading">{template.name}</Text>
+          <Text className="text-[16px] font-bold text-foreground leading-[1.25]">
+            {template.name}
+          </Text>
           {template.description ? (
-            <Text className="t-caption mt-1">{template.description}</Text>
+            <Text className="text-[12px] font-medium text-muted leading-[1.4] mt-[7px]">
+              {template.description}
+            </Text>
           ) : null}
         </View>
       </View>
