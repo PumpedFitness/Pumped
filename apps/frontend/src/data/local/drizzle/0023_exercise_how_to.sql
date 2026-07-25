@@ -1,0 +1,1 @@
+ALTER TABLE `exercise` ADD `how_to` text;

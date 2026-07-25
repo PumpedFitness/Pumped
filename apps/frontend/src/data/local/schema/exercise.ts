@@ -5,6 +5,7 @@ export const exercises = sqliteTable('exercise', {
   id: text('id').primaryKey().notNull(),
   name: text('name').notNull(),
   description: text('description'),
+  howTo: text('how_to'),
   typeId: text('type_id'),
   picture: text('picture'),
   muscleGroups: jsonArray<string>()('muscle_groups').notNull(),

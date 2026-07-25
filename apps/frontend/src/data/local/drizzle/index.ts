@@ -23,6 +23,7 @@ import m0019 from './0019_drop_progression_mode.sql';
 import m0020 from './0020_performed_set_field_definitions.sql';
 import m0021 from './0021_skipped_day.sql';
 import m0022 from './0022_workout_logo.sql';
+import m0023 from './0023_exercise_how_to.sql';
 
 export default {
   journal,
@@ -50,5 +51,6 @@ export default {
     m0020,
     m0021,
     m0022,
+    m0023,
   },
 };

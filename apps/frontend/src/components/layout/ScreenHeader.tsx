@@ -26,7 +26,9 @@ export function ScreenHeader({
       >
         <ClayIcon name="back" size={20} color={colors.ink} />
       </Pressable>
-      <Text className="t-heading ml-2">{title}</Text>
+      <Text className="t-heading ml-2 flex-1" numberOfLines={1}>
+        {title}
+      </Text>
       {right}
     </View>
   );
