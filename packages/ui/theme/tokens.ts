@@ -12,27 +12,37 @@ export const colors = {
   bgWarm: brand.bgWarm,
   card: light.surface,
   cardSunk: light.default,
+  sunken: brand.sunken,
 
-  // Moss (brand anchor)
+  // Charcoal / inverted brand anchors (v2 has no greens)
   moss: brand.moss,
   mossDeep: brand.mossDeep,
   cream: brand.cream,
   creamDim: alpha(brand.cream, 0.6),
+  onInk: brand.cream,
+
+  // Chart / meter tones
+  track: brand.track,
+  barIdle: brand.barIdle,
 
   // Text / Ink
   ink: light.foreground,
   ink2: brand.ink2,
   muted: light.muted,
+  muted2: light['field-placeholder'],
   sage: brand.sage,
 
-  // Accent — terracotta (default)
+  // Accent — terracotta
   accent: light.accent,
+  accentHover: brand.accentHover,
+  accentPress: brand.accentPress,
   accentInk: brand.accentInk,
   accentSoft: light['accent-soft'],
 
   // Borders
   line: light.border,
   lineSoft: light.separator,
+  lineOnInk: alpha(brand.cream, 0.16),
   lineOnMoss: alpha(brand.cream, 0.16),
 
   // Status
@@ -57,54 +67,104 @@ export const spacing = {
   8: 40,
 } as const;
 
+// v2 radii: inputs 18 · rows/set-rows 20–22 · modules 26 · hero/chart 28 ·
+// sheets (top) 34 · pills 999
 export const radii = {
-  sm: 12,
-  md: 18,
-  lg: 22,
+  sm: 18,
+  md: 22,
+  lg: 26,
   xl: 28,
   '2xl': 34,
   pill: 999,
 } as const;
 
 export const typography = {
-  display: 30,
-  title: 21,
-  heading: 17,
-  stat: 28,
+  display: 34,
+  title: 20,
+  heading: 19,
+  stat: 46,
   body: 15,
-  label: 13.5,
+  label: 13,
   caption: 12.5,
   micro: 11,
 } as const;
 
+// v2 elevation — single-layer RN approximations of the design's layered shadows.
 export const shadows = {
   card: {
     shadowColor: brand.ink,
-    shadowOffset: { width: 0, height: 18 },
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.1,
-    shadowRadius: 40,
+    shadowRadius: 28,
     elevation: 2,
   },
+  hero: {
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.09,
+    shadowRadius: 34,
+    elevation: 4,
+  },
+  row: {
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 1,
+  },
+  circle: {
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    elevation: 2,
+  },
+  // charcoal / inverted card
   raised: {
-    shadowColor: brand.moss,
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.7,
-    shadowRadius: 44,
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.16,
+    shadowRadius: 28,
     elevation: 8,
   },
-  nav: {
-    shadowColor: brand.moss,
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.6,
-    shadowRadius: 34,
-    elevation: 10,
+  invertedCard: {
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.16,
+    shadowRadius: 28,
+    elevation: 8,
   },
+  // floating tab bar
+  nav: {
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.28,
+    shadowRadius: 34,
+    elevation: 12,
+  },
+  // primary dark button
+  buttonInk: {
+    shadowColor: brand.ink,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.2,
+    shadowRadius: 26,
+    elevation: 6,
+  },
+  // accent start button
   accent: {
     shadowColor: light.accent,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.9,
+    shadowOpacity: 0.28,
     shadowRadius: 22,
     elevation: 6,
+  },
+  // rest timer card
+  restCard: {
+    shadowColor: light.accent,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.26,
+    shadowRadius: 30,
+    elevation: 8,
   },
 } as const;
 

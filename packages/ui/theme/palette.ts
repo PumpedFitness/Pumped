@@ -1,14 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Pumped — Color Theme — SINGLE SOURCE OF TRUTH
+// Pumped — Color Theme — SINGLE SOURCE OF TRUTH  (PUMPED v2 design system)
 // ─────────────────────────────────────────────────────────────────────────────
 // Edit colors HERE and only here.
 //
-//   • `global.css`   is GENERATED from this file (see scripts/generate-theme-css.ts,
-//                    which runs automatically via the `dev:prepare` script before
-//                    every ios / android / start). Do not edit its theme block.
-//   • `tokens.ts`    derives its runtime `colors` (for StyleSheet / SVG) from here.
+//   • app `global.css` is GENERATED from this file (see
+//     apps/frontend/scripts/generate-theme-css.ts, which runs automatically via
+//     the `dev:prepare` script before every ios / android / start). Do not edit
+//     its theme block.
+//   • `tokens.ts` derives its runtime `colors` (for StyleSheet / SVG) from here.
 //
-// To regenerate global.css manually: `bun run scripts/generate-theme-css.ts`
+// Regenerate global.css manually: `bun run scripts/generate-theme-css.ts`
+//
+// v2 language: warm-grey grounds + near-black ink + a single terracotta accent.
+// No greens, no gradients — depth comes only from layered shadows.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Convert a hex color to an `rgba(...)` string. */
@@ -21,124 +25,133 @@ export const alpha = (hex: string, a: number): string => {
 };
 
 // ── Core hues — the raw paints everything else is mixed from ──────────────────
-const ink = '#34362C'; // primary text — rgb(52, 54, 44)
-const ink2 = '#54564A'; // secondary text
-const cream = '#F3EEE2';
-const terracotta = '#C67B52'; // accent
+const ink = '#1B1A18'; // primary text, inverted surfaces, primary (dark) button
+const ink2 = '#57544F'; // secondary text, stepper glyphs
+const onInk = '#F4F2EF'; // text/icons on ink (dark) surfaces
+const terracotta = '#E2542C'; // accent (start, rest, ƒx, PR marker)
+const accentHover = '#F05F35';
+const accentPress = '#C2431F'; // accent text on white / pressed accent
 const honey = '#C2974C'; // warning / alt accent
-const rose = '#B26B62'; // danger / alt accent
-const sage = '#7E9061'; // success / alt accent
+const rose = '#BC4A3A'; // danger / alt accent
+const sage = '#6E8358'; // success / alt accent
 
 /** Theme-independent brand anchors (same in light & dark). */
 export const brand = {
   ink,
   ink2,
-  cream,
+  cream: onInk, // light text on dark surfaces (v2 "on-ink")
   sage,
-  moss: '#46583C',
-  mossDeep: '#3A4A32',
-  surfaceWell: '#3A4A32',
-  accentInk: '#3A2A1C',
-  // Alternate accents (swap `accent` below to re-theme)
+  // Repurposed from the old moss green → v2 charcoals (no greens in v2)
+  moss: '#26241F', // ink-nav (floating tab bar)
+  mossDeep: ink,
+  surfaceWell: '#DFDCD8', // sunken well
+  accentInk: accentPress, // accent text/ink on light
+  // Accent states
+  accentHover,
+  accentPress,
+  // Alternate accents (functional status)
   accentHoney: honey,
   accentRose: rose,
   accentSage: sage,
-  // Extra ground tone not exposed as a CSS var
-  bgWarm: '#E4DCCB',
+  // Extra ground + chart tones
+  bgWarm: '#DCDAD6', // ground-desk
+  track: '#EBE8E4', // progress / bar-chart track
+  barIdle: '#E7E4E0', // unfilled bars, empty tick circle
+  sunken: '#DFDCD8', // segmented-control track
 } as const;
 
 // ── Semantic tokens, keyed by their CSS custom-property name ───────────────────
 // These become both the `--name` CSS variables and the runtime `colors` object.
 
 export const light = {
-  background: '#EAE3D5',
+  background: '#E8E6E2', // ground
   foreground: ink,
 
-  surface: '#F7F2E8',
+  surface: '#FCFBFA',
   'surface-foreground': ink,
 
-  overlay: '#46583C',
-  'overlay-foreground': cream,
-  backdrop: alpha(ink, 0.32),
+  overlay: ink, // inverted (charcoal) cards — bodyweight card, dark panels
+  'overlay-foreground': onInk,
+  backdrop: alpha(ink, 0.38), // bottom-sheet scrim
 
-  muted: '#928E7E',
-  default: '#EFE8DA',
+  muted: '#8C8880',
+  default: '#DFDCD8', // sunken / segmented track
   'default-foreground': ink2,
 
   accent: terracotta,
-  'accent-foreground': '#3A2A1C',
-  'accent-soft': alpha(terracotta, 0.14),
-  'accent-soft-foreground': terracotta,
+  'accent-foreground': onInk,
+  'accent-soft': alpha(terracotta, 0.1), // accent-tint
+  'accent-soft-foreground': accentPress,
 
-  'field-background': '#F7F2E8',
+  'field-background': '#FCFBFA',
   'field-foreground': ink,
-  'field-placeholder': '#928E7E',
-  'field-border': alpha(ink, 0.09),
+  'field-placeholder': '#A9A6A1', // muted-2
+  'field-border': alpha(ink, 0.08), // hairline
 
   success: sage,
-  'success-foreground': cream,
+  'success-foreground': onInk,
   warning: honey,
-  'warning-foreground': '#3A2A1C',
+  'warning-foreground': onInk,
   danger: rose,
-  'danger-foreground': cream,
+  'danger-foreground': onInk,
 
-  segment: '#EFE8DA',
+  segment: '#DFDCD8',
   'segment-foreground': ink,
 
-  border: alpha(ink, 0.09),
+  border: alpha(ink, 0.08), // hairline
   separator: alpha(ink, 0.06),
 } as const;
 
 export const dark = {
-  background: '#2A2C24',
-  foreground: cream,
+  background: '#1B1A18',
+  foreground: onInk,
 
-  surface: '#34362C',
-  'surface-foreground': cream,
+  surface: '#26241F',
+  'surface-foreground': onInk,
 
-  overlay: '#46583C',
-  'overlay-foreground': cream,
-  backdrop: 'rgba(0, 0, 0, 0.50)',
+  overlay: '#0F0E0D',
+  'overlay-foreground': onInk,
+  backdrop: 'rgba(0, 0, 0, 0.55)',
 
-  muted: '#928E7E',
-  default: '#3A3C32',
-  'default-foreground': '#C8C4B8',
+  muted: '#8C8880',
+  default: '#2E2C28',
+  'default-foreground': '#C9C6C1',
 
   accent: terracotta,
-  'accent-foreground': '#3A2A1C',
-  'accent-soft': alpha(terracotta, 0.18),
-  'accent-soft-foreground': terracotta,
+  'accent-foreground': onInk,
+  'accent-soft': alpha(terracotta, 0.2),
+  'accent-soft-foreground': accentHover,
 
-  'field-background': '#2E302A',
-  'field-foreground': cream,
-  'field-placeholder': '#928E7E',
-  'field-border': alpha(cream, 0.12),
+  'field-background': '#232220',
+  'field-foreground': onInk,
+  'field-placeholder': '#8C8880',
+  'field-border': alpha(onInk, 0.12),
 
   success: sage,
-  'success-foreground': cream,
+  'success-foreground': onInk,
   warning: honey,
-  'warning-foreground': '#3A2A1C',
+  'warning-foreground': ink,
   danger: rose,
-  'danger-foreground': cream,
+  'danger-foreground': onInk,
 
-  segment: '#3A3C32',
-  'segment-foreground': cream,
+  segment: '#2E2C28',
+  'segment-foreground': onInk,
 
-  border: alpha(cream, 0.1),
-  separator: alpha(cream, 0.06),
+  border: alpha(onInk, 0.1),
+  separator: alpha(onInk, 0.06),
 } as const;
 
 /** Per-theme shadow CSS strings (multi-value, kept verbatim). */
 export const shadowVars = {
   light: {
-    surface: '0 1px 2px rgba(52, 54, 44, 0.04), 0 18px 40px -22px rgba(52, 54, 44, 0.10)',
-    overlay: '0 20px 44px -22px rgba(70, 88, 60, 0.70)',
-    field: 'none',
+    surface: '0 12px 28px rgba(27, 26, 24, 0.06), 0 2px 5px rgba(27, 26, 24, 0.03)',
+    overlay: '0 12px 28px rgba(27, 26, 24, 0.14)',
+    field: 'inset 0 2px 5px rgba(27, 26, 24, 0.08)',
   },
   dark: {
     surface: 'none',
     overlay: '0 20px 44px -22px rgba(0, 0, 0, 0.70)',
-    field: 'none',
+    field: 'inset 0 2px 5px rgba(0, 0, 0, 0.30)',
   },
 } as const;
 

@@ -10,76 +10,76 @@
 @layer theme {
   /* ── Light (Clay — default) ── */
   @variant light {
-    --background: #EAE3D5;
-    --foreground: #34362C;
-    --surface: #F7F2E8;
-    --surface-foreground: #34362C;
-    --overlay: #46583C;
-    --overlay-foreground: #F3EEE2;
-    --backdrop: rgba(52, 54, 44, 0.32);
-    --muted: #928E7E;
-    --default: #EFE8DA;
-    --default-foreground: #54564A;
-    --accent: #C67B52;
-    --accent-foreground: #3A2A1C;
-    --accent-soft: rgba(198, 123, 82, 0.14);
-    --accent-soft-foreground: #C67B52;
-    --field-background: #F7F2E8;
-    --field-foreground: #34362C;
-    --field-placeholder: #928E7E;
-    --field-border: rgba(52, 54, 44, 0.09);
-    --success: #7E9061;
-    --success-foreground: #F3EEE2;
+    --background: #E8E6E2;
+    --foreground: #1B1A18;
+    --surface: #FCFBFA;
+    --surface-foreground: #1B1A18;
+    --overlay: #1B1A18;
+    --overlay-foreground: #F4F2EF;
+    --backdrop: rgba(27, 26, 24, 0.38);
+    --muted: #8C8880;
+    --default: #DFDCD8;
+    --default-foreground: #57544F;
+    --accent: #E2542C;
+    --accent-foreground: #F4F2EF;
+    --accent-soft: rgba(226, 84, 44, 0.1);
+    --accent-soft-foreground: #C2431F;
+    --field-background: #FCFBFA;
+    --field-foreground: #1B1A18;
+    --field-placeholder: #A9A6A1;
+    --field-border: rgba(27, 26, 24, 0.08);
+    --success: #6E8358;
+    --success-foreground: #F4F2EF;
     --warning: #C2974C;
-    --warning-foreground: #3A2A1C;
-    --danger: #B26B62;
-    --danger-foreground: #F3EEE2;
-    --segment: #EFE8DA;
-    --segment-foreground: #34362C;
-    --border: rgba(52, 54, 44, 0.09);
-    --separator: rgba(52, 54, 44, 0.06);
+    --warning-foreground: #F4F2EF;
+    --danger: #BC4A3A;
+    --danger-foreground: #F4F2EF;
+    --segment: #DFDCD8;
+    --segment-foreground: #1B1A18;
+    --border: rgba(27, 26, 24, 0.08);
+    --separator: rgba(27, 26, 24, 0.06);
     --focus: var(--accent);
     --link: var(--accent);
-    --surface-shadow: 0 1px 2px rgba(52, 54, 44, 0.04), 0 18px 40px -22px rgba(52, 54, 44, 0.10);
-    --overlay-shadow: 0 20px 44px -22px rgba(70, 88, 60, 0.70);
-    --field-shadow: none;
+    --surface-shadow: 0 12px 28px rgba(27, 26, 24, 0.06), 0 2px 5px rgba(27, 26, 24, 0.03);
+    --overlay-shadow: 0 12px 28px rgba(27, 26, 24, 0.14);
+    --field-shadow: inset 0 2px 5px rgba(27, 26, 24, 0.08);
   }
 
   /* ── Dark ── */
   @variant dark {
-    --background: #2A2C24;
-    --foreground: #F3EEE2;
-    --surface: #34362C;
-    --surface-foreground: #F3EEE2;
-    --overlay: #46583C;
-    --overlay-foreground: #F3EEE2;
-    --backdrop: rgba(0, 0, 0, 0.50);
-    --muted: #928E7E;
-    --default: #3A3C32;
-    --default-foreground: #C8C4B8;
-    --accent: #C67B52;
-    --accent-foreground: #3A2A1C;
-    --accent-soft: rgba(198, 123, 82, 0.18);
-    --accent-soft-foreground: #C67B52;
-    --field-background: #2E302A;
-    --field-foreground: #F3EEE2;
-    --field-placeholder: #928E7E;
-    --field-border: rgba(243, 238, 226, 0.12);
-    --success: #7E9061;
-    --success-foreground: #F3EEE2;
+    --background: #1B1A18;
+    --foreground: #F4F2EF;
+    --surface: #26241F;
+    --surface-foreground: #F4F2EF;
+    --overlay: #0F0E0D;
+    --overlay-foreground: #F4F2EF;
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --muted: #8C8880;
+    --default: #2E2C28;
+    --default-foreground: #C9C6C1;
+    --accent: #E2542C;
+    --accent-foreground: #F4F2EF;
+    --accent-soft: rgba(226, 84, 44, 0.2);
+    --accent-soft-foreground: #F05F35;
+    --field-background: #232220;
+    --field-foreground: #F4F2EF;
+    --field-placeholder: #8C8880;
+    --field-border: rgba(244, 242, 239, 0.12);
+    --success: #6E8358;
+    --success-foreground: #F4F2EF;
     --warning: #C2974C;
-    --warning-foreground: #3A2A1C;
-    --danger: #B26B62;
-    --danger-foreground: #F3EEE2;
-    --segment: #3A3C32;
-    --segment-foreground: #F3EEE2;
-    --border: rgba(243, 238, 226, 0.1);
-    --separator: rgba(243, 238, 226, 0.06);
+    --warning-foreground: #1B1A18;
+    --danger: #BC4A3A;
+    --danger-foreground: #F4F2EF;
+    --segment: #2E2C28;
+    --segment-foreground: #F4F2EF;
+    --border: rgba(244, 242, 239, 0.1);
+    --separator: rgba(244, 242, 239, 0.06);
     --focus: var(--accent);
     --link: var(--accent);
     --surface-shadow: none;
     --overlay-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.70);
-    --field-shadow: none;
+    --field-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.30);
   }
 }
 
@@ -89,30 +89,39 @@
   --color-surface-card: var(--surface);
   --color-surface-raised: var(--overlay);
   --color-surface-sunk: var(--default);
-  --color-surface-well: #3A4A32;
+  --color-surface-well: #DFDCD8;
 
   /* Text */
   --color-text-muted: var(--muted);
-  --color-text-secondary: #54564A;
-  --color-foreground-secondary: #54564A;
-  --color-text-on-raised: #F3EEE2;
-  --color-text-on-raised-dim: rgba(243, 238, 226, 0.6);
+  --color-text-secondary: #57544F;
+  --color-foreground-secondary: #57544F;
+  --color-text-on-raised: #F4F2EF;
+  --color-text-on-raised-dim: rgba(244, 242, 239, 0.6);
 
   /* Brand */
-  --color-moss: #46583C;
-  --color-moss-deep: #3A4A32;
-  --color-cream: #F3EEE2;
-  --color-cream-dim: rgba(243, 238, 226, 0.6);
-  --color-sage: #7E9061;
+  --color-moss: #26241F;
+  --color-moss-deep: #1B1A18;
+  --color-cream: #F4F2EF;
+  --color-cream-dim: rgba(244, 242, 239, 0.6);
+  --color-on-ink: #F4F2EF;
+  --color-on-ink-dim: rgba(244, 242, 239, 0.6);
+  --color-sage: #6E8358;
+
+  /* Chart / meter tones */
+  --color-track: #EBE8E4;
+  --color-bar-idle: #E7E4E0;
+  --color-sunken: #DFDCD8;
 
   /* Accent variants */
   --color-accent-soft: var(--accent-soft);
-  --color-accent-ink: #3A2A1C;
+  --color-accent-ink: #C2431F;
+  --color-accent-hover: #F05F35;
+  --color-accent-press: #C2431F;
 
   /* Borders */
-  --color-border-hairline: rgba(52, 54, 44, 0.09);
-  --color-border-soft: rgba(52, 54, 44, 0.06);
-  --color-border-on-moss: rgba(243, 238, 226, 0.16);
+  --color-border-hairline: rgba(27, 26, 24, 0.09);
+  --color-border-soft: rgba(27, 26, 24, 0.06);
+  --color-border-on-moss: rgba(244, 242, 239, 0.16);
 }
 /* @theme-gen:end */
 

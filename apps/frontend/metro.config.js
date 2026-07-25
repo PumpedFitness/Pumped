@@ -21,6 +21,13 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
+// The native AppDelegate requests the bundle at root "index". Expo's CLI sets
+// Metro's projectRoot to the workspace root (it detects the root `workspaces`),
+// which would make "index" resolve at the repo root and fail. Pin the server
+// root to the app so `index` maps to apps/frontend/index.js — while watchFolders
+// above still lets Metro resolve the sibling @pumped/ui package.
+config.server = { ...(config.server || {}), unstable_serverRoot: projectRoot };
+
 // Allow importing .sql files as raw text (used by Drizzle migrations)
 config.resolver.sourceExts.push('sql');
 

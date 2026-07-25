@@ -57,11 +57,20 @@ ${varsFor(dark, shadowVars.dark)}
   --color-moss-deep: ${brand.mossDeep};
   --color-cream: ${brand.cream};
   --color-cream-dim: ${alpha(brand.cream, 0.6)};
+  --color-on-ink: ${brand.cream};
+  --color-on-ink-dim: ${alpha(brand.cream, 0.6)};
   --color-sage: ${brand.sage};
+
+  /* Chart / meter tones */
+  --color-track: ${brand.track};
+  --color-bar-idle: ${brand.barIdle};
+  --color-sunken: ${brand.sunken};
 
   /* Accent variants */
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: ${brand.accentInk};
+  --color-accent-hover: ${brand.accentHover};
+  --color-accent-press: ${brand.accentPress};
 
   /* Borders */
   --color-border-hairline: ${alpha(brand.ink, 0.09)};
