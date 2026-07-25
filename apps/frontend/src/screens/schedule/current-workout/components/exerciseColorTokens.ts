@@ -1,5 +1,5 @@
 import type { WorkoutTemplateColor } from '@/data/local/enums';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { getWorkoutTemplateColor } from '@/components/workout/workoutTemplatePresentation';
 
 export type ExerciseColorTokens = {

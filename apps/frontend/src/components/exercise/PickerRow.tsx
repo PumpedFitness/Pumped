@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { Card } from '@/components/clay/Card';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { Card } from '@pumped/ui/clay/Card';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 type PickerRowProps = {
   label: string;

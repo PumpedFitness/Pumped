@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 
 type SummarySlideHeaderProps = {
   eyebrow: string;

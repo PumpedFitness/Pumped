@@ -3,12 +3,12 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import type { ExerciseOption } from '@/types/exercise';
-import { colors } from '@/theme/tokens';
-import { EmptyState } from '@/components/clay/EmptyState';
+import { colors } from '@pumped/ui/theme/tokens';
+import { EmptyState } from '@pumped/ui/clay/EmptyState';
 import { ExerciseRowCard } from '@/components/exercise/ExerciseRowCard';
 import { filterExercises } from '@/components/exercise/exerciseFilter';
-import { SearchInput } from '@/components/forms/SearchInput';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { SearchInput } from '@pumped/ui/forms/SearchInput';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 type ExerciseSelectionListProps = {
   exercises: ExerciseOption[];

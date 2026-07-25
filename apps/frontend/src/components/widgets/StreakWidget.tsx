@@ -1,8 +1,8 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { colors } from '@/theme/tokens';
+import { Card } from '@pumped/ui/clay/Card';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type StreakWidgetProps = {
   colSpan: number;

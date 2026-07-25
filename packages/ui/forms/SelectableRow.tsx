@@ -1,6 +1,6 @@
 import { Pressable, Text, type AccessibilityRole } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '../theme/tokens';
+import { ClayIcon } from '../icons/ClayIcon';
 
 type SelectableRowProps = {
   label: string;

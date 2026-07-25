@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
+import { Card } from '@pumped/ui/clay/Card';
 import type { ExerciseToEdit } from '@/components/exercise/useExerciseDraft';
 
 type ExerciseDetailsSectionProps = {

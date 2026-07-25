@@ -1,7 +1,7 @@
 import type { Ref } from 'react';
 import { Text, TextInput, View } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { Card } from '@/components/clay/Card';
+import { colors } from '@pumped/ui/theme/tokens';
+import { Card } from '@pumped/ui/clay/Card';
 
 type LabeledFieldProps = {
   label: string;

@@ -12,10 +12,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { Button } from '@/components/clay/Button';
-import { Card } from '@/components/clay/Card';
-import { StepDots } from '@/components/clay/StepDots';
-import { motion } from '@/theme/tokens';
+import { Button } from '@pumped/ui/clay/Button';
+import { Card } from '@pumped/ui/clay/Card';
+import { StepDots } from '@pumped/ui/clay/StepDots';
+import { motion } from '@pumped/ui/theme/tokens';
 import { useTourStore } from '@/stores/tourStore';
 import { TOUR_STEPS } from './tourSteps';
 

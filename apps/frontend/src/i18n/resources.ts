@@ -64,6 +64,11 @@ export const resources = {
           on: 'On',
           off: 'Off',
         },
+        autoRestTimer: {
+          label: 'Auto rest timer',
+          on: 'On',
+          off: 'Off',
+        },
       },
       tabs: {
         home: 'Home',
@@ -456,8 +461,24 @@ export const resources = {
           startAnyway: 'Start anyway',
           completedEyebrow: 'Completed today',
           noneTitle: 'No active schedule',
-          noneBody: 'Activate a schedule below to plan your week.',
+          noneBody: 'Activate a schedule to plan your week.',
         },
+        segments: {
+          active: 'Active',
+          library: 'Library',
+        },
+        week: {
+          title: 'This week',
+        },
+        upNext: {
+          title: 'Up next · Tomorrow',
+          rest: 'Rest day',
+          restBody: 'Nothing scheduled — recover well.',
+          scheduled: 'Scheduled',
+          plusMore_one: '+{{count}} more workout',
+          plusMore_other: '+{{count}} more workouts',
+        },
+        browseLibrary: 'Browse schedules',
         active: 'Active',
         activate: 'Activate',
         deactivate: 'Deactivate',
@@ -544,6 +565,12 @@ export const resources = {
       },
       currentWorkout: {
         screenTitle: 'Current workout',
+        restPrompt: {
+          title: 'Start a rest timer?',
+          text: 'Do you want to start a rest timer when you log a set? You can change this later in Settings.',
+          yes: 'Yes',
+          no: 'No',
+        },
         backToPlanA11y: 'Back to plan',
         inProgress: 'Workout in progress',
         setsCompleted: '{{completed}} of {{total}} sets completed',
@@ -966,6 +993,11 @@ export const resources = {
           on: 'An',
           off: 'Aus',
         },
+        autoRestTimer: {
+          label: 'Pausen-Timer automatisch',
+          on: 'An',
+          off: 'Aus',
+        },
       },
       tabs: {
         home: 'Home',
@@ -1374,8 +1406,24 @@ export const resources = {
           startAnyway: 'Trotzdem starten',
           completedEyebrow: 'Heute erledigt',
           noneTitle: 'Kein aktiver Zeitplan',
-          noneBody: 'Aktiviere unten einen Zeitplan, um deine Woche zu planen.',
+          noneBody: 'Aktiviere einen Zeitplan, um deine Woche zu planen.',
         },
+        segments: {
+          active: 'Aktiv',
+          library: 'Bibliothek',
+        },
+        week: {
+          title: 'Diese Woche',
+        },
+        upNext: {
+          title: 'Als Nächstes · Morgen',
+          rest: 'Ruhetag',
+          restBody: 'Nichts geplant — erhol dich gut.',
+          scheduled: 'Geplant',
+          plusMore_one: '+{{count}} weiteres Workout',
+          plusMore_other: '+{{count}} weitere Workouts',
+        },
+        browseLibrary: 'Zeitpläne durchsuchen',
         active: 'Aktiv',
         activate: 'Aktivieren',
         deactivate: 'Deaktivieren',
@@ -1463,6 +1511,12 @@ export const resources = {
       },
       currentWorkout: {
         screenTitle: 'Aktuelles Workout',
+        restPrompt: {
+          title: 'Pausen-Timer starten?',
+          text: 'Möchtest du beim Loggen eines Satzes automatisch einen Pausen-Timer starten? Du kannst das später in den Einstellungen ändern.',
+          yes: 'Ja',
+          no: 'Nein',
+        },
         backToPlanA11y: 'Zurück zum Plan',
         inProgress: 'Workout läuft',
         setsCompleted: '{{completed}} von {{total}} Sätzen abgeschlossen',

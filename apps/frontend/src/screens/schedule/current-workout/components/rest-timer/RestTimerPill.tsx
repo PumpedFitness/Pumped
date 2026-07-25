@@ -10,9 +10,9 @@ import {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { AnimatedView } from '@/components/uniwind';
-import { colors, motion } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { AnimatedView } from '@pumped/ui/uniwind';
+import { colors, motion } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import {
   formatRestClock,
   REST_STEP_SECONDS,
@@ -54,6 +54,24 @@ function StepButton({ label, accessibilityLabel, onPress }: StepButtonProps) {
       <Text className="text-[12.5px] font-bold text-cream tabular-nums">
         {label}
       </Text>
+    </Pressable>
+  );
+}
+
+type SkipButtonProps = {
+  accessibilityLabel: string;
+  onPress: () => void;
+};
+
+function SkipButton({ accessibilityLabel, onPress }: SkipButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      className="h-9 w-9 items-center justify-center rounded-full bg-[rgba(243,238,226,0.1)] active:bg-[rgba(243,238,226,0.22)]"
+    >
+      <ClayIcon name="skip" size={15} color={colors.cream} />
     </Pressable>
   );
 }
@@ -199,6 +217,10 @@ export function RestTimerPill({
               color={colors.accentInk}
             />
           </Pressable>
+          <SkipButton
+            accessibilityLabel={t('currentWorkout.rest.skip')}
+            onPress={onSkip}
+          />
         </View>
 
         {/* Draining progress underline — the remaining share of the rest. */}

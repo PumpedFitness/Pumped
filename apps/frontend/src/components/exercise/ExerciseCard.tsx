@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import {
   SwipeToDelete,
   type DeleteHandler,
-} from '@/components/clay/SwipeToDelete';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+} from '@pumped/ui/clay/SwipeToDelete';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 type ExerciseCardProps = {
   name: string;

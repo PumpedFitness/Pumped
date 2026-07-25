@@ -4,7 +4,7 @@
 
 import { writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { alpha, brand, dark, light, shadowVars, type ThemeColors } from '../src/theme/palette';
+import { alpha, brand, dark, light, shadowVars, type ThemeColors } from '@pumped/ui/theme/palette';
 
 const START = '/* @theme-gen:start — AUTO-GENERATED from src/theme/palette.ts. Do not edit by hand. */';
 const END = '/* @theme-gen:end */';

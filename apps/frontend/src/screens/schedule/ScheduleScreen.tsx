@@ -1,114 +1,43 @@
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Alert } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { AppShell } from '@/components/layout/AppShell';
-import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
-import { ScheduleTodayHeader } from './components/ScheduleTodayHeader';
-import { ScheduleRow } from './components/ScheduleRow';
-import { useSchedules } from '@/hooks/useSchedules';
-import { useTodayWorkout } from '@/hooks/useTodayWorkout';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
-import { formatScheduleSummary } from '@/components/workout/schedulePresentation';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
-import type { Schedule } from '@/types/schedule';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
+import { motion } from '@pumped/ui/theme/tokens';
+import { ActiveScheduleTab } from './components/ActiveScheduleTab';
+import { ScheduleLibraryTab } from './components/ScheduleLibraryTab';
+
+type ScheduleSegment = 'active' | 'library';
 
 export function ScheduleScreen() {
   const { t } = useTranslation();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { schedules, activeSchedule, setActive } = useSchedules();
-  const { today, skip, unskip } = useTodayWorkout();
-  const { profile } = useUserProfile();
-  const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
-
-  const startToday = () => {
-    const templateId =
-      today.kind === 'pending' || today.kind === 'skipped'
-        ? today.templateId
-        : null;
-    if (!templateId) {
-      return;
-    }
-    if (currentWorkout) {
-      Alert.alert(
-        t('plan.alerts.inProgressTitle'),
-        t('plan.alerts.inProgressBody', { name: currentWorkout.name }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('plan.alerts.openWorkout'),
-            onPress: () => openCurrentWorkout(navigation),
-          },
-        ],
-      );
-      return;
-    }
-    try {
-      startTemplateWorkout(templateId);
-      openCurrentWorkout(navigation);
-    } catch (error) {
-      Alert.alert(
-        t('plan.alerts.startFailedTitle'),
-        error instanceof Error ? error.message : t('common.tryAgain'),
-      );
-    }
-  };
-
-  const startAnyway = () => {
-    unskip();
-    startToday();
-  };
-
-  const viewWorkout = (workoutId: string) => {
-    navigation.navigate('CompletedWorkout', { workoutId });
-  };
-
-  const createSchedule = () => {
-    navigation.navigate('ScheduleEditor', {});
-  };
-
-  const openSchedule = (schedule: Schedule) => {
-    navigation.navigate('ScheduleEditor', { scheduleId: schedule.id });
-  };
-
-  const toggleScheduleActive = (schedule: Schedule) => {
-    setActive(schedule.id, !schedule.isActive);
-  };
+  const [segment, setSegment] = useState<ScheduleSegment>('active');
 
   return (
     <AppShell showTabBar>
-      <SearchableLibrary
-        items={schedules}
-        keyExtractor={schedule => schedule.id}
-        getSearchText={schedule =>
-          `${schedule.name} ${formatScheduleSummary(t, schedule)}`
-        }
-        renderItem={schedule => (
-          <ScheduleRow
-            schedule={schedule}
-            onEdit={openSchedule}
-            onToggleActive={toggleScheduleActive}
-          />
+      <View className="bg-background px-5 pt-4">
+        <SegmentedControl
+          options={[
+            { value: 'active', label: t('schedule.segments.active') },
+            { value: 'library', label: t('schedule.segments.library') },
+          ]}
+          value={segment}
+          onChange={value => setSegment(value as ScheduleSegment)}
+        />
+      </View>
+      <Animated.View
+        key={segment}
+        className="flex-1"
+        entering={FadeIn.duration(motion.fast)}
+        exiting={FadeOut.duration(motion.fast)}
+      >
+        {segment === 'active' ? (
+          <ActiveScheduleTab onGoToLibrary={() => setSegment('library')} />
+        ) : (
+          <ScheduleLibraryTab />
         )}
-        namespace="plan.schedules"
-        emptyIconName="calendar"
-        createTestID="create_schedule"
-        onCreate={createSchedule}
-        header={
-          <ScheduleTodayHeader
-            state={today}
-            scheduleName={activeSchedule?.name ?? null}
-            weightUnit={profile.weightUnit}
-            onStart={startToday}
-            onSkip={skip}
-            onStartAnyway={startAnyway}
-            onViewWorkout={viewWorkout}
-          />
-        }
-      />
+      </Animated.View>
     </AppShell>
   );
 }

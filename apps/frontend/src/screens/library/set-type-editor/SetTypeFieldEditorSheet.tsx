@@ -3,9 +3,9 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet, Button, Input } from 'heroui-native';
 import { randomUUID } from 'expo-crypto';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { SegmentedControl } from '@/components/clay/SegmentedControl';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import type { SetFieldDataType, SetFieldUnit } from '@/data/local/enums';
 import type { DraftField } from './draft';
 

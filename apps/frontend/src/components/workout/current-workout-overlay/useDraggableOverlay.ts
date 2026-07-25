@@ -11,7 +11,7 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { motion } from '@/theme/tokens';
+import { motion } from '@pumped/ui/theme/tokens';
 import {
   useCurrentWorkoutOverlayStore,
   type OverlaySide,

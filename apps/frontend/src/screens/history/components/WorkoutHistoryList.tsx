@@ -2,10 +2,10 @@ import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
-import { colors } from '@/theme/tokens';
-import { EmptyState } from '@/components/clay/EmptyState';
-import { SwipeToDelete } from '@/components/clay/SwipeToDelete';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { EmptyState } from '@pumped/ui/clay/EmptyState';
+import { SwipeToDelete } from '@pumped/ui/clay/SwipeToDelete';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutHistoryItemCard } from './workout-history-item';
 import { confirmDeleteWorkout } from './confirmDeleteWorkout';
 

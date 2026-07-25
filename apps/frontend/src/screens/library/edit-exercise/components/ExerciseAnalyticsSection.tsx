@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
-import { SegmentedControl } from '@/components/clay/SegmentedControl';
+import { Card } from '@pumped/ui/clay/Card';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { MetricChart } from '@/screens/tracking/metric-history/components/MetricChart';
 import type {
   ExerciseChartMetric,

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { SwipeTo } from '@/components/clay/SwipeTo';
-import { colors } from '@/theme/tokens';
+import { SwipeTo } from './SwipeTo';
+import { colors } from '../theme/tokens';
 
 // Soft warm wash applied behind a favorited row.
 const FAVORITE_WASH = 'rgba(194, 151, 76, 0.12)';

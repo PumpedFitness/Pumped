@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { SettingsSection } from '@/components/clay/SettingsSection';
-import { ListRow } from '@/components/clay/ListRow';
-import { SegmentedControl } from '@/components/clay/SegmentedControl';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { SettingsSection } from '@pumped/ui/clay/SettingsSection';
+import { ListRow } from '@pumped/ui/clay/ListRow';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useAuthStore } from '@/stores/authStore';
 import {
@@ -16,11 +16,11 @@ import {
 } from '@/stores/appSettingsStore';
 import { resetAllData } from '@/data/local/resetAllData';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { useHandover } from '@/hooks/useHandover';
 import { Input } from 'heroui-native';
-import { Button } from '@/components/clay/Button';
-import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
+import { Button } from '@pumped/ui/clay/Button';
+import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 const chevron = <ClayIcon name="chevron" size={16} color={colors.muted} />;
@@ -63,6 +63,59 @@ function FirstDayOfWeekSetting() {
   );
 }
 
+function RestTimerSettings() {
+  const { t } = useTranslation();
+  const restTimerFullscreen = useAppSettingsStore(
+    state => state.restTimerFullscreen,
+  );
+  const setRestTimerFullscreen = useAppSettingsStore(
+    state => state.setRestTimerFullscreen,
+  );
+  const autoRestTimer = useAppSettingsStore(state => state.autoRestTimer);
+  const setAutoRestTimer = useAppSettingsStore(state => state.setAutoRestTimer);
+
+  return (
+    <>
+      <ListRow
+        icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
+        label={t('settings.autoRestTimer.label')}
+        paddingVertical={10}
+        divider
+        trailing={
+          <View className="w-32">
+            <SegmentedControl
+              options={[
+                { value: 'on', label: t('settings.autoRestTimer.on') },
+                { value: 'off', label: t('settings.autoRestTimer.off') },
+              ]}
+              value={autoRestTimer ? 'on' : 'off'}
+              onChange={value => setAutoRestTimer(value === 'on')}
+            />
+          </View>
+        }
+      />
+      <ListRow
+        icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
+        label={t('settings.restTimerFullscreen.label')}
+        paddingVertical={10}
+        divider
+        trailing={
+          <View className="w-32">
+            <SegmentedControl
+              options={[
+                { value: 'on', label: t('settings.restTimerFullscreen.on') },
+                { value: 'off', label: t('settings.restTimerFullscreen.off') },
+              ]}
+              value={restTimerFullscreen ? 'on' : 'off'}
+              onChange={value => setRestTimerFullscreen(value === 'on')}
+            />
+          </View>
+        }
+      />
+    </>
+  );
+}
+
 export function AppSettings() {
   const { t } = useTranslation();
   const navigation =
@@ -76,12 +129,6 @@ export function AppSettings() {
   const resetOnboarding = useAuthStore(s => s.resetOnboarding);
   const weightUnit = useAppSettingsStore(state => state.weightUnit);
   const setWeightUnit = useAppSettingsStore(state => state.setWeightUnit);
-  const restTimerFullscreen = useAppSettingsStore(
-    state => state.restTimerFullscreen,
-  );
-  const setRestTimerFullscreen = useAppSettingsStore(
-    state => state.setRestTimerFullscreen,
-  );
 
   const handleResetAll = useCallback(() => {
     Alert.alert(t('profile.alerts.resetTitle'), t('profile.alerts.resetBody'), [
@@ -171,24 +218,7 @@ export function AppSettings() {
           }
         />
         <FirstDayOfWeekSetting />
-        <ListRow
-          icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
-          label={t('settings.restTimerFullscreen.label')}
-          paddingVertical={10}
-          divider
-          trailing={
-            <View className="w-32">
-              <SegmentedControl
-                options={[
-                  { value: 'on', label: t('settings.restTimerFullscreen.on') },
-                  { value: 'off', label: t('settings.restTimerFullscreen.off') },
-                ]}
-                value={restTimerFullscreen ? 'on' : 'off'}
-                onChange={value => setRestTimerFullscreen(value === 'on')}
-              />
-            </View>
-          }
-        />
+        <RestTimerSettings />
       </SettingsSection>
 
       {/* ── Data ─────────────────────────────── */}

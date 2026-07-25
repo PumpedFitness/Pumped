@@ -10,7 +10,7 @@ import {
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { randomUUID } from 'expo-crypto';
 import type { InferInsertModel } from 'drizzle-orm';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { AddMetricHeader } from './components/AddMetricHeader';
 import { MetricFormCard } from './components/MetricFormCard';
 import { useRepository } from '@/data/local/useRepository';
@@ -18,7 +18,7 @@ import {
   bodyWeightEntries,
   bodyFatEntries,
 } from '@/data/local/schema/bodyMetrics';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type AddMetricRouteProp = RouteProp<RootStackParamList, 'AddMetric'>;
 

@@ -2,9 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet, Button } from 'heroui-native';
-import type { SetFieldRange } from '@/types/workout';
 import type { OptionalWheelPickerConfig } from './OptionalWheelPickerSheet';
 import { WheelPicker } from './WheelPicker';
+
+/** Min–max span for a `range` field's target (e.g. reps 8–12). Structurally
+ *  matches the app's domain `SetFieldRange`, kept local so the design-system
+ *  package stays free of app data-model imports. */
+export type SetFieldRange = {
+  min: number | null;
+  max: number | null;
+};
 
 type RangeWheelPickerSheetProps = {
   visible: boolean;

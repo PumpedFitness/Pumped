@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 export type ColorSwatchOption<T extends string> = {
   value: T;

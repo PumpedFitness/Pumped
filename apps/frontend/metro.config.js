@@ -3,12 +3,23 @@ const {withUniwindConfig} = require('uniwind/metro');
 const {
   wrapWithReanimatedMetroConfig,
 } = require('react-native-reanimated/metro-config');
+const path = require('path');
 
 // eslint-disable-next-line no-undef
-const config = getDefaultConfig(__dirname);
+const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, '../..');
 
-// Ensure projectRoot is absolute so Metro doesn't resolve to the monorepo root
-config.projectRoot = __dirname;
+const config = getDefaultConfig(projectRoot);
+
+// Pin projectRoot to the app, but watch the whole workspace so Metro picks up
+// source changes in sibling packages (e.g. @pumped/ui) and uniwind scans their
+// classNames. Resolve modules from both the app and the hoisted root store.
+config.projectRoot = projectRoot;
+config.watchFolders = [workspaceRoot];
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, 'node_modules'),
+  path.resolve(workspaceRoot, 'node_modules'),
+];
 
 // Allow importing .sql files as raw text (used by Drizzle migrations)
 config.resolver.sourceExts.push('sql');

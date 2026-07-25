@@ -1,10 +1,10 @@
 import { View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { Card } from '@/components/clay/Card';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { Card } from '@pumped/ui/clay/Card';
 import type { MetricEntry } from '@/screens/tracking/metric-history/types';
 import { formatDate } from '@/screens/tracking/metric-history/dateFormat';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type MetricEntryListProps = {
   entries: MetricEntry[];

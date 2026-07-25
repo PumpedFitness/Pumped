@@ -6,8 +6,8 @@ import {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { motion } from '@/theme/tokens';
-import { AnimatedView } from '@/components/uniwind';
+import { motion } from '../theme/tokens';
+import { AnimatedView } from '../uniwind';
 
 type Option = string | { value: string; label: string };
 

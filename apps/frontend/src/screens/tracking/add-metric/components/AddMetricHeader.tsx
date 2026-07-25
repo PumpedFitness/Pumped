@@ -1,6 +1,6 @@
 import { View, Pressable } from 'react-native';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type AddMetricHeaderProps = {
   onClose: () => void;

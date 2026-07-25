@@ -1,4 +1,4 @@
-import type { IconName } from '@/components/icons/ClayIcon';
+import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import type { TranslationResource } from '@/i18n/resources';
 
 export type WidgetType =

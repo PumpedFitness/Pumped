@@ -1,6 +1,6 @@
 import { View, Text, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { SegmentedControl } from '@/components/clay/SegmentedControl';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { ProfileField } from './ProfileField';
 
 export type ProfileFields = {

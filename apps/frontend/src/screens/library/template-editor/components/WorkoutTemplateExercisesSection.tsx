@@ -6,8 +6,8 @@ import {
   useReorderableDrag,
   type ReorderableListReorderEvent,
 } from 'react-native-reorderable-list';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { useTemplateEditor } from '@/screens/library/template-editor/templateEditorContext';
 import type { EditorExercise } from '@/screens/library/template-editor/useEditorExercises';
 import { ExerciseEditorCard } from './ExerciseEditorCard';

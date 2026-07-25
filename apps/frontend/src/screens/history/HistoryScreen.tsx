@@ -6,7 +6,7 @@ import type { NativeBottomTabScreenProps } from '@react-navigation/bottom-tabs/u
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppShell } from '@/components/layout/AppShell';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
-import { SearchInput } from '@/components/forms/SearchInput';
+import { SearchInput } from '@pumped/ui/forms/SearchInput';
 import { WorkoutHistoryList } from './components/WorkoutHistoryList';
 import { WorkoutHistorySummary } from './components/workout-history-summary';
 import { useUserProfile } from '@/hooks/useUserProfile';

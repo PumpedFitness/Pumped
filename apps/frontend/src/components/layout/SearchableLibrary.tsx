@@ -8,11 +8,11 @@ import Animated, {
   SlideOutLeft,
 } from 'react-native-reanimated';
 import { Button } from 'heroui-native';
-import { EmptyState } from '@/components/clay/EmptyState';
-import { SearchInput } from '@/components/forms/SearchInput';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { EmptyState } from '@pumped/ui/clay/EmptyState';
+import { SearchInput } from '@pumped/ui/forms/SearchInput';
+import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
-import { colors, motion } from '@/theme/tokens';
+import { colors, motion } from '@pumped/ui/theme/tokens';
 
 type SearchableLibraryProps<T> = {
   items: T[];

@@ -9,9 +9,14 @@ Pumped is an **offline-first** strength-training app. It works without internet 
 ```
 apps/frontend/   # React Native mobile app (iOS + Android) — the main app
 apps/backend/    # Kotlin/Spring Boot API — optional, not required for any features
+packages/ui/     # @pumped/ui — shared design-system package (clay primitives,
+                 #   ClayIcon, forms, uniwind wrappers, theme tokens/palette)
 ```
 
-**Package manager:** Bun (workspaces in `apps/*`)
+**Package manager:** Bun workspaces (`workspaces: ["apps/frontend", "packages/*"]`
+in the root `package.json`). Run `bun install` **from the repo root** — deps live
+in Bun's isolated store at the root and are symlinked into each package.
+`apps/backend` is Gradle and not part of the JS workspace.
 
 ### Commands (run from root)
 

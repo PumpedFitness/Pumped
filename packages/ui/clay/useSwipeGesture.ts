@@ -10,7 +10,7 @@ import {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import type { IconName } from '@/components/icons/ClayIcon';
+import type { IconName } from '../icons/ClayIcon';
 
 // Result returned by an action. `false` cancels the commit and springs the row
 // back (e.g. a declined confirmation, or a non-destructive toggle); anything

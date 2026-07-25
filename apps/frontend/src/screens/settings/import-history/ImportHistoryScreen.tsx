@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppView } from '@/components/layout/AppView';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { Button } from '@/components/clay/Button';
-import { Card } from '@/components/clay/Card';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { Button } from '@pumped/ui/clay/Button';
+import { Card } from '@pumped/ui/clay/Card';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { useTableQuery } from '@/data/local/tableVersions';
 import { importBatches } from '@/data/local/schema';
 import {
@@ -14,7 +14,7 @@ import {
   type ImportBatch,
 } from '@/data/local/imports/csvImportService';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type ImportHistoryScreenProps = NativeStackScreenProps<
   RootStackParamList,

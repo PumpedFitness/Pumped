@@ -2,10 +2,10 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/AppShell';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { widgetRegistry } from '@/components/widgets/registry';
 import { useHomescreenStore } from '@/stores/homescreenStore';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type { WidgetType } from '@/types/widget';
 import { WidgetPickerCard } from './components/WidgetPickerCard';
 

@@ -84,21 +84,21 @@ src/
 │   │   ├── metric-history/     #   detail — { metric: 'weight' | 'bodyFat' }
 │   │   └── add-metric/         #   modal  — { metric }
 │   └── profile/           # ProfileScreen (You tab) + UserSettings/AppSettings/LanguageSwitcher
-├── components/            # SHARED components only (used by 2+ screens)
-│   ├── clay/              # design-system primitives
+├── components/            # SHARED app components only (used by 2+ screens)
 │   ├── exercise/          # exercise UI shared across screens
-│   ├── forms/             # shared form components
-│   ├── icons/             # ClayIcon SVG icon system
 │   ├── layout/            # AppShell, AppView, ModalHeader, ScreenHeader
 │   ├── widgets/           # home-screen widget module (registry pattern)
 │   ├── workout/           # current-workout overlay, template presentation
-│   └── uniwind.ts         # withUniwind wrappers (AnimatedView, StyledWebView)
+│   └── body/ brand/ feedback/ tour/
+│   # design-system primitives (clay/, forms/, icons/ClayIcon, uniwind wrappers)
+│   # + theme tokens/palette live in the @pumped/ui package (packages/ui/).
+│   # Import via '@pumped/ui/clay/Button' (deep) or '@pumped/ui' (barrel).
 ├── hooks/                 # domain hooks
 ├── data/local/            # schema, migrations, useRepository, tableVersions,
 │                          # workouts/ data core, resetAllData, database init
 ├── i18n/                  # i18next init + resources (en, de)
 ├── stores/                # zustand (auth, homescreen, current-workout draft)
-├── types/  utils/  theme/
+├── types/  utils/         # (theme tokens/palette moved to @pumped/ui)
 ```
 
 **Co-location rule:** a component used by exactly one screen lives in that
@@ -118,6 +118,13 @@ stays internally relative and survives being moved as a unit. No `../` imports
 
 Check this catalog (then heroui-native's exports) before writing any new UI.
 Do not hand-roll a button/row/sheet/search/empty-state that already exists.
+
+The `clay/…`, `forms/…`, and `icons/…` entries below now live in the
+**`@pumped/ui`** package — import them via a deep path
+(`import { Button } from '@pumped/ui/clay/Button'`) or the barrel
+(`import { Button } from '@pumped/ui'`). `layout/…` and `exercise/…` stay in the
+app (`@/components/…`). Add new design-system primitives to `packages/ui/`, not
+the app.
 
 | Need | Use |
 |---|---|
@@ -169,8 +176,8 @@ Do not hand-roll a button/row/sheet/search/empty-state that already exists.
   for: Reanimated animated styles, safe-area inset values, SVG props,
   data-driven/computed values, and the RN shadow token objects
   (`shadows.*` from `theme/tokens.ts`).
-- Third-party components without className: use the wrappers in
-  `components/uniwind.ts` (`AnimatedView`, `StyledWebView`) or add one there.
+- Third-party components without className: use the wrappers from `@pumped/ui`
+  (`AnimatedView`, `StyledWebView`) or add one to `packages/ui/uniwind.ts`.
 - Exact values over near-miss scale classes: `text-[15px]`, `rounded-[18px]`,
   `gap-[13px]`. Don't use `t-*` typography utilities as approximations (they
   set weight/tracking/line-height). Don't use `/NN` opacity modifiers on theme

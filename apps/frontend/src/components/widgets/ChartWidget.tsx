@@ -8,9 +8,9 @@ import {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { AnimatedView, StyledWebView } from '@/components/uniwind';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { colors } from '@/theme/tokens';
+import { AnimatedView, StyledWebView } from '@pumped/ui/uniwind';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type ChartWidgetProps = {
   colSpan: number;

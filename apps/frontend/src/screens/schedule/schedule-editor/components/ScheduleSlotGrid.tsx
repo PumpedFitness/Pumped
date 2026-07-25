@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ScheduleRecurrenceType } from '@/data/local/enums';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 type ScheduleSlotGridProps = {
   recurrenceType: ScheduleRecurrenceType;

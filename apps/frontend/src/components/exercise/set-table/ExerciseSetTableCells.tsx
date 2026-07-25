@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput } from 'react-native';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { formatSetNumber } from './exerciseSetTableModel';
 
 type EditableNumberInputProps = {

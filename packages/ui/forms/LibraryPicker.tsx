@@ -3,8 +3,8 @@ import { Keyboard, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { BottomSheet } from 'heroui-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '../theme/tokens';
+import { ClayIcon } from '../icons/ClayIcon';
 import { SearchInput } from './SearchInput';
 import { SelectableRow } from './SelectableRow';
 

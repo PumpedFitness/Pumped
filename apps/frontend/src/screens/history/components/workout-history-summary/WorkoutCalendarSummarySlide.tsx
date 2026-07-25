@@ -2,7 +2,7 @@ import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { useAppSettingsStore } from '@/stores/appSettingsStore';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { getWorkoutTemplateColor } from '@/components/workout/workoutTemplatePresentation';
 import { SummarySlideHeader } from './SummarySlideHeader';
 import {

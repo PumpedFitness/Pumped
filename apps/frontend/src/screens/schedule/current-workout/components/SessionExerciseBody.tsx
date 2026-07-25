@@ -30,7 +30,7 @@ type SessionExerciseBodyProps = {
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
   toggleSetDone: (exerciseId: string, setId: string) => boolean;
-  restStart: (seconds: number) => void;
+  onSetLogged: (restSeconds: number) => void;
   removeSet: (exerciseId: string, setId: string) => void;
   addSet: (exerciseId: string) => void;
 };
@@ -102,7 +102,7 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
   onCreateSetType,
   updateSet,
   toggleSetDone,
-  restStart,
+  onSetLogged,
   removeSet,
   addSet,
 }: SessionExerciseBodyProps) {
@@ -126,18 +126,19 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
     [addSet, exercise.id],
   );
   // Capture the set's pre-toggle state so we know it became done (not undone)
-  // and what rest to seed — the toggle itself only returns a success boolean.
+  // and what rest it carries — the toggle itself only returns a success
+  // boolean. Whether that rest actually starts is decided upstream.
   const handleToggleSetDone = useCallback(
     (setId: string) => {
       const set = exercise.sets.find(item => item.id === setId);
       const wasDone = set?.isDone ?? false;
       const ok = toggleSetDone(exercise.id, setId);
-      if (ok && !wasDone && set?.restSeconds && set.restSeconds > 0) {
-        restStart(set.restSeconds);
+      if (ok && !wasDone) {
+        onSetLogged(set?.restSeconds ?? 0);
       }
       return ok;
     },
-    [exercise, toggleSetDone, restStart],
+    [exercise, toggleSetDone, onSetLogged],
   );
   const handleRemoveSet = useCallback(
     (set: CurrentWorkoutSet) => requestRemoveSet(t, exercise, set, removeSet),

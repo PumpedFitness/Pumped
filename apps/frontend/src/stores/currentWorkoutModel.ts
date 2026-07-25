@@ -1,7 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { i18n } from '@/i18n';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
-import type { IconName } from '@/components/icons/ClayIcon';
+import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type {
   SetFieldValue,

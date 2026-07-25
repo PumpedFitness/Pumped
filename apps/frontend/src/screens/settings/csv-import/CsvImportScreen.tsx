@@ -6,15 +6,15 @@ import * as FileSystem from 'expo-file-system/legacy';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppView } from '@/components/layout/AppView';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { Button } from '@/components/clay/Button';
-import { Card } from '@/components/clay/Card';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { Button } from '@pumped/ui/clay/Button';
+import { Card } from '@pumped/ui/clay/Card';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import {
   CSV_IMPORT_ADAPTERS,
   importCSV,
 } from '@/data/local/imports/csvImportService';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type CsvImportScreenProps = NativeStackScreenProps<
   RootStackParamList,

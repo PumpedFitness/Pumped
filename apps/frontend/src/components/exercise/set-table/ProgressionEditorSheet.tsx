@@ -6,8 +6,8 @@ import {
   formatNumber,
   rangeRolloverTargetFields,
 } from '@/data/local/sets/progressionGoals';
-import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
-import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
+import { ConfirmationActions } from '@pumped/ui/clay/option-popup/OptionPopupActions';
+import { OptionPopupFrame } from '@pumped/ui/clay/option-popup/OptionPopupFrame';
 import type { ProgressionGoal } from '@/types/setType';
 import type { SetCardModel } from './exerciseSetTableModel';
 import { RangeRolloverProgressionEditor } from './RangeRolloverProgressionEditor';

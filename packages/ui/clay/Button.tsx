@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { shadows } from '@/theme/tokens';
+import { shadows } from '../theme/tokens';
 
 const SIZES = {
   sm: 'h-10 px-4',

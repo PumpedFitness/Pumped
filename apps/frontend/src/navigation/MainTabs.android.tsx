@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
 import { SCREENS, TabsScaffold, type MainTabParamList } from './mainTabsShared';
 
 // Android uses a JS bottom tab bar (the native bar loads icons through Fresco,

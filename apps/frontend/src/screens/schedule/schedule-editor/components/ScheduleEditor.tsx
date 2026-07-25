@@ -11,12 +11,12 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input } from 'heroui-native';
 import type { SaveScheduleInput, Schedule } from '@/types/schedule';
 import type { WorkoutTemplate } from '@/types/workout';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { SegmentedControl } from '@/components/clay/SegmentedControl';
-import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
+import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
 import { useScheduleEditorDraft } from '@/screens/schedule/schedule-editor/useScheduleEditorDraft';
 import { ScheduleSlotGrid } from './ScheduleSlotGrid';
 

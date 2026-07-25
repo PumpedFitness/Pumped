@@ -1,4 +1,4 @@
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type { SetTypeColorName } from '@/types/setType';
 
 type SetTypeColorTokens = {

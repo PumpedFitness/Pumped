@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 type ExerciseRowCardProps = {
   name: string;

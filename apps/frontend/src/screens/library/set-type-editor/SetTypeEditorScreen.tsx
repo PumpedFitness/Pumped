@@ -12,11 +12,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Input } from 'heroui-native';
 import type { TFunction } from 'i18next';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { colors } from '@/theme/tokens';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
-import { IconPicker } from '@/components/forms/IconPicker';
+import { IconPicker } from '@pumped/ui/forms/IconPicker';
 import {
   useSetTypeLibrary,
   type SetTypeLibrary,

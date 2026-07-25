@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import type { WidgetPlacement } from '@/types/widget';
 import { widgetRegistry } from './registry';
-import { spacing } from '@/theme/tokens';
+import { spacing } from '@pumped/ui/theme/tokens';
 
 const GAP = spacing[3]; // 12 — keep in sync with the gap-3 classes below
 const COLS = 3;

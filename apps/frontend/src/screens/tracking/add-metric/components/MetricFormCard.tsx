@@ -1,8 +1,8 @@
 import type { RefObject } from 'react';
 import { View, Text, TextInput } from 'react-native';
 import DateTimePicker from '@expo/ui/community/datetime-picker';
-import { Card } from '@/components/clay/Card';
-import { colors } from '@/theme/tokens';
+import { Card } from '@pumped/ui/clay/Card';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type MetricFormCardProps = {
   value: string;

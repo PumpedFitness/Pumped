@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Input, useBottomSheetAwareHandlers } from 'heroui-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '../theme/tokens';
+import { ClayIcon } from '../icons/ClayIcon';
 
 type SearchInputHeight = 48 | 52 | 54;
 

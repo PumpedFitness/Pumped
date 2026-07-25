@@ -10,7 +10,7 @@ import { HistoryScreen } from '@/screens/history/HistoryScreen';
 import { ProfileScreen } from '@/screens/settings/ProfileScreen';
 import { ConnectedCurrentWorkoutOverlay } from '@/components/workout/current-workout-overlay';
 import { ConnectedTourOverlay } from '@/components/tour';
-import type { IconName } from '@/components/icons/ClayIcon';
+import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import { screenTestID } from './testIDs';
 
 export type MainTabParamList = {

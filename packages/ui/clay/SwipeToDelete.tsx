@@ -4,7 +4,7 @@ import {
   SwipeTo,
   type SwipeActionHandler,
   type SwipeActionResult,
-} from '@/components/clay/SwipeTo';
+} from './SwipeTo';
 
 // Kept backward-compatible: these alias the generic <SwipeTo> action types so
 // existing importers (ExerciseCard, exerciseSetTableModel) keep compiling.

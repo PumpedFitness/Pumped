@@ -5,9 +5,9 @@ import { Portal } from 'heroui-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import { colors, shadows } from '@/theme/tokens';
-import { RingGauge } from '@/components/clay/RingGauge';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors, shadows } from '@pumped/ui/theme/tokens';
+import { RingGauge } from '@pumped/ui/clay/RingGauge';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import {
   formatWorkoutElapsedTime,
   getWorkoutOverlayProgress,

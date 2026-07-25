@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Card } from '@/components/clay/Card';
+import { Card } from '@pumped/ui/clay/Card';
 import { useSchedules } from '@/hooks/useSchedules';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';

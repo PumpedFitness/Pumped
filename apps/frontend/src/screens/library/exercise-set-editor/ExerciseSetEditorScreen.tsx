@@ -16,7 +16,7 @@ import type { EditableExercise } from '@/types/exercise';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
 import { PickerRow } from '@/components/exercise/PickerRow';
-import { LibraryPicker } from '@/components/forms/LibraryPicker';
+import { LibraryPicker } from '@pumped/ui/forms/LibraryPicker';
 import {
   SetSheetHost,
   TemplateSetTable,

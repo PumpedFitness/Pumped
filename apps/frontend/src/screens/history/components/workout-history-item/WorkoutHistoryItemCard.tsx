@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { displayWeight } from '@/utils/units';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutAvatar } from '@/components/workout/WorkoutAvatar';
 
 type WorkoutHistoryItemCardProps = {

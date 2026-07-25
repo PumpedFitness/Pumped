@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
-import { shadows } from '@/theme/tokens';
+import { shadows } from '../theme/tokens';
 
 const SURFACES = {
   card: 'bg-surface-card border border-border-hairline',

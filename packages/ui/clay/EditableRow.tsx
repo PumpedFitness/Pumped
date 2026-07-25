@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
-import { colors } from '@/theme/tokens';
+import { colors } from '../theme/tokens';
 
 type EditableRowProps = {
   icon: React.ReactNode;

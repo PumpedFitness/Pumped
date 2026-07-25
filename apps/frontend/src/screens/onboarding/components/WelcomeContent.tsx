@@ -4,14 +4,16 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withDelay,
-  withTiming,
-  Easing,
+  withSpring,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { colors } from '@/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { PumpedLogoMark } from '@/components/brand/PumpedLogoMark';
+import { colors } from '@pumped/ui/theme/tokens';
 
-const EASE = Easing.bezier(0.25, 0.1, 0.25, 1);
+// Timeline (ms): mark lifts in → cards fly in one by one.
+const CARDS_START = 700;
+const CARD_STAGGER = 130;
 
 const WELCOME_CARDS = [
   {
@@ -31,59 +33,69 @@ const WELCOME_CARDS = [
   },
 ] as const;
 
-export function WelcomeContent() {
-  const { t } = useTranslation();
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(16);
+type WelcomeCardProps = {
+  icon: string;
+  title: string;
+  body: string;
+  delay: number;
+};
+
+function WelcomeCard({ icon, title, body, delay }: WelcomeCardProps) {
+  const progress = useSharedValue(0);
 
   useEffect(() => {
-    opacity.value = withDelay(
-      200,
-      withTiming(1, { duration: 500, easing: EASE }),
+    progress.value = withDelay(
+      delay,
+      withSpring(1, { damping: 15, stiffness: 130, mass: 0.9 }),
     );
-    translateY.value = withDelay(
-      200,
-      withTiming(0, { duration: 500, easing: EASE }),
-    );
-  }, [opacity, translateY]);
+  }, [progress, delay]);
 
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
+  const style = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [
+      { translateY: (1 - progress.value) * 28 },
+      { scale: 0.96 + progress.value * 0.04 },
+    ],
   }));
 
   return (
+    <Animated.View
+      style={style}
+      className="bg-surface-card rounded-[22px] border border-border-hairline p-4 flex-row gap-3.5"
+    >
+      <View className="w-9 h-9 rounded-xl bg-accent-soft items-center justify-center">
+        <ClayIcon name={icon} size={20} color={colors.accent} />
+      </View>
+      <View className="flex-1">
+        <Text className="text-[15px] font-semibold text-foreground mb-[3px]">
+          {title}
+        </Text>
+        <Text className="text-[13.5px] text-muted leading-[19px]">{body}</Text>
+      </View>
+    </Animated.View>
+  );
+}
+
+export function WelcomeContent() {
+  const { t } = useTranslation();
+
+  return (
     <View className="flex-1 justify-center px-6">
-      <Animated.View style={contentStyle}>
-        <Text className="text-[30px] font-bold text-foreground tracking-[-0.6px] mb-1.5">
-          {t('common.appName')}
-        </Text>
+      <View className="items-center mb-12">
+        <PumpedLogoMark size={132} delay={250} />
+      </View>
 
-        <Text className="text-[15px] text-muted leading-[22px] mb-7">
-          {t('onboarding.welcome.subtitle')}
-        </Text>
-
-        <View className="gap-2.5">
-          {WELCOME_CARDS.map((card, i) => (
-            <View
-              key={i}
-              className="bg-surface-card rounded-[22px] border border-border-hairline p-4 flex-row gap-3.5"
-            >
-              <View className="w-9 h-9 rounded-xl bg-accent-soft items-center justify-center">
-                <ClayIcon name={card.icon} size={20} color={colors.accent} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-[15px] font-semibold text-foreground mb-[3px]">
-                  {t(card.titleKey)}
-                </Text>
-                <Text className="text-[13.5px] text-muted leading-[19px]">
-                  {t(card.bodyKey)}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </Animated.View>
+      <View className="gap-2.5">
+        {WELCOME_CARDS.map((card, i) => (
+          <WelcomeCard
+            key={i}
+            icon={card.icon}
+            title={t(card.titleKey)}
+            body={t(card.bodyKey)}
+            delay={CARDS_START + i * CARD_STAGGER}
+          />
+        ))}
+      </View>
     </View>
   );
 }

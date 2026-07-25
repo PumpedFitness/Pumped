@@ -5,7 +5,7 @@ import Body, {
   type ExtendedBodyPart,
   type Slug,
 } from 'react-native-body-highlighter';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 export type BodyHighlighterPart = Slug;
 export type BodyHighlighterSide = 'left' | 'right';

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutTemplateColor } from '@/data/local/enums';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { WORKOUT_TEMPLATE_COLORS } from '@/components/workout/workoutTemplatePresentation';
 import type { ColorSwatchOption } from './ColorSwatchPicker';
 

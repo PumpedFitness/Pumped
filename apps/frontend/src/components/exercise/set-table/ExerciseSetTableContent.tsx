@@ -1,8 +1,8 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';
-import { colors, motion } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors, motion } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { SetCard } from './SetCard';
 import type { SetCardModel } from './exerciseSetTableModel';
 

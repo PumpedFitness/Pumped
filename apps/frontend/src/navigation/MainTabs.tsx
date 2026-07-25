@@ -1,6 +1,6 @@
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { SCREENS, TabsScaffold, type MainTabParamList } from './mainTabsShared';
 
 // iOS uses the OS-native bottom tab bar (translucent "glass" bar on iOS 26).

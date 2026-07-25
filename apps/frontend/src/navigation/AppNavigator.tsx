@@ -18,7 +18,7 @@ import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/Comp
 import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
 import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHistoryScreen';
 import { useAuthStore } from '@/stores/authStore';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type {
   EditableExercise,
   ExerciseEditResult,

@@ -16,9 +16,9 @@ import {
   type BodyPartHighlight,
   type MuscleGroupBodyPartKey,
 } from '@/components/body';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type { ExerciseToEdit } from '@/components/exercise/useExerciseDraft';
 
 type ExerciseOverviewHeaderProps = {

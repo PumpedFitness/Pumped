@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppView } from '@/components/layout/AppView';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type WorkoutPlaceholderScreenProps = NativeStackScreenProps<
   RootStackParamList,

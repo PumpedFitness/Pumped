@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import type { SetTypeId, WorkoutTemplateColor } from '@/data/local/enums';
-import type { IconName } from '@/components/icons/ClayIcon';
+import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import type { HistoricalSetField, SetFieldValue } from '@/types/workout';
 import { enumText, jsonArray } from './columns';
 import { workoutTemplates } from './workoutTemplate';

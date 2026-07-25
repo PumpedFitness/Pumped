@@ -1,12 +1,12 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
+import { Card } from '@pumped/ui/clay/Card';
 import { ExerciseSetTable } from '@/components/exercise/set-table';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { ExerciseHistoryEntry } from '@/hooks/useExerciseAnalytics';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { displayWeight, formatWeight } from '@/utils/units';
 
 type ExerciseHistorySectionProps = {

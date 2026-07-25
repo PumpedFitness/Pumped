@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { TodayWorkout } from '@/hooks/useTodayWorkout';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutHistoryItemCard } from '@/screens/history/components/workout-history-item/WorkoutHistoryItemCard';
 
 type ScheduleTodayHeaderProps = {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput } from 'react-native';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type ProfileFieldProps = {
   label: string;

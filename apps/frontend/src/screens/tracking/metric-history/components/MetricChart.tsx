@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { StyledWebView } from '@/components/uniwind';
+import { StyledWebView } from '@pumped/ui/uniwind';
 
 type DataPoint = {
   time: string; // 'YYYY-MM-DD'

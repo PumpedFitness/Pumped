@@ -8,10 +8,10 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { Button } from '@/components/clay/Button';
-import { LibraryPicker } from '@/components/forms/LibraryPicker';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { Button } from '@pumped/ui/clay/Button';
+import { LibraryPicker } from '@pumped/ui/forms/LibraryPicker';
 import { useHandover } from '@/hooks/useHandover';
 import { LabeledField } from './LabeledField';
 import { PickerRow } from './PickerRow';

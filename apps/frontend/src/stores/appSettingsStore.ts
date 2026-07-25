@@ -13,6 +13,7 @@ const LANGUAGE_KEY = 'language';
 const WEIGHT_UNIT_KEY = 'weight_unit';
 const FIRST_DAY_OF_WEEK_KEY = 'first_day_of_week';
 const REST_TIMER_FULLSCREEN_KEY = 'rest_timer_fullscreen';
+const AUTO_REST_TIMER_KEY = 'auto_rest_timer';
 
 export type FirstDayOfWeek = 'sunday' | 'monday';
 
@@ -94,15 +95,28 @@ function writeRestTimerFullscreen(enabled: boolean): void {
   storage.set(REST_TIMER_FULLSCREEN_KEY, enabled);
 }
 
+// Whether logging a set auto-starts its rest timer. `null` means the user has
+// not been asked yet — the active workout shows a one-time prompt on the first
+// logged set with a rest, then persists their choice here.
+function readAutoRestTimer(): boolean | null {
+  return storage.getBoolean(AUTO_REST_TIMER_KEY) ?? null;
+}
+
+function writeAutoRestTimer(enabled: boolean): void {
+  storage.set(AUTO_REST_TIMER_KEY, enabled);
+}
+
 type AppSettingsState = {
   language: SupportedLanguage;
   weightUnit: WeightUnit;
   firstDayOfWeek: FirstDayOfWeek;
   restTimerFullscreen: boolean;
+  autoRestTimer: boolean | null;
   setLanguage: (language: SupportedLanguage) => void;
   setWeightUnit: (weightUnit: WeightUnit) => void;
   setFirstDayOfWeek: (firstDayOfWeek: FirstDayOfWeek) => void;
   setRestTimerFullscreen: (enabled: boolean) => void;
+  setAutoRestTimer: (enabled: boolean) => void;
 };
 
 export const useAppSettingsStore = create<AppSettingsState>(set => ({
@@ -110,6 +124,7 @@ export const useAppSettingsStore = create<AppSettingsState>(set => ({
   weightUnit: readWeightUnit(),
   firstDayOfWeek: readFirstDayOfWeek(),
   restTimerFullscreen: readRestTimerFullscreen(),
+  autoRestTimer: readAutoRestTimer(),
   setLanguage: language => {
     writeLanguagePreference(language);
     set({ language });
@@ -125,5 +140,9 @@ export const useAppSettingsStore = create<AppSettingsState>(set => ({
   setRestTimerFullscreen: enabled => {
     writeRestTimerFullscreen(enabled);
     set({ restTimerFullscreen: enabled });
+  },
+  setAutoRestTimer: enabled => {
+    writeAutoRestTimer(enabled);
+    set({ autoRestTimer: enabled });
   },
 }));

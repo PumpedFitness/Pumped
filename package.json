@@ -2,6 +2,10 @@
   "name": "pumped",
   "version": "0.0.1",
   "private": true,
+  "workspaces": [
+    "apps/frontend",
+    "packages/*"
+  ],
   "scripts": {
     "frontend": "bun --cwd=apps/frontend run start",
     "frontend:ios": "bun --cwd=apps/frontend run ios",
@@ -25,6 +29,6 @@
     "services:up": "docker compose -f apps/backend/docker-compose.dev.yml up -d",
     "services:down": "docker compose -f apps/backend/docker-compose.dev.yml down",
     "services:logs": "docker compose -f apps/backend/docker-compose.dev.yml logs -f",
-    "install:all": "cd apps/frontend && bun install"
+    "install:all": "bun install"
   }
 }

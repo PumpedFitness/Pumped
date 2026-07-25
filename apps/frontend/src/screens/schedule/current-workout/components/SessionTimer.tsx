@@ -8,7 +8,7 @@ import {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { AnimatedView } from '@/components/uniwind';
+import { AnimatedView } from '@pumped/ui/uniwind';
 import { formatElapsedClock } from './sessionTime';
 
 type SessionTimerProps = {

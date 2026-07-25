@@ -1,6 +1,6 @@
 import { Image, View } from 'react-native';
 import type { WorkoutTemplateColor } from '@/data/local/enums';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 import { getWorkoutTemplateColor } from './workoutTemplatePresentation';
 
 type WorkoutAvatarProps = {

@@ -1,13 +1,13 @@
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { Card } from '@pumped/ui/clay/Card';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type {
   ExerciseDerivedPr,
   ExercisePrKind,
 } from '@/hooks/useExerciseAnalytics';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { displayWeight, formatWeight } from '@/utils/units';
 
 type ExercisePrSectionProps = {

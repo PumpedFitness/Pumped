@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SwipeTo, type SwipeActionHandler } from '@/components/clay/SwipeTo';
-import { FavoriteHighlight } from '@/components/clay/SwipeToFavorize';
+import { SwipeTo, type SwipeActionHandler } from '@pumped/ui/clay/SwipeTo';
+import { FavoriteHighlight } from '@pumped/ui/clay/SwipeToFavorize';
 
 type LibrarySwipeRowProps = {
   children: ReactNode;

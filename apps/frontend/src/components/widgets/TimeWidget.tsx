@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
+import { Card } from '@pumped/ui/clay/Card';
 
 type TimeWidgetProps = {
   colSpan: number;

@@ -7,12 +7,12 @@ import {
 } from 'react';
 import { Keyboard } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { LibraryPicker } from '@/components/forms/LibraryPicker';
+import { LibraryPicker } from '@pumped/ui/forms/LibraryPicker';
 import {
   OptionalWheelPickerSheet,
   type OptionalWheelPickerConfig,
-} from '@/components/forms/OptionalWheelPickerSheet';
-import { RangeWheelPickerSheet } from '@/components/forms/RangeWheelPickerSheet';
+} from '@pumped/ui/forms/OptionalWheelPickerSheet';
+import { RangeWheelPickerSheet } from '@pumped/ui/forms/RangeWheelPickerSheet';
 import type {
   SetCardModel,
   SetCardNumberField,

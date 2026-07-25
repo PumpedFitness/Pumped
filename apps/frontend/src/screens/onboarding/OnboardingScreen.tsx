@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { StepDots } from '@/components/clay/StepDots';
-import { CTAButton } from '@/components/clay/CTAButton';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { StepDots } from '@pumped/ui/clay/StepDots';
+import { CTAButton } from '@pumped/ui/clay/CTAButton';
 import { WelcomeContent } from './components/WelcomeContent';
 import { PreferencesContent } from './components/PreferencesContent';
 import { ProfileContent } from './components/ProfileContent';

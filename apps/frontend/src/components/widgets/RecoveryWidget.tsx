@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/clay/Card';
-import { RingGauge } from '@/components/clay/RingGauge';
-import { Button } from '@/components/clay/Button';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { colors } from '@/theme/tokens';
+import { Card } from '@pumped/ui/clay/Card';
+import { RingGauge } from '@pumped/ui/clay/RingGauge';
+import { Button } from '@pumped/ui/clay/Button';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type RecoveryWidgetProps = {
   colSpan: number;

@@ -8,17 +8,19 @@ import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { useAppSettingsStore } from '@/stores/appSettingsStore';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { CurrentWorkoutExercise } from '@/stores/currentWorkoutModel';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type { ExerciseSelectionResult } from '@/types/exercise';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { SetSheetHost } from '@/components/exercise/set-table';
 import { SessionHeader } from './SessionHeader';
 import { SessionExerciseList } from './SessionExerciseList';
 import { CurrentWorkoutFooter } from './CurrentWorkoutFooter';
 import { RestTimerOverlay } from './rest-timer/RestTimerOverlay';
 import { RestTimerPill } from './rest-timer/RestTimerPill';
+import { RestTimerPromptPopup } from './rest-timer/RestTimerPromptPopup';
+import { useAutoRestPrompt } from './rest-timer/useAutoRestPrompt';
 import { useRestTimer } from './rest-timer/useRestTimer';
 
 type CurrentWorkoutProps = {
@@ -107,6 +109,7 @@ export function CurrentWorkout({
   const setRestTimerFullscreen = useAppSettingsStore(
     state => state.setRestTimerFullscreen,
   );
+  const autoRest = useAutoRestPrompt(rest.start);
   const {
     currentWorkout,
     exerciseOptions,
@@ -187,7 +190,7 @@ export function CurrentWorkout({
           addSet={addSet}
           updateSet={updateSet}
           toggleSetDone={toggleSetDone}
-          restStart={rest.start}
+          onSetLogged={autoRest.onSetLogged}
           removeSet={removeSet}
           removeExercise={removeExercise}
           onChooseExercises={onChooseExercises}
@@ -226,6 +229,12 @@ export function CurrentWorkout({
             setRestTimerFullscreen(false);
             rest.minimize();
           }}
+        />
+
+        <RestTimerPromptPopup
+          visible={autoRest.pendingRestSeconds != null}
+          onDecide={autoRest.decide}
+          onClose={autoRest.dismiss}
         />
       </View>
     </SetSheetHost>

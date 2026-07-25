@@ -5,11 +5,11 @@ import type { TFunction } from 'i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { colors } from '@/theme/tokens';
-import { OptionPopup, type PopupOption } from '@/components/clay/option-popup';
-import { ConfirmationActions } from '@/components/clay/option-popup/OptionPopupActions';
-import { OptionPopupFrame } from '@/components/clay/option-popup/OptionPopupFrame';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { OptionPopup, type PopupOption } from '@pumped/ui/clay/option-popup';
+import { ConfirmationActions } from '@pumped/ui/clay/option-popup/OptionPopupActions';
+import { OptionPopupFrame } from '@pumped/ui/clay/option-popup/OptionPopupFrame';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 type CurrentWorkoutNavigation = NativeStackNavigationProp<
   RootStackParamList,

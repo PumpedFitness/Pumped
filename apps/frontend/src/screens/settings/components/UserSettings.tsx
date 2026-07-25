@@ -4,14 +4,14 @@ import type { TFunction } from 'i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { DateWheelPicker } from '@/components/forms/DateWheelPicker';
+import { DateWheelPicker } from '@pumped/ui/forms/DateWheelPicker';
 import { BottomSheet, Button } from 'heroui-native';
 import { desc } from 'drizzle-orm';
-import { SettingsSection } from '@/components/clay/SettingsSection';
-import { EditableRow } from '@/components/clay/EditableRow';
-import { ListRow } from '@/components/clay/ListRow';
-import { ClayIcon } from '@/components/icons/ClayIcon';
-import { OptionSelectorSheet } from '@/components/forms/OptionSelectorSheet';
+import { SettingsSection } from '@pumped/ui/clay/SettingsSection';
+import { EditableRow } from '@pumped/ui/clay/EditableRow';
+import { ListRow } from '@pumped/ui/clay/ListRow';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useRepository } from '@/data/local/useRepository';
 import type { Gender } from '@/data/local/schema/userProfile';
@@ -20,7 +20,7 @@ import {
   bodyFatEntries,
 } from '@/data/local/schema/bodyMetrics';
 import { formatWeight } from '@/utils/units';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 function buildGenderOptions(t: TFunction): { value: Gender; label: string }[] {
   return [

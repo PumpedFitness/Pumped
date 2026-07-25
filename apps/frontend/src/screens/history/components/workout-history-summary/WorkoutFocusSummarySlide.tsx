@@ -7,7 +7,7 @@ import {
   type MuscleGroupBodyPartKey,
 } from '@/components/body';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import { SummarySlideHeader } from './SummarySlideHeader';
 import {
   buildMuscleFocus,

@@ -31,11 +31,11 @@ import {
   setTextValue,
   type FieldValueMode,
 } from '@/data/local/sets/fieldValues';
-import type { OptionalWheelPickerConfig } from '@/components/forms/OptionalWheelPickerSheet';
+import type { OptionalWheelPickerConfig } from '@pumped/ui/forms/OptionalWheelPickerSheet';
 import type {
   DeleteHandler,
   DeleteResult,
-} from '@/components/clay/SwipeToDelete';
+} from '@pumped/ui/clay/SwipeToDelete';
 import {
   suggestedNumberValue,
   suggestedRangeValue,
@@ -84,15 +84,13 @@ type EditableExerciseSetTableProps = BaseTableProps & {
   onCreateSetType: (name: string) => string;
 };
 
+// `fieldDefinitions` is optional: history ('actual') snapshots fields as
+// performed; template previews ('target') have none and fall back to the set
+// type's current fields.
 type ReadOnlyExerciseSet = Pick<
   PerformedSet,
   'id' | 'setType' | 'restSeconds' | 'fieldValues'
-> & {
-  // Snapshot of the set type's fields as they were when the set was performed.
-  // Present for history ('actual' mode); template previews ('target') have none
-  // and fall back to the set type's current fields.
-  fieldDefinitions?: PerformedSet['fieldDefinitions'];
-};
+> & { fieldDefinitions?: PerformedSet['fieldDefinitions'] };
 
 export type ReadOnlyExerciseSetTableProps = SetTypeContext & {
   readOnly: true;

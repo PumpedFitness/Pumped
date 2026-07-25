@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
-import { colors } from '@/theme/tokens';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
+import { colors } from '../theme/tokens';
+import { ClayIcon, type IconName } from '../icons/ClayIcon';
 
 // Curated subset of ClayIcons that read well as set-type glyphs.
 const SET_TYPE_ICONS: IconName[] = [

@@ -6,10 +6,10 @@ import {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { ClayIcon, type IconName } from '@/components/icons/ClayIcon';
-import { AnimatedView } from '@/components/uniwind';
+import { ClayIcon, type IconName } from '../icons/ClayIcon';
+import { AnimatedView } from '../uniwind';
 import { GestureDetector } from 'react-native-gesture-handler';
-import { colors } from '@/theme/tokens';
+import { colors } from '../theme/tokens';
 import {
   armThresholdFor,
   REST_WIDTH,

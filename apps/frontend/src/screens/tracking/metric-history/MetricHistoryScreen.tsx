@@ -7,7 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { desc } from 'drizzle-orm';
 import type { SQLiteTable, SQLiteColumn } from 'drizzle-orm/sqlite-core';
-import { Card } from '@/components/clay/Card';
+import { Card } from '@pumped/ui/clay/Card';
 import { MetricChart } from './components/MetricChart';
 import { MetricHistoryHeader } from './components/MetricHistoryHeader';
 import { LatestValueBlock } from './components/LatestValueBlock';
@@ -21,7 +21,7 @@ import {
 } from '@/data/local/schema/bodyMetrics';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { formatWeight } from '@/utils/units';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 
 type MetricHistoryScreenProps = NativeStackScreenProps<
   RootStackParamList,

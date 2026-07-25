@@ -18,9 +18,9 @@ import {
 } from '@/components/exercise/set-table';
 import { ExerciseSectionHeader } from '@/components/exercise/ExerciseSectionHeader';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type { SetTypeWithFields } from '@/types/setType';
 
 type CompletedWorkoutDetailsProps = {

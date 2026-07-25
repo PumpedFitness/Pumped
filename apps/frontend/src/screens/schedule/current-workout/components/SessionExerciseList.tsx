@@ -8,9 +8,9 @@ import type {
 } from '@/stores/currentWorkoutModel';
 import type { ExerciseOption } from '@/types/exercise';
 import type { SetTypeWithFields } from '@/types/setType';
-import { colors } from '@/theme/tokens';
+import { colors } from '@pumped/ui/theme/tokens';
 import type { SetTypeOption } from '@/components/exercise/set-table';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import {
   SessionExerciseHeader,
   type ExerciseTrayState,
@@ -34,7 +34,7 @@ type SessionExerciseListProps = {
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
   toggleSetDone: (exerciseId: string, setId: string) => boolean;
-  restStart: (seconds: number) => void;
+  onSetLogged: (restSeconds: number) => void;
   removeSet: (exerciseId: string, setId: string) => void;
   removeExercise: (exerciseId: string) => void;
   onChooseExercises: (selectedExerciseIds: string[]) => void;
@@ -57,14 +57,19 @@ export function SessionExerciseList({
   addSet,
   updateSet,
   toggleSetDone,
-  restStart,
+  onSetLogged,
   removeSet,
   removeExercise,
   onChooseExercises,
 }: SessionExerciseListProps) {
   const { t } = useTranslation();
-  const { activeId, setOffset, scrollProps, onViewportLayout, onContentSizeChange } =
-    useExerciseSnap(exercises);
+  const {
+    activeId,
+    setOffset,
+    scrollProps,
+    onViewportLayout,
+    onContentSizeChange,
+  } = useExerciseSnap(exercises);
 
   const nameFor = (id: string) =>
     optionById.get(id)?.name ?? t('plan.card.fallbackExercise');
@@ -109,7 +114,7 @@ export function SessionExerciseList({
           onCreateSetType={onCreateSetType}
           updateSet={updateSet}
           toggleSetDone={toggleSetDone}
-          restStart={restStart}
+          onSetLogged={onSetLogged}
           removeSet={removeSet}
           addSet={addSet}
         />

@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/theme/tokens';
-import { ClayIcon } from '@/components/icons/ClayIcon';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
 export type ExerciseSectionState = 'active' | 'upcoming' | 'finished';
 

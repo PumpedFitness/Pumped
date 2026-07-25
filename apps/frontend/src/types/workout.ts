@@ -3,7 +3,7 @@ import type {
   SetTypeId,
   WorkoutTemplateColor,
 } from '@/data/local/enums';
-import type { IconName } from '@/components/icons/ClayIcon';
+import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import type { ProgressionGoal } from '@/types/setType';
 
 /** Min–max span for a `range` field's target (e.g. reps 8–12). */

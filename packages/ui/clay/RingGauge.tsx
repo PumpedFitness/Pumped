@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors } from '@/theme/tokens';
+import { colors } from '../theme/tokens';
 
 type RingGaugeProps = {
   value?: number;
