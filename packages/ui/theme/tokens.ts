@@ -134,12 +134,13 @@ export const shadows = {
     shadowRadius: 28,
     elevation: 8,
   },
-  // active segmented-control pill
+  // active segmented-control pill — crisp so the sliding white pill clearly
+  // reads against the track (iOS-segmented style).
   chip: {
     shadowColor: brand.ink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.16,
+    shadowRadius: 5,
     elevation: 3,
   },
   // floating tab bar

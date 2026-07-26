@@ -1,6 +1,6 @@
-import { View } from 'react-native';
-import { Input, useBottomSheetAwareHandlers } from 'heroui-native';
-import { colors } from '../theme/tokens';
+import { TextInput, View } from 'react-native';
+import { useBottomSheetAwareHandlers } from 'heroui-native';
+import { colors, shadows } from '../theme/tokens';
 import { ClayIcon } from '../icons/ClayIcon';
 
 type SearchInputHeight = 48 | 52 | 54;
@@ -15,31 +15,16 @@ type SearchInputProps = {
   sheetAware?: boolean;
 };
 
-type HeightStyles = {
-  input: string;
-  iconWrapper: string;
-  iconSize: number;
+const HEIGHT_CLASS: Record<SearchInputHeight, string> = {
+  48: 'h-[48px]',
+  52: 'h-[52px]',
+  54: 'h-[54px]',
 };
 
-const HEIGHT_STYLES: Record<SearchInputHeight, HeightStyles> = {
-  48: {
-    input:
-      'h-[48px] rounded-full border-border-hairline bg-surface-card pl-11 pr-4 text-foreground',
-    iconWrapper: 'absolute left-3.5 top-0 h-[48px] items-center justify-center',
-    iconSize: 17,
-  },
-  52: {
-    input:
-      'h-[52px] rounded-full border-border-hairline bg-surface-card pl-12 pr-4 text-foreground',
-    iconWrapper: 'absolute left-4 top-0 h-[52px] items-center justify-center',
-    iconSize: 19,
-  },
-  54: {
-    input:
-      'h-[54px] rounded-full border-border-hairline bg-surface-card pl-12 pr-4 text-foreground',
-    iconWrapper: 'absolute left-4 top-0 h-[54px] items-center justify-center',
-    iconSize: 19,
-  },
+const ICON_SIZE: Record<SearchInputHeight, number> = {
+  48: 17,
+  52: 19,
+  54: 19,
 };
 
 export function SearchInput({
@@ -54,22 +39,23 @@ export function SearchInput({
   // Must be called unconditionally; the handlers are no-ops outside a
   // BottomSheet context and are only attached when sheetAware is set.
   const { onFocus, onBlur } = useBottomSheetAwareHandlers();
-  const styles = HEIGHT_STYLES[height];
 
   return (
-    <View className="relative">
-      <Input
+    <View
+      className={`${HEIGHT_CLASS[height]} flex-row items-center gap-[10px] rounded-full bg-surface-card px-[18px]`}
+      style={shadows.row}
+    >
+      <ClayIcon name="search" size={ICON_SIZE[height]} color={colors.muted} />
+      <TextInput
         accessibilityLabel={accessibilityLabel}
         autoFocus={autoFocus}
-        className={styles.input}
+        className="flex-1 p-0 text-[15px] font-medium text-foreground"
         placeholder={placeholder}
+        placeholderTextColor={colors.muted2}
         value={value}
         onChangeText={onChangeText}
         {...(sheetAware ? { onFocus, onBlur } : undefined)}
       />
-      <View className={styles.iconWrapper} pointerEvents="none">
-        <ClayIcon name="search" size={styles.iconSize} color={colors.muted} />
-      </View>
     </View>
   );
 }
