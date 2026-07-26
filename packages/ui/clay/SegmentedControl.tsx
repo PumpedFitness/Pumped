@@ -6,7 +6,7 @@ import {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { motion } from '../theme/tokens';
+import { motion, shadows } from '../theme/tokens';
 import { AnimatedView } from '../uniwind';
 
 type Option = string | { value: string; label: string };
@@ -76,8 +76,8 @@ export function SegmentedControl({
     >
       {containerWidth > 0 && (
         <AnimatedView
-          className="absolute top-[3px] bottom-[3px] bg-accent rounded-full"
-          style={thumbStyle}
+          className="absolute top-[3px] bottom-[3px] bg-surface-card rounded-full"
+          style={[thumbStyle, shadows.chip]}
         />
       )}
       {opts.map(o => {
@@ -91,7 +91,7 @@ export function SegmentedControl({
           >
             <Text
               className={`text-sm font-semibold capitalize ${
-                on ? 'text-accent-foreground' : 'text-text-secondary'
+                on ? 'text-foreground' : 'text-muted'
               }`}
             >
               {o.label}

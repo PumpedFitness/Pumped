@@ -97,7 +97,7 @@ export function WorkoutTemplateCard({
           onPress={() => onEdit(template)}
         >
           <ClayIcon name="edit" size={16} color={colors.ink} />
-          <Button.Label className="font-semibold">
+          <Button.Label className="font-semibold text-foreground">
             {t('plan.card.edit')}
           </Button.Label>
         </Button>
@@ -108,7 +108,7 @@ export function WorkoutTemplateCard({
           feedbackVariant="scale"
           onPress={() => onStart(template)}
         >
-          <ClayIcon name="play" size={16} color={colors.accentInk} />
+          <ClayIcon name="play" size={16} color={colors.onInk} />
           <Button.Label className="font-semibold text-accent-foreground">
             {t('plan.card.start')}
           </Button.Label>
