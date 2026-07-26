@@ -43,7 +43,7 @@ export function EditableRow({
   return (
     <Pressable testID={testID} onPress={startEdit}>
       <View
-        className={`flex-row items-center gap-[13px] py-[14px] px-4 ${
+        className={`min-h-[54px] flex-row items-center gap-[13px] py-[14px] px-[18px] ${
           divider ? 'border-t border-border-hairline' : ''
         } ${className}`}
       >
@@ -68,7 +68,7 @@ export function EditableRow({
         ) : (
           <Text
             className={`flex-1 text-sm text-right ${
-              value ? 'text-muted' : 'text-[rgba(52,54,44,0.09)]'
+              value ? 'text-muted' : 'text-[#A9A6A1]'
             }`}
           >
             {value || placeholder}

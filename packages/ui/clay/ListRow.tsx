@@ -29,7 +29,7 @@ export function ListRow({
       // When there's no Pressable wrapper, the View is the root and carries the
       // testID; otherwise the Pressable below owns it.
       testID={onPress ? undefined : testID}
-      className={`flex-row items-center gap-[13px] px-4 ${
+      className={`min-h-[54px] flex-row items-center gap-[13px] px-[18px] ${
         divider ? 'border-t border-border-hairline' : ''
       } ${className}`}
       style={{ paddingVertical }}
