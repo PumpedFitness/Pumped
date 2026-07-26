@@ -214,7 +214,7 @@ export function RestTimerPill({
             <ClayIcon
               name={isRunning ? 'pause' : 'play'}
               size={15}
-              color={colors.accentInk}
+              color={colors.onInk}
             />
           </Pressable>
           <SkipButton

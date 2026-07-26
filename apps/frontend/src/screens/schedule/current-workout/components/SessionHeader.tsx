@@ -51,7 +51,7 @@ export function SessionHeader({
           pausedAt={pausedAt}
           pausedMs={pausedMs}
         />
-        <Text className="text-[17px] font-bold text-sage tabular-nums tracking-[-0.3px]">
+        <Text className="text-[17px] font-bold text-accent tabular-nums tracking-[-0.3px]">
           {progress.percentage}%
         </Text>
 
@@ -71,7 +71,7 @@ export function SessionHeader({
 
       <View className="mt-2 h-1 overflow-hidden rounded-full bg-surface-sunk">
         <View
-          className="h-full rounded-full bg-sage"
+          className="h-full rounded-full bg-accent"
           style={{ width: `${progress.percentage}%` }}
         />
       </View>
