@@ -137,7 +137,7 @@ export function SearchableLibrary<T>({
         feedbackVariant="scale"
         onPress={onCreate}
       >
-        <ClayIcon name="plus" size={20} color={colors.accentInk} />
+        <ClayIcon name="plus" size={20} color={colors.onInk} />
       </Button>
     </View>
   );
