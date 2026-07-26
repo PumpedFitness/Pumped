@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@pumped/ui/theme/tokens';
+import { colors, shadows } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutAvatar } from '@/components/workout/WorkoutAvatar';
 import type { TomorrowPlan } from './scheduleWeekModel';
@@ -18,7 +18,10 @@ export function ScheduleUpNextCard({ tomorrow }: ScheduleUpNextCardProps) {
   const [first, ...rest] = tomorrow.templates;
 
   return (
-    <View className="gap-3 rounded-[24px] border border-border-hairline bg-surface-card p-4">
+    <View
+      className="gap-3 rounded-[24px] bg-surface-card p-4"
+      style={shadows.card}
+    >
       <Text className="t-eyebrow text-muted">{t('schedule.upNext.title')}</Text>
 
       {tomorrow.isRest || !first ? (

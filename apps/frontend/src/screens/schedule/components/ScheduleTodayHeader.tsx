@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { TodayWorkout } from '@/hooks/useTodayWorkout';
-import { colors } from '@pumped/ui/theme/tokens';
+import { colors, shadows } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutHistoryItemCard } from '@/screens/history/components/workout-history-item/WorkoutHistoryItemCard';
 
@@ -81,7 +81,7 @@ export function ScheduleTodayHeader({
   }
 
   return (
-    <View className="gap-3 rounded-[24px] bg-moss p-5">
+    <View className="gap-3 rounded-[24px] bg-moss p-5" style={shadows.invertedCard}>
       <View>
         <Text className="t-eyebrow text-cream-dim">
           {t('schedule.today.eyebrow')}

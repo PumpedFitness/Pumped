@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@pumped/ui/theme/tokens';
+import { colors, shadows } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutAvatar } from '@/components/workout/WorkoutAvatar';
 import type { WeekDay } from './scheduleWeekModel';
@@ -42,7 +42,7 @@ function DayMark({ day }: { day: WeekDay }) {
       <View className="h-[34px] w-[34px] items-center justify-center">
         <View
           className={`h-2 w-2 rounded-full ${
-            day.status === 'done' ? 'bg-moss' : 'bg-border-strong'
+            day.status === 'done' ? 'bg-moss' : 'bg-[#D7D4CF]'
           }`}
         />
         <StatusBadge status={day.status} />
@@ -112,7 +112,10 @@ export function ScheduleWeekStrip({ days }: ScheduleWeekStripProps) {
   return (
     <View className="gap-3">
       <Text className="t-eyebrow text-muted">{t('schedule.week.title')}</Text>
-      <View className="flex-row gap-1 rounded-[24px] border border-border-hairline bg-surface-card p-2">
+      <View
+        className="flex-row gap-1 rounded-[24px] bg-surface-card p-2"
+        style={shadows.card}
+      >
         {days.map(day => (
           <DayCell key={day.dayIndex} day={day} />
         ))}
