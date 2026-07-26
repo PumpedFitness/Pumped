@@ -17,10 +17,7 @@ export function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-6">
-          <IndexScreenHeader
-            kicker={t('profile.kicker')}
-            title={t('profile.title')}
-          />
+          <IndexScreenHeader title={t('profile.title')} />
         </View>
 
         <UserSettings />

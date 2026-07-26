@@ -31,10 +31,7 @@ export function LibraryScreen() {
   return (
     <AppShell showTabBar>
       <View className="bg-background px-5 pt-4 gap-5">
-        <IndexScreenHeader
-          kicker={t('library.kicker')}
-          title={t('library.title')}
-        />
+        <IndexScreenHeader title={t('library.title')} />
         {segmentedControl}
       </View>
       <Animated.View
