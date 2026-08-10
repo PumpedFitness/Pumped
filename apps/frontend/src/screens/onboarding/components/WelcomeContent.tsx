@@ -1,98 +1,140 @@
 import { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import Animated, {
-  useSharedValue,
+  Easing,
+  FadeInDown,
   useAnimatedStyle,
+  useSharedValue,
   withDelay,
+  withRepeat,
+  withSequence,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { PumpedLogoMark } from '@/components/brand/PumpedLogoMark';
-import { colors } from '@pumped/ui/theme/tokens';
 
-// Timeline (ms): mark lifts in → cards fly in one by one.
-const CARDS_START = 700;
-const CARD_STAGGER = 130;
+// Timeline (ms): logo sketches in → headline words punch in → tagline + badges
+// → ambience bars rise and keep breathing.
+const WORDS_START = 900;
+const WORD_STAGGER = 140;
+const BARS_START = 1500;
 
-const WELCOME_CARDS = [
-  {
-    icon: 'target',
-    titleKey: 'onboarding.welcome.cards.offline.title',
-    bodyKey: 'onboarding.welcome.cards.offline.body',
-  },
-  {
-    icon: 'bolt',
-    titleKey: 'onboarding.welcome.cards.free.title',
-    bodyKey: 'onboarding.welcome.cards.free.body',
-  },
-  {
-    icon: 'settings',
-    titleKey: 'onboarding.welcome.cards.options.title',
-    bodyKey: 'onboarding.welcome.cards.options.body',
-  },
-] as const;
+// Skyline of effort: relative bar heights, tallest is "today".
+const BARS = [0.35, 0.55, 0.42, 0.7, 0.5, 0.88, 1];
+const BAR_MAX_HEIGHT = 92;
 
-type WelcomeCardProps = {
-  icon: string;
-  title: string;
-  body: string;
-  delay: number;
-};
+type HeadlineWordProps = { word: string; delay: number; accent: boolean };
 
-function WelcomeCard({ icon, title, body, delay }: WelcomeCardProps) {
+function HeadlineWord({ word, delay, accent }: HeadlineWordProps) {
   const progress = useSharedValue(0);
 
   useEffect(() => {
     progress.value = withDelay(
       delay,
-      withSpring(1, { damping: 15, stiffness: 130, mass: 0.9 }),
+      withSpring(1, { damping: 16, stiffness: 160, mass: 0.8 }),
     );
   }, [progress, delay]);
 
   const style = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [
-      { translateY: (1 - progress.value) * 28 },
-      { scale: 0.96 + progress.value * 0.04 },
-    ],
+    transform: [{ translateY: (1 - progress.value) * 26 }],
+  }));
+
+  return (
+    <Animated.View style={style}>
+      <Text
+        className={
+          'text-[44px] font-[800] tracking-[-0.9px] leading-[50px] ' +
+          (accent ? 'text-accent' : 'text-foreground')
+        }
+      >
+        {word}
+      </Text>
+    </Animated.View>
+  );
+}
+
+type AmbienceBarProps = { height: number; delay: number; strongest: boolean };
+
+function AmbienceBar({ height, delay, strongest }: AmbienceBarProps) {
+  const rise = useSharedValue(0);
+  const breathe = useSharedValue(0);
+
+  useEffect(() => {
+    rise.value = withDelay(
+      delay,
+      withSpring(1, { damping: 15, stiffness: 120 }),
+    );
+    breathe.value = withDelay(
+      delay + 700,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
+          withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
+        ),
+        -1,
+        false,
+      ),
+    );
+  }, [rise, breathe, delay]);
+
+  const style = useAnimatedStyle(() => ({
+    height: height * BAR_MAX_HEIGHT * rise.value + breathe.value * 6,
   }));
 
   return (
     <Animated.View
       style={style}
-      className="bg-surface-card rounded-[22px] border border-border-hairline p-4 flex-row gap-3.5"
-    >
-      <View className="w-9 h-9 rounded-xl bg-accent-soft items-center justify-center">
-        <ClayIcon name={icon} size={20} color={colors.accent} />
-      </View>
-      <View className="flex-1">
-        <Text className="text-[15px] font-semibold text-foreground mb-[3px]">
-          {title}
-        </Text>
-        <Text className="text-[13.5px] text-muted leading-[19px]">{body}</Text>
-      </View>
-    </Animated.View>
+      className={
+        'flex-1 rounded-full ' +
+        (strongest ? 'bg-accent' : 'bg-[rgba(27,26,24,0.08)]')
+      }
+    />
   );
 }
 
 export function WelcomeContent() {
   const { t } = useTranslation();
+  const words = t('onboarding.welcome.headline').split(' ');
 
   return (
-    <View className="flex-1 justify-center px-6">
-      <View className="items-center mb-12">
-        <PumpedLogoMark size={132} delay={250} />
+    <View className="flex-1 px-7">
+      <View className="flex-1 justify-center">
+        <PumpedLogoMark size={96} delay={150} />
+
+        <View className="mt-9 flex-row flex-wrap gap-x-[10px]">
+          {words.map((word, i) => (
+            <HeadlineWord
+              key={`${word}-${i}`}
+              word={word}
+              delay={WORDS_START + i * WORD_STAGGER}
+              accent={i === words.length - 1}
+            />
+          ))}
+        </View>
+
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(
+            WORDS_START + words.length * WORD_STAGGER + 100,
+          )}
+        >
+          <Text className="text-[16px] text-muted mt-5 leading-[24px]">
+            {t('onboarding.welcome.tagline')}
+          </Text>
+          <Text className="text-[12px] font-semibold uppercase tracking-[1.6px] text-muted mt-6">
+            {t('onboarding.welcome.badges')}
+          </Text>
+        </Animated.View>
       </View>
 
-      <View className="gap-2.5">
-        {WELCOME_CARDS.map((card, i) => (
-          <WelcomeCard
+      <View className="flex-row items-end gap-2 h-[100px] mb-2">
+        {BARS.map((height, i) => (
+          <AmbienceBar
             key={i}
-            icon={card.icon}
-            title={t(card.titleKey)}
-            body={t(card.bodyKey)}
-            delay={CARDS_START + i * CARD_STAGGER}
+            height={height}
+            delay={BARS_START + i * 70}
+            strongest={i === BARS.length - 1}
           />
         ))}
       </View>

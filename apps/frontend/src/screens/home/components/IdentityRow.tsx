@@ -1,13 +1,9 @@
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 type IdentityRowProps = {
   initials: string;
   dateLabel: string;
   blockStatus: string;
-  editing: boolean;
-  onToggleEdit: () => void;
-  editLabel: string;
-  doneLabel: string;
 };
 
 const AVATAR_SHADOW = {
@@ -19,17 +15,14 @@ const AVATAR_SHADOW = {
 } as const;
 
 /**
- * Identity row — avatar (initials) + date/block status + Edit pill.
- * README §1.1.
+ * Identity row — avatar (initials) + date/block status. README §1.1.
+ * The edit affordance lives in the footer, below the widget grid, so the top
+ * of the screen carries orientation only.
  */
 export function IdentityRow({
   initials,
   dateLabel,
   blockStatus,
-  editing,
-  onToggleEdit,
-  editLabel,
-  doneLabel,
 }: IdentityRowProps) {
   return (
     <View className="flex-row items-center gap-[12px]">
@@ -49,24 +42,6 @@ export function IdentityRow({
           {blockStatus}
         </Text>
       </View>
-
-      <Pressable
-        accessibilityRole="button"
-        testID="home-edit-toggle"
-        onPress={onToggleEdit}
-        className={`h-[38px] items-center justify-center rounded-full px-[16px] ${
-          editing ? 'bg-foreground' : 'bg-surface-card'
-        }`}
-        style={AVATAR_SHADOW}
-      >
-        <Text
-          className={`text-[13px] font-[700] ${
-            editing ? 'text-on-ink' : 'text-foreground'
-          }`}
-        >
-          {editing ? doneLabel : editLabel}
-        </Text>
-      </Pressable>
     </View>
   );
 }

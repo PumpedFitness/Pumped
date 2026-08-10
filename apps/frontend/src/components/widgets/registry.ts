@@ -1,12 +1,16 @@
 import type { ComponentType } from 'react';
-import type { WidgetType, WidgetMeta } from '@/types/widget';
-import { RecoveryWidget } from './RecoveryWidget';
-import { NextWorkoutWidget } from './NextWorkoutWidget';
-import { StreakWidget } from './StreakWidget';
-import { ScheduleWidget } from './ScheduleWidget';
-import { TimeWidget } from './TimeWidget';
-import { WeeklyVolumeWidget } from './WeeklyVolumeWidget';
-import { ChartWidget } from './ChartWidget';
+import type { WidgetGroup, WidgetType, WidgetMeta } from '@/types/widget';
+import { TonnageCompactWidget, TonnageWideWidget } from './tonnage/TonnageWidgets';
+import { E1rmCompactWidget, E1rmWideWidget } from './e1rm/E1rmWidgets';
+import {
+  AdherenceWideWidget,
+  AdherenceFullWidget,
+} from './adherence/AdherenceWidgets';
+import {
+  BodyweightCompactWidget,
+  BodyweightWideWidget,
+} from './bodyweight/BodyweightWidgets';
+import { MuscleVolumeFullWidget } from './muscle-volume/MuscleVolumeFullWidget';
 
 type WidgetComponentProps = {
   colSpan: number;
@@ -19,74 +23,106 @@ type WidgetRegistryEntry = {
 };
 
 export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
-  recovery: {
-    component: RecoveryWidget,
+  tonnageCompact: {
+    component: TonnageCompactWidget,
     meta: {
-      type: 'recovery',
-      nameKey: 'widgets.names.recovery',
-      icon: 'target',
-      allowedSpans: [3],
-      defaultSpan: 3,
+      type: 'tonnageCompact',
+      group: 'tonnage',
+      nameKey: 'widgets.names.tonnage',
+      icon: 'trend',
+      colSpan: 1,
     },
   },
-  nextWorkout: {
-    component: NextWorkoutWidget,
+  tonnageWide: {
+    component: TonnageWideWidget,
     meta: {
-      type: 'nextWorkout',
-      nameKey: 'widgets.names.lastSession',
-      icon: 'dumbbell',
-      allowedSpans: [3],
-      defaultSpan: 3,
+      type: 'tonnageWide',
+      group: 'tonnage',
+      nameKey: 'widgets.names.tonnage',
+      icon: 'trend',
+      colSpan: 2,
     },
   },
-  streak: {
-    component: StreakWidget,
+  e1rmCompact: {
+    component: E1rmCompactWidget,
     meta: {
-      type: 'streak',
-      nameKey: 'widgets.names.streak',
-      icon: 'flame',
-      allowedSpans: [1, 2],
-      defaultSpan: 2,
+      type: 'e1rmCompact',
+      group: 'e1rm',
+      nameKey: 'widgets.names.e1rm',
+      icon: 'award',
+      colSpan: 1,
     },
   },
-  schedule: {
-    component: ScheduleWidget,
+  e1rmWide: {
+    component: E1rmWideWidget,
     meta: {
-      type: 'schedule',
-      nameKey: 'widgets.names.schedule',
+      type: 'e1rmWide',
+      group: 'e1rm',
+      nameKey: 'widgets.names.e1rm',
+      icon: 'award',
+      colSpan: 2,
+    },
+  },
+  adherenceWide: {
+    component: AdherenceWideWidget,
+    meta: {
+      type: 'adherenceWide',
+      group: 'adherence',
+      nameKey: 'widgets.names.adherence',
       icon: 'calendar',
-      allowedSpans: [2, 3],
-      defaultSpan: 2,
+      colSpan: 2,
     },
   },
-  time: {
-    component: TimeWidget,
+  adherenceFull: {
+    component: AdherenceFullWidget,
     meta: {
-      type: 'time',
-      nameKey: 'widgets.names.time',
-      icon: 'clock',
-      allowedSpans: [1],
-      defaultSpan: 1,
+      type: 'adherenceFull',
+      group: 'adherence',
+      nameKey: 'widgets.names.adherence',
+      icon: 'calendar',
+      colSpan: 3,
     },
   },
-  weeklyVolume: {
-    component: WeeklyVolumeWidget,
+  bodyweightCompact: {
+    component: BodyweightCompactWidget,
     meta: {
-      type: 'weeklyVolume',
-      nameKey: 'widgets.names.weeklyVolume',
-      icon: 'trend',
-      allowedSpans: [1],
-      defaultSpan: 1,
+      type: 'bodyweightCompact',
+      group: 'bodyweight',
+      nameKey: 'widgets.names.bodyweight',
+      icon: 'scale',
+      colSpan: 1,
     },
   },
-  chart: {
-    component: ChartWidget,
+  bodyweightWide: {
+    component: BodyweightWideWidget,
     meta: {
-      type: 'chart',
-      nameKey: 'widgets.names.trend',
-      icon: 'trend',
-      allowedSpans: [2, 3],
-      defaultSpan: 3,
+      type: 'bodyweightWide',
+      group: 'bodyweight',
+      nameKey: 'widgets.names.bodyweight',
+      icon: 'scale',
+      colSpan: 2,
+    },
+  },
+  muscleVolumeFull: {
+    component: MuscleVolumeFullWidget,
+    meta: {
+      type: 'muscleVolumeFull',
+      group: 'muscleVolume',
+      nameKey: 'widgets.names.muscleVolume',
+      icon: 'dumbbell',
+      colSpan: 3,
     },
   },
 };
+
+// Picker gallery ordering: one card per family, variants in size order.
+export const widgetGroups: Array<{
+  group: WidgetGroup;
+  variants: WidgetType[];
+}> = [
+  { group: 'tonnage', variants: ['tonnageCompact', 'tonnageWide'] },
+  { group: 'e1rm', variants: ['e1rmCompact', 'e1rmWide'] },
+  { group: 'adherence', variants: ['adherenceWide', 'adherenceFull'] },
+  { group: 'bodyweight', variants: ['bodyweightCompact', 'bodyweightWide'] },
+  { group: 'muscleVolume', variants: ['muscleVolumeFull'] },
+];

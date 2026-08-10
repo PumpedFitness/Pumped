@@ -13,28 +13,34 @@ import {
 } from '@/data/local/schema/bodyMetrics';
 import { useRepository } from '@/data/local/useRepository';
 import { toKg } from '@/utils/units';
-import type { ProfileFields } from './components/ProfileContent';
+
+export type OnboardingFields = {
+  name: string;
+  age: string;
+  gender: string;
+  height: string;
+  weight: string;
+  bodyFat: string;
+};
 
 function buildProfileData(
-  profileFields: ProfileFields,
+  fields: OnboardingFields,
   weightUnit: string,
 ): Record<string, unknown> {
   const profileData: Record<string, unknown> = {
     weightUnit: weightUnit as WeightUnit,
   };
-  if (profileFields.name) profileData.name = profileFields.name;
-  if (profileFields.gender) {
-    profileData.gender = profileFields.gender as Gender;
-  }
-  if (profileFields.age) {
-    const age = parseInt(profileFields.age, 10);
+  if (fields.name) profileData.name = fields.name.trim();
+  if (fields.gender) profileData.gender = fields.gender as Gender;
+  if (fields.age) {
+    const age = parseInt(fields.age, 10);
     if (!isNaN(age) && age > 0) {
       const birthYear = new Date().getFullYear() - age;
       profileData.birthdate = `${birthYear}-01-01`;
     }
   }
-  if (profileFields.height) {
-    const h = parseFloat(profileFields.height);
+  if (fields.height) {
+    const h = parseFloat(fields.height);
     if (!isNaN(h) && h > 0) profileData.heightCm = h;
   }
   return profileData;
@@ -50,7 +56,7 @@ export function useOnboardingDraft() {
   const bodyFatRepo = useRepository(bodyFatEntries);
 
   const [weightUnit, setWeightUnit] = useState('kg');
-  const [profileFields, setProfileFields] = useState<ProfileFields>({
+  const [fields, setFields] = useState<OnboardingFields>({
     name: '',
     age: '',
     gender: '',
@@ -58,30 +64,26 @@ export function useOnboardingDraft() {
     weight: '',
     bodyFat: '',
   });
-
   const setField = useCallback(
-    <K extends keyof ProfileFields>(key: K, value: string) => {
-      setProfileFields(prev => ({ ...prev, [key]: value }));
+    <K extends keyof OnboardingFields>(key: K, value: string) => {
+      setFields(prev => ({ ...prev, [key]: value }));
     },
     [],
   );
 
-  const finish = useCallback(() => {
-    setProfile(buildProfileData(profileFields, weightUnit));
-
-    if (profileFields.weight) {
-      const w = parseFloat(profileFields.weight);
+  const saveBodyMetrics = useCallback(() => {
+    if (fields.weight) {
+      const w = parseFloat(fields.weight);
       if (!isNaN(w) && w > 0) {
-        const valueKg = toKg(w, weightUnit as WeightUnit);
         weightRepo.create({
           id: randomUUID(),
-          value: valueKg,
+          value: toKg(w, weightUnit as WeightUnit),
           recordedAt: Date.now(),
         });
       }
     }
-    if (profileFields.bodyFat) {
-      const bf = parseFloat(profileFields.bodyFat);
+    if (fields.bodyFat) {
+      const bf = parseFloat(fields.bodyFat);
       if (!isNaN(bf) && bf > 0 && bf <= 100) {
         bodyFatRepo.create({
           id: randomUUID(),
@@ -90,22 +92,31 @@ export function useOnboardingDraft() {
         });
       }
     }
+  }, [fields.weight, fields.bodyFat, weightUnit, weightRepo, bodyFatRepo]);
 
+  const finish = useCallback(() => {
+    setProfile(buildProfileData(fields, weightUnit));
+    saveBodyMetrics();
     completeOnboarding();
     navigation.replace('Main');
-    // Kick off the one-time guided tour now that Main is mounting. startTour is
-    // a no-op once the tour has been seen, so it never retriggers on relaunch.
+    // Kick off the one-time guided tour now that Main is mounting. startTour
+    // is a no-op once the tour has been seen, so it never retriggers.
     startTour();
   }, [
-    completeOnboarding,
-    startTour,
-    navigation,
     setProfile,
-    profileFields,
+    fields,
     weightUnit,
-    weightRepo,
-    bodyFatRepo,
+    saveBodyMetrics,
+    completeOnboarding,
+    navigation,
+    startTour,
   ]);
 
-  return { weightUnit, setWeightUnit, profileFields, setField, finish };
+  return {
+    weightUnit,
+    setWeightUnit,
+    fields,
+    setField,
+    finish,
+  };
 }

@@ -13,6 +13,7 @@ import { ListRow } from '@pumped/ui/clay/ListRow';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
 import { IndexRowChevron } from './IndexRowChevron';
+import { TrainingSettings } from './TrainingSettings';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useRepository } from '@/data/local/useRepository';
 import type { Gender } from '@/data/local/schema/userProfile';
@@ -126,6 +127,9 @@ export function UserSettings() {
           }}
         />
       </SettingsSection>
+
+      {/* ── Training ─────────────────────────── */}
+      <TrainingSettings />
 
       {/* ── Body Tracking ────────────────────── */}
       <SettingsSection label={t('profile.sections.bodyTracking')}>

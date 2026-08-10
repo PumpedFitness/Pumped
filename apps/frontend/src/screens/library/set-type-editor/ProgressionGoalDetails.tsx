@@ -171,6 +171,7 @@ export function ProgressionGoalDetails({
       <RangeRolloverProgressionEditor
         goal={goal}
         progression={{
+          goal,
           fields: progressionFields,
           options: [],
           readOnly: false,

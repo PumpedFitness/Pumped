@@ -10,6 +10,7 @@ type ProfileFieldProps = {
   keyboardType?: 'default' | 'numeric' | 'decimal-pad';
 };
 
+// Wizard text field: clay card well with a terracotta focus ring.
 export function ProfileField({
   label,
   value,
@@ -20,8 +21,10 @@ export function ProfileField({
   const [focused, setFocused] = useState(false);
 
   return (
-    <View className="gap-1.5">
-      <Text className="text-[12.5px] font-semibold text-muted">{label}</Text>
+    <View className="gap-2">
+      <Text className="text-[11px] font-bold uppercase tracking-[1.2px] text-muted">
+        {label}
+      </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -31,7 +34,7 @@ export function ProfileField({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         className={
-          'h-[52px] px-4 bg-surface-card text-foreground text-base font-medium rounded-[18px] border ' +
+          'h-[58px] px-5 bg-surface-card text-foreground text-[17px] font-medium rounded-[18px] border ' +
           (focused ? 'border-accent' : 'border-border-hairline')
         }
       />

@@ -59,6 +59,7 @@ export const resources = {
           sunday: 'Sunday',
           monday: 'Monday',
         },
+        homeMessageTone: 'Home-screen voice',
         restTimerFullscreen: {
           label: 'Full-screen rest timer',
           on: 'On',
@@ -112,47 +113,47 @@ export const resources = {
       },
       onboarding: {
         skip: 'Skip',
-        steps: {
+        backA11y: 'Go back',
+        cta: {
           getStarted: 'Get started',
           continue: 'Continue',
-          letsGo: "Let's go",
+          startTraining: 'Start training',
+        },
+        skipConfirm: {
+          title: 'Skip setup?',
+          body: 'Your answers so far will be saved, the rest stays blank. You can finish your profile any time in Settings.',
+          stay: 'Keep going',
+          confirm: 'Skip',
         },
         welcome: {
-          subtitle: 'Your lifting companion.\nTrack every rep, own every gain.',
-          cards: {
-            offline: {
-              title: 'Offline first',
-              body: "We hate it when you can't use an app without internet, so you can use this app anytime.",
-            },
-            free: {
-              title: 'Always free',
-              body: 'All offline features stay free forever.',
-            },
-            options: {
-              title: 'Lots of options',
-              body: 'We like to minmax our workouts to make more gains, so we added a bunch of stuff to achieve this.',
-            },
-          },
-        },
-        preferences: {
-          title: 'Configure your\nexperience',
-          subtitle: 'You can change this later in settings.',
-          weightUnitLabel: 'Weight unit',
-          kilograms: 'Kilograms',
-          pounds: 'Pounds',
+          headline: 'Own every rep.',
+          tagline:
+            'A training partner in your pocket — plans your week, times your rests, tracks your gains.',
+          badges: 'Offline-first · Always free · Yours',
         },
         profile: {
-          title: 'About you',
-          subtitle: 'Optional — you can always set this later.',
+          eyebrow: 'About you',
+          title: "Let's get to know you",
+          subtitle: 'Powers your greeting and stats — all optional.',
           nameLabel: 'Name',
           namePlaceholder: 'What should we call you?',
           genderLabel: 'Gender',
           ageLabel: 'Age',
           agePlaceholder: 'e.g. 25',
-          heightLabel: 'Height',
-          heightPlaceholder: 'e.g. 180 cm',
+        },
+        body: {
+          eyebrow: 'Your baseline',
+          title: 'Your starting point',
+          subtitle:
+            "Sets your first data points for progress tracking. Skip anything you don't know.",
+          weightUnitLabel: 'Weight unit',
+          kilograms: 'Kilograms',
+          pounds: 'Pounds',
+          heightLabel: 'Height (cm)',
+          heightPlaceholder: 'e.g. 180',
           weightLabel: 'Weight',
-          weightPlaceholder: 'e.g. 80 kg',
+          weightPlaceholderKg: 'e.g. 80',
+          weightPlaceholderLbs: 'e.g. 175',
           bodyFatLabel: 'Estimated body fat %',
           bodyFatPlaceholder: 'e.g. 15',
         },
@@ -161,8 +162,100 @@ export const resources = {
           female: 'Female',
           other: 'Other',
         },
+        goal: {
+          eyebrow: 'Your goal',
+          title: 'What are you training for?',
+          subtitle: 'This sets the reps and rest times of your program.',
+          options: {
+            strength: {
+              title: 'Get stronger',
+              description: 'Heavy compound lifts, low reps, long rests.',
+            },
+            muscle: {
+              title: 'Build muscle',
+              description: 'Moderate reps and steady volume for growth.',
+            },
+            lean: {
+              title: 'Get lean',
+              description: 'Higher reps and short rests keep the pace up.',
+            },
+            health: {
+              title: 'Stay fit',
+              description: 'Balanced training for overall health.',
+            },
+          },
+        },
+        experience: {
+          eyebrow: 'Your level',
+          title: 'How long have you been lifting?',
+          subtitle: 'This calibrates how many sets you start with.',
+          options: {
+            beginner: {
+              title: 'Just starting',
+              description: 'New to the gym, or back after a long break.',
+            },
+            intermediate: {
+              title: 'Comfortable',
+              description: 'One to three years of consistent training.',
+            },
+            advanced: {
+              title: 'Experienced',
+              description: 'Years under the bar — you know your way around.',
+            },
+          },
+        },
+        ready: {
+          eyebrow: 'All set',
+          title: "You're set. Go lift.",
+          titleNamed: "You're set, {{name}}.",
+          subtitle:
+            'Profile dialed in. Build your training in the Library, plan your week in Schedule — it starts now.',
+          note: 'Everything here stays editable in Settings.',
+        },
       },
       home: {
+        planStatus: {
+          none: 'No active plan',
+        },
+        headline: {
+          readyFor: 'Ready for',
+          restLead: 'Rest and',
+          restSubject: 'recover.',
+        },
+        hero: {
+          weekProgress: 'This week',
+          weekCount: '{{done}} / {{total}}',
+          setsCount: '{{count}} sets',
+          minutes: '~{{count}} min',
+          tonnageTarget: '{{value}} t target',
+          liftsCount: '{{count}} lifts',
+          startA11y: 'Start {{name}}',
+        },
+        quick: {
+          startWorkout: 'Start workout',
+          logLift: 'Log lift',
+          timer: 'Timer',
+          weighIn: 'Weigh in',
+          trends: 'Trends',
+          schedule: 'Schedule',
+          library: 'Library',
+          history: 'History',
+          newExercise: 'New exercise',
+          addA11y: 'Add {{label}} to quick actions',
+          removeA11y: 'Remove {{label}} from quick actions',
+        },
+        summary: {
+          title: 'Summary',
+        },
+        edit: {
+          editPill: 'Edit',
+          editHome: 'Edit home',
+          donePill: 'Done',
+          addWidget: '+ Add widget',
+        },
+        addWidget: 'Add widget',
+        doneEditing: 'Done',
+        removeWidget: 'Remove widget',
         timeOfDay: {
           morning: 'morning',
           afternoon: 'afternoon',
@@ -171,134 +264,89 @@ export const resources = {
         dayGreeting: '{{day}} {{timeOfDay}}',
         greeting: "Let's move, {{name}}",
         greetingNoName: "Let's move",
-        blockStatus: 'Meso 2 · hypertrophy · week 3 of 8',
-        headline: {
-          readyFor: 'Ready for',
-          restLead: 'Rest and',
-          restSubject: 'recover.',
+        swapMessage: 'Show another message',
+        tonePickerDescription:
+          'Choose how your home-screen message talks to you.',
+        messageTones: {
+          supportive: 'Supportive',
+          tough: 'Tough love',
+          savage: 'Savage',
         },
-        hero: {
-          blockProgress: 'Block progress',
-          setsCount: '{{count}} sets',
-          minutes: '~{{count}} min',
-          tonnageTarget: '{{value}} t target',
-          liftsCount: '{{count}} lifts',
-          startA11y: 'Start {{name}}',
-        },
-        quick: {
-          logLift: 'Log lift',
-          timer: 'Timer',
-          weighIn: 'Weigh in',
-          trends: 'Trends',
-        },
-        summary: {
-          title: 'Summary',
-          daily: 'Daily',
-          weekly: 'Weekly',
-          monthly: 'Monthly',
-        },
-        units: {
-          tonnes: 't',
-          days28: '28d',
-        },
-        edit: {
-          editPill: 'Edit',
-          donePill: 'Done',
-          banner: 'Drag cards to reorder · ⇱ resize · ✕ remove',
-          addModule: '+ Add module',
-          removeA11y: 'Remove module',
-          resizeA11y: 'Toggle module width',
-          reorderA11y: 'Drag to reorder module',
-        },
-        modules: {
-          tonnage: {
-            name: 'Tonnage',
-            description: 'Computed · sum of sets × reps × load',
+        messages: {
+          supportive: {
+            first: "Let's move",
+            second: 'You have got this',
+            third: 'Make yourself proud',
+            fourth: 'Stronger every session',
           },
-          e1rm: {
-            name: 'Squat e1RM',
-            description: 'Per lift · Epley formula',
-            empty: 'Log a few sessions to see your estimated 1RM.',
+          tough: {
+            first: 'No excuses today',
+            second: 'Show up. Do the work.',
+            third: 'Comfort can wait',
+            fourth: 'Earn your rest',
           },
-          readiness: {
-            name: 'Readiness',
-            description: 'Computed · acute:chronic load × HRV',
-            emptyTitle: 'No readiness data',
-            emptyBody:
-              'Connect HRV and load tracking to see your readiness band.',
-          },
-          adherence: {
-            name: 'Adherence',
-            description: '28-day completion grid',
-          },
-          bodyweight: {
-            name: 'Bodyweight',
-            description: 'Seven-day rolling mean',
-            empty: 'Add weigh-ins to track your bodyweight trend.',
-            trend: '{{delta}} {{unit}} / wk · on target',
-          },
-          muscleVolume: {
-            name: 'Weekly sets by muscle',
-            description: 'Volume split across muscle groups',
-            empty: 'No sets logged this week yet.',
-          },
-          custom: {
-            error: '—',
+          savage: {
+            first: 'Your excuses are weak',
+            second: 'Still thinking about it?',
+            third: 'That weight will not lift itself',
+            fourth: 'Prove you are not all talk',
           },
         },
-        addSheet: {
-          title: 'Add module',
-          buildComputed: 'Build a computed field',
-        },
-        computedSheet: {
-          title: 'Computed field',
-          nameLabel: 'Name',
-          namePlaceholder: 'Push volume',
-          expressionLabel: 'Expression',
-          expressionEmpty: 'Tap the chips below to build a formula',
-          unitLabel: 'Unit',
-          unitPlaceholder: 't · kg · %',
-          previewLabel: 'Preview',
-          add: 'Add to dashboard',
-          defaultName: 'Custom field',
-          backspaceA11y: 'Delete last token',
+        restTimerMockups: {
+          title: 'Rest timer topbar mockups',
+          count: '5 options',
+          setType: 'Working',
+          progression: 'Linear',
+          running: 'Running',
+          idle: 'Idle',
+          variants: {
+            statusBlock: 'Active rest block',
+            restRail: 'Rest rail module',
+            cornerTab: 'Corner status tab',
+            tileBar: 'Box tile topbar',
+            idleSlot: 'Idle configured slot',
+          },
         },
       },
       widgets: {
         names: {
-          recovery: 'Recovery',
-          lastSession: 'Last Session',
-          streak: 'Streak',
-          schedule: 'Schedule',
-          time: 'Time',
-          weeklyVolume: 'Weekly Volume',
-          trend: 'Trend',
+          nextSession: 'Next Session',
+          tonnage: 'Tonnage',
+          e1rm: 'e1RM',
+          adherence: 'Adherence',
+          bodyweight: 'Bodyweight',
+          muscleVolume: 'Muscle Volume',
         },
-        recovery: {
-          ready: 'READY',
-          title: 'RECOVERY',
-          primed: "You're primed\nfor Push Day",
-          movements: 'movements',
-          estTime: 'est. time',
-          start: 'Start',
+        nextSession: {
+          restDay: 'Rest day — nothing scheduled today.',
+          setsCount: '{{count}} sets',
+          minutes: '~{{count}} min',
+          tonnageTarget: '{{value}} t target',
+          liftsCount: '{{count}} lifts',
+          weekProgress: 'This week',
+          startA11y: 'Start {{name}}',
         },
-        lastSession: {
-          caption: 'Last session · Tuesday',
-          title: 'Pull Day — 52 min',
-          prs: '{{count}} PRs',
+        tonnage: {
+          title: 'Tonnage',
+          unit: 't',
         },
-        streak: {
-          title: 'Streak',
-          titleWide: '{{count}}-day streak',
+        e1rm: {
+          title: 'e1RM',
+          titleFor: '{{name}} e1RM',
+          empty: 'Log a few sessions to see your estimated 1RM.',
+          days28: '28d',
         },
-        schedule: {
-          title: 'Schedule',
+        adherence: {
+          title: 'Adherence',
         },
-        weeklyVolume: {
-          title: 'This week',
+        bodyweight: {
+          title: 'Bodyweight',
+          empty: 'Add weigh-ins to track your bodyweight trend.',
+          trend: '{{delta}} {{unit}} / wk',
         },
-        chart: {
-          title: 'Volume Trend',
+        muscleVolume: {
+          title: 'Weekly sets by muscle',
+          empty: 'No sets logged this week yet.',
         },
       },
       widgetPicker: {
@@ -307,8 +355,11 @@ export const resources = {
         sizesAvailable_one: '{{count}} size available',
         sizesAvailable_other: '{{count}} sizes available',
         fullWidth: 'Full width',
+        compact: 'Compact',
+        wide: 'Wide',
         columnsOf3: '{{count}} of 3 columns',
         alreadyAdded: 'Already added',
+        added: 'Added',
         addWidget: 'Add Widget',
       },
       plan: {
@@ -958,10 +1009,13 @@ export const resources = {
         kicker: 'Account · data · preferences',
         sections: {
           profile: 'Profile',
+          training: 'Training',
           bodyTracking: 'Body Tracking',
           preferences: 'Preferences',
           data: 'Data',
         },
+        trainingGoal: 'Goal',
+        experienceLevel: 'Experience',
         name: 'Name',
         namePlaceholder: 'Your name',
         gender: 'Gender',
@@ -1123,6 +1177,7 @@ export const resources = {
           sunday: 'Sonntag',
           monday: 'Montag',
         },
+        homeMessageTone: 'Stimme auf dem Home-Screen',
         restTimerFullscreen: {
           label: 'Pausen-Timer im Vollbild',
           on: 'An',
@@ -1176,49 +1231,47 @@ export const resources = {
       },
       onboarding: {
         skip: 'Überspringen',
-        steps: {
+        backA11y: 'Zurück',
+        cta: {
           getStarted: 'Loslegen',
           continue: 'Weiter',
-          letsGo: "Los geht's",
+          startTraining: 'Training starten',
+        },
+        skipConfirm: {
+          title: 'Einrichtung überspringen?',
+          body: 'Deine bisherigen Angaben werden gespeichert, der Rest bleibt leer. Du kannst dein Profil jederzeit in den Einstellungen vervollständigen.',
+          stay: 'Weitermachen',
+          confirm: 'Überspringen',
         },
         welcome: {
-          subtitle:
-            'Dein Begleiter fürs Krafttraining.\nTracke jede Wiederholung, feiere jeden Fortschritt.',
-          cards: {
-            offline: {
-              title: 'Offline-First',
-              body: 'Wir hassen es, wenn eine App ohne Internet nicht funktioniert – deshalb kannst du diese App jederzeit nutzen.',
-            },
-            free: {
-              title: 'Für immer kostenlos',
-              body: 'Alle Offline-Funktionen bleiben für immer kostenlos.',
-            },
-            options: {
-              title: 'Viele Möglichkeiten',
-              body: 'Wir holen gern das Maximum aus unseren Workouts heraus – deshalb haben wir jede Menge Funktionen dafür eingebaut.',
-            },
-          },
-        },
-        preferences: {
-          title: 'Passe die App\nan dich an',
-          subtitle: 'Du kannst das später in den Einstellungen ändern.',
-          weightUnitLabel: 'Gewichtseinheit',
-          kilograms: 'Kilogramm',
-          pounds: 'Pfund',
+          headline: 'Jede Wiederholung zählt.',
+          tagline:
+            'Dein Trainingspartner für die Hosentasche – plant deine Woche, stoppt deine Pausen, trackt deine Gains.',
+          badges: 'Offline-First · Für immer kostenlos · Deins',
         },
         profile: {
-          title: 'Über dich',
-          subtitle:
-            'Optional – du kannst diese Angaben jederzeit später ergänzen.',
+          eyebrow: 'Über dich',
+          title: 'Erzähl uns von dir',
+          subtitle: 'Für Begrüßung und Statistiken – alles optional.',
           nameLabel: 'Name',
           namePlaceholder: 'Wie sollen wir dich nennen?',
           genderLabel: 'Geschlecht',
           ageLabel: 'Alter',
           agePlaceholder: 'z. B. 25',
-          heightLabel: 'Größe',
-          heightPlaceholder: 'z. B. 180 cm',
+        },
+        body: {
+          eyebrow: 'Deine Basis',
+          title: 'Dein Ausgangspunkt',
+          subtitle:
+            'Deine ersten Datenpunkte fürs Fortschritts-Tracking. Lass aus, was du nicht weißt.',
+          weightUnitLabel: 'Gewichtseinheit',
+          kilograms: 'Kilogramm',
+          pounds: 'Pfund',
+          heightLabel: 'Größe (cm)',
+          heightPlaceholder: 'z. B. 180',
           weightLabel: 'Gewicht',
-          weightPlaceholder: 'z. B. 80 kg',
+          weightPlaceholderKg: 'z. B. 80',
+          weightPlaceholderLbs: 'z. B. 175',
           bodyFatLabel: 'Geschätzter Körperfettanteil (%)',
           bodyFatPlaceholder: 'z. B. 15',
         },
@@ -1227,8 +1280,104 @@ export const resources = {
           female: 'Weiblich',
           other: 'Divers',
         },
+        goal: {
+          eyebrow: 'Dein Ziel',
+          title: 'Wofür trainierst du?',
+          subtitle:
+            'Bestimmt Wiederholungen und Pausen in deinem Programm.',
+          options: {
+            strength: {
+              title: 'Stärker werden',
+              description:
+                'Schwere Grundübungen, wenige Wiederholungen, lange Pausen.',
+            },
+            muscle: {
+              title: 'Muskeln aufbauen',
+              description:
+                'Moderate Wiederholungen und stetiges Volumen für Wachstum.',
+            },
+            lean: {
+              title: 'Definierter werden',
+              description:
+                'Mehr Wiederholungen und kurze Pausen halten das Tempo hoch.',
+            },
+            health: {
+              title: 'Fit bleiben',
+              description: 'Ausgewogenes Training für deine Gesundheit.',
+            },
+          },
+        },
+        experience: {
+          eyebrow: 'Dein Level',
+          title: 'Wie lange trainierst du schon?',
+          subtitle: 'Bestimmt, mit wie vielen Sätzen du startest.',
+          options: {
+            beginner: {
+              title: 'Ganz am Anfang',
+              description: 'Neu im Gym – oder zurück nach einer langen Pause.',
+            },
+            intermediate: {
+              title: 'Sicher dabei',
+              description: 'Ein bis drei Jahre regelmäßiges Training.',
+            },
+            advanced: {
+              title: 'Erfahren',
+              description: 'Jahre an der Hantel – du kennst dich aus.',
+            },
+          },
+        },
+        ready: {
+          eyebrow: 'Alles bereit',
+          title: 'Du bist startklar.',
+          titleNamed: 'Startklar, {{name}}.',
+          subtitle:
+            'Profil eingestellt. Bau dein Training in der Bibliothek, plane deine Woche im Plan – es geht jetzt los.',
+          note: 'Alles hier bleibt in den Einstellungen änderbar.',
+        },
       },
       home: {
+        planStatus: {
+          none: 'Kein aktiver Plan',
+        },
+        headline: {
+          readyFor: 'Bereit für',
+          restLead: 'Ruhe dich',
+          restSubject: 'aus.',
+        },
+        hero: {
+          weekProgress: 'Diese Woche',
+          weekCount: '{{done}} / {{total}}',
+          setsCount: '{{count}} Sätze',
+          minutes: '~{{count}} Min',
+          tonnageTarget: '{{value}} t Ziel',
+          liftsCount: '{{count}} Übungen',
+          startA11y: '{{name}} starten',
+        },
+        quick: {
+          startWorkout: 'Workout starten',
+          logLift: 'Satz loggen',
+          timer: 'Timer',
+          weighIn: 'Wiegen',
+          trends: 'Trends',
+          schedule: 'Plan',
+          library: 'Bibliothek',
+          history: 'Verlauf',
+          newExercise: 'Neue Übung',
+          addA11y: '{{label}} zu Schnellaktionen hinzufügen',
+          removeA11y: '{{label}} aus Schnellaktionen entfernen',
+        },
+        summary: {
+          title: 'Überblick',
+        },
+        edit: {
+          editPill: 'Bearbeiten',
+          editHome: 'Startseite bearbeiten',
+          donePill: 'Fertig',
+          addWidget: '+ Widget hinzufügen',
+        },
+        addWidget: 'Widget hinzufügen',
+        doneEditing: 'Fertig',
+        removeWidget: 'Widget entfernen',
         timeOfDay: {
           morning: 'morgen',
           afternoon: 'nachmittag',
@@ -1237,134 +1386,89 @@ export const resources = {
         dayGreeting: '{{day}}{{timeOfDay}}',
         greeting: "Auf geht's, {{name}}",
         greetingNoName: "Auf geht's",
-        blockStatus: 'Meso 2 · Hypertrophie · Woche 3 von 8',
-        headline: {
-          readyFor: 'Bereit für',
-          restLead: 'Erhol dich und',
-          restSubject: 'regeneriere.',
+        swapMessage: 'Andere Nachricht anzeigen',
+        tonePickerDescription:
+          'Wähle, wie die Nachricht auf deinem Home-Screen mit dir spricht.',
+        messageTones: {
+          supportive: 'Motivierend',
+          tough: 'Streng',
+          savage: 'Gnadenlos',
         },
-        hero: {
-          blockProgress: 'Block-Fortschritt',
-          setsCount: '{{count}} Sätze',
-          minutes: '~{{count}} Min',
-          tonnageTarget: '{{value}} t Ziel',
-          liftsCount: '{{count}} Übungen',
-          startA11y: '{{name}} starten',
-        },
-        quick: {
-          logLift: 'Satz loggen',
-          timer: 'Timer',
-          weighIn: 'Wiegen',
-          trends: 'Trends',
-        },
-        summary: {
-          title: 'Übersicht',
-          daily: 'Täglich',
-          weekly: 'Wöchentlich',
-          monthly: 'Monatlich',
-        },
-        units: {
-          tonnes: 't',
-          days28: '28T',
-        },
-        edit: {
-          editPill: 'Bearbeiten',
-          donePill: 'Fertig',
-          banner: 'Karten ziehen zum Sortieren · ⇱ Größe · ✕ Entfernen',
-          addModule: '+ Modul hinzufügen',
-          removeA11y: 'Modul entfernen',
-          resizeA11y: 'Modulbreite umschalten',
-          reorderA11y: 'Zum Sortieren ziehen',
-        },
-        modules: {
-          tonnage: {
-            name: 'Tonnage',
-            description: 'Berechnet · Summe aus Sätze × Wdh. × Last',
+        messages: {
+          supportive: {
+            first: "Auf geht's",
+            second: 'Du packst das',
+            third: 'Mach dich stolz',
+            fourth: 'Mit jedem Training stärker',
           },
-          e1rm: {
-            name: 'Kniebeuge e1RM',
-            description: 'Pro Übung · Epley-Formel',
-            empty: 'Logge ein paar Einheiten, um dein geschätztes 1RM zu sehen.',
+          tough: {
+            first: 'Heute gibt es keine Ausreden',
+            second: 'Antreten. Durchziehen.',
+            third: 'Komfort kann warten',
+            fourth: 'Verdien dir deine Pause',
           },
-          readiness: {
-            name: 'Bereitschaft',
-            description: 'Berechnet · akute:chronische Last × HRV',
-            emptyTitle: 'Keine Bereitschaftsdaten',
-            emptyBody:
-              'Verbinde HRV- und Last-Tracking, um deine Bereitschaft zu sehen.',
-          },
-          adherence: {
-            name: 'Konsistenz',
-            description: '28-Tage-Raster deiner Einheiten',
-          },
-          bodyweight: {
-            name: 'Körpergewicht',
-            description: 'Gleitender 7-Tage-Mittelwert',
-            empty: 'Trage Wiegungen ein, um deinen Gewichtstrend zu sehen.',
-            trend: '{{delta}} {{unit}} / Wo · im Ziel',
-          },
-          muscleVolume: {
-            name: 'Wöchentliche Sätze pro Muskel',
-            description: 'Volumen aufgeteilt nach Muskelgruppen',
-            empty: 'Diese Woche noch keine Sätze geloggt.',
-          },
-          custom: {
-            error: '—',
+          savage: {
+            first: 'Deine Ausreden sind schwach',
+            second: 'Denkst du immer noch nach?',
+            third: 'Das Gewicht hebt sich nicht selbst',
+            fourth: 'Zeig, dass du nicht nur redest',
           },
         },
-        addSheet: {
-          title: 'Modul hinzufügen',
-          buildComputed: 'Berechnetes Feld erstellen',
-        },
-        computedSheet: {
-          title: 'Berechnetes Feld',
-          nameLabel: 'Name',
-          namePlaceholder: 'Push-Volumen',
-          expressionLabel: 'Formel',
-          expressionEmpty: 'Tippe unten auf die Chips, um eine Formel zu bauen',
-          unitLabel: 'Einheit',
-          unitPlaceholder: 't · kg · %',
-          previewLabel: 'Vorschau',
-          add: 'Zum Dashboard hinzufügen',
-          defaultName: 'Eigenes Feld',
-          backspaceA11y: 'Letztes Element löschen',
+        restTimerMockups: {
+          title: 'Pausentimer-Topbar-Mockups',
+          count: '5 Optionen',
+          setType: 'Arbeitssatz',
+          progression: 'Linear',
+          running: 'Läuft',
+          idle: 'Bereit',
+          variants: {
+            statusBlock: 'Aktiver Pausenblock',
+            restRail: 'Pausenmodul rechts',
+            cornerTab: 'Status-Tab in der Ecke',
+            tileBar: 'Boxige Kachel-Topbar',
+            idleSlot: 'Bereiter Pausenslot',
+          },
         },
       },
       widgets: {
         names: {
-          recovery: 'Erholung',
-          lastSession: 'Letzte Einheit',
-          streak: 'Serie',
-          schedule: 'Zeitplan',
-          time: 'Zeit',
-          weeklyVolume: 'Wochenvolumen',
-          trend: 'Trend',
+          nextSession: 'Nächste Einheit',
+          tonnage: 'Tonnage',
+          e1rm: 'e1RM',
+          adherence: 'Konsistenz',
+          bodyweight: 'Körpergewicht',
+          muscleVolume: 'Sätze pro Muskel',
         },
-        recovery: {
-          ready: 'BEREIT',
-          title: 'ERHOLUNG',
-          primed: 'Du bist bereit\nfür den Push Day',
-          movements: 'Übungen',
-          estTime: 'geschätzte Dauer',
-          start: 'Start',
+        nextSession: {
+          restDay: 'Ruhetag – heute steht nichts an.',
+          setsCount: '{{count}} Sätze',
+          minutes: '~{{count}} Min',
+          tonnageTarget: '{{value}} t Ziel',
+          liftsCount: '{{count}} Übungen',
+          weekProgress: 'Diese Woche',
+          startA11y: '{{name}} starten',
         },
-        lastSession: {
-          caption: 'Letzte Einheit · Dienstag',
-          title: 'Pull Day — 52 min',
-          prs: '{{count}} PRs',
+        tonnage: {
+          title: 'Tonnage',
+          unit: 't',
         },
-        streak: {
-          title: 'Serie',
-          titleWide: '{{count}}-Tage-Serie',
+        e1rm: {
+          title: 'e1RM',
+          titleFor: '{{name}} e1RM',
+          empty: 'Logge ein paar Einheiten, um dein geschätztes 1RM zu sehen.',
+          days28: '28T',
         },
-        schedule: {
-          title: 'Zeitplan',
+        adherence: {
+          title: 'Konsistenz',
         },
-        weeklyVolume: {
-          title: 'Diese Woche',
+        bodyweight: {
+          title: 'Körpergewicht',
+          empty: 'Trage Wiegungen ein, um deinen Gewichtstrend zu sehen.',
+          trend: '{{delta}} {{unit}} / Wo',
         },
-        chart: {
-          title: 'Volumentrend',
+        muscleVolume: {
+          title: 'Wöchentliche Sätze pro Muskel',
+          empty: 'Diese Woche noch keine Sätze geloggt.',
         },
       },
       widgetPicker: {
@@ -1374,8 +1478,11 @@ export const resources = {
         sizesAvailable_one: '{{count}} Größe verfügbar',
         sizesAvailable_other: '{{count}} Größen verfügbar',
         fullWidth: 'Volle Breite',
+        compact: 'Kompakt',
+        wide: 'Breit',
         columnsOf3: '{{count}} von 3 Spalten',
         alreadyAdded: 'Bereits hinzugefügt',
+        added: 'Hinzugefügt',
         addWidget: 'Widget hinzufügen',
       },
       plan: {
@@ -2046,10 +2153,13 @@ export const resources = {
         kicker: 'Konto · Daten · Präferenzen',
         sections: {
           profile: 'Profil',
+          training: 'Training',
           bodyTracking: 'Körperdaten',
           preferences: 'Präferenzen',
           data: 'Daten',
         },
+        trainingGoal: 'Ziel',
+        experienceLevel: 'Erfahrung',
         name: 'Name',
         namePlaceholder: 'Dein Name',
         gender: 'Geschlecht',

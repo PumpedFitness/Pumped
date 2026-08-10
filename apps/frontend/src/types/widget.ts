@@ -2,18 +2,29 @@ import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import type { TranslationResource } from '@/i18n/resources';
 
 export type WidgetType =
-  | 'recovery'
-  | 'nextWorkout'
-  | 'streak'
-  | 'schedule'
-  | 'time'
-  | 'weeklyVolume'
-  | 'chart';
+  | 'tonnageCompact'
+  | 'tonnageWide'
+  | 'e1rmCompact'
+  | 'e1rmWide'
+  | 'adherenceWide'
+  | 'adherenceFull'
+  | 'bodyweightCompact'
+  | 'bodyweightWide'
+  | 'muscleVolumeFull';
+
+export type WidgetGroup =
+  | 'tonnage'
+  | 'e1rm'
+  | 'adherence'
+  | 'bodyweight'
+  | 'muscleVolume';
 
 export type WidgetPlacement = {
   id: string;
   type: WidgetType;
   colSpan: number; // 1, 2, or 3
+  row: number;
+  column: number;
 };
 
 export type WidgetNameKey = `widgets.names.${Extract<
@@ -23,8 +34,8 @@ export type WidgetNameKey = `widgets.names.${Extract<
 
 export type WidgetMeta = {
   type: WidgetType;
+  group: WidgetGroup;
   nameKey: WidgetNameKey;
   icon: IconName;
-  allowedSpans: number[];
-  defaultSpan: number;
+  colSpan: 1 | 2 | 3;
 };

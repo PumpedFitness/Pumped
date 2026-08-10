@@ -1,16 +1,16 @@
 import { like } from 'drizzle-orm';
 import type { db } from './database';
-import { seedExerciseCatalog } from './seed/exerciseCatalog';
 import { buildWorkoutHistory } from './seed/history';
 import { seedWorkoutTemplates } from './seed/templates';
 import { performedSets, workoutSessions } from './schema';
 
 type LocalDatabase = typeof db;
 
+// Sample templates + history only — the exercise catalog is production seed
+// data and runs unconditionally in initDatabase.
 export function seedDevelopmentData(database: LocalDatabase): void {
   const now = Date.now();
 
-  seedExerciseCatalog(database, now);
   seedWorkoutTemplates(database, now);
 
   // Keep development history near "today" so every history widget has data.

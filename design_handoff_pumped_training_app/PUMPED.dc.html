@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#D8D4CB;font-family:Archivo,system-ui,sans-serif}
+a{color:#B4472A;text-decoration:none}a:hover{color:#8E3620}
+*{-webkit-tap-highlight-color:transparent}
+@keyframes pu-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pu-sheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes pu-fade{from{opacity:0}to{opacity:1}}
+@keyframes pu-pulse{0%,100%{opacity:.35}50%{opacity:1}}
+::-webkit-scrollbar{width:0;height:0}
+</style></helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 24px;box-sizing:border-box;background:#D8D4CB">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ frameDark }}" hint-size="402px,874px">
+
+<div style="height:100%;display:flex;flex-direction:column;background:#EFEDE7;font-family:Archivo,sans-serif;color:#16150F">
+
+<sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;animation:pu-fade .25s ease">
+<div style="padding:62px 20px 12px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid rgba(22,21,15,.10)">
+<div>
+<div style="font:600 20px/1 Archivo,sans-serif;letter-spacing:.30em;text-transform:uppercase">PUMPED</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82;margin-top:7px;text-transform:uppercase">SAT 25 JUL · MESO 2 · WK 3/8</div>
+</div>
+<div onClick="{{ toggleEdit }}" style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;padding:8px 10px;border:1px solid rgba(22,21,15,.22);border-radius:2px;cursor:pointer;color:#16150F;white-space:nowrap" style-hover="background:#16150F;color:#EFEDE7;border-color:#16150F">{{ editLabel }}</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow:auto;padding:14px 20px 24px">
+<sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:8px;padding:9px 11px;margin-bottom:12px;border:1px dashed rgba(22,21,15,.28);border-radius:2px;background:rgba(180,71,42,.05)">
+<div style="width:5px;height:5px;background:#B4472A;flex:none"></div>
+<div style="font:400 9px/1.5 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#57544B">CANVAS UNLOCKED — DRAG TO REORDER · TAP ⇱ TO RESIZE · ✕ TO REMOVE</div>
+</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
+
+<div draggable="{{ editing }}" onDragStart="{{ w.next.dragStart }}" onDragOver="{{ w.next.dragOver }}" onDrop="{{ w.next.drop }}" style="order:{{ w.next.order }};grid-column:span {{ w.next.span }};display:{{ w.next.display }};position:relative;background:#16150F;color:#EFEDE7;border-radius:2px;padding:16px 16px 14px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(239,237,231,.55)">NEXT SESSION</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:12px">
+<div>
+<div style="font:600 27px/1 Archivo,sans-serif;letter-spacing:-.01em">Push A — Bench focus</div>
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:.10em;color:rgba(239,237,231,.62);margin-top:10px">5 LIFTS · 18 SETS · ~52 MIN · TGT 6.4 t</div>
+</div>
+<div onClick="{{ startSession }}" style="flex:none;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;background:#B4472A;color:#F7F6F2;padding:14px 16px;border-radius:2px;cursor:pointer" style-hover="background:#C8512F">START</div>
+</div>
+<div onClick="{{ w.next.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.tonnage.dragStart }}" onDragOver="{{ w.tonnage.dragOver }}" onDrop="{{ w.tonnage.drop }}" onClick="{{ openTonnage }}" style="order:{{ w.tonnage.order }};grid-column:span {{ w.tonnage.span }};display:{{ w.tonnage.display }};position:relative;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px;cursor:pointer" style-hover="border-color:rgba(22,21,15,.30)">
+<div style="display:flex;align-items:center;gap:5px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">TONNAGE / WK</div>
+<div style="font:500 8px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#B4472A;border:1px solid rgba(180,71,42,.4);padding:2px 3px;border-radius:1px">ƒx</div>
+</div>
+<div style="display:flex;align-items:baseline;gap:4px;margin-top:14px">
+<div style="font:600 32px/1 Archivo,sans-serif;letter-spacing:-.02em">38.4</div>
+<div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#57544B">t</div>
+</div>
+<div style="display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:14px">
+<div style="flex:1;height:34%;background:rgba(22,21,15,.16)"></div>
+<div style="flex:1;height:52%;background:rgba(22,21,15,.16)"></div>
+<div style="flex:1;height:44%;background:rgba(22,21,15,.16)"></div>
+<div style="flex:1;height:68%;background:rgba(22,21,15,.16)"></div>
+<div style="flex:1;height:60%;background:rgba(22,21,15,.16)"></div>
+<div style="flex:1;height:82%;background:rgba(22,21,15,.16)"></div>
+<div style="flex:1;height:100%;background:#B4472A"></div>
+</div>
+<div onClick="{{ w.tonnage.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.tonnage.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.e1rm.dragStart }}" onDragOver="{{ w.e1rm.dragOver }}" onDrop="{{ w.e1rm.drop }}" onClick="{{ openE1rm }}" style="order:{{ w.e1rm.order }};grid-column:span {{ w.e1rm.span }};display:{{ w.e1rm.display }};position:relative;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px;cursor:pointer" style-hover="border-color:rgba(22,21,15,.30)">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">E1RM · SQUAT</div>
+<div style="display:flex;align-items:baseline;gap:4px;margin-top:14px">
+<div style="font:600 32px/1 Archivo,sans-serif;letter-spacing:-.02em">182.5</div>
+<div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#57544B">{{ unit }}</div>
+</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#3C4A55;margin-top:9px">▲ 4.0 / 28 D</div>
+<svg viewBox="0 0 140 30" preserveAspectRatio="none" style="width:100%;height:26px;margin-top:9px;display:block"><polyline points="0,24 20,22 40,25 60,17 80,19 100,11 120,12 140,4" fill="none" stroke="#16150F" stroke-width="1.5"></polyline></svg>
+<div onClick="{{ w.e1rm.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.e1rm.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.fresh.dragStart }}" onDragOver="{{ w.fresh.dragOver }}" onDrop="{{ w.fresh.drop }}" style="order:{{ w.fresh.order }};grid-column:span {{ w.fresh.span }};display:{{ w.fresh.display }};position:relative;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:5px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">READINESS</div>
+<div style="font:500 8px/1 'IBM Plex Mono',monospace;color:#B4472A;border:1px solid rgba(180,71,42,.4);padding:2px 3px;border-radius:1px">ƒx</div>
+</div>
+<div style="font:400 8px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#918D82">1 / ACWR × HRV_Z</div>
+</div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-top:13px">
+<div style="font:600 30px/1 Archivo,sans-serif;letter-spacing:-.02em">0.94</div>
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;letter-spacing:.10em;color:#57544B">OPTIMAL BAND</div>
+</div>
+<div style="position:relative;height:8px;margin-top:16px;background:rgba(22,21,15,.08)">
+<div style="position:absolute;left:38%;width:28%;top:0;bottom:0;background:rgba(60,74,85,.22)"></div>
+<div style="position:absolute;left:{{ readinessPos }};top:-4px;width:2px;height:16px;background:#B4472A"></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:7px;font:400 8px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#918D82">
+<div>0.6 DETRAIN</div>
+<div>1.0</div>
+<div>1.5 SPIKE</div>
+</div>
+<div onClick="{{ w.fresh.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.fresh.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.adher.dragStart }}" onDragOver="{{ w.adher.dragOver }}" onDrop="{{ w.adher.drop }}" style="order:{{ w.adher.order }};grid-column:span {{ w.adher.span }};display:{{ w.adher.display }};position:relative;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">ADHERENCE 4W</div>
+<div style="display:flex;align-items:baseline;gap:3px;margin-top:14px">
+<div style="font:600 32px/1 Archivo,sans-serif;letter-spacing:-.02em">92</div>
+<div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#57544B">%</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:14px">
+<sc-for list="{{ dots }}" as="d" hint-placeholder-count="28"><div style="aspect-ratio:1;background:{{ d.c }}"></div></sc-for>
+</div>
+<div onClick="{{ w.adher.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.adher.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.bw.dragStart }}" onDragOver="{{ w.bw.dragOver }}" onDrop="{{ w.bw.drop }}" style="order:{{ w.bw.order }};grid-column:span {{ w.bw.span }};display:{{ w.bw.display }};position:relative;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">BODYWEIGHT · 7D AVG</div>
+<div style="display:flex;align-items:baseline;gap:4px;margin-top:14px">
+<div style="font:600 32px/1 Archivo,sans-serif;letter-spacing:-.02em">84.2</div>
+<div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#57544B">{{ unit }}</div>
+</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#57544B;margin-top:9px">+0.3 / WK · ON TARGET</div>
+<svg viewBox="0 0 140 30" preserveAspectRatio="none" style="width:100%;height:26px;margin-top:9px;display:block"><polyline points="0,22 23,20 46,23 70,15 93,16 117,10 140,8" fill="none" stroke="#3C4A55" stroke-width="1.5"></polyline></svg>
+<div onClick="{{ w.bw.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.bw.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.vol.dragStart }}" onDragOver="{{ w.vol.dragOver }}" onDrop="{{ w.vol.drop }}" style="order:{{ w.vol.order }};grid-column:span {{ w.vol.span }};display:{{ w.vol.display }};position:relative;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">WEEKLY SETS BY MUSCLE</div>
+<div style="display:flex;flex-direction:column;gap:7px;margin-top:14px">
+<sc-for list="{{ muscles }}" as="m" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:9px">
+<div style="width:64px;font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#57544B">{{ m.n }}</div>
+<div style="flex:1;height:7px;background:rgba(22,21,15,.07);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:{{ m.p }};background:{{ m.c }}"></div></div>
+<div style="width:34px;text-align:right;font:500 9px/1 'IBM Plex Mono',monospace;color:#16150F">{{ m.v }}</div>
+</div>
+</sc-for>
+</div>
+<div onClick="{{ w.vol.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.vol.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+<div draggable="{{ editing }}" onDragStart="{{ w.custom.dragStart }}" onDragOver="{{ w.custom.dragOver }}" onDrop="{{ w.custom.drop }}" style="order:{{ w.custom.order }};grid-column:span {{ w.custom.span }};display:{{ w.custom.display }};position:relative;background:#F7F6F2;border:1px solid #B4472A;border-radius:2px;padding:14px">
+<div style="display:flex;align-items:center;gap:5px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">{{ customName }}</div>
+<div style="font:500 8px/1 'IBM Plex Mono',monospace;color:#B4472A;border:1px solid rgba(180,71,42,.4);padding:2px 3px;border-radius:1px">ƒx</div>
+</div>
+<div style="display:flex;align-items:baseline;gap:4px;margin-top:14px">
+<div style="font:600 32px/1 Archivo,sans-serif;letter-spacing:-.02em">{{ customValue }}</div>
+<div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#57544B">{{ customUnit }}</div>
+</div>
+<div style="font:400 8px/1.5 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#918D82;margin-top:11px;word-break:break-all">{{ customExpr }}</div>
+<div onClick="{{ w.custom.cycle }}" style="display:{{ editChrome }};position:absolute;bottom:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#16150F;color:#EFEDE7;align-items:center;justify-content:center;font:400 11px/1 Archivo;cursor:pointer">⇱</div>
+<div onClick="{{ w.custom.remove }}" style="display:{{ editChrome }};position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:2px;background:#B4472A;color:#fff;align-items:center;justify-content:center;font:400 12px/1 Archivo;cursor:pointer">✕</div>
+</div>
+
+</div>
+
+<sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ openAdd }}" style="margin-top:10px;padding:16px;border:1px dashed rgba(22,21,15,.30);border-radius:2px;text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#57544B;cursor:pointer" style-hover="border-color:#16150F;color:#16150F">+ ADD MODULE</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;animation:pu-fade .25s ease">
+<div style="padding:62px 20px 12px;border-bottom:1px solid rgba(22,21,15,.10)">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div onClick="{{ goDash }}" style="font:400 15px/1 Archivo;cursor:pointer;color:#57544B;padding:4px 8px 4px 0">←</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82">LAST 8 WEEKS</div>
+</div>
+<div style="font:600 26px/1.1 Archivo,sans-serif;letter-spacing:-.01em;margin-top:12px">{{ metricTitle }}</div>
+<div style="display:flex;gap:0;margin-top:14px;border:1px solid rgba(22,21,15,.14);border-radius:2px;overflow:hidden">
+<sc-for list="{{ metrics }}" as="m" hint-placeholder-count="3">
+<div onClick="{{ m.pick }}" style="flex:1;text-align:center;padding:9px 4px;font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;cursor:pointer;background:{{ m.bg }};color:{{ m.fg }};border-left:{{ m.bl }}">{{ m.label }}</div>
+</sc-for>
+</div>
+</div>
+<div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 24px">
+<div style="display:flex;align-items:baseline;gap:8px">
+<div style="font:600 44px/1 Archivo,sans-serif;letter-spacing:-.03em">{{ metricValue }}</div>
+<div style="font:400 12px/1 'IBM Plex Mono',monospace;color:#57544B">{{ metricUnit }}</div>
+<div style="margin-left:auto;font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#3C4A55">{{ metricDelta }}</div>
+</div>
+<div style="margin-top:18px;background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:14px 12px 10px">
+<svg viewBox="0 0 320 150" preserveAspectRatio="none" style="width:100%;height:160px;display:block">
+<line x1="0" y1="12" x2="320" y2="12" stroke="rgba(22,21,15,.09)" stroke-width="1"></line>
+<line x1="0" y1="47" x2="320" y2="47" stroke="rgba(22,21,15,.09)" stroke-width="1"></line>
+<line x1="0" y1="82" x2="320" y2="82" stroke="rgba(22,21,15,.09)" stroke-width="1"></line>
+<line x1="0" y1="117" x2="320" y2="117" stroke="rgba(22,21,15,.09)" stroke-width="1"></line>
+<line x1="0" y1="140" x2="320" y2="140" stroke="rgba(22,21,15,.35)" stroke-width="1"></line>
+<polyline points="{{ chartPoints }}" fill="none" stroke="#16150F" stroke-width="2"></polyline>
+<circle cx="{{ chartLastX }}" cy="{{ chartLastY }}" r="4" fill="#B4472A"></circle>
+</svg>
+<div style="display:flex;justify-content:space-between;margin-top:8px;font:400 8px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#918D82">
+<div>W1</div><div>W3</div><div>W5</div><div>W7</div><div>NOW</div>
+</div>
+</div>
+
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82;margin:26px 0 10px">PR LOG</div>
+<div style="border-top:1px solid rgba(22,21,15,.12)">
+<sc-for list="{{ prs }}" as="p" hint-placeholder-count="4">
+<div style="display:flex;align-items:baseline;gap:10px;padding:12px 0;border-bottom:1px solid rgba(22,21,15,.10)">
+<div style="flex:1;font:400 13px/1.2 Archivo,sans-serif">{{ p.lift }}</div>
+<div style="font:500 13px/1 'IBM Plex Mono',monospace">{{ p.load }}</div>
+<div style="width:66px;text-align:right;font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#918D82">{{ p.date }}</div>
+</div>
+</sc-for>
+</div>
+
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82;margin:26px 0 10px">DERIVED FROM</div>
+<div style="background:#F7F6F2;border:1px solid rgba(22,21,15,.10);border-radius:2px;padding:13px;font:400 9px/1.7 'IBM Plex Mono',monospace;letter-spacing:.03em;color:#57544B">{{ metricFormula }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStub }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;animation:pu-fade .25s ease">
+<div style="padding:62px 20px 14px;border-bottom:1px solid rgba(22,21,15,.10)">
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82">{{ stubKicker }}</div>
+<div style="font:600 26px/1.1 Archivo,sans-serif;letter-spacing:-.01em;margin-top:11px">{{ stubTitle }}</div>
+</div>
+<div style="flex:1;min-height:0;overflow:auto;padding:6px 20px 24px">
+<sc-for list="{{ stubRows }}" as="r" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:12px;padding:17px 0;border-bottom:1px solid rgba(22,21,15,.10)">
+<div style="flex:1">
+<div style="font:400 15px/1.2 Archivo,sans-serif">{{ r.t }}</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#918D82;margin-top:6px">{{ r.s }}</div>
+</div>
+<div style="font:400 13px/1 Archivo;color:#918D82">→</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSession }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;background:#121210;color:#EFEDE7;animation:pu-fade .2s ease">
+<div style="padding:62px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(239,237,231,.13)">
+<div onClick="{{ goDash }}" style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:rgba(239,237,231,.6);cursor:pointer">✕ END</div>
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em">PUSH A</div>
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.10em;color:#B4472A">{{ clock }}</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow:auto;padding:18px 20px 20px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+<div style="font:600 27px/1.1 Archivo,sans-serif;letter-spacing:-.01em">{{ exName }}</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.10em;color:rgba(239,237,231,.5);white-space:nowrap">{{ exTarget }}</div>
+</div>
+
+<div style="margin-top:16px;border-top:1px solid rgba(239,237,231,.13)">
+<sc-for list="{{ setRows }}" as="s" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(239,237,231,.10)">
+<div style="width:26px;font:500 10px/1 'IBM Plex Mono',monospace;color:{{ s.numColor }}">{{ s.num }}</div>
+<div style="flex:1;font:500 15px/1 'IBM Plex Mono',monospace;color:{{ s.color }}">{{ s.load }}</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:rgba(239,237,231,.45)">{{ s.note }}</div>
+<div style="width:16px;text-align:right;font:400 11px/1 Archivo;color:{{ s.tickColor }}">{{ s.tick }}</div>
+</div>
+</sc-for>
+</div>
+
+<sc-if value="{{ resting }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:18px;background:#1C1C18;border:1px solid rgba(239,237,231,.14);border-radius:2px;padding:16px;display:flex;align-items:center;gap:16px;animation:pu-rise .25s ease">
+<svg viewBox="0 0 44 44" style="width:44px;height:44px;flex:none;transform:rotate(-90deg)">
+<circle cx="22" cy="22" r="19" fill="none" stroke="rgba(239,237,231,.16)" stroke-width="3"></circle>
+<circle cx="22" cy="22" r="19" fill="none" stroke="#B4472A" stroke-width="3" stroke-dasharray="119.4" stroke-dashoffset="{{ restOffset }}"></circle>
+</svg>
+<div style="flex:1">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(239,237,231,.55)">REST</div>
+<div style="font:600 24px/1 Archivo,sans-serif;letter-spacing:-.01em;margin-top:8px">{{ restClock }}</div>
+</div>
+<div onClick="{{ skipRest }}" style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;padding:11px 12px;border:1px solid rgba(239,237,231,.28);border-radius:2px;cursor:pointer">SKIP</div>
+</div>
+</sc-if>
+
+<div style="margin-top:18px;background:#1C1C18;border:1px solid rgba(239,237,231,.14);border-radius:2px;padding:16px">
+<div style="display:flex;gap:10px">
+<div style="flex:1">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(239,237,231,.5)">LOAD · {{ unitUp }}</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+<div onClick="{{ wDown }}" style="width:34px;height:34px;border:1px solid rgba(239,237,231,.22);border-radius:2px;display:flex;align-items:center;justify-content:center;font:400 15px/1 Archivo;cursor:pointer">−</div>
+<div style="flex:1;text-align:center;font:600 22px/1 'IBM Plex Mono',monospace">{{ weight }}</div>
+<div onClick="{{ wUp }}" style="width:34px;height:34px;border:1px solid rgba(239,237,231,.22);border-radius:2px;display:flex;align-items:center;justify-content:center;font:400 15px/1 Archivo;cursor:pointer">+</div>
+</div>
+</div>
+<div style="flex:1">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(239,237,231,.5)">REPS</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+<div onClick="{{ rDown }}" style="width:34px;height:34px;border:1px solid rgba(239,237,231,.22);border-radius:2px;display:flex;align-items:center;justify-content:center;font:400 15px/1 Archivo;cursor:pointer">−</div>
+<div style="flex:1;text-align:center;font:600 22px/1 'IBM Plex Mono',monospace">{{ reps }}</div>
+<div onClick="{{ rUp }}" style="width:34px;height:34px;border:1px solid rgba(239,237,231,.22);border-radius:2px;display:flex;align-items:center;justify-content:center;font:400 15px/1 Archivo;cursor:pointer">+</div>
+</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.10em;color:rgba(239,237,231,.5)">RPE</div>
+<sc-for list="{{ rpeChips }}" as="c" hint-placeholder-count="5">
+<div onClick="{{ c.pick }}" style="flex:1;text-align:center;padding:8px 0;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};border-radius:2px;font:500 10px/1 'IBM Plex Mono',monospace;cursor:pointer">{{ c.v }}</div>
+</sc-for>
+</div>
+<div onClick="{{ logSet }}" style="margin-top:14px;background:#B4472A;color:#F7F6F2;text-align:center;padding:16px;border-radius:2px;font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.18em;cursor:pointer" style-hover="background:#C8512F">LOG SET</div>
+<div style="text-align:center;margin-top:11px;font:400 9px/1.5 'IBM Plex Mono',monospace;letter-spacing:.06em;color:rgba(239,237,231,.42)">{{ hint }}</div>
+</div>
+
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:rgba(239,237,231,.45);margin:24px 0 10px">SESSION QUEUE</div>
+<div style="border-top:1px solid rgba(239,237,231,.13)">
+<sc-for list="{{ queue }}" as="q" hint-placeholder-count="5">
+<div onClick="{{ q.pick }}" style="display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid rgba(239,237,231,.10);cursor:pointer">
+<div style="width:6px;height:6px;background:{{ q.dot }};flex:none"></div>
+<div style="flex:1;font:400 14px/1.2 Archivo,sans-serif;color:{{ q.color }}">{{ q.n }}</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:rgba(239,237,231,.45)">{{ q.s }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetAdd }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:80;background:rgba(18,18,16,.42);display:flex;align-items:flex-end;animation:pu-fade .2s ease">
+<div style="width:100%;background:#EFEDE7;border-top:1px solid rgba(22,21,15,.2);padding:20px 20px 44px;animation:pu-sheet .28s cubic-bezier(.2,.8,.2,1);max-height:78%;overflow:auto;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82">ADD MODULE</div>
+<div onClick="{{ closeSheet }}" style="font:400 13px/1 Archivo;color:#57544B;cursor:pointer">✕</div>
+</div>
+<div style="margin-top:16px;border-top:1px solid rgba(22,21,15,.12)">
+<sc-for list="{{ available }}" as="a" hint-placeholder-count="3">
+<div onClick="{{ a.add }}" style="display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid rgba(22,21,15,.10);cursor:pointer">
+<div style="flex:1">
+<div style="font:400 15px/1.2 Archivo,sans-serif">{{ a.t }}</div>
+<div style="font:400 9px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#918D82;margin-top:6px">{{ a.s }}</div>
+</div>
+<div style="font:400 15px/1 Archivo;color:#57544B">+</div>
+</div>
+</sc-for>
+</div>
+<div onClick="{{ openFormula }}" style="margin-top:16px;padding:15px;border:1px solid #B4472A;border-radius:2px;display:flex;align-items:center;gap:10px;cursor:pointer" style-hover="background:rgba(180,71,42,.06)">
+<div style="font:500 10px/1 'IBM Plex Mono',monospace;color:#B4472A;border:1px solid rgba(180,71,42,.45);padding:3px 4px;border-radius:1px">ƒx</div>
+<div style="flex:1;font:400 14px/1.2 Archivo,sans-serif">New computed field</div>
+<div style="font:400 15px/1 Archivo;color:#B4472A">→</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetFormula }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:80;background:rgba(18,18,16,.42);display:flex;align-items:flex-end;animation:pu-fade .2s ease">
+<div style="width:100%;background:#EFEDE7;border-top:1px solid rgba(22,21,15,.2);padding:20px 20px 40px;animation:pu-sheet .28s cubic-bezier(.2,.8,.2,1);max-height:86%;overflow:auto;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82">COMPUTED FIELD</div>
+<div onClick="{{ closeSheet }}" style="font:400 13px/1 Archivo;color:#57544B;cursor:pointer">✕</div>
+</div>
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82;margin:20px 0 8px">NAME</div>
+<input value="{{ fName }}" onChange="{{ setName }}" placeholder="e.g. PUSH VOLUME" style="width:100%;box-sizing:border-box;background:#F7F6F2;border:1px solid rgba(22,21,15,.16);border-radius:2px;padding:12px;font:500 13px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;color:#16150F;outline:none;text-transform:uppercase" />
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82;margin:20px 0 8px">EXPRESSION</div>
+<div style="background:#16150F;color:#EFEDE7;border-radius:2px;padding:14px;min-height:48px;font:400 12px/1.6 'IBM Plex Mono',monospace;word-break:break-all">{{ fExprShown }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+<sc-for list="{{ tokens }}" as="t" hint-placeholder-count="10">
+<div onClick="{{ t.tap }}" style="padding:8px 9px;border:1px solid rgba(22,21,15,.20);border-radius:2px;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;color:#16150F;cursor:pointer;background:#F7F6F2" style-hover="background:#16150F;color:#EFEDE7">{{ t.v }}</div>
+</sc-for>
+<div onClick="{{ backspace }}" style="padding:8px 9px;border:1px solid rgba(180,71,42,.45);border-radius:2px;font:500 10px/1 'IBM Plex Mono',monospace;color:#B4472A;cursor:pointer">⌫</div>
+</div>
+<div style="display:flex;gap:10px;margin-top:20px;align-items:flex-end">
+<div style="flex:1">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#918D82;margin-bottom:8px">UNIT</div>
+<input value="{{ fUnit }}" onChange="{{ setUnit }}" placeholder="t / kg / %" style="width:100%;box-sizing:border-box;background:#F7F6F2;border:1px solid rgba(22,21,15,.16);border-radius:2px;padding:12px;font:400 13px/1 'IBM Plex Mono',monospace;color:#16150F;outline:none" />
+</div>
+<div style="flex:1;background:#F7F6F2;border:1px solid rgba(22,21,15,.16);border-radius:2px;padding:11px 12px">
+<div style="font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#918D82">PREVIEW</div>
+<div style="font:600 20px/1 Archivo,sans-serif;margin-top:7px">{{ fPreview }}</div>
+</div>
+</div>
+<div onClick="{{ saveFormula }}" style="margin-top:20px;background:#16150F;color:#EFEDE7;text-align:center;padding:16px;border-radius:2px;font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.18em;cursor:pointer">ADD TO CANVAS</div>
+</div>
+</div>
+</sc-if>
+
+<div style="display:{{ tabBarDisplay }};border-top:1px solid rgba(22,21,15,.12);background:#EFEDE7;padding:11px 12px 30px;gap:2px;flex:none">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+<div onClick="{{ t.pick }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;padding:5px 0;cursor:pointer">
+<div style="width:16px;height:2px;background:{{ t.mark }}"></div>
+<div style="font:500 8px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;color:{{ t.color }}">{{ t.label }}</div>
+</div>
+</sc-for>
+</div>
+
+</div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:450,&quot;height&quot;:970},&quot;units&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;kg&quot;,&quot;lb&quot;],&quot;default&quot;:&quot;kg&quot;,&quot;tsType&quot;:&quot;'kg' | 'lb'&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;restSeconds&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:90,&quot;min&quot;:30,&quot;max&quot;:300,&quot;step&quot;:15,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;startInEditMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+const KEYS = ['next','tonnage','e1rm','fresh','adher','bw','vol','custom'];
+const HAIR = 'rgba(239,237,231,.45)';
+
+class Component extends DCLogic {
+  state = {
+    screen: 'dash', tab: 'dash',
+    editing: false, sheet: null, drag: null,
+    order: { next:0, tonnage:1, e1rm:2, fresh:3, adher:4, bw:5, vol:6, custom:7 },
+    span:  { next:2, tonnage:1, e1rm:1, fresh:2, adher:1, bw:1, vol:2, custom:1 },
+    vis:   { next:1, tonnage:1, e1rm:1, fresh:1, adher:1, bw:1, vol:0, custom:0 },
+    metric: 'e1rm',
+    sets: [{ w:75, r:8, rpe:7 }, { w:82.5, r:6, rpe:8 }],
+    weight: 85, reps: 6, rpe: 8, rest: 0, elapsed: 724, exIdx: 0,
+    fName: '', fExpr: '', fUnit: '',
+    custom: null
+  };
+
+  componentDidMount() {
+    if (this.props.startInEditMode) this.setState({ editing: true });
+    this.timer = setInterval(() => {
+      const s = this.state;
+      if (s.screen !== 'session') return;
+      this.setState({ elapsed: s.elapsed + 1, rest: s.rest > 0 ? s.rest - 1 : 0 });
+    }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  set = (patch) => this.setState(patch);
+  mv = (key, val) => this.setState(s => ({ [key]: Object.assign({}, s[key], val) }));
+
+  reorder = (from, to) => {
+    if (!from || from === to) return;
+    const ord = Object.assign({}, this.state.order);
+    const arr = KEYS.slice().sort((a, b) => ord[a] - ord[b]);
+    arr.splice(arr.indexOf(from), 1);
+    arr.splice(arr.indexOf(to), 0, from);
+    const next = {};
+    arr.forEach((k, i) => { next[k] = i; });
+    this.setState({ order: next, drag: null });
+  };
+
+  fmtClock = (t) => Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+
+  renderVals() {
+    const s = this.state;
+    const unit = this.props.units === 'lb' ? 'lb' : 'kg';
+    const editing = s.editing;
+    const w = {};
+    KEYS.forEach(k => {
+      w[k] = {
+        order: s.order[k],
+        span: s.span[k],
+        display: s.vis[k] ? 'block' : 'none',
+        dragStart: () => this.setState({ drag: k }),
+        dragOver: (e) => { if (editing) e.preventDefault(); },
+        drop: (e) => { if (editing) { e.preventDefault(); this.reorder(s.drag, k); } },
+        remove: (e) => { e.stopPropagation(); this.mv('vis', { [k]: 0 }); },
+        cycle: (e) => { e.stopPropagation(); this.mv('span', { [k]: s.span[k] === 2 ? 1 : 2 }); }
+      };
+    });
+
+    const dots = Array.from({ length: 28 }, (_, i) => ({
+      c: [3, 9, 17].includes(i) ? 'rgba(22,21,15,.10)' : (i > 24 ? 'rgba(22,21,15,.25)' : '#16150F')
+    }));
+
+    const muscles = [
+      { n: 'CHEST', v: '18', p: '90%', c: '#16150F' },
+      { n: 'BACK', v: '20', p: '100%', c: '#16150F' },
+      { n: 'QUADS', v: '14', p: '70%', c: '#3C4A55' },
+      { n: 'DELTS', v: '11', p: '55%', c: '#3C4A55' },
+      { n: 'ARMS', v: '8', p: '40%', c: '#B4472A' }
+    ];
+
+    const series = {
+      e1rm: [162, 165, 164, 170, 169, 174, 178, 182.5],
+      tonnage: [29.1, 31.4, 30.2, 34.8, 33.1, 36.0, 37.2, 38.4],
+      bw: [82.4, 82.7, 82.9, 83.3, 83.4, 83.8, 84.0, 84.2]
+    }[s.metric];
+    const min = Math.min(...series), max = Math.max(...series), pad = (max - min) * 0.35 || 1;
+    const pts = series.map((v, i) => {
+      const x = (i / (series.length - 1)) * 320;
+      const y = 140 - ((v - (min - pad)) / ((max + pad) - (min - pad))) * 128;
+      return [x, y];
+    });
+
+    const meta = {
+      e1rm: { title: 'Estimated 1RM — Back squat', value: '182.5', unit: unit, delta: '▲ 4.0 / 28 D',
+        formula: 'e1rm = load × (1 + reps ÷ 30)  ·  epley, best set per session, 3-session rolling max' },
+      tonnage: { title: 'Tonnage per week', value: '38.4', unit: 't',
+        delta: '▲ 1.2 t / WK', formula: 'tonnage = Σ(sets × reps × load) ÷ 1000  ·  working sets only, warmups excluded' },
+      bw: { title: 'Bodyweight trend', value: '84.2', unit: unit, delta: '+0.3 / WK',
+        formula: 'bw = mean(last 7 morning weigh-ins)  ·  outliers > 2σ dropped' }
+    }[s.metric];
+
+    const metrics = ['e1rm', 'tonnage', 'bw'].map((m, i) => ({
+      label: { e1rm: 'E1RM', tonnage: 'TONNAGE', bw: 'BODYWEIGHT' }[m],
+      pick: () => this.setState({ metric: m }),
+      bg: s.metric === m ? '#16150F' : 'transparent',
+      fg: s.metric === m ? '#EFEDE7' : '#57544B',
+      bl: i === 0 ? 'none' : '1px solid rgba(22,21,15,.14)'
+    }));
+
+    const stubs = {
+      schedule: { kicker: 'MESO 2 · HYPERTROPHY · WK 3 OF 8', title: 'Schedule', rows: [
+        { t: 'Push A — Bench focus', s: 'TODAY · 5 LIFTS · 18 SETS' },
+        { t: 'Pull A — Row focus', s: 'SUN · 5 LIFTS · 19 SETS' },
+        { t: 'Lower A — Squat focus', s: 'TUE · 4 LIFTS · 16 SETS' },
+        { t: 'Deload week', s: 'WK 8 · AUTO-GENERATED · 55% VOLUME' },
+        { t: 'Program rules', s: 'PROGRESSION · RPE CAPS · SUBSTITUTIONS' }
+      ] },
+      library: { kicker: '214 MOVEMENTS · 12 OF YOUR OWN', title: 'Library', rows: [
+        { t: 'Barbell', s: '48 MOVEMENTS' },
+        { t: 'Dumbbell', s: '61 MOVEMENTS' },
+        { t: 'Machine & cable', s: '73 MOVEMENTS' },
+        { t: 'Bodyweight', s: '32 MOVEMENTS' },
+        { t: 'Custom movements', s: '12 · DEFINE TEMPO, ROM, LOAD TYPE' }
+      ] },
+      settings: { kicker: 'ACCOUNT · DATA · CANVAS', title: 'Settings', rows: [
+        { t: 'Dashboard canvas', s: '7 MODULES · 2 COMPUTED FIELDS' },
+        { t: 'Computed fields', s: 'EDIT FORMULAS, UNITS, ROUNDING' },
+        { t: 'Units & plate math', s: unit.toUpperCase() + ' · 2.5 ' + unit.toUpperCase() + ' INCREMENTS' },
+        { t: 'Data sources', s: 'HRV · SLEEP · SCALE · CSV IMPORT' },
+        { t: 'Export', s: 'CSV · JSON · FULL HISTORY' }
+      ] }
+    }[s.tab] || { kicker: '', title: '', rows: [] };
+
+    const exercises = [
+      { n: 'Barbell bench press', s: '4 × 6 @ RPE 8', t: 'TARGET 4 × 6 @ RPE 8' },
+      { n: 'Incline dumbbell press', s: '3 × 10', t: 'TARGET 3 × 10 @ RPE 8' },
+      { n: 'Cable fly', s: '3 × 12', t: 'TARGET 3 × 12 @ RPE 9' },
+      { n: 'Overhead press', s: '4 × 8', t: 'TARGET 4 × 8 @ RPE 8' },
+      { n: 'Triceps pushdown', s: '3 × 15', t: 'TARGET 3 × 15 @ RPE 9' }
+    ];
+    const ex = exercises[s.exIdx];
+
+    const setRows = s.sets.map((x, i) => ({
+      num: String(i + 1).padStart(2, '0'), numColor: HAIR,
+      load: x.w + ' × ' + x.r, color: '#EFEDE7',
+      note: 'RPE ' + x.rpe + ' · ' + Math.round(x.w * x.r) + ' ' + unit, tick: '✓', tickColor: '#B4472A'
+    })).concat([{
+      num: String(s.sets.length + 1).padStart(2, '0'), numColor: '#B4472A',
+      load: s.weight + ' × ' + s.reps, color: 'rgba(239,237,231,.42)',
+      note: 'PENDING', tick: '', tickColor: 'transparent'
+    }]);
+
+    const queue = exercises.map((e, i) => ({
+      n: e.n, s: i < s.exIdx ? 'DONE' : (i === s.exIdx ? 'CURRENT' : e.s),
+      dot: i < s.exIdx ? '#B4472A' : (i === s.exIdx ? '#EFEDE7' : 'rgba(239,237,231,.22)'),
+      color: i === s.exIdx ? '#EFEDE7' : 'rgba(239,237,231,.6)',
+      pick: () => this.setState({ exIdx: i, sets: [], rest: 0 })
+    }));
+
+    const rpeChips = [6, 7, 8, 9, 10].map(v => ({
+      v: String(v), pick: () => this.setState({ rpe: v }),
+      bg: s.rpe === v ? '#EFEDE7' : 'transparent',
+      fg: s.rpe === v ? '#121210' : 'rgba(239,237,231,.65)',
+      border: s.rpe === v ? '#EFEDE7' : 'rgba(239,237,231,.22)'
+    }));
+
+    const TOK = ['Σ', 'sets', 'reps', 'load', 'bodyweight', 'sessions', 'e1rm', 'hrv', 'sleep', '(', ')', '÷', '×', '+', '−', '7d', '28d'];
+    const tokens = TOK.map(v => ({ v, tap: () => this.setState(st => ({ fExpr: (st.fExpr ? st.fExpr + ' ' : '') + v })) }));
+
+    const hidden = KEYS.filter(k => !s.vis[k] && k !== 'custom');
+    const LABEL = {
+      next: { t: 'Next session', s: 'QUEUED WORKOUT · ONE-TAP START' },
+      tonnage: { t: 'Tonnage per week', s: 'COMPUTED · Σ SETS × REPS × LOAD' },
+      e1rm: { t: 'Estimated 1RM', s: 'PER LIFT · EPLEY' },
+      fresh: { t: 'Readiness', s: 'COMPUTED · ACWR × HRV' },
+      adher: { t: 'Adherence', s: '28-DAY COMPLETION GRID' },
+      bw: { t: 'Bodyweight trend', s: '7-DAY ROLLING MEAN' },
+      vol: { t: 'Weekly sets by muscle', s: 'VOLUME SPLIT · 6 GROUPS' }
+    };
+    const available = hidden.map(k => Object.assign({}, LABEL[k], {
+      add: () => { this.mv('vis', { [k]: 1 }); this.setState({ sheet: null }); }
+    }));
+    if (!s.vis.vol && !hidden.includes('vol')) available.push(Object.assign({}, LABEL.vol, { add: () => {} }));
+
+    const restTotal = this.props.restSeconds || 90;
+    const c = s.custom;
+
+    return {
+      frameDark: s.screen === 'session',
+      isDash: s.screen === 'dash', isProgress: s.screen === 'progress',
+      isSession: s.screen === 'session', isStub: s.screen === 'stub',
+      editing, editChrome: editing ? 'flex' : 'none',
+      editLabel: editing ? 'DONE' : 'EDIT LAYOUT',
+      toggleEdit: () => this.setState({ editing: !editing, sheet: null }),
+      w, dots, muscles, unit, unitUp: unit.toUpperCase(),
+      readinessPos: Math.min(96, Math.max(2, ((0.94 - 0.5) / 1.1) * 100)) + '%',
+      customName: c ? c.name : 'CUSTOM', customValue: c ? c.value : '—',
+      customUnit: c ? c.unit : '', customExpr: c ? c.expr : '',
+      openTonnage: () => { if (!editing) this.setState({ screen: 'progress', metric: 'tonnage' }); },
+      openE1rm: () => { if (!editing) this.setState({ screen: 'progress', metric: 'e1rm' }); },
+      startSession: (e) => { e.stopPropagation(); this.setState({ screen: 'session', editing: false }); },
+      goDash: () => this.setState({ screen: 'dash', tab: 'dash' }),
+      metricTitle: meta.title, metricValue: meta.value, metricUnit: meta.unit,
+      metricDelta: meta.delta, metricFormula: meta.formula, metrics,
+      chartPoints: pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '),
+      chartLastX: pts[pts.length - 1][0].toFixed(1), chartLastY: pts[pts.length - 1][1].toFixed(1),
+      prs: [
+        { lift: 'Back squat', load: '175 × 3', date: '18 JUL' },
+        { lift: 'Bench press', load: '122.5 × 4', date: '11 JUL' },
+        { lift: 'Deadlift', load: '210 × 2', date: '04 JUL' },
+        { lift: 'Overhead press', load: '72.5 × 6', date: '27 JUN' }
+      ],
+      stubKicker: stubs.kicker, stubTitle: stubs.title, stubRows: stubs.rows,
+      clock: this.fmtClock(s.elapsed), exName: ex.n, exTarget: ex.t,
+      setRows, queue, rpeChips, weight: s.weight, reps: s.reps,
+      resting: s.rest > 0, restClock: this.fmtClock(s.rest),
+      restOffset: (119.4 * (1 - s.rest / restTotal)).toFixed(1),
+      skipRest: () => this.setState({ rest: 0 }),
+      wDown: () => this.setState({ weight: Math.max(0, s.weight - 2.5) }),
+      wUp: () => this.setState({ weight: s.weight + 2.5 }),
+      rDown: () => this.setState({ reps: Math.max(1, s.reps - 1) }),
+      rUp: () => this.setState({ reps: s.reps + 1 }),
+      logSet: () => this.setState({
+        sets: s.sets.concat([{ w: s.weight, r: s.reps, rpe: s.rpe }]), rest: restTotal
+      }),
+      hint: 'LAST WEEK: ' + (s.sets.length ? '82.5 × 6 @ RPE 8' : '80 × 6 @ RPE 8') + ' · +2.5 SUGGESTED',
+      tabBarDisplay: s.screen === 'session' ? 'none' : 'flex',
+      tabs: [
+        ['dash', 'DASH'], ['schedule', 'SCHEDULE'], ['library', 'LIBRARY'],
+        ['history', 'HISTORY'], ['settings', 'SETTINGS']
+      ].map(([id, label]) => ({
+        label, mark: s.tab === id ? '#16150F' : 'transparent',
+        color: s.tab === id ? '#16150F' : '#918D82',
+        pick: () => this.setState({
+          tab: id,
+          screen: id === 'dash' ? 'dash' : (id === 'history' ? 'progress' : 'stub'),
+          editing: false
+        })
+      })),
+      sheetAdd: s.sheet === 'add', sheetFormula: s.sheet === 'formula',
+      openAdd: () => this.setState({ sheet: 'add' }),
+      openFormula: () => this.setState({ sheet: 'formula' }),
+      closeSheet: () => this.setState({ sheet: null }),
+      available,
+      fName: s.fName, fUnit: s.fUnit, fExpr: s.fExpr,
+      fExprShown: s.fExpr || 'tap tokens to build →',
+      fPreview: s.fExpr ? (12.8 + s.fExpr.length * 0.37).toFixed(1) : '—',
+      tokens,
+      backspace: () => this.setState(st => ({ fExpr: st.fExpr.split(' ').slice(0, -1).join(' ') })),
+      setName: (e) => this.setState({ fName: e.target.value }),
+      setUnit: (e) => this.setState({ fUnit: e.target.value }),
+      saveFormula: () => this.setState(st => ({
+        custom: {
+          name: (st.fName || 'CUSTOM FIELD').toUpperCase(),
+          expr: st.fExpr || 'Σ sets × reps × load',
+          unit: st.fUnit || '',
+          value: st.fExpr ? (12.8 + st.fExpr.length * 0.37).toFixed(1) : '0.0'
+        },
+        vis: Object.assign({}, st.vis, { custom: 1 }),
+        sheet: null, fName: '', fExpr: '', fUnit: ''
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

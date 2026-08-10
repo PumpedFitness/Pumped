@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type { InferInsertModel } from 'drizzle-orm';
 import {
   userProfile,
+  type ExperienceLevel,
   type Gender,
+  type TrainingGoal,
   type WeightUnit,
 } from '@/data/local/schema/userProfile';
 import { useRepository } from '@/data/local/useRepository';
@@ -19,6 +21,8 @@ type Profile = {
   birthdate: string | null;
   heightCm: number | null;
   weightUnit: WeightUnit;
+  goal: TrainingGoal | null;
+  experienceLevel: ExperienceLevel | null;
 };
 
 export function useUserProfile() {
@@ -41,6 +45,8 @@ export function useUserProfile() {
           birthdate: row.birthdate ?? null,
           heightCm: row.heightCm ?? null,
           weightUnit,
+          goal: row.goal ?? null,
+          experienceLevel: row.experienceLevel ?? null,
         }
       : {
           name: '',
@@ -48,6 +54,8 @@ export function useUserProfile() {
           birthdate: null,
           heightCm: null,
           weightUnit,
+          goal: null,
+          experienceLevel: null,
         };
   }, [row, weightUnit]);
 

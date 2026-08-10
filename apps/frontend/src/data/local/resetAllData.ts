@@ -3,6 +3,7 @@
 
 import { db } from './database';
 import { notifyTableChanged } from './tableVersions';
+import { seedExerciseCatalog } from './seed/exerciseCatalog';
 import {
   bodyFatEntries,
   bodyWeightEntries,
@@ -32,6 +33,10 @@ export function resetAllData(): void {
   db.delete(bodyFatEntries).run();
   db.delete(userProfile).run();
   db.delete(importBatches).run();
+
+  // The starter catalog is production seed data (normally planted in
+  // initDatabase) — restore it so onboarding can build a program post-reset.
+  seedExerciseCatalog(db, Date.now());
 
   notifyTableChanged(
     performedSets,

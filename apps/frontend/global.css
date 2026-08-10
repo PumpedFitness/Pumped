@@ -3,6 +3,13 @@
 @import 'heroui-native/styles';
 @source './node_modules/heroui-native/lib';
 
+/* @pumped/ui lives outside this app dir, so Tailwind's automatic source
+   detection never sees it. Without this, any utility used *only* inside the
+   design-system package silently generates no CSS — e.g. SegmentedControl's
+   p-[3px]/gap-[3px] track inset, which is why its active pill rendered flush
+   against the track edge. */
+@source '../../packages/ui';
+
 /* ── Clay Design System — Pumped ────────────────────────── */
 /* Theme colors live in src/theme/palette.ts — the block below is generated. */
 
