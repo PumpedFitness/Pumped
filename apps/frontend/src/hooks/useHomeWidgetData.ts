@@ -146,7 +146,10 @@ export function useHomeWidgetData(): HomeWidgetData {
       }
     }
     const max = Math.max(...buckets, 1);
-    return { bars: buckets.map(value => value / max), tonnes: round1(buckets[6]) };
+    return {
+      bars: buckets.map(value => value / max),
+      tonnes: round1(buckets[6]),
+    };
   }, [workouts]);
 
   const strength = useMemo(() => {

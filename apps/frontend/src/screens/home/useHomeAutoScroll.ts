@@ -1,5 +1,10 @@
 import { useCallback, useRef } from 'react';
-import type { ScrollView, LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import type {
+  ScrollView,
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 
 const AUTO_SCROLL_EDGE = 104;

@@ -12,6 +12,7 @@ export type ExerciseToEdit = {
   id: string;
   name: string;
   description: string | null;
+  howTo: string | null;
   typeId: string | null;
   picture: string | null;
   muscleGroups: string[];
@@ -29,6 +30,7 @@ export function useExerciseDraft(
 
   const [name, setName] = useState(exercise?.name ?? '');
   const [description, setDescription] = useState(exercise?.description ?? '');
+  const [howTo, setHowTo] = useState(exercise?.howTo ?? '');
   const [picture, setPicture] = useState<string | null>(
     exercise?.picture ?? null,
   );
@@ -69,6 +71,7 @@ export function useExerciseDraft(
       exerciseRepo.update(exercise.id, {
         name: name.trim(),
         description: description.trim() || null,
+        howTo: howTo.trim() || null,
         typeId,
         picture,
         muscleGroups: muscleGroupIds,
@@ -84,6 +87,7 @@ export function useExerciseDraft(
         id,
         name: name.trim(),
         description: description.trim() || null,
+        howTo: howTo.trim() || null,
         typeId,
         picture,
         muscleGroups: muscleGroupIds,
@@ -119,6 +123,8 @@ export function useExerciseDraft(
     setName,
     description,
     setDescription,
+    howTo,
+    setHowTo,
     picture,
     typeId,
     setTypeId,

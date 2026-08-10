@@ -51,7 +51,11 @@ export function NextSessionCard({
           </Text>
         </View>
 
-        <PlayCircle size={64} onPress={onStart} accessibilityLabel={startA11y} />
+        <PlayCircle
+          size={64}
+          onPress={onStart}
+          accessibilityLabel={startA11y}
+        />
       </View>
 
       <View className="mt-[18px]">

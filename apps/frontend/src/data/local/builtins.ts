@@ -4,15 +4,14 @@
 // trusting the stored English `name`). User-created types/fields carry an
 // arbitrary uuid + their own stored name and are not listed here.
 
-import type {
-  SetFieldDataType,
-  SetFieldUnit,
-  WorkoutSetType,
-} from './enums';
+import type { SetFieldDataType, SetFieldUnit, WorkoutSetType } from './enums';
 import type { SetTypeColorName, SetTypeFieldConfig } from '@/types/setType';
 import type { SetFieldValue } from '@/types/workout';
 
-type SetTypeLabelKey = `setTable.setTypes.${'warmup' | 'working' | 'maxEffort'}`;
+type SetTypeLabelKey = `setTable.setTypes.${
+  | 'warmup'
+  | 'working'
+  | 'maxEffort'}`;
 
 type SetFieldLabelKey = `setField.builtin.${'weight' | 'reps' | 'rpe'}`;
 

@@ -6,6 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { DateWheelPicker } from '@pumped/ui/forms/DateWheelPicker';
 import { BottomSheet, Button } from 'heroui-native';
+import { AppBottomSheet } from '@pumped/ui/forms/AppBottomSheet';
 import { desc } from 'drizzle-orm';
 import { SettingsSection } from '@pumped/ui/clay/SettingsSection';
 import { EditableRow } from '@pumped/ui/clay/EditableRow';
@@ -172,44 +173,40 @@ export function UserSettings() {
         onChange={v => set({ gender: v as Gender })}
       />
 
-      <BottomSheet
-        isOpen={birthdateSheet}
-        onOpenChange={open => {
-          if (!open) setBirthdateSheet(false);
-        }}
+      <AppBottomSheet
+        open={birthdateSheet}
+        onClose={() => setBirthdateSheet(false)}
       >
-        <BottomSheet.Portal>
-          <BottomSheet.Overlay />
-          <BottomSheet.Content backgroundClassName="bg-background">
-            <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
-              {t('profile.birthdateSheetTitle')}
-            </BottomSheet.Title>
+        <BottomSheet.Overlay />
+        <AppBottomSheet.Content backgroundClassName="bg-background">
+          <BottomSheet.Title className="text-center text-[21px] font-bold text-foreground">
+            {t('profile.birthdateSheetTitle')}
+          </BottomSheet.Title>
 
-            <DateWheelPicker
-              value={birthdateDate}
-              onChange={setBirthdateDate}
-              maximumDate={new Date()}
-              minimumDate={new Date(1900, 0, 1)}
-            />
+          <DateWheelPicker
+            value={birthdateDate}
+            onChange={setBirthdateDate}
+            maximumDate={new Date()}
+            minimumDate={new Date(1900, 0, 1)}
+          />
 
-            <Button
-              className="mt-4 h-13 rounded-full bg-accent"
-              feedbackVariant="scale"
-              onPress={() => {
-                const y = birthdateDate.getFullYear();
-                const m = String(birthdateDate.getMonth() + 1).padStart(2, '0');
-                const d = String(birthdateDate.getDate()).padStart(2, '0');
-                set({ birthdate: `${y}-${m}-${d}` });
-                setBirthdateSheet(false);
-              }}
-            >
-              <Button.Label className="font-bold text-accent-foreground">
-                {t('common.save')}
-              </Button.Label>
-            </Button>
-          </BottomSheet.Content>
-        </BottomSheet.Portal>
-      </BottomSheet>
+          <Button
+            className="mt-4 h-13 rounded-full bg-accent"
+            feedbackVariant="scale"
+            onPress={() => {
+              const y = birthdateDate.getFullYear();
+              const m = String(birthdateDate.getMonth() + 1).padStart(2, '0');
+              const d = String(birthdateDate.getDate()).padStart(2, '0');
+              set({ birthdate: `${y}-${m}-${d}` });
+              setBirthdateSheet(false);
+            }}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              {t('common.save')}
+            </Button.Label>
+          </Button>
+        </AppBottomSheet.Content>
+      </AppBottomSheet>
     </>
   );
 }

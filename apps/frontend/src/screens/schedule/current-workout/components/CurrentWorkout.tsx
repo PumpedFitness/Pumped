@@ -191,6 +191,7 @@ export function CurrentWorkout({
           updateSet={updateSet}
           toggleSetDone={toggleSetDone}
           onSetLogged={autoRest.onSetLogged}
+          activeRestSetId={rest.isRunning ? rest.sourceSetId : null}
           removeSet={removeSet}
           removeExercise={removeExercise}
           onChooseExercises={onChooseExercises}

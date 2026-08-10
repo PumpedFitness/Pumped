@@ -147,7 +147,9 @@ export function CurrentWorkoutFooter({
             size={18}
             color={canFinish ? colors.cream : colors.muted}
           />
-          <Text className={`t-label ${canFinish ? 'text-cream' : 'text-muted'}`}>
+          <Text
+            className={`t-label ${canFinish ? 'text-cream' : 'text-muted'}`}
+          >
             {t('currentWorkout.finish')}
           </Text>
         </Pressable>

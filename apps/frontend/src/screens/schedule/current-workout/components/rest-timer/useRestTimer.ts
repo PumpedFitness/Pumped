@@ -12,6 +12,8 @@ type RestStatus = 'idle' | 'running' | 'paused';
 
 type RestState = {
   status: RestStatus;
+  /** Set whose completion started this rest timer. */
+  sourceSetId: string | null;
   /** Target completion timestamp while running; null otherwise. */
   endsAt: number | null;
   /** Authoritative remaining time while idle/paused. */
@@ -23,6 +25,7 @@ type RestState = {
 
 const IDLE: RestState = {
   status: 'idle',
+  sourceSetId: null,
   endsAt: null,
   remainingMs: 0,
   totalMs: 0,
@@ -35,8 +38,9 @@ export type RestTimerController = {
   isMinimized: boolean;
   remainingMs: number;
   totalMs: number;
+  sourceSetId: string | null;
   /** Reset + run a fresh rest of `seconds` (a new set replaces any running one). */
-  start: (seconds: number) => void;
+  start: (seconds: number, sourceSetId?: string) => void;
   toggle: () => void;
   addSeconds: (deltaSeconds: number) => void;
   skip: () => void;
@@ -86,13 +90,17 @@ export function useRestTimer(): RestTimerController {
 
   // Auto-complete: flipping to IDLE clears the running guard, so this fires once.
   useEffect(() => {
-    if (state.status === 'running' && state.endsAt != null && now >= state.endsAt) {
+    if (
+      state.status === 'running' &&
+      state.endsAt != null &&
+      now >= state.endsAt
+    ) {
       fireRestDoneHaptic();
       setState(IDLE);
     }
   }, [state.status, state.endsAt, now]);
 
-  const start = useCallback((seconds: number) => {
+  const start = useCallback((seconds: number, sourceSetId?: string) => {
     const totalMs = clampRestMs(seconds * 1000);
     if (totalMs <= 0) {
       setState(IDLE);
@@ -101,10 +109,10 @@ export function useRestTimer(): RestTimerController {
     const startedAt = Date.now();
     setNow(startedAt);
     // "Never show again" (fullscreen off) opens straight to the bottom bar.
-    const startMinimized =
-      !useAppSettingsStore.getState().restTimerFullscreen;
+    const startMinimized = !useAppSettingsStore.getState().restTimerFullscreen;
     setState({
       status: 'running',
+      sourceSetId: sourceSetId ?? null,
       endsAt: startedAt + totalMs,
       remainingMs: totalMs,
       totalMs,
@@ -145,7 +153,12 @@ export function useRestTimer(): RestTimerController {
       const nextRemaining = clampRestMs(current + deltaSeconds * 1000);
       const totalMs = Math.max(prev.totalMs, nextRemaining);
       if (prev.status === 'running') {
-        return { ...prev, endsAt: t + nextRemaining, remainingMs: nextRemaining, totalMs };
+        return {
+          ...prev,
+          endsAt: t + nextRemaining,
+          remainingMs: nextRemaining,
+          totalMs,
+        };
       }
       return { ...prev, remainingMs: nextRemaining, totalMs };
     });
@@ -153,7 +166,10 @@ export function useRestTimer(): RestTimerController {
 
   const skip = useCallback(() => setState(IDLE), []);
   const minimize = useCallback(
-    () => setState(prev => (prev.status === 'idle' ? prev : { ...prev, isMinimized: true })),
+    () =>
+      setState(prev =>
+        prev.status === 'idle' ? prev : { ...prev, isMinimized: true },
+      ),
     [],
   );
   const expand = useCallback(
@@ -167,6 +183,7 @@ export function useRestTimer(): RestTimerController {
     isMinimized: state.isMinimized,
     remainingMs,
     totalMs: state.totalMs,
+    sourceSetId: state.status === 'idle' ? null : state.sourceSetId,
     start,
     toggle,
     addSeconds,

@@ -163,10 +163,10 @@ function TypePills({ goal, progression, onChange }: TypePillsProps) {
       kind === 'linear'
         ? linearGoal(goal, progression)
         : kind === 'rangeRollover'
-          ? rangeRolloverGoal(goal, progression)
-          : (progression.options.find(option => option.kind === kind)?.goal ?? {
-              kind: 'none',
-            }),
+        ? rangeRolloverGoal(goal, progression)
+        : progression.options.find(option => option.kind === kind)?.goal ?? {
+            kind: 'none',
+          },
     );
   };
 

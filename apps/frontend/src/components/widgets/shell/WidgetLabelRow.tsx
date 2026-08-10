@@ -8,7 +8,11 @@ type WidgetLabelRowProps = {
 };
 
 /** The v2 "label + badge" header row shared by the dashboard widgets. */
-export function WidgetLabelRow({ label, right, inverted }: WidgetLabelRowProps) {
+export function WidgetLabelRow({
+  label,
+  right,
+  inverted,
+}: WidgetLabelRowProps) {
   return (
     <View className="flex-row items-center justify-between">
       <Text

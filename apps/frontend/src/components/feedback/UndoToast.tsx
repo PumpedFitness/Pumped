@@ -33,7 +33,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
-import { colors, motion, radii, shadows, typography } from '@pumped/ui/theme/tokens';
+import {
+  colors,
+  motion,
+  radii,
+  shadows,
+  typography,
+} from '@pumped/ui/theme/tokens';
 
 // How long the undo affordance stays on screen before the delete is final.
 const VISIBLE_MS = 5000;

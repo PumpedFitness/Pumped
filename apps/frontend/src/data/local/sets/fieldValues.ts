@@ -14,7 +14,11 @@ function slotHasValue(value: SetFieldValue): boolean {
   if (value.bool !== undefined && value.bool !== null) {
     return true;
   }
-  if (value.text !== undefined && value.text !== null && value.text.trim() !== '') {
+  if (
+    value.text !== undefined &&
+    value.text !== null &&
+    value.text.trim() !== ''
+  ) {
     return true;
   }
   if (
@@ -47,10 +51,7 @@ export function getBoolValue(
   return getFieldValue(values, fieldId)?.bool ?? false;
 }
 
-export function getTextValue(
-  values: SetFieldValue[],
-  fieldId: string,
-): string {
+export function getTextValue(values: SetFieldValue[], fieldId: string): string {
   return getFieldValue(values, fieldId)?.text ?? '';
 }
 

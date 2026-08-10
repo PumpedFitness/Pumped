@@ -84,6 +84,9 @@ export function buildSessionMeta(t: TFunction, session: NextSession): string {
  * which read as a stray dot next to the card's other lines.
  */
 export function buildFocusLine(session: NextSession): string | null {
-  const focus = session.focus?.trim().replace(/[.·]+$/, '').trim();
+  const focus = session.focus
+    ?.trim()
+    .replace(/[.·]+$/, '')
+    .trim();
   return focus ? focus : null;
 }

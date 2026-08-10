@@ -1,5 +1,5 @@
 name: Frontend verify
-description: Install deps, then typecheck and lint the frontend app.
+description: Install dependencies, then run the repository's shared verify check.
 
 runs:
   using: composite
@@ -9,12 +9,6 @@ runs:
       with:
         working-directory: apps/frontend
 
-    - name: Typecheck
+    - name: Verify formatting, lint, and types
       shell: bash
-      working-directory: apps/frontend
-      run: bun run typecheck
-
-    - name: Lint
-      shell: bash
-      working-directory: apps/frontend
-      run: bun run lint
+      run: bun run check:verify

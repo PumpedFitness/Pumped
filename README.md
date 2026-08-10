@@ -28,12 +28,8 @@ apps/
 │       ├── screens/       # Feature-grouped screens
 │       ├── stores/        # Zustand stores
 │       └── theme/         # Design tokens
-├── handover/          # Cloudflare Worker — device-to-device handover (see below)
-└── backend/           # Kotlin/Spring Boot API — currently unused
+└── handover/          # Cloudflare Worker — optional device sharing (see below)
 ```
-
-The **backend is not used right now** — the app is fully offline-first and no
-feature depends on it.
 
 ## Prerequisites
 
@@ -66,6 +62,41 @@ Android build errors run `bun run frontend:setup:android`. The other scripts
 `frontend:e2e`, `frontend:db:generate`) live in the root `package.json` under
 the `frontend:*` prefix.
 
+## Repository checks
+
+Run the same formatting, lint, and type checks as CI:
+
+```bash
+bun run check:verify
+```
+
+Before committing, include unit tests with `bun run check:precommit`. For an
+agent handoff, `bun run check:finish` also checks the Git diff. Pass `ios` or
+`android` to include the matching Maestro suite when a built app and simulator
+or emulator are available:
+
+```bash
+bun run check:finish -- ios
+bun run check:finish -- android
+```
+
+## Device helpers
+
+Agents and contributors can inspect and control an already-built app without
+remembering platform-specific `adb` or `simctl` commands:
+
+```bash
+bun run device:doctor
+bun run dev:ready -- android
+bun run device:screenshot -- android
+bun run e2e:flow -- android home-widget-scroll
+```
+
+Use `device:status`, `device:launch`, `device:reload`, and `device:logs` for the
+common debugging loop. `device:reset` requires `--yes` because it clears local
+app data. Generated screenshots, logs, and Maestro reports go to the ignored
+`.artifacts/` directory.
+
 ## End-to-end tests (Maestro)
 
 Mobile E2E flows live in [`apps/frontend/.maestro/`](apps/frontend/.maestro/)
@@ -88,8 +119,11 @@ Reports (HTML · JSON · JUnit · Allure) are written to `apps/frontend/reports/
 [`apps/frontend/.maestro/README.md`](apps/frontend/.maestro/README.md) for
 details and how to add flows.
 
-**CI:** [`.github/workflows/e2e.yml`](.github/workflows/e2e.yml) runs the flows
-on GitHub Actions — Android on `ubuntu-latest`, iOS on `macos-latest`.
+**CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint,
+typecheck and unit tests on every PR. The native builds and Maestro e2e suites
+(Android on `ubuntu-latest`, iOS on `macos-latest`) only run on pushes to
+`main` and on manual dispatch — to run them for a branch:
+`gh workflow run ci.yml --ref <branch> -f force_frontend=true`.
 
 ## Handover
 

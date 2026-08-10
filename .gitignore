@@ -12,6 +12,10 @@ apps/frontend/android/app/build/
 apps/frontend/android/.gradle/
 *.hbc
 
+# Gradle (backend) — the local build cache; executionHistory.bin can capture
+# credentials from the build environment, so it must never be committed.
+apps/backend/.gradle/
+
 # Expo
 apps/frontend/.expo/
 
@@ -46,6 +50,8 @@ yarn-error.log*
 
 # Testing
 coverage/
+reports/
+.artifacts/
 
 # Temporary
 *.tmp

@@ -11,6 +11,7 @@ standalone (Go, **no JVM**) runner that runs Maestro YAML flows unchanged.
 |------|----------------|
 | `smoke.yaml`          | App launches and the Home tab renders. |
 | `tab-navigation.yaml` | Walks the bottom tab bar (Home · Schedule · Library · History · User) and asserts each screen renders. |
+| `home-widget-scroll.yaml` | Verifies normal scrolling keeps widgets stable, then reorders and persists the grid. |
 | `full_workout_flow.yaml` | Full lifecycle: create an exercise → build a template using it → create + activate a (1-day-cycle) schedule → start today's workout → log a set → end the session. |
 
 > **`full_workout_flow.yaml` runs on Android.** The iOS build uses the OS-native
@@ -77,8 +78,9 @@ this to collect the JUnit report).
 
 ## In CI
 
-`.github/workflows/e2e.yml` runs these flows on GitHub Actions — Android on
-`ubuntu-latest` (build APK → emulator), iOS on `macos-latest` (build → simulator).
+`.github/workflows/ci.yml` runs these flows on GitHub Actions for pushes to
+`main` and manual dispatches — Android on Ubuntu (build APK → emulator), iOS on
+macOS (build → simulator).
 
 ## Adding a flow
 

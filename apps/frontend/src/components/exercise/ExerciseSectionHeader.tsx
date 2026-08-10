@@ -33,11 +33,7 @@ type ExerciseTitleProps = {
 function ExerciseTitle({ name, color, onOpen }: ExerciseTitleProps) {
   if (!onOpen) {
     return (
-      <Text
-        className="t-heading flex-1"
-        numberOfLines={1}
-        style={{ color }}
-      >
+      <Text className="t-heading flex-1" numberOfLines={1} style={{ color }}>
         {name}
       </Text>
     );
@@ -56,7 +52,6 @@ function ExerciseTitle({ name, color, onOpen }: ExerciseTitleProps) {
       >
         {name}
       </Text>
-      <ClayIcon name="chevron" size={15} color={color} />
     </Pressable>
   );
 }
@@ -171,11 +166,7 @@ export function ExerciseSectionHeader({
       style={{
         backgroundColor: isActive ? tone.fg : colors.cardSunk,
         borderBottomWidth: 2,
-        borderBottomColor: isActive
-          ? tone.fg
-          : isFinished
-            ? colors.sage
-            : colors.line,
+        borderBottomColor: isActive ? tone.fg : colors.line,
       }}
     >
       <View
@@ -191,12 +182,14 @@ export function ExerciseSectionHeader({
       </View>
 
       <ExerciseTitle name={name} color={titleColor} onOpen={onOpen} />
-      <ExerciseStatus
-        doneCount={doneCount}
-        totalCount={totalCount}
-        isFinished={isFinished}
-        color={metaColor}
-      />
+      {!isFinished ? (
+        <ExerciseStatus
+          doneCount={doneCount}
+          totalCount={totalCount}
+          isFinished={isFinished}
+          color={metaColor}
+        />
+      ) : null}
       <ExerciseAction
         isActive={isActive}
         tone={tone}

@@ -1,2 +1,0 @@
-POST http://localhost:8080/user/auth/logout
-Authorization: Bearer {{authToken}}

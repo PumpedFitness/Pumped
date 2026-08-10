@@ -87,9 +87,7 @@ export function deleteWorkoutSession(sessionId: string): void {
     tx.delete(performedSets)
       .where(eq(performedSets.workoutSessionId, sessionId))
       .run();
-    tx.delete(workoutSessions)
-      .where(eq(workoutSessions.id, sessionId))
-      .run();
+    tx.delete(workoutSessions).where(eq(workoutSessions.id, sessionId)).run();
   });
 
   notifyTableChanged(workoutSessions, performedSets);
@@ -185,4 +183,16 @@ export function saveCompletedWorkout(
   notifyTableChanged(workoutSessions, performedSets);
 
   return getWorkoutSession(sessionId)!;
+}
+
+export function setWorkoutSessionTemplate(
+  sessionId: string,
+  workoutTemplateId: string,
+): void {
+  db.update(workoutSessions)
+    .set({ workoutTemplateId })
+    .where(eq(workoutSessions.id, sessionId))
+    .run();
+
+  notifyTableChanged(workoutSessions);
 }

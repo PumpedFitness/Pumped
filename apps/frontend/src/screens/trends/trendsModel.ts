@@ -32,7 +32,10 @@ function roundTo(value: number, digits: number): number {
  */
 export function buildTrendSeries(
   points: ExerciseChartPoint[],
-  { convertWeight, weightUnit }: { convertWeight: boolean; weightUnit: WeightUnit },
+  {
+    convertWeight,
+    weightUnit,
+  }: { convertWeight: boolean; weightUnit: WeightUnit },
 ): TrendSeries {
   const windowed = points.slice(-TREND_WINDOW);
   const values = windowed.map(point => {

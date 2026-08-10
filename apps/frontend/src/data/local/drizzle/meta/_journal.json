@@ -166,8 +166,15 @@
     {
       "idx": 23,
       "version": "6",
+      "when": 1782691200000,
+      "tag": "0023_exercise_how_to",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
       "when": 1785340800000,
-      "tag": "0023_profile_training_prefs",
+      "tag": "0024_profile_training_prefs",
       "breakpoints": true
     }
   ]

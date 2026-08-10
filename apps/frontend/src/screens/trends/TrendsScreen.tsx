@@ -86,7 +86,10 @@ export function TrendsScreen() {
           emptyLabel={t('trends.noData')}
         />
 
-        <TrendsChartCard values={series.values} emptyLabel={t('trends.noData')} />
+        <TrendsChartCard
+          values={series.values}
+          emptyLabel={t('trends.noData')}
+        />
 
         <CalculationPanel metric={metric} />
 

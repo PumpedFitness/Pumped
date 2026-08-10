@@ -1,44 +1,132 @@
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
+import { Button } from 'heroui-native';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
+import { setWorkoutSessionTemplate } from '@/data/local/workouts/sessions';
+import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import {
+  useWorkoutHistory,
   useWorkoutSession,
   type WorkoutHistoryItem,
 } from '@/hooks/useWorkoutHistory';
 import type { PerformedSet } from '@/types/workout';
+import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { displayWeight } from '@/utils/units';
-import {
-  ExerciseSetTable,
-  type SetTypeOption,
-} from '@/components/exercise/set-table';
-import { ExerciseSectionHeader } from '@/components/exercise/ExerciseSectionHeader';
+import { CompletedExerciseHistorySection } from '@/components/exercise/CompletedExerciseHistorySection';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { colors } from '@pumped/ui/theme/tokens';
-import type { SetTypeWithFields } from '@/types/setType';
 
 type CompletedWorkoutDetailsProps = {
   workoutId: string;
   weightUnit: WeightUnit;
 };
 
+type CompletedWorkoutTemplateActionProps = {
+  hasTemplate: boolean;
+  onPress: () => void;
+};
+
+function CompletedWorkoutTemplateAction({
+  hasTemplate,
+  onPress,
+}: CompletedWorkoutTemplateActionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <Button
+      className="mx-5 rounded-full"
+      variant="secondary"
+      feedbackVariant="scale"
+      onPress={onPress}
+    >
+      <Button.Label>
+        {t(
+          hasTemplate
+            ? 'completedWorkout.editTemplate'
+            : 'completedWorkout.createTemplate',
+        )}
+      </Button.Label>
+    </Button>
+  );
+}
+
 type CompletedExercise = {
   key: string;
   exerciseId: string;
-  sets: PerformedSet[];
+  exercisePosition: number;
+  sets: WorkoutHistoryItem['sets'];
 };
 
-type ExerciseStats = {
-  sets: number;
-  volumeKg: number;
-  topWeightKg: number | null;
-};
+function sortSetsByPosition(sets: PerformedSet[]): PerformedSet[] {
+  return [...sets].sort((a, b) => a.setPosition - b.setPosition);
+}
+
+function setsForExercisePlacement(
+  workout: WorkoutHistoryItem,
+  exerciseId: string,
+  exercisePosition: number,
+): PerformedSet[] | undefined {
+  const exactPlacement = workout.sets.filter(
+    set =>
+      set.exerciseId === exerciseId &&
+      set.exercisePosition === exercisePosition,
+  );
+
+  if (exactPlacement.length > 0) {
+    return sortSetsByPosition(exactPlacement);
+  }
+
+  const setsByPlacement = new Map<number, PerformedSet[]>();
+  workout.sets.forEach(set => {
+    if (set.exerciseId !== exerciseId) {
+      return;
+    }
+
+    const bucket = setsByPlacement.get(set.exercisePosition) ?? [];
+    bucket.push(set);
+    setsByPlacement.set(set.exercisePosition, bucket);
+  });
+
+  if (setsByPlacement.size !== 1) {
+    return undefined;
+  }
+
+  return sortSetsByPosition([...setsByPlacement.values()][0] ?? []);
+}
+
+function previousSetsForExercise(
+  exerciseId: string,
+  exercisePosition: number,
+  beforeTimestamp: number,
+  allWorkouts: WorkoutHistoryItem[],
+): PerformedSet[] | undefined {
+  let bestStartedAt = -Infinity;
+  let bestSets: PerformedSet[] | undefined;
+
+  for (const workout of allWorkouts) {
+    if (workout.startedAt >= beforeTimestamp) continue;
+    const sets = setsForExercisePlacement(
+      workout,
+      exerciseId,
+      exercisePosition,
+    );
+
+    if (!sets || workout.startedAt <= bestStartedAt) {
+      continue;
+    }
+
+    bestStartedAt = workout.startedAt;
+    bestSets = sets;
+  }
+
+  return bestSets;
+}
 
 function groupCompletedExercises(
   workout: WorkoutHistoryItem,
@@ -50,6 +138,7 @@ function groupCompletedExercises(
     const group = groups.get(key) ?? {
       key,
       exerciseId: set.exerciseId,
+      exercisePosition: set.exercisePosition,
       sets: [],
     };
     group.sets.push(set);
@@ -80,25 +169,6 @@ function formatVolume(volumeKg: number, weightUnit: WeightUnit): string {
   return `${Math.round(volume).toLocaleString()} ${weightUnit}`;
 }
 
-function buildExerciseStats(sets: PerformedSet[]): ExerciseStats {
-  return sets.reduce<ExerciseStats>(
-    (stats, set) => {
-      const { weight: weightKg, reps } = resolveSetWeightReps(set);
-      const volumeKg =
-        weightKg !== null && reps !== null ? weightKg * reps : 0;
-      return {
-        sets: stats.sets + 1,
-        volumeKg: stats.volumeKg + volumeKg,
-        topWeightKg:
-          weightKg === null
-            ? stats.topWeightKg
-            : Math.max(stats.topWeightKg ?? weightKg, weightKg),
-      };
-    },
-    { sets: 0, volumeKg: 0, topWeightKg: null },
-  );
-}
-
 type StatTileProps = {
   label: string;
   value: string;
@@ -113,93 +183,6 @@ function StatTile({ label, value }: StatTileProps) {
   );
 }
 
-function ExerciseStatPill({ label, value }: StatTileProps) {
-  return (
-    <View className="min-w-0 flex-1">
-      <Text className="text-[9px] font-bold uppercase tracking-[0.6px] text-muted">
-        {label}
-      </Text>
-      <Text className="mt-0.5 text-[13px] font-bold tabular-nums text-foreground">
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-type CompletedExerciseSectionProps = {
-  exercise: CompletedExercise;
-  index: number;
-  name: string;
-  isCollapsed: boolean;
-  onOpen?: () => void;
-  onToggleCollapsed: () => void;
-  setTypeOptions: SetTypeOption[];
-  setTypesById: Map<string, SetTypeWithFields>;
-  weightUnit: WeightUnit;
-};
-
-function CompletedExerciseSection({
-  exercise,
-  index,
-  name,
-  isCollapsed,
-  onOpen,
-  onToggleCollapsed,
-  setTypeOptions,
-  setTypesById,
-  weightUnit,
-}: CompletedExerciseSectionProps) {
-  const { t } = useTranslation();
-  const setCount = exercise.sets.length;
-  const stats = buildExerciseStats(exercise.sets);
-  const topWeight =
-    stats.topWeightKg === null
-      ? '–'
-      : `${displayWeight(stats.topWeightKg, weightUnit)} ${weightUnit}`;
-
-  return (
-    <View className="-mx-5 overflow-hidden border-y border-border-hairline bg-background">
-      <ExerciseSectionHeader
-        index={index}
-        name={name}
-        doneCount={setCount}
-        totalCount={setCount}
-        state="finished"
-        onOpen={onOpen}
-        isCollapsed={isCollapsed}
-        onToggleCollapsed={onToggleCollapsed}
-      />
-      <View className="border-b border-border-hairline bg-surface-card px-4 py-2.5">
-        <View className="flex-row gap-3">
-          <ExerciseStatPill
-            label={t('completedWorkout.exerciseStats.sets')}
-            value={`${stats.sets}`}
-          />
-          <ExerciseStatPill
-            label={t('completedWorkout.exerciseStats.volume')}
-            value={formatVolume(stats.volumeKg, weightUnit)}
-          />
-          <ExerciseStatPill
-            label={t('completedWorkout.exerciseStats.topWeight')}
-            value={topWeight}
-          />
-        </View>
-      </View>
-      {!isCollapsed ? (
-        <View className="px-4 py-3">
-          <ExerciseSetTable
-            readOnly
-            sets={exercise.sets}
-            setTypeOptions={setTypeOptions}
-            setTypesById={setTypesById}
-            weightUnit={weightUnit}
-          />
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
 export function CompletedWorkoutDetails({
   workoutId,
   weightUnit,
@@ -208,6 +191,8 @@ export function CompletedWorkoutDetails({
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const workout = useWorkoutSession(workoutId);
+  const { workouts: allWorkouts } = useWorkoutHistory();
+  const { saveTemplate } = useWorkoutTemplates();
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
 
@@ -244,6 +229,28 @@ export function CompletedWorkoutDetails({
       </View>
     );
   }
+
+  const handleOpenTemplate = () => {
+    const openTemplate = (templateId: string) => {
+      navigation.navigate('WorkoutTemplateEditor', { templateId });
+    };
+
+    if (workout.workoutTemplateId) {
+      openTemplate(workout.workoutTemplateId);
+      return;
+    }
+
+    try {
+      const template = saveTemplate(workoutSessionToTemplateInput(workout));
+      setWorkoutSessionTemplate(workout.id, template.id);
+      openTemplate(template.id);
+    } catch {
+      Alert.alert(
+        t('completedWorkout.templateErrorTitle'),
+        t('completedWorkout.templateErrorBody'),
+      );
+    }
+  };
 
   const exercises = groupCompletedExercises(workout);
   const exerciseById = new Map(
@@ -288,16 +295,28 @@ export function CompletedWorkoutDetails({
         </View>
       </View>
 
+      <CompletedWorkoutTemplateAction
+        hasTemplate={Boolean(workout.workoutTemplateId)}
+        onPress={handleOpenTemplate}
+      />
+
       {exercises.map((exercise, index) => {
         const option = exerciseById.get(exercise.exerciseId);
         const isCollapsed = collapsedExercises.has(exercise.key);
 
         return (
-          <CompletedExerciseSection
+          <CompletedExerciseHistorySection
             key={exercise.key}
-            exercise={exercise}
+            collapseControlPosition="overview"
             index={index}
             name={option?.name ?? t('common.unknownExercise')}
+            sets={exercise.sets}
+            previousSets={previousSetsForExercise(
+              exercise.exerciseId,
+              exercise.exercisePosition,
+              workout.startedAt,
+              allWorkouts,
+            )}
             isCollapsed={isCollapsed}
             onOpen={
               option

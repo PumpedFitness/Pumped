@@ -4,10 +4,7 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useHomescreenStore } from '@/stores/homescreenStore';
-import type {
-  QuickAction,
-  QuickActionOption,
-} from './components/QuickActions';
+import type { QuickAction, QuickActionOption } from './components/QuickActions';
 import {
   QUICK_ACTION_KEYS,
   quickActionRegistry,
@@ -62,11 +59,13 @@ export function useQuickActions(startSession: () => void): UseQuickActions {
       label: t(`home.quick.${key}`),
       onPress: handlers[key],
     })),
-    available: QUICK_ACTION_KEYS.filter(key => !keys.includes(key)).map(key => ({
-      key,
-      icon: quickActionRegistry[key].icon,
-      label: t(`home.quick.${key}`),
-    })),
+    available: QUICK_ACTION_KEYS.filter(key => !keys.includes(key)).map(
+      key => ({
+        key,
+        icon: quickActionRegistry[key].icon,
+        label: t(`home.quick.${key}`),
+      }),
+    ),
     add: key => addQuickAction(key as QuickActionKey),
     remove: key => removeQuickAction(key as QuickActionKey),
   };

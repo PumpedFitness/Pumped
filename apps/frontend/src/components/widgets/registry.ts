@@ -1,6 +1,9 @@
 import type { ComponentType } from 'react';
 import type { WidgetGroup, WidgetType, WidgetMeta } from '@/types/widget';
-import { TonnageCompactWidget, TonnageWideWidget } from './tonnage/TonnageWidgets';
+import {
+  TonnageCompactWidget,
+  TonnageWideWidget,
+} from './tonnage/TonnageWidgets';
 import { E1rmCompactWidget, E1rmWideWidget } from './e1rm/E1rmWidgets';
 import {
   AdherenceWideWidget,

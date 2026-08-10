@@ -81,7 +81,10 @@ export function ScheduleTodayHeader({
   }
 
   return (
-    <View className="gap-3 rounded-[24px] bg-moss p-5" style={shadows.invertedCard}>
+    <View
+      className="gap-3 rounded-[24px] bg-moss p-5"
+      style={shadows.invertedCard}
+    >
       <View>
         <Text className="t-eyebrow text-cream-dim">
           {t('schedule.today.eyebrow')}

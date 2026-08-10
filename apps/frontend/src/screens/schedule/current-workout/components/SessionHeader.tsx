@@ -65,7 +65,11 @@ export function SessionHeader({
           className="h-10 w-10 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
           onPress={onTogglePause}
         >
-          <ClayIcon name={isPaused ? 'play' : 'pause'} size={17} color={colors.ink} />
+          <ClayIcon
+            name={isPaused ? 'play' : 'pause'}
+            size={17}
+            color={colors.ink}
+          />
         </Pressable>
       </View>
 

@@ -59,7 +59,8 @@ export function useTrendsData(): TrendsData {
   const focusExerciseName = useMemo(() => {
     if (!focusExerciseId) return null;
     return (
-      exerciseOptions.find(option => option.id === focusExerciseId)?.name ?? null
+      exerciseOptions.find(option => option.id === focusExerciseId)?.name ??
+      null
     );
   }, [focusExerciseId, exerciseOptions]);
 

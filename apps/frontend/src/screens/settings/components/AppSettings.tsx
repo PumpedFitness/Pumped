@@ -11,8 +11,8 @@ import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { useAuthStore } from '@/stores/authStore';
 import {
-  type HomeMessageTone,
   type FirstDayOfWeek,
+  type HomeMessageTone,
   useAppSettingsStore,
 } from '@/stores/appSettingsStore';
 import { resetAllData } from '@/data/local/resetAllData';

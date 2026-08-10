@@ -99,8 +99,8 @@ export function autoTargetForRangeRolloverGoal(
         currentField.id === rangeField.id
           ? rangeValue
           : currentField.id === targetField.id
-            ? targetValue
-            : lastValue;
+          ? targetValue
+          : lastValue;
       suggestions.push({
         fieldId: currentField.id,
         value,
@@ -118,8 +118,8 @@ export function autoTargetForRangeRolloverGoal(
       rangeField.unit === 'seconds'
         ? rangeValue
         : targetField.unit === 'seconds'
-          ? targetValue
-          : undefined,
+        ? targetValue
+        : undefined,
     fieldSuggestions,
     displayText: displayText ?? undefined,
   };

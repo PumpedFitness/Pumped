@@ -54,7 +54,9 @@ export function BodyweightWideWidget(_props: WidgetProps) {
         {bodyweightDeltaPerWeek != null ? (
           <Text className="text-[12px] font-[600] text-cream-dim">
             {t('widgets.bodyweight.trend', {
-              delta: `${bodyweightDeltaPerWeek >= 0 ? '+' : ''}${bodyweightDeltaPerWeek.toFixed(1)}`,
+              delta: `${
+                bodyweightDeltaPerWeek >= 0 ? '+' : ''
+              }${bodyweightDeltaPerWeek.toFixed(1)}`,
               unit: weightUnitLabel,
             })}
           </Text>

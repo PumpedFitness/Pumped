@@ -119,8 +119,8 @@ function performedSuggestionForSet(
             field.unit === 'amount'
               ? formatWeight(value, weightUnit)
               : field.unit === 'seconds'
-                ? durationText(value)
-                : formatNumber(value),
+              ? durationText(value)
+              : formatNumber(value),
         });
         return suggestions;
       }, [])
@@ -160,8 +160,8 @@ function autoTargetForGoal(
         currentField.unit === 'amount'
           ? formatWeight(value, weightUnit)
           : currentField.unit === 'seconds'
-            ? durationText(value)
-            : formatNumber(value);
+          ? durationText(value)
+          : formatNumber(value);
       suggestions.push({
         fieldId: currentField.id,
         value,
@@ -176,8 +176,8 @@ function autoTargetForGoal(
     field.unit === 'amount'
       ? formatWeight(progressedValue, weightUnit)
       : field.unit === 'seconds'
-        ? durationText(progressedValue)
-        : formatNumber(progressedValue);
+      ? durationText(progressedValue)
+      : formatNumber(progressedValue);
   return {
     weightKg: field.unit === 'amount' ? progressedValue : undefined,
     reps: undefined,
@@ -397,8 +397,8 @@ export function buildProgressionSuggestionResult(
     kind: hasSuggestion
       ? 'suggestion'
       : fallback?.lastPerformedText
-        ? 'last_performed'
-        : 'none',
+      ? 'last_performed'
+      : 'none',
     fieldSuggestions: firstSuggestion?.fieldSuggestions ?? [],
     suggestedWeightKg: firstSuggestion?.weightKg,
     suggestedReps: firstSuggestion?.reps,

@@ -112,7 +112,9 @@ function readQuickActions(): QuickActionKey[] {
     const parsed: unknown = JSON.parse(stored);
     if (!Array.isArray(parsed)) return DEFAULT_QUICK_ACTIONS;
     return [
-      ...new Set(parsed.filter((k): k is QuickActionKey => isQuickActionKey(k))),
+      ...new Set(
+        parsed.filter((k): k is QuickActionKey => isQuickActionKey(k)),
+      ),
     ];
   } catch {
     return DEFAULT_QUICK_ACTIONS;

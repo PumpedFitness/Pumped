@@ -8,6 +8,8 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
+import { getWorkoutSession } from '@/data/local/workouts/sessions';
+import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
 import type {
   EditableExercise,
   ExerciseEditResult,
@@ -17,7 +19,11 @@ import type {
 import type { WorkoutTemplate } from '@/types/workout';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useEditorExercises, type EditorExercise } from './useEditorExercises';
-import { useWorkoutTemplateEditorDraft } from './useWorkoutTemplateEditorDraft';
+import {
+  createDraftSet,
+  type DraftExercise,
+  useWorkoutTemplateEditorDraft,
+} from './useWorkoutTemplateEditorDraft';
 import { useDiscardGuard } from './useDiscardGuard';
 import type { TemplateEditorContextValue } from './templateEditorContext';
 
@@ -26,6 +32,24 @@ type EditorNavigation = NativeStackNavigationProp<
   'WorkoutTemplateEditor'
 >;
 type EditorRoute = RouteProp<RootStackParamList, 'WorkoutTemplateEditor'>;
+
+function templateInputExercisesToDraft(
+  exercises: SaveWorkoutTemplateInput['exercises'],
+): DraftExercise[] {
+  return exercises.map(exercise => ({
+    exerciseId: exercise.exerciseId,
+    typeId: exercise.typeId ?? null,
+    color: exercise.color ?? null,
+    goal: '',
+    notes: exercise.notes ?? null,
+    sets: exercise.sets.map(set => ({
+      ...createDraftSet(set.setType),
+      restSeconds: set.restSeconds ?? null,
+      fieldValues: set.fieldValues ?? [],
+      progressionGoal: undefined,
+    })),
+  }));
+}
 
 type UseTemplateEditorControllerOptions = {
   template: WorkoutTemplate | null;
@@ -78,6 +102,7 @@ export function useTemplateEditorController({
   const { t } = useTranslation();
   const navigation = useNavigation<EditorNavigation>();
   const route = useRoute<EditorRoute>();
+  const appliedImportWorkoutId = useRef<string | null>(null);
 
   // Flipped right before an intentional navigation (save / delete) so the
   // dirty-state back-guard doesn't prompt for those. A plain cancel/back does
@@ -103,6 +128,32 @@ export function useTemplateEditorController({
     onSave,
     onSaved: closeAfterAction,
   });
+  useEffect(() => {
+    const importWorkoutId = route.params?.importWorkoutId;
+
+    if (
+      !importWorkoutId ||
+      appliedImportWorkoutId.current === importWorkoutId
+    ) {
+      return;
+    }
+
+    const workout = getWorkoutSession(importWorkoutId);
+
+    if (!workout) {
+      navigation.setParams({ importWorkoutId: undefined });
+      return;
+    }
+
+    appliedImportWorkoutId.current = importWorkoutId;
+    updateDraft({
+      exercises: templateInputExercisesToDraft(
+        workoutSessionToTemplateInput(workout).exercises,
+      ),
+    });
+    navigation.setParams({ importWorkoutId: undefined });
+  }, [navigation, route.params?.importWorkoutId, updateDraft]);
+
   useDiscardGuard(isDirty, bypassGuard);
   useAppliedExerciseResults(
     route.params?.exerciseSelection,

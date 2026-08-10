@@ -8,7 +8,6 @@ import { AppShell } from '@/components/layout/AppShell';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
 import { WorkoutHistoryList } from './components/WorkoutHistoryList';
-import { WorkoutHistorySummary } from './components/workout-history-summary';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import type { MainTabParamList } from '@/navigation/mainTabsShared';
@@ -55,11 +54,6 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
           <Text className="t-caption mt-1">{t('history.subtitle')}</Text>
         </View>
 
-        <WorkoutHistorySummary
-          workouts={workouts}
-          weightUnit={profile.weightUnit}
-        />
-
         <SearchInput
           accessibilityLabel={t('history.searchA11y')}
           placeholder={t('history.searchPlaceholder')}
@@ -68,6 +62,7 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
         />
 
         <WorkoutHistoryList
+          deletable
           workouts={filteredWorkouts}
           weightUnit={profile.weightUnit}
           hasSearchQuery={searchQuery.trim().length > 0}

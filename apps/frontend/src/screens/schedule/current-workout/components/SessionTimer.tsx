@@ -19,7 +19,11 @@ type SessionTimerProps = {
 
 // A leaf that owns the per-second tick so the exercise list never re-renders on
 // it. Derives elapsed from timestamps and freezes while paused.
-export function SessionTimer({ startedAt, pausedAt, pausedMs }: SessionTimerProps) {
+export function SessionTimer({
+  startedAt,
+  pausedAt,
+  pausedMs,
+}: SessionTimerProps) {
   const [now, setNow] = useState(() => Date.now());
   const pulse = useSharedValue(1);
   const isPaused = pausedAt != null;
@@ -54,7 +58,9 @@ export function SessionTimer({ startedAt, pausedAt, pausedMs }: SessionTimerProp
   return (
     <View className="flex-row items-center gap-1.5">
       <AnimatedView
-        className={`h-2 w-2 rounded-full ${isPaused ? 'bg-muted' : 'bg-accent'}`}
+        className={`h-2 w-2 rounded-full ${
+          isPaused ? 'bg-muted' : 'bg-accent'
+        }`}
         style={dotStyle}
       />
       <Text className="text-[17px] font-bold text-foreground tabular-nums tracking-[-0.3px]">

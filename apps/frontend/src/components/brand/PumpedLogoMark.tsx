@@ -1,12 +1,6 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import Svg, {
-  Defs,
-  G,
-  Mask,
-  Path,
-  Text as SvgText,
-} from 'react-native-svg';
+import Svg, { Defs, G, Mask, Path, Text as SvgText } from 'react-native-svg';
 import Animated, {
   Easing,
   useAnimatedProps,

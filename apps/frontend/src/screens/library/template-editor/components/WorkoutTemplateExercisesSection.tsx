@@ -1,5 +1,9 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Button } from 'heroui-native';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import ScrollViewContext from 'react-native/Libraries/Components/ScrollView/ScrollViewContext';
 import {
   NestedReorderableList,
@@ -39,6 +43,8 @@ function renderItem({ item }: { item: EditorExercise }) {
 
 export function WorkoutTemplateExercisesSection() {
   const { t } = useTranslation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { exercises, chooseExercises, reorderExercises } = useTemplateEditor();
 
   const chooseExercisesAction = (
@@ -47,8 +53,6 @@ export function WorkoutTemplateExercisesSection() {
       className="min-h-11 flex-row items-center gap-2 rounded-full bg-accent-soft px-4"
       onPress={chooseExercises}
     >
-
-      
       <ClayIcon name="search" size={16} color={colors.accent} />
       <Text className="t-label text-accent">
         {t('templateEditor.exercises.choose')}
@@ -81,19 +85,31 @@ export function WorkoutTemplateExercisesSection() {
           />
         </ScrollViewContext.Provider>
       ) : (
-        <Pressable
-          accessibilityRole="button"
-          className="items-center gap-3 rounded-[22px] border border-dashed border-border-hairline px-5 py-8"
-          onPress={chooseExercises}
-        >
-          <ClayIcon name="search" size={23} color={colors.accent} />
-          <Text className="t-heading">
-            {t('templateEditor.exercises.emptyTitle')}
-          </Text>
-          <Text className="t-caption text-center">
-            {t('templateEditor.exercises.emptyBody')}
-          </Text>
-        </Pressable>
+        <View className="gap-3">
+          <Pressable
+            accessibilityRole="button"
+            className="items-center gap-3 rounded-[22px] border border-dashed border-border-hairline px-5 py-8"
+            onPress={chooseExercises}
+          >
+            <ClayIcon name="search" size={23} color={colors.accent} />
+            <Text className="t-heading">
+              {t('templateEditor.exercises.emptyTitle')}
+            </Text>
+            <Text className="t-caption text-center">
+              {t('templateEditor.exercises.emptyBody')}
+            </Text>
+          </Pressable>
+          <Button
+            className="mt-1 self-center rounded-full"
+            variant="secondary"
+            feedbackVariant="scale"
+            onPress={() => navigation.navigate('ImportWorkoutTemplate')}
+          >
+            <Button.Label>
+              {t('templateEditor.exercises.importPrevious')}
+            </Button.Label>
+          </Button>
+        </View>
       )}
     </FormSection>
   );

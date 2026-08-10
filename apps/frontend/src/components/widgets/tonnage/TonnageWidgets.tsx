@@ -49,7 +49,9 @@ export function TonnageWideWidget(_props: WidgetProps) {
   const { t } = useTranslation();
   const { tonnageTonnes, tonnageBars } = useHomeWidgetData();
   const heights =
-    tonnageBars.length > 0 ? tonnageBars : [0.34, 0.52, 0.44, 0.68, 0.6, 0.82, 1];
+    tonnageBars.length > 0
+      ? tonnageBars
+      : [0.34, 0.52, 0.44, 0.68, 0.6, 0.82, 1];
   return (
     <Card radius="lg" pad={16}>
       <View className="gap-[12px]">

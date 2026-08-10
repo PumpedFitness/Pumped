@@ -39,10 +39,7 @@ export function MuscleVolumeFullWidget(_props: WidgetProps) {
         ) : (
           <View className="gap-[11px]">
             {muscleVolume.map((row, index) => (
-              <View
-                key={row.name}
-                className="flex-row items-center gap-[10px]"
-              >
+              <View key={row.name} className="flex-row items-center gap-[10px]">
                 <Text
                   className="w-[56px] text-[12px] font-[600] text-muted"
                   numberOfLines={1}

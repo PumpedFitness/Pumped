@@ -329,6 +329,33 @@ export const resources = {
         tonnage: {
           title: 'Tonnage',
           unit: 't',
+          recovery: 'Recovery',
+          lastSession: 'Last Session',
+          streak: 'Streak',
+          schedule: 'Schedule',
+          time: 'Time',
+          weeklyVolume: 'Weekly Volume',
+          trend: 'Trend',
+          exerciseProgress: 'Exercise Progress',
+          personalRecords: 'Personal Records',
+          muscleBalance: 'Muscle Balance',
+          weeklyGoal: 'Weekly Goal',
+          consistency: 'Consistency',
+          quickStart: 'Quick Start',
+          milestones: 'Milestones',
+        },
+        recovery: {
+          ready: 'READY',
+          title: 'RECOVERY',
+          primed: "You're primed\nfor Push Day",
+          movements: 'movements',
+          estTime: 'est. time',
+          start: 'Start',
+        },
+        lastSession: {
+          caption: 'Last session',
+          title: 'No completed sessions yet',
+          prs: '{{count}} PRs',
         },
         e1rm: {
           title: 'e1RM',
@@ -347,6 +374,45 @@ export const resources = {
         muscleVolume: {
           title: 'Weekly sets by muscle',
           empty: 'No sets logged this week yet.',
+        },
+        exerciseProgress: {
+          title: 'Exercise progress',
+          empty: 'Complete a weighted exercise',
+          first: 'First result',
+          change: '{{value}} {{unit}} vs last time',
+          caption: 'Estimated one-rep max from your recent sessions',
+        },
+        personalRecords: {
+          title: 'Latest personal record',
+          empty: 'No records yet',
+          prs: 'PRs',
+        },
+        muscleBalance: {
+          title: 'Muscle balance · 4 weeks',
+          empty: 'No muscle data yet',
+          caption: 'Your most trained areas',
+        },
+        weeklyGoal: {
+          title: 'Weekly goal',
+          summary_one: '{{count}} workout to go',
+          summary_other: '{{count}} workouts to go',
+        },
+        consistency: {
+          title: 'Consistency',
+          summary_one: '{{count}} active day',
+          summary_other: '{{count}} active days',
+          range: 'Last 8 weeks',
+        },
+        quickStart: {
+          title: 'Quick start',
+          empty: 'Create a workout first',
+          start: 'Start',
+          resume: 'Resume',
+        },
+        milestones: {
+          title: 'Workouts',
+          remaining_one: '{{count}} to {{target}}',
+          remaining_other: '{{count}} to {{target}}',
         },
       },
       widgetPicker: {
@@ -451,6 +517,7 @@ export const resources = {
         exercises: {
           title: 'Exercises',
           choose: 'Choose exercises',
+          importPrevious: 'Import from previous workout',
           emptyTitle: 'Search the exercise library',
           emptyBody:
             'Choose exercises on a dedicated page and return here to set goals and working sets.',
@@ -505,6 +572,7 @@ export const resources = {
           linear: 'Linear',
           rangeRollover: 'Range rollover',
         },
+        additionalSet: 'Additional set',
         suggestion: {
           suggested: 'Suggested: {{target}}',
           lastTime: 'Last time: {{target}}',
@@ -728,6 +796,10 @@ export const resources = {
         resumeWorkoutA11y: 'Resume timer',
         rest: {
           title: 'Rest',
+          pickerTitle: 'Rest time',
+          pickerDescription: 'Choose how long to rest after this set.',
+          durationMinutes: '{{minutes}} min {{seconds}}s',
+          durationSeconds: '{{seconds}}s',
           pause: 'Pause',
           resume: 'Resume',
           skip: 'Skip rest',
@@ -849,6 +921,8 @@ export const resources = {
         namePlaceholder: 'e.g. Barbell Bench Press',
         descriptionLabel: 'Description',
         descriptionPlaceholder: 'Optional',
+        howToLabel: 'How to',
+        howToPlaceholder: 'Optional step-by-step instructions',
         typeLabel: 'Type',
         typePlaceholder: 'Select type',
         muscleGroupsLabel: 'Muscle Groups',
@@ -921,6 +995,37 @@ export const resources = {
           topWeight: 'Top',
           emptyTitle: 'No completed workouts yet',
           emptyBody: 'Workouts with this exercise will appear here.',
+          pageIndicator: '{{page}} / {{total}}',
+          prevPageA11y: 'Previous page',
+          nextPageA11y: 'Next page',
+        },
+        tabs: {
+          dashboard: 'Dashboard',
+          summary: 'Summary',
+          history: 'History',
+        },
+        dashboard: {
+          est1Rm: 'Est. 1RM',
+          topSet: 'Top set',
+          volume: 'Volume',
+          volumeTrend: 'Volume trend',
+          lastSession: 'Last session',
+          lastSessionSets_one: '{{count}} set',
+          lastSessionSets_other: '{{count}} sets',
+          lastSessionTop: 'top {{weight}}',
+          records: {
+            estimated1Rm: 'Best 1RM',
+            topWeight: 'Top weight',
+            volumeSet: 'Best volume',
+            maxReps: 'Most reps',
+          },
+        },
+        summary: {
+          type: 'Type',
+          created: 'Created',
+          about: 'About',
+          howTo: 'How to',
+          howToEmpty: 'No instructions yet.',
         },
       },
       exerciseSelection: {
@@ -929,6 +1034,11 @@ export const resources = {
         selectedCount: '{{count}} selected',
         useExercises_one: 'Use {{count}} exercise',
         useExercises_other: 'Use {{count}} exercises',
+      },
+      templateImport: {
+        title: 'Import from workout',
+        searchPlaceholder: 'Search previous workouts',
+        searchA11y: 'Search previous workouts',
       },
       history: {
         title: 'Workout history',
@@ -989,6 +1099,10 @@ export const resources = {
         backA11y: 'Back to workout history',
         notFoundTitle: 'Workout not found',
         notFoundBody: 'This workout is no longer available in your history.',
+        createTemplate: 'Turn into template',
+        editTemplate: 'Edit template',
+        templateErrorTitle: 'Could not create template',
+        templateErrorBody: 'Please try again.',
         stats: {
           duration: 'Duration',
           sets: 'Sets',
@@ -1283,8 +1397,7 @@ export const resources = {
         goal: {
           eyebrow: 'Dein Ziel',
           title: 'Wofür trainierst du?',
-          subtitle:
-            'Bestimmt Wiederholungen und Pausen in deinem Programm.',
+          subtitle: 'Bestimmt Wiederholungen und Pausen in deinem Programm.',
           options: {
             strength: {
               title: 'Stärker werden',
@@ -1451,6 +1564,33 @@ export const resources = {
         tonnage: {
           title: 'Tonnage',
           unit: 't',
+          recovery: 'Erholung',
+          lastSession: 'Letzte Einheit',
+          streak: 'Serie',
+          schedule: 'Zeitplan',
+          time: 'Zeit',
+          weeklyVolume: 'Wochenvolumen',
+          trend: 'Trend',
+          exerciseProgress: 'Übungsfortschritt',
+          personalRecords: 'Persönliche Rekorde',
+          muscleBalance: 'Muskelbalance',
+          weeklyGoal: 'Wochenziel',
+          consistency: 'Konstanz',
+          quickStart: 'Schnellstart',
+          milestones: 'Meilensteine',
+        },
+        recovery: {
+          ready: 'BEREIT',
+          title: 'ERHOLUNG',
+          primed: 'Du bist bereit\nfür den Push Day',
+          movements: 'Übungen',
+          estTime: 'geschätzte Dauer',
+          start: 'Start',
+        },
+        lastSession: {
+          caption: 'Letzte Einheit',
+          title: 'Noch keine abgeschlossene Einheit',
+          prs: '{{count}} PRs',
         },
         e1rm: {
           title: 'e1RM',
@@ -1469,6 +1609,45 @@ export const resources = {
         muscleVolume: {
           title: 'Wöchentliche Sätze pro Muskel',
           empty: 'Diese Woche noch keine Sätze geloggt.',
+        },
+        exerciseProgress: {
+          title: 'Übungsfortschritt',
+          empty: 'Schließe eine Übung mit Gewicht ab',
+          first: 'Erstes Ergebnis',
+          change: '{{value}} {{unit}} zum letzten Mal',
+          caption: 'Geschätztes 1RM aus deinen letzten Einheiten',
+        },
+        personalRecords: {
+          title: 'Letzter persönlicher Rekord',
+          empty: 'Noch keine Rekorde',
+          prs: 'PRs',
+        },
+        muscleBalance: {
+          title: 'Muskelbalance · 4 Wochen',
+          empty: 'Noch keine Muskeldaten',
+          caption: 'Deine meisttrainierten Bereiche',
+        },
+        weeklyGoal: {
+          title: 'Wochenziel',
+          summary_one: 'Noch {{count}} Training',
+          summary_other: 'Noch {{count}} Trainings',
+        },
+        consistency: {
+          title: 'Konstanz',
+          summary_one: '{{count}} aktiver Tag',
+          summary_other: '{{count}} aktive Tage',
+          range: 'Letzte 8 Wochen',
+        },
+        quickStart: {
+          title: 'Schnellstart',
+          empty: 'Erstelle zuerst ein Workout',
+          start: 'Start',
+          resume: 'Weiter',
+        },
+        milestones: {
+          title: 'Workouts',
+          remaining_one: '{{count}} bis {{target}}',
+          remaining_other: '{{count}} bis {{target}}',
         },
       },
       widgetPicker: {
@@ -1576,6 +1755,7 @@ export const resources = {
         exercises: {
           title: 'Übungen',
           choose: 'Übungen auswählen',
+          importPrevious: 'Aus vorherigem Workout importieren',
           emptyTitle: 'Durchsuche die Übungsbibliothek',
           emptyBody:
             'Wähle Übungen auf einer eigenen Seite aus und kehre hierher zurück, um Ziele und Arbeitssätze festzulegen.',
@@ -1639,6 +1819,7 @@ export const resources = {
             rangeRollover: 'Bereich mit Wechsel',
           },
         },
+        additionalSet: 'Zusätzlicher Satz',
         suggestion: {
           suggested: 'Vorschlag: {{target}}',
           lastTime: 'Letztes Mal: {{target}}',
@@ -1865,6 +2046,10 @@ export const resources = {
         resumeWorkoutA11y: 'Timer fortsetzen',
         rest: {
           title: 'Pause',
+          pickerTitle: 'Pausenzeit',
+          pickerDescription: 'Wähle die Pause nach diesem Satz.',
+          durationMinutes: '{{minutes}} Min. {{seconds}} Sek.',
+          durationSeconds: '{{seconds}} Sek.',
           pause: 'Pausieren',
           resume: 'Fortsetzen',
           skip: 'Pause überspringen',
@@ -1989,6 +2174,8 @@ export const resources = {
         namePlaceholder: 'z. B. Bankdrücken mit Langhantel',
         descriptionLabel: 'Beschreibung',
         descriptionPlaceholder: 'Optional',
+        howToLabel: 'Ausführung',
+        howToPlaceholder: 'Optionale Schritt-für-Schritt-Anleitung',
         typeLabel: 'Typ',
         typePlaceholder: 'Typ auswählen',
         muscleGroupsLabel: 'Muskelgruppen',
@@ -2062,6 +2249,37 @@ export const resources = {
           topWeight: 'Top',
           emptyTitle: 'Noch keine abgeschlossenen Workouts',
           emptyBody: 'Workouts mit dieser Übung erscheinen hier.',
+          pageIndicator: '{{page}} / {{total}}',
+          prevPageA11y: 'Vorherige Seite',
+          nextPageA11y: 'Nächste Seite',
+        },
+        tabs: {
+          dashboard: 'Übersicht',
+          summary: 'Info',
+          history: 'Verlauf',
+        },
+        dashboard: {
+          est1Rm: 'Gesch. 1RM',
+          topSet: 'Top-Satz',
+          volume: 'Volumen',
+          volumeTrend: 'Volumen-Trend',
+          lastSession: 'Letzte Einheit',
+          lastSessionSets_one: '{{count}} Satz',
+          lastSessionSets_other: '{{count}} Sätze',
+          lastSessionTop: 'Top {{weight}}',
+          records: {
+            estimated1Rm: 'Bestes 1RM',
+            topWeight: 'Top-Gewicht',
+            volumeSet: 'Bestes Volumen',
+            maxReps: 'Meiste Wdh.',
+          },
+        },
+        summary: {
+          type: 'Typ',
+          created: 'Erstellt',
+          about: 'Über die Übung',
+          howTo: 'Ausführung',
+          howToEmpty: 'Noch keine Anleitung.',
         },
       },
       exerciseSelection: {
@@ -2070,6 +2288,11 @@ export const resources = {
         selectedCount: '{{count}} ausgewählt',
         useExercises_one: '{{count}} Übung verwenden',
         useExercises_other: '{{count}} Übungen verwenden',
+      },
+      templateImport: {
+        title: 'Aus Workout importieren',
+        searchPlaceholder: 'Vorherige Workouts suchen',
+        searchA11y: 'Vorherige Workouts suchen',
       },
       history: {
         title: 'Workout-Verlauf',
@@ -2133,6 +2356,10 @@ export const resources = {
         notFoundTitle: 'Workout nicht gefunden',
         notFoundBody:
           'Dieses Workout ist in deinem Verlauf nicht mehr verfügbar.',
+        createTemplate: 'In Vorlage umwandeln',
+        editTemplate: 'Vorlage bearbeiten',
+        templateErrorTitle: 'Vorlage konnte nicht erstellt werden',
+        templateErrorBody: 'Bitte versuche es erneut.',
         stats: {
           duration: 'Dauer',
           sets: 'Sätze',

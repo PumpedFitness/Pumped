@@ -25,7 +25,10 @@ type WizardStep = (typeof STEPS)[number];
 function ctaLabelKey(
   step: WizardStep,
   isLast: boolean,
-): 'onboarding.cta.getStarted' | 'onboarding.cta.startTraining' | 'onboarding.cta.continue' {
+):
+  | 'onboarding.cta.getStarted'
+  | 'onboarding.cta.startTraining'
+  | 'onboarding.cta.continue' {
   if (step === 'welcome') return 'onboarding.cta.getStarted';
   if (isLast) return 'onboarding.cta.startTraining';
   return 'onboarding.cta.continue';
@@ -79,7 +82,9 @@ function WizardTopBar({
       )}
 
       <View
-        className={'flex-1 items-center ' + (stepIndex === 0 ? 'opacity-0' : '')}
+        className={
+          'flex-1 items-center ' + (stepIndex === 0 ? 'opacity-0' : '')
+        }
       >
         <StepTicks activeCount={stepIndex} total={STEPS.length - 1} />
       </View>

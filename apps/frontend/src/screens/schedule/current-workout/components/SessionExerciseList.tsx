@@ -34,7 +34,8 @@ type SessionExerciseListProps = {
     values: UpdateCurrentWorkoutSetInput,
   ) => void;
   toggleSetDone: (exerciseId: string, setId: string) => boolean;
-  onSetLogged: (restSeconds: number) => void;
+  onSetLogged: (restSeconds: number, sourceSetId?: string) => void;
+  activeRestSetId: string | null;
   removeSet: (exerciseId: string, setId: string) => void;
   removeExercise: (exerciseId: string) => void;
   onChooseExercises: (selectedExerciseIds: string[]) => void;
@@ -58,6 +59,7 @@ export function SessionExerciseList({
   updateSet,
   toggleSetDone,
   onSetLogged,
+  activeRestSetId,
   removeSet,
   removeExercise,
   onChooseExercises,
@@ -115,6 +117,7 @@ export function SessionExerciseList({
           updateSet={updateSet}
           toggleSetDone={toggleSetDone}
           onSetLogged={onSetLogged}
+          activeRestSetId={activeRestSetId}
           removeSet={removeSet}
           addSet={addSet}
         />

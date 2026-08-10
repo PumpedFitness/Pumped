@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { BottomSheet, Button } from 'heroui-native';
+import { AppBottomSheet } from './AppBottomSheet';
 import { WheelPicker } from './WheelPicker';
 
 export type OptionalWheelPickerConfig = {
@@ -12,6 +13,7 @@ export type OptionalWheelPickerConfig = {
   step: number;
   defaultValue: number;
   formatValue: (value: number) => string;
+  values?: number[];
 };
 
 type OptionalWheelPickerSheetProps = {
@@ -23,6 +25,9 @@ type OptionalWheelPickerSheetProps = {
 };
 
 function buildValues(config: OptionalWheelPickerConfig): number[] {
+  if (config.values) {
+    return config.values;
+  }
   const { minValue, maxValue, step } = config;
   const values: number[] = [];
   // Accumulate via the step count to avoid floating point drift on
@@ -71,64 +76,57 @@ export function OptionalWheelPickerSheet({
   const selectedValue = values[selectedIndex] ?? config.defaultValue;
 
   return (
-    <BottomSheet
-      isOpen={visible}
-      onOpenChange={open => {
-        if (!open) onClose();
-      }}
-    >
-      <BottomSheet.Portal>
-        <BottomSheet.Overlay />
-        <BottomSheet.Content backgroundClassName="bg-background">
-          <View className="items-center">
-            <BottomSheet.Title className="text-[21px] font-bold text-foreground">
-              {config.title}
-            </BottomSheet.Title>
-            <BottomSheet.Description className="mt-1 text-center text-[13px] text-muted">
-              {config.description}
-            </BottomSheet.Description>
-          </View>
+    <AppBottomSheet open={visible} onClose={onClose}>
+      <BottomSheet.Overlay />
+      <AppBottomSheet.Content backgroundClassName="bg-background">
+        <View className="items-center">
+          <BottomSheet.Title className="text-[21px] font-bold text-foreground">
+            {config.title}
+          </BottomSheet.Title>
+          <BottomSheet.Description className="mt-1 text-center text-[13px] text-muted">
+            {config.description}
+          </BottomSheet.Description>
+        </View>
 
-          <Text className="mt-4 text-center text-[34px] font-bold tabular-nums text-foreground">
-            {config.formatValue(selectedValue)}
-          </Text>
+        <Text className="mt-4 text-center text-[34px] font-bold tabular-nums text-foreground">
+          {config.formatValue(selectedValue)}
+        </Text>
 
-          <View className="mt-4 items-center">
-            <WheelPicker
-              items={items}
-              selectedIndex={selectedIndex}
-              onChange={setSelectedIndex}
-              width={180}
-            />
-          </View>
+        <View className="mt-4 items-center">
+          <WheelPicker
+            items={items}
+            selectedIndex={selectedIndex}
+            onChange={setSelectedIndex}
+            width={180}
+          />
+        </View>
 
-          <View className="mt-6 flex-row gap-2">
-            <Button
-              className="h-13 flex-1 rounded-full"
-              variant="ghost"
-              feedbackVariant="scale"
-              onPress={() => {
-                onChange(null);
-                onClose();
-              }}
-            >
-              <Button.Label>{t('common.clear')}</Button.Label>
-            </Button>
-            <Button
-              className="h-13 flex-1 rounded-full bg-accent"
-              feedbackVariant="scale"
-              onPress={() => {
-                onChange(selectedValue);
-                onClose();
-              }}
-            >
-              <Button.Label className="font-bold text-accent-foreground">
-                {t('common.apply')}
-              </Button.Label>
-            </Button>
-          </View>
-        </BottomSheet.Content>
-      </BottomSheet.Portal>
-    </BottomSheet>
+        <View className="mt-6 flex-row gap-2">
+          <Button
+            className="h-13 flex-1 rounded-full"
+            variant="ghost"
+            feedbackVariant="scale"
+            onPress={() => {
+              onChange(null);
+              onClose();
+            }}
+          >
+            <Button.Label>{t('common.clear')}</Button.Label>
+          </Button>
+          <Button
+            className="h-13 flex-1 rounded-full bg-accent"
+            feedbackVariant="scale"
+            onPress={() => {
+              onChange(selectedValue);
+              onClose();
+            }}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              {t('common.apply')}
+            </Button.Label>
+          </Button>
+        </View>
+      </AppBottomSheet.Content>
+    </AppBottomSheet>
   );
 }
