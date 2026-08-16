@@ -40,10 +40,12 @@ In-screen content (form fields, buttons) is still matched by its real copy.
 The iOS and Android builds use different bundle identifiers, so each flow
 declares `appId: ${APP_ID}` and the value is passed at run time:
 
-- **iOS** → `org.reactjs.native.example.PumpedApp` — what the native iOS
-  project (`ios/PumpedApp.xcodeproj`) actually installs (the RN template
-  default; `app.json` *intends* `com.pumpedapp`).
-- **Android** → `com.pumpedapp` (from `app.json`).
+Both platforms now use `com.pumpedapp`. They were split until the iOS
+project still carried the React Native template default
+(`org.reactjs.native.example.PumpedApp`); `app.json` always intended
+`com.pumpedapp`, but `ios/` is checked in, so no prebuild ever applied it.
+Aligning them was a prerequisite for the Google OAuth client, which is issued
+against one bundle id.
 
 The `bun run e2e` / `e2e:android` scripts pass the right one. If the iOS bundle
 id is ever realigned to `com.pumpedapp`, both become identical.
@@ -69,7 +71,7 @@ bun run e2e            # iOS simulator
 bun run e2e:android    # Android emulator/device
 
 # a single flow:
-maestro-runner --platform ios test -e APP_ID=org.reactjs.native.example.PumpedApp .maestro/smoke.yaml
+maestro-runner --platform ios test -e APP_ID=com.pumpedapp .maestro/smoke.yaml
 ```
 
 Reports (HTML · JSON · JUnit · Allure) are written to `./reports/<timestamp>/`

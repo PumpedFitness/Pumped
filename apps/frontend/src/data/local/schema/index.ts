@@ -18,3 +18,10 @@ export { workoutSessions, performedSets } from './workoutSession';
 export { skippedDays } from './skippedDay';
 export { bodyWeightEntries, bodyFatEntries } from './bodyMetrics';
 export { userProfile, type Gender, type WeightUnit } from './userProfile';
+export {
+  healthAnnotations,
+  healthRawDaily,
+  healthRawSample,
+  healthRawSession,
+  healthSyncState,
+} from './healthRaw';

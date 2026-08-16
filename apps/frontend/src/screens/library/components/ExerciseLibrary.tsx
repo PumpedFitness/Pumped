@@ -73,7 +73,6 @@ export function ExerciseLibrary() {
       }
       renderItem={renderRow}
       namespace="library"
-      emptyIconName="search"
       stickySearch
       itemGap={10}
       createTestID="create_exercise"

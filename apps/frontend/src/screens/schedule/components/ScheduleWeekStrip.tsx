@@ -22,7 +22,7 @@ function StatusBadge({ status }: { status: WeekDay['status'] }) {
       </View>
     );
   }
-  if (status === 'skipped') {
+  if (status === 'skipped' || status === 'missed') {
     return (
       <View className="absolute -bottom-0.5 -right-0.5 h-[15px] w-[15px] items-center justify-center rounded-full border border-surface-card bg-surface-sunk">
         <ClayIcon name="skip" size={9} color={colors.muted} />

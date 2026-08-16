@@ -10,7 +10,7 @@ import Animated, {
 import { Button } from 'heroui-native';
 import { EmptyState } from '@pumped/ui/clay/EmptyState';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
-import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { colors, motion } from '@pumped/ui/theme/tokens';
 
@@ -27,8 +27,6 @@ type SearchableLibraryProps<T> = {
    */
   namespace: string;
   createTestID?: string;
-  /** Icon shown in the default empty / no-match states. */
-  emptyIconName?: IconName;
   /** Override the default "no items yet" state. */
   emptyState?: ReactNode;
   /** Override the default "search excluded everything" state. */
@@ -55,7 +53,6 @@ export function SearchableLibrary<T>({
   onCreate,
   namespace,
   createTestID,
-  emptyIconName = 'search',
   emptyState,
   noMatchState,
   noMatchAction,
@@ -81,23 +78,15 @@ export function SearchableLibrary<T>({
     );
   }, [items, searchQuery, getSearchText]);
 
-  const emptyIcon = (
-    <View className="h-12 w-12 items-center justify-center rounded-[16px] bg-accent-soft">
-      <ClayIcon name={emptyIconName} size={24} color={colors.accent} />
-    </View>
-  );
-
   const defaultEmpty = (
     <EmptyState
-      icon={emptyIcon}
       className="bg-surface-card"
-      titleClassName="text-center"
       bodyClassName="max-w-64"
       title={tk('empty.title')}
       body={tk('empty.body')}
       action={
         <Button
-          className="mt-1 rounded-full"
+          className="rounded-full"
           variant="secondary"
           feedbackVariant="scale"
           onPress={onCreate}
@@ -110,9 +99,7 @@ export function SearchableLibrary<T>({
 
   const defaultNoMatch = (
     <EmptyState
-      icon={emptyIcon}
       className="bg-surface-card"
-      titleClassName="text-center"
       bodyClassName="max-w-64"
       title={tk('noMatch.title')}
       body={tk('noMatch.body')}

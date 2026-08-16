@@ -136,7 +136,6 @@ export function WorkoutsLibrary() {
         </LibrarySwipeRow>
       )}
       namespace="plan"
-      emptyIconName="dumbbell"
       createTestID="create_workout"
       onCreate={() => navigation.navigate('WorkoutTemplateEditor')}
       noMatchAction={browseWorkoutsAction}

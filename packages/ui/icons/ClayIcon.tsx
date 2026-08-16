@@ -1,6 +1,6 @@
 import Svg, { Path } from 'react-native-svg';
 
-const PATHS: Record<string, string[]> = {
+const PATHS = {
   dumbbell: ['M6.5 6.5v11M3 8.5v7M17.5 6.5v11M21 8.5v7M6.5 12h11'],
   flame: [
     'M12 3c.7 2.5-1.2 3.8-2.4 5.4C8.3 10 8 11.5 8 13a4 4 0 0 0 8 0c0-1.6-.7-2.9-1.7-4 .2 1.2-.4 2-1.1 2.4.6-2.6-1.2-4.9-1.2-8.4Z',
@@ -38,6 +38,9 @@ const PATHS: Record<string, string[]> = {
   ],
   skip: ['M6 5l9 7-9 7V5ZM18 5v14'],
   rest: ['M12 5a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z', 'M12 13V9M9 2.5h6'],
+  // Sichel als ein Zug, damit sie mit derselben Strichstärke gezeichnet wird
+  // wie der Rest des Sets — zwei überlagerte Kreise ergäben eine Kontur zu viel.
+  moon: ['M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z'],
   swap: ['M4 8h13l-3-3M20 16H7l3 3'],
   edit: ['M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z', 'M14 7l3 3'],
   trash: [
@@ -76,7 +79,26 @@ const PATHS: Record<string, string[]> = {
   drag: ['M4 9h16M4 15h16'],
 };
 
+/**
+ * Die Namen kommen aus `PATHS` selbst.
+ *
+ * Mit einer `Record<string, string[]>`-Annotation wäre das `string`: Jeder
+ * Tippfehler typecheckte und lieferte zur Laufzeit ein leeres Icon, ohne dass
+ * irgendetwas dagegen sprach. Ohne die Annotation trägt jeder Schlüssel seinen
+ * eigenen Literaltyp, und ein unbekannter Name fällt beim Kompilieren auf.
+ */
 export type IconName = keyof typeof PATHS;
+
+/**
+ * Ob eine freie Zeichenkette ein bekanntes Icon benennt.
+ *
+ * Für Namen, die nicht im Code stehen, sondern aus der Datenbank kommen —
+ * eigene Set-Typen etwa tragen ihren Icon-Namen als Text. Ohne die Prüfung
+ * landet ein Tippfehler als leere Fläche im Layout.
+ */
+export function isIconName(name: string | null | undefined): name is IconName {
+  return name != null && name in PATHS;
+}
 
 type ClayIconProps = {
   name: IconName;

@@ -26,6 +26,15 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="pumped"/>
       </intent-filter>
+      <!-- Rücksprung aus dem Google-OAuth-Consent. Google prüft Android-Clients
+           über Paketname und Signatur, das Schema ist deshalb der Paketname und
+           nicht die umgekehrte Client-ID wie auf iOS. -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="com.pumpedapp"/>
+      </intent-filter>
     </activity>
   </application>
 </manifest>

@@ -11,14 +11,23 @@ import {
   DEFAULT_QUICK_ACTIONS,
   isQuickActionKey,
   type QuickActionKey,
-} from '@/screens/home/quickActionRegistry';
+} from '@/components/widgets/quick-actions/quickActionRegistry';
 
 const storage = createMMKV({ id: 'homescreen-storage' });
 
 const LAYOUT_KEY = 'widget_layout';
 const QUICK_ACTIONS_KEY = 'quick_actions';
+const HERO_SEEDED_KEY = 'hero_widgets_seeded';
+const NOTIFICATIONS_SEEDED_KEY = 'notifications_widget_seeded';
+
+// The two widgets that replaced the home screen's fixed chrome, top of the
+// grid and in the order they used to appear on screen.
+const HERO_WIDGETS: WidgetType[] = ['todaySession', 'quickActions'];
 
 const DEFAULT_LAYOUT = packPlacements([
+  { id: 'default-today', type: 'todaySession', colSpan: 3 },
+  { id: 'default-quickActions', type: 'quickActions', colSpan: 3 },
+  { id: 'default-notifications', type: 'notifications', colSpan: 3 },
   { id: 'default-tonnage', type: 'tonnageCompact', colSpan: 1 },
   { id: 'default-e1rm', type: 'e1rmCompact', colSpan: 1 },
   { id: 'default-bodyweight', type: 'bodyweightCompact', colSpan: 1 },
@@ -91,6 +100,71 @@ function normalizeLayout(layout: StoredWidgetPlacement[]): WidgetPlacement[] {
   return removeLeadingEmptyRows(positioned);
 }
 
+/**
+ * Puts the session and quick-action widgets on top of a layout that predates
+ * them — exactly once.
+ *
+ * They replaced fixed chrome above the grid, so an existing home would
+ * otherwise come back with no way to start a workout at all. The flag is what
+ * keeps these from being undeletable: remove one and it stays removed, because
+ * the seed has already run.
+ */
+function seedHeroWidgets(layout: WidgetPlacement[]): WidgetPlacement[] {
+  if (storage.getBoolean(HERO_SEEDED_KEY)) return layout;
+  storage.set(HERO_SEEDED_KEY, true);
+  const missing = HERO_WIDGETS.filter(
+    type => !layout.some(widget => widget.type === type),
+  );
+  if (missing.length === 0) return layout;
+  // Shifted rather than re-packed: the existing arrangement is the user's, and
+  // repacking it would silently close every gap they left in it.
+  return [
+    ...missing.map((type, index) => ({
+      id: `seeded-${type}`,
+      type,
+      colSpan: 3,
+      row: index,
+      column: 0,
+    })),
+    ...layout.map(widget => ({ ...widget, row: widget.row + missing.length })),
+  ];
+}
+
+/**
+ * Puts the notifications widget below the hero widgets — exactly once.
+ *
+ * Seeded rather than left to the picker because a card nobody has added can
+ * never tell anybody anything: the whole point is that it speaks up unasked.
+ * Below the hero widgets, not above — it comments on the day, but it must not
+ * push the button that starts the workout off the first screen.
+ *
+ * Same one-shot flag discipline as the hero seed: remove the widget and it
+ * stays removed.
+ */
+function seedNotifications(layout: WidgetPlacement[]): WidgetPlacement[] {
+  if (storage.getBoolean(NOTIFICATIONS_SEEDED_KEY)) return layout;
+  storage.set(NOTIFICATIONS_SEEDED_KEY, true);
+  if (layout.some(widget => widget.type === 'notifications')) return layout;
+
+  const belowHeroes = layout
+    .filter(widget => HERO_WIDGETS.includes(widget.type))
+    .reduce((max, widget) => Math.max(max, widget.row + 1), 0);
+
+  // Shifted, not re-packed — the arrangement below is the user's.
+  return [
+    {
+      id: 'seeded-notifications',
+      type: 'notifications' as WidgetType,
+      colSpan: 3,
+      row: belowHeroes,
+      column: 0,
+    },
+    ...layout.map(widget =>
+      widget.row >= belowHeroes ? { ...widget, row: widget.row + 1 } : widget,
+    ),
+  ];
+}
+
 function persist(layout: WidgetPlacement[]) {
   storage.set(LAYOUT_KEY, JSON.stringify(layout));
 }
@@ -139,26 +213,35 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
 
   initialize: () => {
     set({ quickActions: readQuickActions() });
+    // Every path that lands on DEFAULT_LAYOUT already contains both hero
+    // widgets, so the seed is spent there too — otherwise it would fire on the
+    // next launch and duplicate them.
+    const applyDefaults = () => {
+      storage.set(HERO_SEEDED_KEY, true);
+      storage.set(NOTIFICATIONS_SEEDED_KEY, true);
+      set({ layout: DEFAULT_LAYOUT });
+    };
     const stored = storage.getString(LAYOUT_KEY);
     if (!stored) {
-      set({ layout: DEFAULT_LAYOUT });
+      applyDefaults();
       return;
     }
     try {
       const parsed = JSON.parse(stored) as StoredWidgetPlacement[];
-      const layout = normalizeLayout(parsed);
+      const normalized = normalizeLayout(parsed);
       // A layout whose widgets all belonged to a removed catalog collapses to
       // nothing — fall back to the defaults instead of an empty home.
-      if (layout.length === 0) {
+      if (normalized.length === 0) {
         persist(DEFAULT_LAYOUT);
-        set({ layout: DEFAULT_LAYOUT });
+        applyDefaults();
         return;
       }
+      const layout = seedNotifications(seedHeroWidgets(normalized));
       persist(layout);
       set({ layout });
     } catch {
       persist(DEFAULT_LAYOUT);
-      set({ layout: DEFAULT_LAYOUT });
+      applyDefaults();
     }
   },
 
@@ -206,6 +289,8 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
   },
 
   resetToDefault: () => {
+    storage.set(HERO_SEEDED_KEY, true);
+    storage.set(NOTIFICATIONS_SEEDED_KEY, true);
     persist(DEFAULT_LAYOUT);
     persistQuickActions(DEFAULT_QUICK_ACTIONS);
     set({ layout: DEFAULT_LAYOUT, quickActions: DEFAULT_QUICK_ACTIONS });

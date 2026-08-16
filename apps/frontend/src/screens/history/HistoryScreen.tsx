@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { NativeBottomTabScreenProps } from '@react-navigation/bottom-tabs/unstable';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
+import { ProfileAvatarButton } from '@/components/layout/ProfileAvatarButton';
 import { AppShell } from '@/components/layout/AppShell';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
@@ -19,10 +21,19 @@ type HistoryScreenProps = CompositeScreenProps<
 >;
 
 export function HistoryScreen({ navigation }: HistoryScreenProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const { profile } = useUserProfile();
   const { workouts, deleteWorkout } = useWorkoutHistory();
+  const earliest = useMemo(() => {
+    const oldest = workouts[workouts.length - 1];
+    return oldest === undefined
+      ? ''
+      : new Date(oldest.startedAt).toLocaleDateString(i18n.language, {
+          month: 'long',
+          year: 'numeric',
+        });
+  }, [i18n.language, workouts]);
 
   const filteredWorkouts = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
@@ -49,10 +60,18 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          <Text className="t-display">{t('history.title')}</Text>
-          <Text className="t-caption mt-1">{t('history.subtitle')}</Text>
-        </View>
+        <ScreenHeader
+          title={t('history.title')}
+          subtitle={
+            workouts.length === 0
+              ? t('history.headerEmpty')
+              : t('history.headerState', {
+                  count: workouts.length,
+                  since: earliest,
+                })
+          }
+          trailing={<ProfileAvatarButton />}
+        />
 
         <SearchInput
           accessibilityLabel={t('history.searchA11y')}

@@ -9,6 +9,13 @@ export type GridGeometry = {
   unitWidth: number;
 };
 
+/**
+ * @param emptyRowHeight Height of a row holding no widget at all.
+ * @param estimateHeight Stand-in for a widget that has not been measured yet.
+ *   Falling back to `emptyRowHeight` here instead put every unmeasured widget
+ *   in the same short slot, so the first painted frame stacked tall cards on
+ *   top of their neighbours and the whole grid jumped once measurement landed.
+ */
 export function buildGridGeometry(
   placements: WidgetPlacement[],
   measuredHeights: ReadonlyMap<string, number>,
@@ -17,6 +24,7 @@ export function buildGridGeometry(
   gap: number,
   emptyRowHeight: number,
   virtualRows: number,
+  estimateHeight: (placement: WidgetPlacement) => number,
 ): GridGeometry {
   const contentRows = placements.reduce(
     (max, placement) => Math.max(max, placement.row + 1),
@@ -27,7 +35,7 @@ export function buildGridGeometry(
   placements.forEach(placement => {
     rowHeights[placement.row] = Math.max(
       rowHeights[placement.row],
-      measuredHeights.get(placement.id) ?? emptyRowHeight,
+      measuredHeights.get(placement.id) ?? estimateHeight(placement),
     );
   });
   const rowTops: number[] = [];

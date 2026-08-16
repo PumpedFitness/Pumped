@@ -14,11 +14,12 @@ import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WelcomeContent } from './components/WelcomeContent';
 import { ProfileStep } from './components/ProfileStep';
 import { BodyStep } from './components/BodyStep';
+import { HealthStep } from './components/HealthStep';
 import { ReadyStep } from './components/ReadyStep';
 import { WizardCTA } from './components/WizardCTA';
 import { useOnboardingDraft } from './useOnboardingDraft';
 
-const STEPS = ['welcome', 'profile', 'body', 'ready'] as const;
+const STEPS = ['welcome', 'profile', 'body', 'health', 'ready'] as const;
 
 type WizardStep = (typeof STEPS)[number];
 
@@ -167,6 +168,8 @@ export function OnboardingScreen() {
             setWeightUnit={draft.setWeightUnit}
           />
         );
+      case 'health':
+        return <HealthStep />;
       case 'ready':
         return (
           <ReadyStep fields={draft.fields} weightUnit={draft.weightUnit} />

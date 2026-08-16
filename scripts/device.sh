@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARTIFACTS="$ROOT/.artifacts"
 ANDROID_APP_ID="com.pumpedapp"
-IOS_APP_ID="org.reactjs.native.example.PumpedApp"
+IOS_APP_ID="com.pumpedapp"
 COMMAND="${1:-help}"
 PLATFORM="${2:-}"
 

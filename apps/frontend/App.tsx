@@ -14,6 +14,7 @@ import { Uniwind } from 'uniwind';
 import { AppNavigator } from '@/navigation/AppNavigator';
 import { UndoToastProvider } from '@/components/feedback/UndoToast';
 import { initDatabase } from '@/data/local/database';
+import { validateHealthSources } from '@/data/local/health/source';
 import { useAuthStore } from '@/stores/authStore';
 import { useHomescreenStore } from '@/stores/homescreenStore';
 
@@ -44,7 +45,12 @@ export default function App() {
   useEffect(() => {
     if (authReady && userId) {
       initDatabase()
-        .then(() => setDbReady(true))
+        .then(() => {
+          // Meldet ein fehlendes OAuth-Rücksprung-Schema jetzt, statt es beim
+          // Consent als Netzwerkfehler auftauchen zu lassen.
+          validateHealthSources();
+          setDbReady(true);
+        })
         .catch(error => {
           console.error('Failed to initialize database:', error);
           setDbError(

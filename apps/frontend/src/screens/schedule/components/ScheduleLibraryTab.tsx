@@ -41,7 +41,6 @@ export function ScheduleLibraryTab() {
         />
       )}
       namespace="plan.schedules"
-      emptyIconName="calendar"
       createTestID="create_schedule"
       onCreate={createSchedule}
     />

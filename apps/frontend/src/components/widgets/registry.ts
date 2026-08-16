@@ -14,10 +14,15 @@ import {
   BodyweightWideWidget,
 } from './bodyweight/BodyweightWidgets';
 import { MuscleVolumeFullWidget } from './muscle-volume/MuscleVolumeFullWidget';
+import { TodaySessionWidget } from './today/TodaySessionWidget';
+import { QuickActionsWidget } from './quick-actions/QuickActionsWidget';
+import { NotificationsWidget } from './notifications/NotificationsWidget';
 
 type WidgetComponentProps = {
   colSpan: number;
   width: number;
+  /** The grid's edit mode — widgets with their own edit affordances read it. */
+  editing: boolean;
 };
 
 type WidgetRegistryEntry = {
@@ -26,6 +31,39 @@ type WidgetRegistryEntry = {
 };
 
 export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
+  todaySession: {
+    component: TodaySessionWidget,
+    meta: {
+      type: 'todaySession',
+      group: 'todaySession',
+      nameKey: 'widgets.names.todaySession',
+      icon: 'play',
+      colSpan: 3,
+      estimatedHeight: 340,
+    },
+  },
+  quickActions: {
+    component: QuickActionsWidget,
+    meta: {
+      type: 'quickActions',
+      group: 'quickActions',
+      nameKey: 'widgets.names.quickActions',
+      icon: 'bolt',
+      colSpan: 3,
+      estimatedHeight: 92,
+    },
+  },
+  notifications: {
+    component: NotificationsWidget,
+    meta: {
+      type: 'notifications',
+      group: 'notifications',
+      nameKey: 'widgets.names.notifications',
+      icon: 'warning',
+      colSpan: 3,
+      estimatedHeight: 120,
+    },
+  },
   tonnageCompact: {
     component: TonnageCompactWidget,
     meta: {
@@ -34,6 +72,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.tonnage',
       icon: 'trend',
       colSpan: 1,
+      estimatedHeight: 96,
     },
   },
   tonnageWide: {
@@ -44,6 +83,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.tonnage',
       icon: 'trend',
       colSpan: 2,
+      estimatedHeight: 118,
     },
   },
   e1rmCompact: {
@@ -54,6 +94,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.e1rm',
       icon: 'award',
       colSpan: 1,
+      estimatedHeight: 96,
     },
   },
   e1rmWide: {
@@ -64,6 +105,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.e1rm',
       icon: 'award',
       colSpan: 2,
+      estimatedHeight: 118,
     },
   },
   adherenceWide: {
@@ -74,6 +116,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.adherence',
       icon: 'calendar',
       colSpan: 2,
+      estimatedHeight: 132,
     },
   },
   adherenceFull: {
@@ -84,6 +127,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.adherence',
       icon: 'calendar',
       colSpan: 3,
+      estimatedHeight: 172,
     },
   },
   bodyweightCompact: {
@@ -94,6 +138,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.bodyweight',
       icon: 'scale',
       colSpan: 1,
+      estimatedHeight: 96,
     },
   },
   bodyweightWide: {
@@ -104,6 +149,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.bodyweight',
       icon: 'scale',
       colSpan: 2,
+      estimatedHeight: 118,
     },
   },
   muscleVolumeFull: {
@@ -114,6 +160,7 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       nameKey: 'widgets.names.muscleVolume',
       icon: 'dumbbell',
       colSpan: 3,
+      estimatedHeight: 200,
     },
   },
 };
@@ -123,6 +170,9 @@ export const widgetGroups: Array<{
   group: WidgetGroup;
   variants: WidgetType[];
 }> = [
+  { group: 'todaySession', variants: ['todaySession'] },
+  { group: 'quickActions', variants: ['quickActions'] },
+  { group: 'notifications', variants: ['notifications'] },
   { group: 'tonnage', variants: ['tonnageCompact', 'tonnageWide'] },
   { group: 'e1rm', variants: ['e1rmCompact', 'e1rmWide'] },
   { group: 'adherence', variants: ['adherenceWide', 'adherenceFull'] },

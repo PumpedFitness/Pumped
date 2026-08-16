@@ -1,13 +1,18 @@
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
-import { SCREENS, TabsScaffold, type MainTabParamList } from './mainTabsShared';
+import {
+  useTabScreens,
+  TabsScaffold,
+  type MainTabParamList,
+} from './mainTabsShared';
 
 // iOS uses the OS-native bottom tab bar (translucent "glass" bar on iOS 26).
 const Tab = createNativeBottomTabNavigator<MainTabParamList>();
 
 export function MainTabs() {
   const { t } = useTranslation();
+  const screens = useTabScreens();
 
   return (
     <TabsScaffold>
@@ -18,7 +23,7 @@ export function MainTabs() {
           tabBarInactiveTintColor: colors.muted,
         }}
       >
-        {SCREENS.map(({ name, component, labelKey, sf, sfFocused }) => (
+        {screens.map(({ name, component, labelKey, sf, sfFocused }) => (
           <Tab.Screen
             key={name}
             name={name}

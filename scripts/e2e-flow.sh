@@ -8,7 +8,7 @@ FLOW="${2:-smoke}"
 
 case "$PLATFORM" in
   android) APP_ID="com.pumpedapp" ;;
-  ios) APP_ID="org.reactjs.native.example.PumpedApp" ;;
+  ios) APP_ID="com.pumpedapp" ;;
   *)
     echo 'Usage: bun run e2e:flow -- <ios|android> [flow-name]' >&2
     exit 2

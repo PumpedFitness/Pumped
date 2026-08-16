@@ -15,6 +15,9 @@ import { ScheduleEditorScreen } from '@/screens/schedule/schedule-editor/Schedul
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
 import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/CompletedWorkoutScreen';
+import { ProfileScreen } from '@/screens/settings/ProfileScreen';
+import { SettingsGroupScreen } from '@/screens/settings/SettingsGroupScreen';
+import type { SettingsGroupId } from '@/screens/settings/settingsGroups';
 import { TrendsScreen } from '@/screens/trends/TrendsScreen';
 import { ImportWorkoutTemplateScreen } from '@/screens/library/import-workout-template/ImportWorkoutTemplateScreen';
 import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
@@ -34,6 +37,8 @@ export type RootStackParamList = {
   Main: undefined;
   WidgetPicker: undefined;
   MetricHistory: { metric: MetricKind };
+  Profile: undefined;
+  SettingsGroup: { group: SettingsGroupId };
   CompletedWorkout: { workoutId: string };
   Trends: undefined;
   ImportWorkoutTemplate: undefined;
@@ -104,6 +109,16 @@ export function AppNavigator() {
           name="WidgetPicker"
           component={WidgetPickerScreen}
           options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="SettingsGroup"
+          component={SettingsGroupScreen}
+          options={{ animation: 'slide_from_right' }}
         />
         <Stack.Screen
           name="MetricHistory"

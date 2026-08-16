@@ -28,7 +28,7 @@ function WidgetVariantPreview({ type }: WidgetVariantPreviewProps) {
           transformOrigin: 'top left',
         }}
       >
-        <Component colSpan={colSpan} width={width} />
+        <Component colSpan={colSpan} width={width} editing={false} />
       </View>
     </View>
   );

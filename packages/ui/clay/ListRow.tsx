@@ -4,6 +4,12 @@ import { View, Text, Pressable } from 'react-native';
 type ListRowProps = {
   icon?: ReactNode;
   label: ReactNode;
+  /**
+   * A descriptive second line under the label. Use this rather than `detail`
+   * for anything longer than a value — `detail` sits beside the label and
+   * takes the width it needs, which starves a long one.
+   */
+  subtitle?: string;
   detail?: ReactNode;
   trailing?: ReactNode;
   divider?: boolean;
@@ -16,6 +22,7 @@ type ListRowProps = {
 export function ListRow({
   icon,
   label,
+  subtitle,
   detail,
   trailing,
   divider = false,
@@ -39,10 +46,19 @@ export function ListRow({
           {icon}
         </View>
       )}
-      <Text className="flex-1 text-[15px] font-medium text-foreground">
-        {label}
-      </Text>
-      {detail && <Text className="text-sm text-muted">{detail}</Text>}
+      <View className="flex-1">
+        <Text className="text-[15px] font-medium text-foreground">{label}</Text>
+        {subtitle ? (
+          <Text className="mt-[2px] text-[12.5px] leading-[17px] text-muted">
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+      {detail && (
+        <Text className="shrink text-sm text-muted" numberOfLines={1}>
+          {detail}
+        </Text>
+      )}
       {trailing}
     </View>
   );

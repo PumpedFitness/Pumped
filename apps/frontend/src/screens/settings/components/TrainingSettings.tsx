@@ -1,17 +1,23 @@
 import { useState } from 'react';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { SettingsSection } from '@pumped/ui/clay/SettingsSection';
 import { ListRow } from '@pumped/ui/clay/ListRow';
+import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
-import { IndexRowChevron } from './IndexRowChevron';
+import { colors } from '@pumped/ui/theme/tokens';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type {
   ExperienceLevel,
   TrainingGoal,
 } from '@/data/local/schema/userProfile';
-import { colors } from '@pumped/ui/theme/tokens';
+import {
+  type FirstDayOfWeek,
+  useAppSettingsStore,
+} from '@/stores/appSettingsStore';
+import { IndexRowChevron } from './IndexRowChevron';
 
 function buildGoalOptions(
   t: TFunction,
@@ -53,6 +59,103 @@ function labelFor<T extends string>(
 
 const chevron = <IndexRowChevron />;
 
+function FirstDayOfWeekSetting() {
+  const { t } = useTranslation();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const firstDayOfWeek = useAppSettingsStore(state => state.firstDayOfWeek);
+  const setFirstDayOfWeek = useAppSettingsStore(
+    state => state.setFirstDayOfWeek,
+  );
+
+  const options: { value: FirstDayOfWeek; label: string }[] = [
+    { value: 'sunday', label: t('settings.weekStartsOn.sunday') },
+    { value: 'monday', label: t('settings.weekStartsOn.monday') },
+  ];
+  const selectedLabel =
+    options.find(option => option.value === firstDayOfWeek)?.label ??
+    options[0].label;
+
+  return (
+    <>
+      <ListRow
+        icon={<ClayIcon name="calendar" size={18} color={colors.accent} />}
+        label={t('settings.weekStartsOn.label')}
+        detail={selectedLabel}
+        trailing={chevron}
+        divider
+        onPress={() => setSheetOpen(true)}
+      />
+      <OptionSelectorSheet
+        visible={sheetOpen}
+        title={t('settings.weekStartsOn.label')}
+        value={firstDayOfWeek}
+        options={options}
+        onClose={() => setSheetOpen(false)}
+        onChange={setFirstDayOfWeek}
+      />
+    </>
+  );
+}
+
+function RestTimerSettings() {
+  const { t } = useTranslation();
+  const restTimerFullscreen = useAppSettingsStore(
+    state => state.restTimerFullscreen,
+  );
+  const setRestTimerFullscreen = useAppSettingsStore(
+    state => state.setRestTimerFullscreen,
+  );
+  const autoRestTimer = useAppSettingsStore(state => state.autoRestTimer);
+  const setAutoRestTimer = useAppSettingsStore(state => state.setAutoRestTimer);
+
+  return (
+    <>
+      <ListRow
+        icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
+        label={t('settings.autoRestTimer.label')}
+        paddingVertical={10}
+        divider
+        trailing={
+          <View className="w-32">
+            <SegmentedControl
+              options={[
+                { value: 'on', label: t('settings.autoRestTimer.on') },
+                { value: 'off', label: t('settings.autoRestTimer.off') },
+              ]}
+              value={autoRestTimer ? 'on' : 'off'}
+              onChange={value => setAutoRestTimer(value === 'on')}
+            />
+          </View>
+        }
+      />
+      <ListRow
+        icon={<ClayIcon name="clock" size={18} color={colors.accent} />}
+        label={t('settings.restTimerFullscreen.label')}
+        paddingVertical={10}
+        divider
+        trailing={
+          <View className="w-32">
+            <SegmentedControl
+              options={[
+                { value: 'on', label: t('settings.restTimerFullscreen.on') },
+                { value: 'off', label: t('settings.restTimerFullscreen.off') },
+              ]}
+              value={restTimerFullscreen ? 'on' : 'off'}
+              onChange={value => setRestTimerFullscreen(value === 'on')}
+            />
+          </View>
+        }
+      />
+    </>
+  );
+}
+
+/**
+ * How the user trains: what they are training for, and the two conventions
+ * that shape a session — when the week turns over and how the rest timer
+ * behaves. Both used to sit under app preferences, between language and
+ * units, where nothing connected them to training.
+ */
 export function TrainingSettings() {
   const { t } = useTranslation();
   const { profile, set } = useUserProfile();
@@ -85,6 +188,11 @@ export function TrainingSettings() {
           divider
           onPress={() => setExperienceSheet(true)}
         />
+        <FirstDayOfWeekSetting />
+      </SettingsSection>
+
+      <SettingsSection label={t('profile.sections.restTimer')}>
+        <RestTimerSettings />
       </SettingsSection>
 
       <OptionSelectorSheet

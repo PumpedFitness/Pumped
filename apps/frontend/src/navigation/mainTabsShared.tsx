@@ -7,18 +7,19 @@ import { HomeScreen } from '@/screens/home/HomeScreen';
 import { ScheduleScreen } from '@/screens/schedule/ScheduleScreen';
 import { LibraryScreen } from '@/screens/library/LibraryScreen';
 import { HistoryScreen } from '@/screens/history/HistoryScreen';
-import { ProfileScreen } from '@/screens/settings/ProfileScreen';
+import { HealthScreen } from '@/screens/health/HealthScreen';
 import { ConnectedCurrentWorkoutOverlay } from '@/components/workout/current-workout-overlay';
 import { ConnectedTourOverlay } from '@/components/tour';
 import type { IconName } from '@pumped/ui/icons/ClayIcon';
 import { screenTestID } from './testIDs';
+import { useHealthSettingsStore } from '@/stores/healthSettingsStore';
 
 export type MainTabParamList = {
   Home: undefined;
   Schedule: undefined;
   Library: undefined;
+  Recovery: undefined;
   History: undefined;
-  Profile: undefined;
 };
 
 // Screen components receive navigation/route props injected by React Navigation
@@ -33,7 +34,7 @@ export type TabLabelKey =
   | 'tabs.schedule'
   | 'tabs.library'
   | 'tabs.history'
-  | 'tabs.user';
+  | 'tabs.recovery';
 
 export type TabDef = {
   name: keyof MainTabParamList;
@@ -73,20 +74,20 @@ const TABS: TabDef[] = [
     icon: 'dumbbell',
   },
   {
+    name: 'Recovery',
+    component: HealthScreen,
+    labelKey: 'tabs.recovery',
+    sf: 'waveform.path.ecg',
+    sfFocused: 'waveform.path.ecg',
+    icon: 'pulse',
+  },
+  {
     name: 'History',
     component: HistoryScreen,
     labelKey: 'tabs.history',
     sf: 'clock.arrow.circlepath',
     sfFocused: 'clock.arrow.circlepath',
     icon: 'history',
-  },
-  {
-    name: 'Profile',
-    component: ProfileScreen,
-    labelKey: 'tabs.user',
-    sf: 'person.crop.circle',
-    sfFocused: 'person.crop.circle.fill',
-    icon: 'user',
   },
 ];
 
@@ -110,10 +111,29 @@ function withScreenTestID(
   return ScreenWithTestID;
 }
 
-export const SCREENS = TABS.map(tab => ({
+const ALL_SCREENS = TABS.map(tab => ({
   ...tab,
   component: withScreenTestID(tab.name, tab.component),
 }));
+
+/**
+ * Der Erholungs-Tab erscheint erst, wenn eine Gesundheitsquelle verbunden ist.
+ *
+ * Ein Tab, der nur eine Aufforderung zum Verbinden zeigt, wäre ein Platzhalter
+ * in der wertvollsten Leiste der App. Wer keinen Tracker nutzt, soll ihn nie zu
+ * sehen bekommen — verbunden wird in den Einstellungen oder im Wizard.
+ *
+ * Die Liste ist bewusst am Modulrand vorgerechnet: Screen-Identität muss über
+ * Renders stabil bleiben, sonst hängt React Navigation jeden Tab neu ein.
+ */
+const SCREENS_WITHOUT_RECOVERY = ALL_SCREENS.filter(
+  screen => screen.name !== 'Recovery',
+);
+
+export function useTabScreens() {
+  const hasRecoveryTab = useHealthSettingsStore(state => state.sourceConnected);
+  return hasRecoveryTab ? ALL_SCREENS : SCREENS_WITHOUT_RECOVERY;
+}
 
 /**
  * Shared chrome around either tab navigator: the background container with the

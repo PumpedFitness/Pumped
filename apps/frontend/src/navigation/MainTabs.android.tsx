@@ -2,7 +2,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { colors } from '@pumped/ui/theme/tokens';
-import { SCREENS, TabsScaffold, type MainTabParamList } from './mainTabsShared';
+import {
+  useTabScreens,
+  TabsScaffold,
+  type MainTabParamList,
+} from './mainTabsShared';
 
 // Android uses a JS bottom tab bar (the native bar loads icons through Fresco,
 // which can't render the vector-XML drawables). Styled to mimic the iOS bar:
@@ -11,6 +15,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabs() {
   const { t } = useTranslation();
+  const screens = useTabScreens();
 
   return (
     <TabsScaffold>
@@ -30,7 +35,7 @@ export function MainTabs() {
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         }}
       >
-        {SCREENS.map(({ name, component, labelKey, icon }) => (
+        {screens.map(({ name, component, labelKey, icon }) => (
           <Tab.Screen
             key={name}
             name={name}

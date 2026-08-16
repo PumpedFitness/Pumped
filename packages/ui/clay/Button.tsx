@@ -40,6 +40,11 @@ type ButtonProps = {
   iconRight?: ReactNode;
   pill?: boolean;
   block?: boolean;
+  /**
+   * Accent buttons cast a terracotta glow. Turn it off where the button sits
+   * on a dark surface — there the glow reads as a halo, not as elevation.
+   */
+  elevated?: boolean;
   disabled?: boolean;
   onPress?: () => void;
   className?: string;
@@ -54,6 +59,7 @@ export function Button({
   iconRight,
   pill = true,
   block = false,
+  elevated = true,
   disabled = false,
   onPress,
   className = '',
@@ -69,7 +75,7 @@ export function Button({
       } ${VARIANTS[variant]} ${pill ? 'rounded-full' : 'rounded-[18px]'} ${
         block ? 'self-stretch' : 'self-auto'
       } ${disabled ? 'opacity-50' : ''} ${className}`}
-      style={VARIANT_SHADOWS[variant]}
+      style={elevated ? VARIANT_SHADOWS[variant] : undefined}
     >
       {icon && <View>{icon}</View>}
       <Text

@@ -25,6 +25,7 @@ import m0021 from './0021_skipped_day.sql';
 import m0022 from './0022_workout_logo.sql';
 import m0023 from './0023_exercise_how_to.sql';
 import m0024 from './0024_profile_training_prefs.sql';
+import m0025 from './0025_health_raw.sql';
 
 export default {
   journal,
@@ -54,5 +55,6 @@ export default {
     m0022,
     m0023,
     m0024,
+    m0025,
   },
 };

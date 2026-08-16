@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { ClayIcon, isIconName } from '@pumped/ui/icons/ClayIcon';
 import type { SetCardModel, SetCardRest } from './exerciseSetTableModel';
 import { setTypeColorTokens } from './setTypeColors';
 
@@ -254,7 +254,7 @@ export function SetCardHeader({
           onPress={card.readOnly ? undefined : onOpenSetTypePicker}
         >
           <ClayIcon
-            name={card.setTypeIcon ?? 'target'}
+            name={isIconName(card.setTypeIcon) ? card.setTypeIcon : 'target'}
             size={iconOnlySetType ? 16 : 14}
             color={tone.fg}
           />

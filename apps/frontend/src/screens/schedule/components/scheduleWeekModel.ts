@@ -25,8 +25,9 @@ export type ScheduledTemplate = {
 };
 
 // Mutually exclusive per-day states for the week strip. Precedence (highest
-// first): done > skipped > rest > planned — a logged workout always wins.
-export type WeekDayStatus = 'rest' | 'planned' | 'done' | 'skipped';
+// first): done > skipped > rest > missed > planned — a logged workout always
+// wins, and an explicit skip outranks the week simply having moved on.
+export type WeekDayStatus = 'rest' | 'planned' | 'done' | 'skipped' | 'missed';
 
 export type WeekDay = {
   dayIndex: number;
@@ -71,6 +72,7 @@ function dayStatus(
   templates: ScheduledTemplate[],
   isDone: boolean,
   isSkipped: boolean,
+  isPast: boolean,
 ): WeekDayStatus {
   if (isDone) {
     return 'done';
@@ -78,7 +80,13 @@ function dayStatus(
   if (isSkipped) {
     return 'skipped';
   }
-  return templates.length === 0 ? 'rest' : 'planned';
+  if (templates.length === 0) {
+    return 'rest';
+  }
+  // A planned day the week has already moved past never happened, whether or
+  // not the user ever pressed skip. Leaving it as "planned" would show
+  // yesterday as still ahead of you.
+  return isPast ? 'missed' : 'planned';
 }
 
 // Builds the Monday–Sunday overview for the local week containing `todayIndex`,
@@ -113,6 +121,7 @@ export function buildScheduleWeek(
         dayTemplates,
         doneDayIndexes.has(dayIndex),
         skipped.has(dayIndex),
+        dayIndex < todayIndex,
       ),
       templates: dayTemplates,
     };

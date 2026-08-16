@@ -34,9 +34,4 @@ export const TOUR_STEPS: TourStep[] = [
     titleKey: 'tour.steps.history.title',
     descriptionKey: 'tour.steps.history.description',
   },
-  {
-    tab: 'Profile',
-    titleKey: 'tour.steps.profile.title',
-    descriptionKey: 'tour.steps.profile.description',
-  },
 ];

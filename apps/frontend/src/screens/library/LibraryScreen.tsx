@@ -5,7 +5,10 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { AppShell } from '@/components/layout/AppShell';
 import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { motion } from '@pumped/ui/theme/tokens';
-import { IndexScreenHeader } from './components/IndexScreenHeader';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
+import { ProfileAvatarButton } from '@/components/layout/ProfileAvatarButton';
+import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
+import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import { WorkoutsLibrary } from './components/WorkoutsLibrary';
 import { ExerciseLibrary } from './components/ExerciseLibrary';
 import { SetTypeLibrary } from './set-type-library/SetTypeLibrary';
@@ -15,6 +18,8 @@ type LibrarySegment = 'workouts' | 'exercises' | 'setTypes';
 export function LibraryScreen() {
   const { t } = useTranslation();
   const [segment, setSegment] = useState<LibrarySegment>('workouts');
+  const { templates } = useWorkoutTemplates();
+  const exercises = useExerciseOptions();
 
   const segmentedControl = (
     <SegmentedControl
@@ -31,7 +36,14 @@ export function LibraryScreen() {
   return (
     <AppShell showTabBar>
       <View className="bg-background px-5 pt-4 gap-5">
-        <IndexScreenHeader title={t('library.title')} />
+        <ScreenHeader
+          title={t('library.title')}
+          subtitle={t('library.headerState', {
+            workouts: templates.length,
+            exercises: exercises.length,
+          })}
+          trailing={<ProfileAvatarButton />}
+        />
         {segmentedControl}
       </View>
       <Animated.View

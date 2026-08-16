@@ -111,7 +111,6 @@ export function SetTypeLibrary() {
       }
       renderItem={renderRow}
       namespace="setTypeLibrary"
-      emptyIconName="dumbbell"
       stickySearch
       itemGap={10}
       createTestID="create_set_type"
