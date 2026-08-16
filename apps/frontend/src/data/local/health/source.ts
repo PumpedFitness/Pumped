@@ -6,6 +6,8 @@ import {
   reversedClientIdScheme,
 } from '@/lib/health/sources/google/config';
 import { createGoogleHealthSource } from '@/lib/health/sources/google/googleHealthSource';
+import { createHealthConnectSource } from '@/lib/health/sources/healthConnect/healthConnectSource';
+import { resolveHealthConnectClient } from '@/lib/health/sources/healthConnect/nativeClient';
 import { SourceRegistry } from '@/lib/health/sources/registry';
 
 import {
@@ -34,6 +36,11 @@ let schemeProblem: string | null = null;
 
 const storage = createMMKV({ id: 'health-storage' });
 
+const sourceStorage = {
+  getString: (key: string) => storage.getString(key) ?? null,
+  setString: (key: string, value: string) => storage.set(key, value),
+};
+
 export const googleHealthSource = createGoogleHealthSource({
   config: googleHealth,
   registeredSchemes: REGISTERED_SCHEMES,
@@ -44,17 +51,24 @@ export const googleHealthSource = createGoogleHealthSource({
 });
 
 /**
+ * Auf iOS ist `client` hier `null` — die Quelle bleibt trotzdem in der Liste und
+ * erklärt sich als „nicht verfügbar", statt plattformabhängig zu verschwinden.
+ * Eine Zeile mit Begründung ist besser als eine fehlende Zeile.
+ */
+export const healthConnectSource = createHealthConnectSource({
+  client: resolveHealthConnectClient(),
+  storage: sourceStorage,
+});
+
+/**
  * Die Quellen der App. Das erste Element ist der Vorgabewert.
  *
- * Eine zweite Quelle (HealthKit, Health Connect, ein Dateiimport) kommt hier
- * dazu und nirgends sonst — alles oberhalb kennt nur `HealthSource`.
+ * Eine weitere Quelle (HealthKit, ein Dateiimport) kommt hier dazu und nirgends
+ * sonst — alles oberhalb kennt nur `HealthSource`.
  */
 export const healthSources = new SourceRegistry({
-  sources: [googleHealthSource],
-  storage: {
-    getString: key => storage.getString(key) ?? null,
-    setString: (key, value) => storage.set(key, value),
-  },
+  sources: [googleHealthSource, healthConnectSource],
+  storage: sourceStorage,
   rawLayer: healthRawLayerStore,
 });
 

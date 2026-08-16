@@ -239,6 +239,12 @@ export const resources = {
             title: 'Disconnect?',
             body: 'Pumped stops reading new data. What has already been synced stays on this device.',
           },
+          unavailable: 'Not available',
+          switchConfirm: {
+            title: 'Switch to {{source}}?',
+            body: 'Sources cannot be mixed, so the readings already on this device will be deleted and rebuilt from {{source}}.',
+            confirm: 'Switch',
+          },
         },
         scale: {
           title: 'Readiness scale',
@@ -1769,6 +1775,12 @@ export const resources = {
           disconnectConfirm: {
             title: 'Verbindung trennen?',
             body: 'Pumped liest keine neuen Daten mehr. Was bereits synchronisiert ist, bleibt auf diesem Gerät.',
+          },
+          unavailable: 'Nicht verfügbar',
+          switchConfirm: {
+            title: 'Zu {{source}} wechseln?',
+            body: 'Quellen lassen sich nicht mischen. Die Messwerte auf diesem Gerät werden deshalb gelöscht und aus {{source}} neu aufgebaut.',
+            confirm: 'Wechseln',
           },
         },
         scale: {

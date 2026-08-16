@@ -4,6 +4,18 @@
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
+  <!-- Health Connect. Genau die Satztypen, die `sources/healthConnect/catalog.ts`
+       liest — Health Connect zeigt dem Nutzer diese Liste, und was hier steht,
+       ohne gelesen zu werden, muss er trotzdem freigeben.
+       Spiegelt `android.permissions` in app.json, damit der eingecheckte
+       android/-Ordner und ein neu erzeugter Prebuild nicht auseinanderlaufen. -->
+  <uses-permission android:name="android.permission.health.READ_SLEEP"/>
+  <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+  <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
+  <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
+  <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"/>
+  <uses-permission android:name="android.permission.health.READ_SKIN_TEMPERATURE"/>
+  <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
@@ -35,6 +47,20 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.pumpedapp"/>
       </intent-filter>
+      <!-- Bis Android 13 landet der Tap auf „Datenschutzerklärung" im
+           Health-Connect-Dialog hier. Ohne das wirkt der Link kaputt. -->
+      <intent-filter>
+        <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+      </intent-filter>
     </activity>
+    <!-- Ab Android 14 führt derselbe Weg über einen Activity-Alias, den das
+         System mit START_VIEW_PERMISSION_USAGE absichert. Beides ist nötig,
+         solange beide Android-Stände unterstützt werden. -->
+    <activity-alias android:name="ViewPermissionUsageActivity" android:exported="true" android:targetActivity=".MainActivity" android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+        <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
+      </intent-filter>
+    </activity-alias>
   </application>
 </manifest>

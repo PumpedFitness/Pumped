@@ -6,7 +6,10 @@ import { ListRow } from '@pumped/ui/clay/ListRow';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { colors } from '@pumped/ui/theme/tokens';
 import { OptionSelectorSheet } from '@pumped/ui/forms/OptionSelectorSheet';
-import { useHealthConnection } from '@/hooks/useHealthConnection';
+import {
+  useHealthConnection,
+  type HealthSourceEntry,
+} from '@/hooks/useHealthConnection';
 import { useHealthSnapshot } from '@/hooks/useHealthSnapshot';
 import { MODEL_IDS, type ModelId } from '@/lib/health/algorithms/models';
 import { useHealthSettingsStore } from '@/stores/healthSettingsStore';
@@ -79,34 +82,79 @@ export function HealthSettings() {
     );
   };
 
-  const statusDetail = () => {
-    if (connection.isBusy) {
-      return connection.progressLabel ?? t('health.settings.syncing');
+  /**
+   * Was die Zeile einer Quelle über sich sagt.
+   *
+   * Eine nicht verfügbare Quelle nennt ihren Grund, statt bloß ausgegraut
+   * dazustehen — „Health Connect ist nicht installiert" ist eine Antwort, eine
+   * graue Zeile nicht. Der laufende Sync gehört dagegen nur an die aktive Zeile.
+   */
+  const sourceDetail = (entry: HealthSourceEntry) => {
+    if (entry.state?.kind === 'unavailable') return entry.state.reason;
+    if (entry.isActive) {
+      if (connection.isBusy) {
+        return connection.progressLabel ?? t('health.settings.syncing');
+      }
+      if (connection.needsReauth) return t('health.settings.needsReauth');
     }
-    if (connection.needsReauth) return t('health.settings.needsReauth');
-    if (connection.isConnected) return t('health.settings.connected');
-    return t('health.settings.notConnected');
+    if (entry.state?.kind === 'connected')
+      return t('health.settings.connected');
+    return entry.detail;
+  };
+
+  const confirmSwitch = (entry: HealthSourceEntry) => {
+    Alert.alert(
+      t('health.settings.switchConfirm.title', { source: entry.name }),
+      t('health.settings.switchConfirm.body', { source: entry.name }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('health.settings.switchConfirm.confirm'),
+          style: 'destructive',
+          onPress: () => {
+            void connection.connectSource(entry.id);
+          },
+        },
+      ],
+    );
+  };
+
+  const pressSource = (entry: HealthSourceEntry) => {
+    if (entry.state?.kind === 'unavailable') {
+      Alert.alert(t('health.settings.unavailable'), entry.state.reason);
+      return;
+    }
+    if (entry.isActive && entry.state?.kind === 'connected') {
+      confirmDisconnect();
+      return;
+    }
+    // Ein Wechsel räumt die Rohschicht (die Registry lässt nur eine Quelle zu).
+    // Diese Warnung gehört **vor** die Anmeldung, nicht danach.
+    if (!entry.ownsHistory) {
+      confirmSwitch(entry);
+      return;
+    }
+    void connection.connectSource(entry.id);
   };
 
   return (
     <SettingsSection label={t('health.settings.title')}>
-      <ListRow
-        icon={<ClayIcon name="pulse" size={18} color={colors.accent} />}
-        label={connection.sourceName}
-        detail={statusDetail()}
-        trailing={connection.isConnected ? undefined : chevron}
-        divider
-        onPress={
-          connection.isBusy
-            ? undefined
-            : connection.isConnected
-            ? confirmDisconnect
-            : () => {
-                void connection.connect();
-              }
-        }
-        testID="settings_health_connection"
-      />
+      {connection.sources.map(entry => (
+        <ListRow
+          key={entry.id}
+          icon={<ClayIcon name="pulse" size={18} color={colors.accent} />}
+          label={entry.name}
+          detail={sourceDetail(entry)}
+          trailing={
+            entry.isActive && entry.state?.kind === 'connected'
+              ? undefined
+              : chevron
+          }
+          divider
+          onPress={connection.isBusy ? undefined : () => pressSource(entry)}
+          testID={`settings_health_source_${entry.id}`}
+        />
+      ))}
 
       {connection.isConnected ? (
         <ListRow

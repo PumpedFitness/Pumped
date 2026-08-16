@@ -8,7 +8,7 @@ import {
   downsampleToBuckets,
   type TimedValue,
 } from '@/lib/health/algorithms/downsample';
-import { AuthError } from '@/lib/health/sources/google/oauth';
+import { AuthError } from '@/lib/health/sources/errors';
 import type { HealthSource } from '@/lib/health/sources/types';
 
 import {

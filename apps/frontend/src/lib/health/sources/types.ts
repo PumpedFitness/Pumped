@@ -13,6 +13,7 @@ export type SourceId = string & { readonly __brand: 'SourceId' };
 
 export const SourceIds = {
   googleHealth: 'google-health' as SourceId,
+  healthConnect: 'health-connect' as SourceId,
 } as const;
 
 /** Was die Oberfläche über eine Quelle sagen darf, ohne sie zu kennen. */

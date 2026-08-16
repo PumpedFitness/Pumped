@@ -1,22 +1,9 @@
 import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
 
+import { AuthError, type AuthErrorKind } from '../errors';
 import { redirectUri, type GoogleHealthConfig } from './config';
 import type { TokenStore } from './tokenStore';
-
-export type AuthErrorKind =
-  /** Refresh-Token abgelaufen oder widerrufen. Muss in der UI sichtbar werden. */
-  'needs_reauth' | 'cancelled' | 'server' | 'malformed_response';
-
-export class AuthError extends Error {
-  readonly kind: AuthErrorKind;
-
-  constructor(kind: AuthErrorKind, message: string) {
-    super(message);
-    this.name = 'AuthError';
-    this.kind = kind;
-  }
-}
 
 /**
  * Öffnet den Consent im Systembrowser und liefert die Rücksprung-URL.
