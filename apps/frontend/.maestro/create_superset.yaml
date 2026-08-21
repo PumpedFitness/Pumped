@@ -1,0 +1,75 @@
+# Plan a superset: pick two exercises as one group in the picker, then check the
+# editor renders them as a single block with its own rounds and rest.
+#
+# Uses the seeded catalog (Pull-Up, Dumbbell Curl) rather than creating
+# exercises, so the flow stays about grouping. New controls are matched by
+# testID — their labels come from t(), so the auto-testID plugin derives none.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+# A local dev build cold-loads the JS bundle from Metro after clearState.
+- extendedWaitUntil:
+    visible: 'Skip'
+    timeout: 60000
+- tapOn: 'Skip'
+# Dismiss the React Native dev warning banner if present — its transparent
+# parent covers the tab hit area and blocks tab taps.
+- tapOn:
+    point: 92%,92%
+# NOTE: on a local iOS 26 simulator the OS-native tab bar does not respond to
+# XCUITest taps — run this on Android (`bun run e2e:android`) or in CI.
+- tapOn: 'Library'
+- waitForAnimationToEnd
+- tapOn:
+    id: 'create_workout'
+- assertVisible: 'New template'
+- waitForAnimationToEnd
+- tapOn: 'Template name'
+- runFlow: subflows/warmup-keyboard.yaml
+- inputText: 'Maestro Superset'
+- runFlow: subflows/dismiss-keyboard.yaml
+
+# ── Build the superset in the picker ──────────────────
+- tapOn: 'Choose exercises'
+- assertVisible: 'Exercise Library'
+- tapOn:
+    id: 'create_superset'
+- assertVisible: 'Build a superset'
+# The confirm CTA stays disabled until a second exercise is picked.
+- tapOn:
+    id: 'exercise-card-Pull-Up'
+- assertVisible: '1 exercise in this superset'
+- assertVisible: 'Pick at least two exercises'
+- tapOn:
+    id: 'exercise-card-Dumbbell Curl'
+- assertVisible: '2 exercises in this superset'
+- tapOn:
+    id: 'add_superset'
+
+# ── The editor shows one superset block ───────────────
+- assertVisible: '2 exercises'
+- assertVisible:
+    id: 'ungroup_superset'
+# Both members are levelled to the same number of rounds.
+- assertVisible: '3 rounds'
+- assertVisible: 'Rest after each round'
+- tapOn:
+    id: 'superset_rounds_up'
+- assertVisible: '4 rounds'
+
+# ── It survives a save/reopen round trip ──────────────
+- tapOn: 'Save'
+- assertVisible: 'Maestro Superset'
+- tapOn: 'Maestro Superset'
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'ungroup_superset'
+- assertVisible: '4 rounds'
+
+# ── Ungrouping puts the exercises back on their own ───
+- tapOn:
+    id: 'ungroup_superset'
+- assertNotVisible:
+    id: 'ungroup_superset'
+- assertVisible: '2 exercises'

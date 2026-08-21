@@ -7,12 +7,18 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 import { SwipeToDelete } from '@pumped/ui/clay/SwipeToDelete';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
+import { UsageBadge } from '@/components/feedback/UsageBadge';
+import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
+import type { UsageInfo } from '@/data/local/usageModel';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
+import { useUsage } from '@/hooks/useUsage';
 import type { SetTypeWithFields } from '@/types/setType';
-import { IndexRowChevron } from '../components/IndexRowChevron';
+import { IndexRowChevron } from '@/screens/library/components/IndexRowChevron';
 
 type SetTypeRowProps = {
   type: SetTypeWithFields;
+  /** Workouts whose sets use this type — marks it as in use before a delete. */
+  usage?: UsageInfo;
   // Built-ins are display-only, so they pass no handler and render as a
   // non-interactive row (no chevron, no press feedback).
   onPress?: () => void;
@@ -22,7 +28,7 @@ type SetTypeRowProps = {
 const ROW_CLASS =
   'flex-row items-center gap-[13px] overflow-hidden rounded-[24px] bg-surface-card p-[18px]';
 
-function SetTypeRow({ type, onPress }: SetTypeRowProps) {
+function SetTypeRow({ type, usage, onPress }: SetTypeRowProps) {
   const { t } = useTranslation();
   const summary = type.fields.length
     ? type.fields.map(field => field.name).join(' · ')
@@ -40,15 +46,17 @@ function SetTypeRow({ type, onPress }: SetTypeRowProps) {
       <View className="flex-1 gap-[7px]">
         <View className="flex-row items-center gap-2">
           <Text
-            className="text-[16px] font-bold text-foreground leading-[1.25]"
+            className="shrink text-[16px] font-bold text-foreground leading-[1.25]"
             numberOfLines={1}
           >
             {type.name}
           </Text>
-          {type.isBuiltIn && (
+          {type.isBuiltIn ? (
             <Text className="t-eyebrow rounded-full bg-surface-sunk px-2 py-0.5 text-muted">
               {t('setTypeLibrary.builtIn')}
             </Text>
+          ) : (
+            <UsageBadge usage={usage} kind="setType" compact />
           )}
         </View>
         <Text
@@ -83,20 +91,35 @@ function SetTypeRow({ type, onPress }: SetTypeRowProps) {
 }
 
 export function SetTypeLibrary() {
+  const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { items, deleteSetType } = useSetTypeLibrary();
+  const usage = useUsage('setType');
 
   const openEditor = (setTypeId?: string) =>
     navigation.navigate('SetTypeEditor', setTypeId ? { setTypeId } : {});
 
+  const removeSetType = (type: SetTypeWithFields) =>
+    confirmUsageDelete(
+      t,
+      { kind: 'setType', name: type.name, usage: usage.get(type.id) },
+      () => deleteSetType(type.id),
+    );
+
   const renderRow = (type: SetTypeWithFields) => {
-    const row = <SetTypeRow type={type} onPress={() => openEditor(type.id)} />;
+    const row = (
+      <SetTypeRow
+        type={type}
+        usage={usage.get(type.id)}
+        onPress={() => openEditor(type.id)}
+      />
+    );
     // Built-ins can be edited but not deleted, so only custom types swipe away.
     return type.isBuiltIn ? (
       row
     ) : (
-      <SwipeToDelete onDelete={() => deleteSetType(type.id)} borderRadius={24}>
+      <SwipeToDelete onDelete={() => removeSetType(type)} borderRadius={24}>
         {row}
       </SwipeToDelete>
     );

@@ -61,10 +61,12 @@ export function RestTimerControls({
         onPress={onToggle}
         className="h-14 flex-1 flex-row items-center justify-center gap-2 rounded-full bg-accent active:opacity-90"
       >
+        {/* Cream, not accent-ink: the glyph sits ON the accent, so the pressed
+            accent tone all but disappeared into the button behind it. */}
         <ClayIcon
           name={isRunning ? 'pause' : 'play'}
           size={18}
-          color={colors.accentInk}
+          color={colors.cream}
         />
         <Text className="t-label text-accent-foreground">{toggleLabel}</Text>
       </Pressable>

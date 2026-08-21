@@ -18,55 +18,86 @@ type ProgressionSuggestionParams = {
   templateExercise: WorkoutTemplateExercise;
 };
 
-export type {
+import type {
   ProgressionFieldSuggestion,
   ProgressionSuggestedSet,
   ProgressionSuggestionResult,
 } from './progressionSuggestionTypes';
 
-export function useProgressionSuggestion({
-  exerciseId,
-  templateExercise,
-}: ProgressionSuggestionParams) {
+export type {
+  ProgressionFieldSuggestion,
+  ProgressionSuggestedSet,
+  ProgressionSuggestionResult,
+};
+
+/**
+ * Suggestions for several exercises at once.
+ *
+ * A superset renders its members interleaved, so one component owns every
+ * member's cards — and a hook cannot be called once per member from there.
+ * Hydrating the history once for all of them is also strictly less work than
+ * the per-exercise hook doing it N times.
+ */
+export function useProgressionSuggestions(
+  items: ProgressionSuggestionParams[],
+): Map<string, ProgressionSuggestionResult> {
   const { t } = useTranslation();
   const { profile } = useUserProfile();
   const { byId: setTypesById } = useSetTypeLibrary();
-  const lastPerformedSets = useTableQuery(
+  // Joined rather than the array itself: the caller rebuilds `items` every
+  // render, and only the set of ids should re-run the query.
+  const exerciseIdKey = items.map(item => item.exerciseId).join('\u0000');
+
+  const performedByExercise = useTableQuery(
     [workoutSessions, performedSets],
     () => {
-      const session = listWorkoutSessions()
+      const ids = exerciseIdKey ? exerciseIdKey.split('\u0000') : [];
+      const sessions = listWorkoutSessions()
         .filter(candidate => candidate.endedAt !== null)
-        .map(candidate => getWorkoutSession(candidate.id))
-        .find(
-          candidate =>
-            candidate?.sets.some(set => set.exerciseId === exerciseId) ?? false,
-        );
-      return session?.sets.filter(set => set.exerciseId === exerciseId) ?? [];
+        .map(candidate => getWorkoutSession(candidate.id));
+      return new Map(
+        ids.map(id => {
+          const session = sessions.find(
+            candidate =>
+              candidate?.sets.some(set => set.exerciseId === id) ?? false,
+          );
+          return [
+            id,
+            session?.sets.filter(set => set.exerciseId === id) ?? [],
+          ] as const;
+        }),
+      );
     },
-    [exerciseId],
+    [exerciseIdKey],
   );
 
   return useMemo(() => {
-    const weightUnit = profile.weightUnit;
     const fieldsBySetType = new Map(
       [...setTypesById.entries()].map(([setType, value]) => [
         setType,
         value.fields,
       ]),
     );
-    return buildProgressionSuggestionResult({
-      t,
-      templateExercise,
-      setTypesById,
-      fieldsBySetType,
-      performed: lastPerformedSets,
-      weightUnit,
-    });
-  }, [
-    lastPerformedSets,
-    profile.weightUnit,
-    setTypesById,
-    t,
-    templateExercise,
-  ]);
+    return new Map(
+      items.map(item => [
+        item.exerciseId,
+        buildProgressionSuggestionResult({
+          t,
+          templateExercise: item.templateExercise,
+          setTypesById,
+          fieldsBySetType,
+          performed: performedByExercise.get(item.exerciseId) ?? [],
+          weightUnit: profile.weightUnit,
+        }),
+      ]),
+    );
+  }, [items, performedByExercise, profile.weightUnit, setTypesById, t]);
+}
+
+export function useProgressionSuggestion(
+  params: ProgressionSuggestionParams,
+): ProgressionSuggestionResult {
+  const items = useMemo(() => [params], [params]);
+  const byExercise = useProgressionSuggestions(items);
+  return byExercise.get(params.exerciseId)!;
 }

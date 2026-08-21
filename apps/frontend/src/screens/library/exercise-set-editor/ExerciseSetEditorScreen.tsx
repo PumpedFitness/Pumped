@@ -42,7 +42,12 @@ export function ExerciseSetEditorScreen({
   route,
 }: ExerciseSetEditorScreenProps) {
   const { t } = useTranslation();
-  const { exercise: initialExercise, name, returnRouteKey } = route.params;
+  const {
+    exercise: initialExercise,
+    name,
+    returnRouteKey,
+    supersetMember = false,
+  } = route.params;
 
   const [draft, setDraft] = useState<EditableExercise>(initialExercise);
   const [typePickerVisible, setTypePickerVisible] = useState(false);
@@ -125,11 +130,19 @@ export function ExerciseSetEditorScreen({
               />
             </View>
 
+            {supersetMember ? (
+              <Text className="t-caption">
+                {t('templateEditor.superset.memberLocked')}
+              </Text>
+            ) : null}
+
             <TemplateSetTable
               sets={draft.sets}
               setTypeOptions={setTypeOptions}
               setTypesById={setTypesById}
               weightUnit={profile.weightUnit}
+              lockSetCount={supersetMember}
+              hideRest={supersetMember}
               onCreateSetType={createSetType}
               onAddSet={() => setSets([...draft.sets, createDraftSet()])}
               onDuplicateSet={() => setSets(duplicateLastSet(draft.sets))}

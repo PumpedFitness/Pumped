@@ -183,6 +183,13 @@
       "when": 1785427200000,
       "tag": "0025_health_raw",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1785513600000,
+      "tag": "0026_supersets",
+      "breakpoints": true
     }
   ]
 }

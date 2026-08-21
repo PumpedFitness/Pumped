@@ -7,7 +7,6 @@ import {
 } from 'react';
 import { Keyboard } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import { LibraryPicker } from '@pumped/ui/forms/LibraryPicker';
 import {
   OptionalWheelPickerSheet,
@@ -22,6 +21,7 @@ import type {
   SetTypeOption,
 } from './exerciseSetTableModel';
 import { ProgressionEditorSheet } from './ProgressionEditorSheet';
+import { buildRestPickerConfig } from './restPicker';
 
 // Stand-in config so the wheel sheets can render before anything is selected —
 // they're always mounted (heroui needs a sheet mounted to present it), and a
@@ -35,42 +35,6 @@ const WHEEL_PLACEHOLDER: OptionalWheelPickerConfig = {
   defaultValue: 0,
   formatValue: value => `${value}`,
 };
-
-const REST_PICKER_VALUES = Array.from(
-  { length: 40 },
-  (_, index) => (index + 1) * 15,
-);
-
-function formatRestDuration(t: TFunction, seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return minutes > 0
-    ? t('currentWorkout.rest.durationMinutes', { minutes, seconds: remainder })
-    : t('currentWorkout.rest.durationSeconds', { seconds });
-}
-
-function buildRestPickerConfig(
-  t: TFunction,
-  rest: SetCardRest | null,
-): OptionalWheelPickerConfig {
-  const currentValue = rest?.value;
-  const values =
-    currentValue == null
-      ? REST_PICKER_VALUES
-      : [...new Set([...REST_PICKER_VALUES, currentValue])].sort(
-          (left, right) => left - right,
-        );
-  return {
-    title: t('currentWorkout.rest.pickerTitle'),
-    description: t('currentWorkout.rest.pickerDescription'),
-    minValue: values[0] ?? 15,
-    maxValue: values.at(-1) ?? 600,
-    step: 15,
-    defaultValue: currentValue ?? 90,
-    values,
-    formatValue: seconds => formatRestDuration(t, seconds),
-  };
-}
 
 export type SetSheetOpeners = {
   openSetTypePicker: (card: SetCardModel) => void;
@@ -124,7 +88,10 @@ type RestPickerSheetProps = {
 
 function RestPickerSheet({ rest, visible, onClose }: RestPickerSheetProps) {
   const { t } = useTranslation();
-  const config = useMemo(() => buildRestPickerConfig(t, rest), [rest, t]);
+  const config = useMemo(
+    () => buildRestPickerConfig(t, rest?.value),
+    [rest, t],
+  );
 
   return (
     <OptionalWheelPickerSheet

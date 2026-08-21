@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   useNavigation,
   useRoute,
   type RouteProp,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { randomUUID } from 'expo-crypto';
+import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
+import type { UsageInfo } from '@/data/local/usageModel';
+import { useUsage } from '@/hooks/useUsage';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import { getWorkoutSession } from '@/data/local/workouts/sessions';
 import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
@@ -25,6 +30,7 @@ import {
   useWorkoutTemplateEditorDraft,
 } from './useWorkoutTemplateEditorDraft';
 import { useDiscardGuard } from './useDiscardGuard';
+import { useExpandedCards } from './useExpandedCards';
 import type { TemplateEditorContextValue } from './templateEditorContext';
 
 type EditorNavigation = NativeStackNavigationProp<
@@ -40,6 +46,7 @@ function templateInputExercisesToDraft(
     exerciseId: exercise.exerciseId,
     typeId: exercise.typeId ?? null,
     color: exercise.color ?? null,
+    supersetId: exercise.supersetId ?? null,
     goal: '',
     notes: exercise.notes ?? null,
     sets: exercise.sets.map(set => ({
@@ -49,6 +56,37 @@ function templateInputExercisesToDraft(
       progressionGoal: undefined,
     })),
   }));
+}
+
+// Warns when a schedule still plans this template — its slots cascade away
+// with it, and the editor offers no undo.
+function confirmDeleteTemplate(
+  t: TFunction,
+  template: WorkoutTemplate,
+  usage: UsageInfo | undefined,
+  onDelete: (templateId: string) => void,
+  onDeleted: () => void,
+): void {
+  void confirmUsageDelete(
+    t,
+    {
+      kind: 'template',
+      name: template.name,
+      usage,
+      fallbackBody: t('templateEditor.alerts.deleteBody'),
+    },
+    () => {
+      try {
+        onDelete(template.id);
+        onDeleted();
+      } catch (error) {
+        Alert.alert(
+          t('templateEditor.alerts.deleteFailedTitle'),
+          error instanceof Error ? error.message : t('common.tryAgain'),
+        );
+      }
+    },
+  );
 }
 
 type UseTemplateEditorControllerOptions = {
@@ -64,6 +102,7 @@ function useAppliedExerciseResults(
   exerciseSelection: ExerciseSelectionResult | undefined,
   exerciseEdit: ExerciseEditResult | undefined,
   updateSelectedExercises: (exerciseIds: string[]) => void,
+  addSuperset: (exerciseIds: string[]) => void,
   updateExercise: (
     exerciseId: string,
     update: (exercise: EditableExercise) => EditableExercise,
@@ -78,9 +117,14 @@ function useAppliedExerciseResults(
       exerciseSelection.id !== appliedSelectionId.current
     ) {
       appliedSelectionId.current = exerciseSelection.id;
+      // The selection always replaces the exercise list; grouping is applied
+      // on top of it, so a new member is in the draft before it is grouped.
       updateSelectedExercises(exerciseSelection.exerciseIds);
+      if (exerciseSelection.newSupersetExerciseIds) {
+        addSuperset(exerciseSelection.newSupersetExerciseIds);
+      }
     }
-  }, [exerciseSelection, updateSelectedExercises]);
+  }, [exerciseSelection, updateSelectedExercises, addSuperset]);
 
   useEffect(() => {
     if (exerciseEdit && exerciseEdit.id !== appliedEditId.current) {
@@ -102,6 +146,7 @@ export function useTemplateEditorController({
   const { t } = useTranslation();
   const navigation = useNavigation<EditorNavigation>();
   const route = useRoute<EditorRoute>();
+  const templateUsage = useUsage('template');
   const appliedImportWorkoutId = useRef<string | null>(null);
 
   // Flipped right before an intentional navigation (save / delete) so the
@@ -119,9 +164,14 @@ export function useTemplateEditorController({
     isDirty,
     updateDraft,
     updateExercise,
-    reorderExercises,
+    reorderBlocks,
     removeExercise,
     updateSelectedExercises,
+    addSuperset,
+    ungroupSuperset,
+    updateSuperset,
+    setSupersetRounds,
+    moveSupersetMember,
     save,
   } = useWorkoutTemplateEditorDraft({
     template,
@@ -146,10 +196,10 @@ export function useTemplateEditorController({
     }
 
     appliedImportWorkoutId.current = importWorkoutId;
+    const imported = workoutSessionToTemplateInput(workout, randomUUID);
     updateDraft({
-      exercises: templateInputExercisesToDraft(
-        workoutSessionToTemplateInput(workout).exercises,
-      ),
+      exercises: templateInputExercisesToDraft(imported.exercises),
+      supersets: imported.supersets ?? [],
     });
     navigation.setParams({ importWorkoutId: undefined });
   }, [navigation, route.params?.importWorkoutId, updateDraft]);
@@ -159,15 +209,23 @@ export function useTemplateEditorController({
     route.params?.exerciseSelection,
     route.params?.exerciseEdit,
     updateSelectedExercises,
+    addSuperset,
     updateExercise,
   );
 
-  const { exercises } = useEditorExercises(draft.exercises, exerciseOptions);
+  const { isExpanded, toggleExpanded } = useExpandedCards();
+
+  const { exercises, blocks } = useEditorExercises(
+    draft.exercises,
+    draft.supersets,
+    exerciseOptions,
+  );
 
   const chooseExercises = useCallback(() => {
     navigation.navigate('ExerciseSelection', {
       selectedExerciseIds: draft.exercises.map(exercise => exercise.exerciseId),
       returnRouteKey: route.key,
+      allowSupersets: true,
     });
   }, [navigation, route.key, draft.exercises]);
 
@@ -181,6 +239,8 @@ export function useTemplateEditorController({
           exercise: editable,
           name: exercise.name,
           returnRouteKey: route.key,
+          // Rounds and rest belong to the superset, not to one member.
+          supersetMember: editable.supersetId !== null,
         });
       }
     },
@@ -195,49 +255,47 @@ export function useTemplateEditorController({
   );
 
   const requestDelete = useCallback(() => {
-    if (!template) {
-      return;
+    if (template) {
+      confirmDeleteTemplate(
+        t,
+        template,
+        templateUsage.get(template.id),
+        onDelete,
+        closeAfterAction,
+      );
     }
-    Alert.alert(
-      t('templateEditor.alerts.deleteTitle', { name: template.name }),
-      t('templateEditor.alerts.deleteBody'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: () => {
-            try {
-              onDelete(template.id);
-              closeAfterAction();
-            } catch (error) {
-              Alert.alert(
-                t('templateEditor.alerts.deleteFailedTitle'),
-                error instanceof Error ? error.message : t('common.tryAgain'),
-              );
-            }
-          },
-        },
-      ],
-    );
-  }, [template, t, onDelete, closeAfterAction]);
+  }, [template, t, templateUsage, onDelete, closeAfterAction]);
 
   const context = useMemo<TemplateEditorContextValue>(
     () => ({
       exercises,
+      blocks,
       chooseExercises,
       editExercise,
       openExerciseOverview,
-      reorderExercises,
+      reorderBlocks,
       removeExercise,
+      ungroupSuperset,
+      updateSuperset,
+      setSupersetRounds,
+      moveSupersetMember,
+      isExpanded,
+      toggleExpanded,
     }),
     [
       exercises,
+      blocks,
       chooseExercises,
       editExercise,
       openExerciseOverview,
-      reorderExercises,
+      reorderBlocks,
       removeExercise,
+      ungroupSuperset,
+      updateSuperset,
+      setSupersetRounds,
+      moveSupersetMember,
+      isExpanded,
+      toggleExpanded,
     ],
   );
 

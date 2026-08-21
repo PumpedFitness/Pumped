@@ -28,6 +28,9 @@ export type PerformedSetInput = {
   exerciseId: string;
   exercisePosition: number;
   setPosition: number;
+  /** Opaque grouping token for the superset this set belonged to. Deliberately
+   *  not a foreign key — the template it came from may later be edited away. */
+  supersetId?: string | null;
   setType: SetTypeId;
   restSeconds?: number | null;
   fieldValues?: SetFieldValue[];
@@ -166,6 +169,7 @@ export function saveCompletedWorkout(
             exerciseId: set.exerciseId,
             exercisePosition: set.exercisePosition,
             setPosition: set.setPosition,
+            supersetId: set.supersetId ?? null,
             setType: set.setType,
             restSeconds: set.restSeconds ?? null,
             fieldDefinitions: snapshotFieldDefinitions(

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon, isIconName } from '@pumped/ui/icons/ClayIcon';
 import type { SetCardModel, SetCardRest } from './exerciseSetTableModel';
+import { formatRestValue } from './restPicker';
 import { setTypeColorTokens } from './setTypeColors';
 
 type SetCardHeaderProps = {
@@ -35,17 +36,6 @@ type RestTimerSlotProps = {
   rest: SetCardRest | null;
   onOpenRestPicker: () => void;
 };
-
-function formatRestValue(value: number | null): string {
-  if (value == null) {
-    return '–';
-  }
-  const minutes = Math.floor(value / 60);
-  const seconds = value % 60;
-  return minutes > 0
-    ? `${minutes}:${seconds.toString().padStart(2, '0')}`
-    : `${seconds}s`;
-}
 
 function ProgressionPills({
   card,

@@ -4,6 +4,8 @@ import { Button } from 'heroui-native';
 import type { WorkoutTemplate } from '@/types/workout';
 import { shadows, colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { UsageBadge } from '@/components/feedback/UsageBadge';
+import type { UsageInfo } from '@/data/local/usageModel';
 import {
   countTemplateSets,
   getWorkoutTemplateColor,
@@ -12,6 +14,8 @@ import {
 type WorkoutTemplateCardProps = {
   template: WorkoutTemplate;
   exerciseNames: Map<string, string>;
+  /** Schedules planning this template — marks it as in use before a delete. */
+  usage?: UsageInfo;
   onEdit: (template: WorkoutTemplate) => void;
   onStart: (template: WorkoutTemplate) => void;
 };
@@ -19,6 +23,7 @@ type WorkoutTemplateCardProps = {
 export function WorkoutTemplateCard({
   template,
   exerciseNames,
+  usage,
   onEdit,
   onStart,
 }: WorkoutTemplateCardProps) {
@@ -55,9 +60,12 @@ export function WorkoutTemplateCard({
         </View>
 
         <View className="flex-1">
-          <Text className="text-[16px] font-bold text-foreground leading-[1.25]">
-            {template.name}
-          </Text>
+          <View className="flex-row items-start gap-2">
+            <Text className="flex-1 text-[16px] font-bold text-foreground leading-[1.25]">
+              {template.name}
+            </Text>
+            <UsageBadge usage={usage} kind="template" />
+          </View>
           {template.description ? (
             <Text className="text-[12px] font-medium text-muted leading-[1.4] mt-[7px]">
               {template.description}

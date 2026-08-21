@@ -14,6 +14,11 @@ import {
 } from '@/hooks/useWorkoutExerciseTypes';
 import type { SetTypeWithFields } from '@/types/setType';
 import type { WorkoutTemplateColor } from '@/data/local/enums';
+import type { WorkoutTemplateSuperset } from '@/types/workout';
+import {
+  groupIntoBlocks,
+  type SupersetBlock,
+} from '@/data/local/workouts/supersets';
 import type {
   EditableExercise,
   EditableExerciseSet,
@@ -40,11 +45,17 @@ export type EditorExercise = {
   type: WorkoutExerciseTypeItem | null;
   /** Per-placement accent color; null inherits the template color. */
   color: WorkoutTemplateColor | null;
+  /** Superset membership; null means the exercise stands alone. */
+  supersetId: string | null;
   goal: string;
   setSummary: string;
   setViews: EditorSetView[];
   sets: EditableExerciseSet[];
 };
+
+/** What the exercises section actually renders: a standalone exercise or a
+ *  whole superset. */
+export type EditorBlock = SupersetBlock<EditorExercise>;
 
 function buildSetView(
   t: TFunction,
@@ -70,8 +81,9 @@ function buildSetView(
 
 export function useEditorExercises(
   draftExercises: EditableExercise[],
+  supersets: WorkoutTemplateSuperset[],
   exerciseOptions: ExerciseOption[],
-): { exercises: EditorExercise[] } {
+): { exercises: EditorExercise[]; blocks: EditorBlock[] } {
   const { t } = useTranslation();
   const { profile } = useUserProfile();
   const weightUnit = profile.weightUnit;
@@ -96,6 +108,7 @@ export function useEditorExercises(
             null
           : null,
         color: exercise.color,
+        supersetId: exercise.supersetId,
         goal: exercise.goal,
         setSummary: formatExerciseSetSummary(t, exercise.sets, setTypeOptions),
         setViews: exercise.sets.map(set =>
@@ -114,5 +127,10 @@ export function useEditorExercises(
     ],
   );
 
-  return { exercises };
+  const blocks = useMemo(
+    () => groupIntoBlocks(exercises, supersets),
+    [exercises, supersets],
+  );
+
+  return { exercises, blocks };
 }

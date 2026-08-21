@@ -7,12 +7,14 @@ import type {
   SetFieldValue,
   WorkoutTemplate,
   WorkoutTemplateExercise,
+  WorkoutTemplateSuperset,
 } from '@/types/workout';
 import type { ProgressionGoal, SetTypeFieldDef } from '@/types/setType';
 import {
   isSetComplete,
   snapshotActualsFromTargets,
 } from '@/data/local/sets/fieldValues';
+import { supersetRestBySetId } from '@/data/local/workouts/supersets';
 import { resolveExerciseColor } from '@/components/workout/workoutTemplatePresentation';
 import { uniqueBy } from '@/utils/dedupe';
 
@@ -36,6 +38,8 @@ export type CurrentWorkoutExercise = {
   position: number;
   /** Resolved accent color (own, else the workout color). Never null here. */
   color: WorkoutTemplateColor;
+  /** Superset membership; null means the exercise stands alone. */
+  supersetId: string | null;
   goal: string | null;
   notes: string | null;
   sets: CurrentWorkoutSet[];
@@ -56,6 +60,7 @@ export type CurrentWorkout = {
   icon: IconName | null;
   picture: string | null;
   exercises: CurrentWorkoutExercise[];
+  supersets: WorkoutTemplateSuperset[];
 };
 
 /** Elapsed clock time excluding paused spans; frozen while paused. */
@@ -100,6 +105,7 @@ export function createCurrentWorkoutExercise(
     exerciseId,
     position,
     color,
+    supersetId: null,
     goal: null,
     notes: null,
     sets: [
@@ -110,32 +116,53 @@ export function createCurrentWorkoutExercise(
   };
 }
 
+function snapshotTemplateSet(
+  set: WorkoutTemplateExercise['sets'][number],
+  supersetRest: Map<string, number | null>,
+): CurrentWorkoutSet {
+  return {
+    id: randomUUID(),
+    sourceTemplateSetId: set.id,
+    position: set.position,
+    setType: set.setType,
+    // A superset owns its members' rest, including "none" — so an entry in the
+    // map wins even when it is null, and only a non-member falls back.
+    restSeconds: supersetRest.has(set.id)
+      ? supersetRest.get(set.id) ?? null
+      : set.restSeconds,
+    progressionGoal: set.progressionGoal,
+    fieldValues: snapshotActualsFromTargets(set.fieldValues),
+    isDone: false,
+    performedAt: null,
+  };
+}
+
 export function createTemplateSnapshot(
   template: WorkoutTemplate,
 ): CurrentWorkoutExercise[] {
-  return uniqueBy(template.exercises, exercise => exercise.exerciseId).map(
-    exercise => ({
-      id: randomUUID(),
-      sourceTemplateExerciseId: exercise.id,
-      sourceTemplateExercise: exercise,
-      exerciseId: exercise.exerciseId,
-      position: exercise.position,
-      color: resolveExerciseColor(exercise.color, template.color),
-      goal: exercise.goal,
-      notes: exercise.notes,
-      sets: exercise.sets.map(set => ({
-        id: randomUUID(),
-        sourceTemplateSetId: set.id,
-        position: set.position,
-        setType: set.setType,
-        restSeconds: set.restSeconds,
-        progressionGoal: set.progressionGoal,
-        fieldValues: snapshotActualsFromTargets(set.fieldValues),
-        isDone: false,
-        performedAt: null,
-      })),
-    }),
+  // One placement per exercise: the picker cannot select the same exercise
+  // twice, and both the draft and this snapshot key on `exerciseId`. Supersets
+  // do not change that — each member is a distinct exercise.
+  const exercises = uniqueBy(
+    template.exercises,
+    exercise => exercise.exerciseId,
   );
+  // Superset rest is resolved here, once, and written onto the live sets — see
+  // supersetRestBySetId.
+  const supersetRest = supersetRestBySetId(exercises, template.supersets);
+
+  return exercises.map(exercise => ({
+    id: randomUUID(),
+    sourceTemplateExerciseId: exercise.id,
+    sourceTemplateExercise: exercise,
+    exerciseId: exercise.exerciseId,
+    position: exercise.position,
+    color: resolveExerciseColor(exercise.color, template.color),
+    supersetId: exercise.supersetId,
+    goal: exercise.goal,
+    notes: exercise.notes,
+    sets: exercise.sets.map(set => snapshotTemplateSet(set, supersetRest)),
+  }));
 }
 
 export function normalizeCurrentWorkoutExercises(
@@ -206,6 +233,7 @@ export function buildTemplateSyncInput(
           // The live exercise carries a resolved color — emit it directly so a
           // mid-session "update template" save preserves per-exercise colors.
           color: exercise.color,
+          supersetId: exercise.supersetId,
           goal: exercise.goal,
           notes: exercise.notes,
           sets: exercise.sets.map(set => {
@@ -222,6 +250,9 @@ export function buildTemplateSyncInput(
         };
       },
     ),
+    // Carried through so a structure save keeps the groups (and their rest)
+    // instead of silently flattening every superset into loose exercises.
+    supersets: workout.supersets,
   };
 }
 
@@ -229,11 +260,34 @@ function progressionFingerprint(goal: ProgressionGoal | null | undefined) {
   return JSON.stringify(goal ?? null);
 }
 
+// Groups compared by shape, not by id: saving re-mints every superset row id,
+// so a freshly saved template would otherwise always look "changed".
+function supersetFingerprint(
+  exercises: { supersetId: string | null }[],
+  groups: WorkoutTemplateSuperset[],
+): string {
+  const byId = new Map(groups.map(group => [group.id, group] as const));
+  return JSON.stringify(
+    exercises.map(exercise => {
+      const group = exercise.supersetId
+        ? byId.get(exercise.supersetId)
+        : undefined;
+      return group ? [group.restSeconds, group.transitionRestSeconds] : null;
+    }),
+  );
+}
+
 export function hasWorkoutStructureChanged(
   workout: CurrentWorkout,
   template: WorkoutTemplate | null,
 ): boolean {
   if (!template || template.exercises.length !== workout.exercises.length) {
+    return true;
+  }
+  if (
+    supersetFingerprint(workout.exercises, workout.supersets) !==
+    supersetFingerprint(template.exercises, template.supersets)
+  ) {
     return true;
   }
   return workout.exercises.some((exercise, exerciseIndex) => {

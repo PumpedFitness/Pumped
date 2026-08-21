@@ -1,4 +1,4 @@
-import type { InferInsertModel } from 'drizzle-orm';
+import { eq, type InferInsertModel } from 'drizzle-orm';
 import type { WorkoutSetType } from '@/data/local/enums';
 import type { ProgressionGoal } from '@/types/setType';
 import type { db } from '@/data/local/database';
@@ -11,6 +11,7 @@ import {
   scheduleSlots,
   workoutTemplateExercises,
   workoutTemplateSets,
+  workoutTemplateSupersets,
   workoutTemplates,
 } from '@/data/local/schema';
 import {
@@ -24,6 +25,7 @@ type LocalDatabase = typeof db;
 type TemplateInsert = InferInsertModel<typeof workoutTemplates>;
 type TemplateExerciseInsert = InferInsertModel<typeof workoutTemplateExercises>;
 type TemplateSetInsert = InferInsertModel<typeof workoutTemplateSets>;
+type TemplateSupersetInsert = InferInsertModel<typeof workoutTemplateSupersets>;
 type ScheduleInsert = InferInsertModel<typeof schedules>;
 type ScheduleSlotInsert = InferInsertModel<typeof scheduleSlots>;
 
@@ -39,7 +41,16 @@ type ExerciseSpec = {
   exerciseId: string;
   goal: string;
   notes?: string;
+  /** Members sharing a key are supersetted; they must be listed together and
+   *  carry the same number of sets — one per round. */
+  supersetKey?: string;
   sets: SetSpec[];
+};
+
+type SupersetSpec = {
+  key: string;
+  restSeconds: number | null;
+  transitionRestSeconds: number | null;
 };
 
 type TemplateSpec = Omit<
@@ -47,6 +58,7 @@ type TemplateSpec = Omit<
   'createdAt' | 'updatedAt' | 'userId'
 > & {
   exercises: ExerciseSpec[];
+  supersets?: SupersetSpec[];
 };
 
 const normalSets = (count: number, reps: number, rpe = 8): SetSpec[] =>
@@ -127,16 +139,28 @@ const TEMPLATES: TemplateSpec[] = [
         { type: 'WARMUP', reps: 5 },
         ...normalSets(3, 5, 7.5),
       ]),
-      templateExercise(
-        'pulldown',
-        EXERCISE_IDS.latPulldown,
-        '3 x 10-12',
-        normalSets(3, 12),
-      ),
-      templateExercise('curl', EXERCISE_IDS.dumbbellCurl, '2 x 12 plus AMRAP', [
-        ...normalSets(2, 12),
-        { type: 'MAX_EFFORT', reps: 12, rpe: 9 },
-      ]),
+      // Supersetted: three rounds of pulldown straight into curls.
+      {
+        ...templateExercise(
+          'pulldown',
+          EXERCISE_IDS.latPulldown,
+          '3 x 10-12',
+          normalSets(3, 12),
+        ),
+        supersetKey: 'pull-arms',
+      },
+      {
+        ...templateExercise(
+          'curl',
+          EXERCISE_IDS.dumbbellCurl,
+          '3 x 12 straight after the pulldown',
+          normalSets(3, 12),
+        ),
+        supersetKey: 'pull-arms',
+      },
+    ],
+    supersets: [
+      { key: 'pull-arms', restSeconds: 90, transitionRestSeconds: null },
     ],
   },
   {
@@ -209,8 +233,11 @@ function templateExercise(
   return { key, exerciseId, goal, notes, sets };
 }
 
-function buildTemplateRows(now: number): TemplateInsert[] {
-  return TEMPLATES.map(({ exercises: _exercises, ...row }) => ({
+function buildTemplateRows(
+  now: number,
+  templates: TemplateSpec[],
+): TemplateInsert[] {
+  return templates.map(({ exercises: _exercises, ...row }) => ({
     ...row,
     userId: LOCAL_USER_ID,
     createdAt: now,
@@ -269,21 +296,43 @@ function buildScheduleSlotRows(now: number): ScheduleSlotInsert[] {
   }));
 }
 
-function buildExerciseRows(): TemplateExerciseInsert[] {
-  return TEMPLATES.flatMap(template =>
+function supersetId(key: string): string {
+  return sampleId(`template-superset-${key}`);
+}
+
+function buildSupersetRows(
+  templates: TemplateSpec[],
+): TemplateSupersetInsert[] {
+  return templates.flatMap(template =>
+    (template.supersets ?? []).map(superset => ({
+      id: supersetId(superset.key),
+      workoutTemplateId: template.id,
+      restSeconds: superset.restSeconds,
+      transitionRestSeconds: superset.transitionRestSeconds,
+    })),
+  );
+}
+
+function buildExerciseRows(
+  templates: TemplateSpec[],
+): TemplateExerciseInsert[] {
+  return templates.flatMap(template =>
     template.exercises.map((exercise, position) => ({
       id: sampleId(`template-exercise-${exercise.key}`),
       workoutTemplateId: template.id,
       exerciseId: exercise.exerciseId,
       position,
+      supersetId: exercise.supersetKey
+        ? supersetId(exercise.supersetKey)
+        : null,
       goal: exercise.goal,
       notes: exercise.notes ?? null,
     })),
   );
 }
 
-function buildSetRows(): TemplateSetInsert[] {
-  return TEMPLATES.flatMap(template =>
+function buildSetRows(templates: TemplateSpec[]): TemplateSetInsert[] {
+  return templates.flatMap(template =>
     template.exercises.flatMap(exercise =>
       exercise.sets.map((set, position) => {
         const setType = set.type ?? 'NORMAL';
@@ -325,29 +374,66 @@ export function seedWorkoutTemplates(
   database: LocalDatabase,
   now: number,
 ): void {
-  database
-    .insert(workoutTemplates)
-    .values(buildTemplateRows(now))
-    .onConflictDoNothing()
-    .run();
-  database
-    .insert(workoutTemplateExercises)
-    .values(buildExerciseRows())
-    .onConflictDoNothing()
-    .run();
-  database
-    .insert(workoutTemplateSets)
-    .values(buildSetRows())
-    .onConflictDoNothing()
-    .run();
-  database
-    .insert(schedules)
-    .values(buildScheduleRows(now))
-    .onConflictDoNothing()
-    .run();
-  database
-    .insert(scheduleSlots)
-    .values(buildScheduleSlotRows(now))
-    .onConflictDoNothing()
-    .run();
+  // Only templates that don't exist yet get their children seeded. Saving a
+  // template re-mints every child row id, so `onConflictDoNothing` would no
+  // longer match the seeded ids and would insert a second copy of every
+  // exercise, set, and superset the next time the app launched.
+  const existingIds = new Set(
+    database
+      .select({ id: workoutTemplates.id })
+      .from(workoutTemplates)
+      .all()
+      .map(row => row.id),
+  );
+  const freshTemplates = TEMPLATES.filter(
+    template => !existingIds.has(template.id),
+  );
+
+  if (freshTemplates.length > 0) {
+    database
+      .insert(workoutTemplates)
+      .values(buildTemplateRows(now, freshTemplates))
+      .onConflictDoNothing()
+      .run();
+    // Each child insert is guarded: re-seeding a single deleted template can
+    // legitimately produce no supersets (or no exercises), and drizzle rejects
+    // an empty `values()`.
+    const supersetRows = buildSupersetRows(freshTemplates);
+    if (supersetRows.length > 0) {
+      database
+        .insert(workoutTemplateSupersets)
+        .values(supersetRows)
+        .onConflictDoNothing()
+        .run();
+    }
+    const exerciseRows = buildExerciseRows(freshTemplates);
+    if (exerciseRows.length > 0) {
+      database
+        .insert(workoutTemplateExercises)
+        .values(exerciseRows)
+        .onConflictDoNothing()
+        .run();
+    }
+    const setRows = buildSetRows(freshTemplates);
+    if (setRows.length > 0) {
+      database
+        .insert(workoutTemplateSets)
+        .values(setRows)
+        .onConflictDoNothing()
+        .run();
+    }
+  }
+
+  // Same reasoning as the templates above: saving a schedule re-mints its slot
+  // ids, so once the demo schedule exists its slots are the user's to manage —
+  // re-seeding them would plant a second copy of every planned day.
+  const scheduleExists = database
+    .select({ id: schedules.id })
+    .from(schedules)
+    .where(eq(schedules.id, DEMO_SCHEDULE_ID))
+    .get();
+  if (!scheduleExists) {
+    database.insert(schedules).values(buildScheduleRows(now)).run();
+    database.insert(scheduleSlots).values(buildScheduleSlotRows(now)).run();
+  }
 }

@@ -55,6 +55,8 @@ export type RootStackParamList = {
     exercise: EditableExercise;
     name: string;
     returnRouteKey: string;
+    /** Set count and rest are owned by the superset, so both are locked here. */
+    supersetMember?: boolean;
   };
   SetTypeEditor: { setTypeId?: string } | undefined;
   ScheduleEditor: { scheduleId?: string } | undefined;
@@ -66,6 +68,9 @@ export type RootStackParamList = {
   ExerciseSelection: {
     selectedExerciseIds: string[];
     returnRouteKey: string;
+    /** Offer "Create superset". Only callers that can act on the grouped
+     *  result pass this — the live session cannot, so it stays a plain list. */
+    allowSupersets?: boolean;
   };
   CreateExercise: undefined;
   EditExercise: { exerciseId: string };

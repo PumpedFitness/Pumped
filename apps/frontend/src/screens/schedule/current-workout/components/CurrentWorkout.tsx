@@ -181,7 +181,7 @@ export function CurrentWorkout({
         />
 
         <SessionExerciseList
-          exercises={currentWorkout.exercises}
+          workout={currentWorkout}
           optionById={optionById}
           setTypeOptions={setTypeOptions}
           setTypesById={setTypesById}

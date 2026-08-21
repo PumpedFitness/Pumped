@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -76,6 +77,34 @@ function SkipButton({ accessibilityLabel, onPress }: SkipButtonProps) {
   );
 }
 
+type ToggleButtonProps = {
+  isRunning: boolean;
+  accessibilityLabel: string;
+  onPress: () => void;
+};
+
+function ToggleButton({
+  isRunning,
+  accessibilityLabel,
+  onPress,
+}: ToggleButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      className="h-9 w-9 items-center justify-center rounded-full active:opacity-90"
+      style={{ backgroundColor: colors.accent }}
+    >
+      <ClayIcon
+        name={isRunning ? 'pause' : 'play'}
+        size={15}
+        color={colors.onInk}
+      />
+    </Pressable>
+  );
+}
+
 export function RestTimerPill({
   visible,
   isRunning,
@@ -131,6 +160,15 @@ export function RestTimerPill({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
+
+  // A swipe-dismiss leaves the bar parked at opacity 0, and the shared values
+  // outlive the hidden phase — the next rest would open an invisible bar.
+  useEffect(() => {
+    if (visible) {
+      translateY.value = 0;
+      opacity.value = 1;
+    }
+  }, [visible, translateY, opacity]);
 
   if (!visible) {
     return null;
@@ -200,23 +238,15 @@ export function RestTimerPill({
             })}
             onPress={() => onAddSeconds(REST_STEP_SECONDS)}
           />
-          <Pressable
-            accessibilityRole="button"
+          <ToggleButton
+            isRunning={isRunning}
             accessibilityLabel={
               isRunning
                 ? t('currentWorkout.rest.pause')
                 : t('currentWorkout.rest.resume')
             }
             onPress={onToggle}
-            className="h-9 w-9 items-center justify-center rounded-full active:opacity-90"
-            style={{ backgroundColor: colors.accent }}
-          >
-            <ClayIcon
-              name={isRunning ? 'pause' : 'play'}
-              size={15}
-              color={colors.onInk}
-            />
-          </Pressable>
+          />
           <SkipButton
             accessibilityLabel={t('currentWorkout.rest.skip')}
             onPress={onSkip}

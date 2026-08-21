@@ -13,6 +13,8 @@ type ExerciseSectionTone = {
 type ExerciseSectionHeaderProps = {
   index: number;
   name: string;
+  /** Small label above the name, e.g. which superset this exercise belongs to. */
+  eyebrow?: string;
   doneCount: number;
   totalCount: number;
   state: ExerciseSectionState;
@@ -26,32 +28,36 @@ type ExerciseSectionHeaderProps = {
 
 type ExerciseTitleProps = {
   name: string;
+  eyebrow?: string;
   color: string;
   onOpen?: () => void;
 };
 
-function ExerciseTitle({ name, color, onOpen }: ExerciseTitleProps) {
-  if (!onOpen) {
-    return (
-      <Text className="t-heading flex-1" numberOfLines={1} style={{ color }}>
+function ExerciseTitle({ name, eyebrow, color, onOpen }: ExerciseTitleProps) {
+  const title = (
+    <>
+      {eyebrow ? (
+        <Text className="t-eyebrow" numberOfLines={1} style={{ color }}>
+          {eyebrow}
+        </Text>
+      ) : null}
+      <Text className="t-heading" numberOfLines={1} style={{ color }}>
         {name}
       </Text>
-    );
+    </>
+  );
+
+  if (!onOpen) {
+    return <View className="min-w-0 flex-1">{title}</View>;
   }
 
   return (
     <Pressable
       accessibilityRole="button"
-      className="min-w-0 flex-1 flex-row items-center gap-1.5"
+      className="min-w-0 flex-1"
       onPress={onOpen}
     >
-      <Text
-        className="t-heading min-w-0 shrink"
-        numberOfLines={1}
-        style={{ color }}
-      >
-        {name}
-      </Text>
+      {title}
     </Pressable>
   );
 }
@@ -146,6 +152,7 @@ function ExerciseAction({
 export function ExerciseSectionHeader({
   index,
   name,
+  eyebrow,
   doneCount,
   totalCount,
   state,
@@ -181,7 +188,12 @@ export function ExerciseSectionHeader({
         </Text>
       </View>
 
-      <ExerciseTitle name={name} color={titleColor} onOpen={onOpen} />
+      <ExerciseTitle
+        name={name}
+        eyebrow={eyebrow}
+        color={titleColor}
+        onOpen={onOpen}
+      />
       {!isFinished ? (
         <ExerciseStatus
           doneCount={doneCount}

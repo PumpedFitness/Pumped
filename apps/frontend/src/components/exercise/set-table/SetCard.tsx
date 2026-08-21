@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import * as Haptics from 'expo-haptics';
 import { SwipeTo, type SwipeAction } from '@pumped/ui/clay/SwipeTo';
+import { shadows } from '@pumped/ui/theme/tokens';
 import { SetCardHeader } from './SetCardHeader';
 import { SetFieldCell } from './SetFieldCell';
 import { useSetSheetOpeners } from './SetSheets';
@@ -146,6 +147,11 @@ function buildSwipeActions(
   return { left, right };
 }
 
+// Sets you have not reached yet sit back so the one you are on carries the eye.
+// Kept legible rather than truly disabled — they are still editable, and inside
+// a block you are not on this dim compounds with the block's own.
+const UPCOMING = { opacity: 0.72 };
+
 // Memoized: with a stable `card` (and the stable open-handlers from the table
 // host) an edit to one set re-renders only that set's card, not its siblings.
 export const SetCard = memo(function SetCard({
@@ -183,10 +189,17 @@ export const SetCard = memo(function SetCard({
     ? 'border border-moss bg-sage/15'
     : card.isCurrent
     ? 'border-2 border-accent bg-surface-card'
-    : 'border border-border-soft bg-surface-card';
+    : 'border border-border-hairline bg-surface-card';
 
+  // The set you are on is raised off the page, not just ringed — the ring alone
+  // had to compete with every other card at the same elevation.
   const content = (
-    <View className={`gap-3 rounded-[20px] p-3 ${containerClass}`}>
+    <View
+      className={`gap-3 rounded-[20px] p-3 ${containerClass}`}
+      style={
+        card.isCurrent ? shadows.row : card.isUpcoming ? UPCOMING : undefined
+      }
+    >
       <SetCardHeader
         card={card}
         iconOnlySetType={iconOnlySetType}

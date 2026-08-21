@@ -25,6 +25,27 @@ export const workoutTemplates = sqliteTable('workout_template', {
   updatedAt: integer('updated_at').notNull(),
 });
 
+// A superset: the exercises that carry this id are performed back-to-back,
+// alternating one set each per round. The group owns only its rest values — the
+// round count is derived from its members' set counts, and its place in the
+// workout from its members' positions, so neither can drift out of sync.
+export const workoutTemplateSupersets = sqliteTable(
+  'workout_template_superset',
+  {
+    id: text('id').primaryKey().notNull(),
+    workoutTemplateId: text('workout_template_id')
+      .notNull()
+      .references(() => workoutTemplates.id, { onDelete: 'cascade' }),
+    // Rest after a completed round (every member performed once).
+    restSeconds: integer('rest_seconds'),
+    // Optional rest between two exercises inside a round, for equipment changes.
+    transitionRestSeconds: integer('transition_rest_seconds'),
+  },
+  table => [
+    index('idx_template_superset_template').on(table.workoutTemplateId),
+  ],
+);
+
 export const workoutTemplateExercises = sqliteTable(
   'workout_template_exercise',
   {
@@ -34,6 +55,9 @@ export const workoutTemplateExercises = sqliteTable(
       .references(() => workoutTemplates.id, { onDelete: 'cascade' }),
     exerciseId: text('exercise_id').notNull(),
     position: integer('position').notNull(),
+    // Superset membership; null means the exercise stands alone. Members of one
+    // group are kept contiguous in `position` order by the editor.
+    supersetId: text('superset_id'),
     // Training-intent tag for this exercise (→ workout_exercise_type), nullable.
     typeId: text('type_id'),
     // Per-placement accent color. Nullable: null means "inherit" (falls back to

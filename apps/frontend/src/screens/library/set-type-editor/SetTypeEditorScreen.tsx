@@ -17,12 +17,15 @@ import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
 import { IconPicker } from '@pumped/ui/forms/IconPicker';
+import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
 import {
   useSetTypeLibrary,
   type SetTypeLibrary,
 } from '@/hooks/useSetTypeLibrary';
+import { useUsage } from '@/hooks/useUsage';
 import { normalizeProgressionGoal } from '@/data/local/sets/progressionGoals';
-import type { ProgressionGoal } from '@/types/setType';
+import type { UsageInfo } from '@/data/local/usageModel';
+import type { ProgressionGoal, SetTypeWithFields } from '@/types/setType';
 import { ProgressionGoalEditor } from './ProgressionGoalEditor';
 import { SetTypeFieldEditorSheet } from './SetTypeFieldEditorSheet';
 import { setTypeToDraftFields, type DraftField } from './draft';
@@ -31,6 +34,30 @@ type SetTypeEditorScreenProps = NativeStackScreenProps<
   RootStackParamList,
   'SetTypeEditor'
 >;
+
+// Warns first when workouts still have sets of this type — those sets are left
+// with a set type that no longer exists.
+function requestDelete(
+  t: TFunction,
+  library: SetTypeLibrary,
+  setType: SetTypeWithFields,
+  usage: UsageInfo | undefined,
+  onDeleted: () => void,
+): void {
+  void confirmUsageDelete(
+    t,
+    {
+      kind: 'setType',
+      name: setType.name,
+      usage,
+      fallbackBody: t('setTypeEditor.deleteAlertBody'),
+    },
+    () => {
+      library.deleteSetType(setType.id);
+      onDeleted();
+    },
+  );
+}
 
 // Persists the draft, preserving field ids so existing sets keep their values.
 function persistDraft(
@@ -181,6 +208,7 @@ export function SetTypeEditorScreen({
 }: SetTypeEditorScreenProps) {
   const { t } = useTranslation();
   const library = useSetTypeLibrary();
+  const usage = useUsage('setType');
   const existing = route.params?.setTypeId
     ? library.byId.get(route.params.setTypeId)
     : undefined;
@@ -242,7 +270,10 @@ export function SetTypeEditorScreen({
 
   const deleteSetType = () => {
     if (existing) {
-      library.deleteSetType(existing.id);
+      requestDelete(t, library, existing, usage.get(existing.id), () =>
+        navigation.goBack(),
+      );
+      return;
     }
     navigation.goBack();
   };

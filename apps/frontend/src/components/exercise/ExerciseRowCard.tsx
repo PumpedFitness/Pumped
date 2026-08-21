@@ -13,6 +13,8 @@ type ExerciseRowCardProps = {
    */
   selected?: boolean;
   trailing?: ReactNode;
+  /** Marker rendered next to the name (e.g. an in-use badge). */
+  badge?: ReactNode;
   pressedClassName?: string;
   testID?: string;
 };
@@ -23,6 +25,7 @@ export function ExerciseRowCard({
   onPress,
   selected,
   trailing,
+  badge,
   pressedClassName,
   testID,
 }: ExerciseRowCardProps) {
@@ -54,7 +57,10 @@ export function ExerciseRowCard({
       </View>
 
       <View className="flex-1">
-        <Text className="t-heading">{name}</Text>
+        <View className="flex-row items-center gap-2">
+          <Text className="t-heading flex-1">{name}</Text>
+          {badge}
+        </View>
         {metadata ? (
           <Text className="t-caption mt-1" numberOfLines={2}>
             {metadata}

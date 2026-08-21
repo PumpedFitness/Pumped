@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { ExerciseRowCard } from '@/components/exercise/ExerciseRowCard';
 import { useUndoToast } from '@/components/feedback/UndoToast';
+import { UsageBadge } from '@/components/feedback/UsageBadge';
+import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
 import { useRepository } from '@/data/local/useRepository';
 import { exercises } from '@/data/local/schema';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
+import { useUsage } from '@/hooks/useUsage';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { ExerciseOption } from '@/types/exercise';
 import { IndexRowChevron } from './IndexRowChevron';
@@ -21,18 +24,29 @@ export function ExerciseLibrary() {
   const exerciseRepo = useRepository(exercises);
   const { isFavorite, toggleFavorite } = useLocalFavorites();
   const { showUndo } = useUndoToast();
+  const usage = useUsage('exercise');
 
-  // Snapshot the row before removing it so an undo can re-insert it verbatim.
-  const deleteExercise = (exercise: ExerciseOption) => {
-    const snapshot = exerciseRepo.getById(exercise.id);
-    exerciseRepo.deleteById(exercise.id);
-    if (snapshot) {
-      showUndo({
-        message: t('common.deletedNamed', { name: exercise.name }),
-        onUndo: () => exerciseRepo.create(snapshot),
-      });
-    }
-  };
+  // Warn when workouts still contain it, then snapshot the row before removing
+  // it so an undo can re-insert it verbatim (which also heals those workouts).
+  const deleteExercise = (exercise: ExerciseOption) =>
+    confirmUsageDelete(
+      t,
+      {
+        kind: 'exercise',
+        name: exercise.name,
+        usage: usage.get(exercise.id),
+      },
+      () => {
+        const snapshot = exerciseRepo.getById(exercise.id);
+        exerciseRepo.deleteById(exercise.id);
+        if (snapshot) {
+          showUndo({
+            message: t('common.deletedNamed', { name: exercise.name }),
+            onUndo: () => exerciseRepo.create(snapshot),
+          });
+        }
+      },
+    );
 
   const renderRow = (exercise: ExerciseOption) => {
     const metadata = [...exercise.muscleGroupNames, exercise.typeName]
@@ -49,6 +63,13 @@ export function ExerciseLibrary() {
         <ExerciseRowCard
           name={exercise.name}
           metadata={metadata}
+          badge={
+            <UsageBadge
+              usage={usage.get(exercise.id)}
+              kind="exercise"
+              compact
+            />
+          }
           pressedClassName="active:bg-surface-sunk"
           trailing={<IndexRowChevron />}
           onPress={() =>

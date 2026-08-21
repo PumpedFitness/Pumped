@@ -39,6 +39,9 @@ export const performedSets = sqliteTable(
     exerciseId: text('exercise_id').notNull(),
     exercisePosition: integer('exercise_position').notNull(),
     setPosition: integer('set_position').notNull(),
+    // Superset the set was performed in, snapshotted so history can group the
+    // members back together. Null for a standalone exercise.
+    supersetId: text('superset_id'),
     setType: enumText<SetTypeId>()('set_type').notNull(),
     // Universal per-set rest, independent of the set type's fields.
     restSeconds: integer('rest_seconds'),

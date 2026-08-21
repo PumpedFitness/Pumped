@@ -28,6 +28,8 @@ type StatTileProps = {
 type CompletedExerciseHistorySectionProps = {
   index: number;
   name: string;
+  /** Small label above the name, e.g. the superset this exercise was part of. */
+  eyebrow?: string;
   sets: ReadOnlyExerciseSet[];
   previousSets?: ReadOnlyExerciseSet[];
   weightUnit: WeightUnit;
@@ -151,6 +153,7 @@ function ExerciseStatsOverview({
 export function CompletedExerciseHistorySection({
   index,
   name,
+  eyebrow,
   sets,
   previousSets,
   weightUnit,
@@ -184,6 +187,7 @@ export function CompletedExerciseHistorySection({
         <ExerciseSectionHeader
           index={index}
           name={name}
+          eyebrow={eyebrow}
           doneCount={setCount}
           totalCount={setCount}
           state="finished"

@@ -20,7 +20,10 @@ import type {
   DeleteHandler,
   DeleteResult,
 } from '@pumped/ui/clay/SwipeToDelete';
-import type { SuggestedSetValues } from './exerciseSetSuggestion';
+import {
+  fillEmptyFieldsFromSuggestion,
+  type SuggestedSetValues,
+} from './exerciseSetSuggestion';
 import {
   buildSetCardProgression,
   type SetCardProgression,
@@ -46,7 +49,9 @@ type SetTypeContext = {
 
 type BaseTableProps = SetTypeContext & {
   addSetLabel?: string;
-  onAddSet: () => void;
+  /** Omitted where adding a set is not this table's call — a superset member
+   *  gains rounds through its group, not one exercise at a time. */
+  onAddSet?: () => void;
   // Whether set cards animate their layout (slide) when sets are added/removed.
   // Off in the active workout, where activation re-renders during the snap
   // scroll make the cards fly in oddly. Defaults to on. */
@@ -57,8 +62,12 @@ export type TemplateSetTableProps = BaseTableProps & {
   sets: EditableExerciseSet[];
   onChangeSet: (index: number, set: EditableExerciseSet) => void;
   onRemoveSet: (index: number) => void;
-  onDuplicateSet: () => void;
+  onDuplicateSet?: () => void;
   onCreateSetType?: (name: string) => string;
+  // Set for a superset member: the superset owns how many rounds there are and
+  // how long the rest is, so neither can be edited one member at a time.
+  lockSetCount?: boolean;
+  hideRest?: boolean;
 };
 
 type EditableExerciseSetTableProps = BaseTableProps & {
@@ -71,6 +80,17 @@ type EditableExerciseSetTableProps = BaseTableProps & {
   onCreateSetType: (name: string) => string;
   activeRestSetId?: string | null;
   iconOnlySetType?: boolean;
+  // Which set is up next. Normally the table works that out itself, but inside
+  // a superset the order runs round-major across every member, so the block
+  // decides and passes it down. `null` means "not this member's turn".
+  currentSetId?: string | null;
+  // A superset renders one table per member per round, so a table can hold a
+  // single set that is not set #1. The badge shows `indexOffset + 1`.
+  indexOffset?: number;
+  // Overrides the "never leave an exercise with no sets" gate. In a superset
+  // the real question is whether a whole round can go, which only the block
+  // knows.
+  canRemoveSets?: boolean;
 };
 
 // `fieldDefinitions` is optional: history ('actual') snapshots fields as
@@ -120,6 +140,9 @@ export type SetCardModel = {
   tone: 'default' | 'completed';
   isDone?: boolean;
   isCurrent: boolean;
+  /** Neither logged nor up next — recedes so the set you are on stands out.
+   *  Only the live workout sets this; a template preview has no "next". */
+  isUpcoming?: boolean;
   canRemove: boolean;
   readOnly: boolean;
   onSetTypeChange: (setType: SetTypeId) => void;
@@ -166,19 +189,21 @@ export function buildTemplateSetCards(
             props.onChangeSet(index, { ...set, fieldValues: next }),
         }),
       ),
-      rest: {
-        value: set.restSeconds,
-        readOnly: false,
-        isRunning: false,
-        onChange: value =>
-          props.onChangeSet(index, { ...set, restSeconds: value }),
-      },
+      rest: props.hideRest
+        ? null
+        : {
+            value: set.restSeconds,
+            readOnly: false,
+            isRunning: false,
+            onChange: value =>
+              props.onChangeSet(index, { ...set, restSeconds: value }),
+          },
       progression: buildSetCardProgression(set, type, progressionGoal =>
         props.onChangeSet(index, { ...set, progressionGoal }),
       ),
       tone: 'default',
       isCurrent: false,
-      canRemove: props.sets.length > 1,
+      canRemove: !props.lockSetCount && props.sets.length > 1,
       readOnly: false,
       onSetTypeChange: setType =>
         props.onChangeSet(index, {
@@ -195,18 +220,33 @@ export function buildTemplateSetCards(
   });
 }
 
+/** Logged, up next, or still ahead — the three states a live set can be in. */
+function cardState(set: CurrentWorkoutSet, isCurrent: boolean) {
+  return {
+    tone: set.isDone ? ('completed' as const) : ('default' as const),
+    isDone: set.isDone,
+    isCurrent,
+    isUpcoming: !set.isDone && !isCurrent,
+  };
+}
+
 export function buildWorkoutSetCards(
   t: TFunction,
   props: EditableExerciseSetTableProps,
 ): SetCardModel[] {
-  // The set to log next: the first one not yet marked done.
-  const currentIndex = props.sets.findIndex(set => !set.isDone);
+  // The set to log next: the first one not yet marked done, unless the caller
+  // knows better (a superset alternates between exercises).
+  const currentIndex =
+    props.currentSetId === undefined
+      ? props.sets.findIndex(set => !set.isDone)
+      : props.sets.findIndex(set => set.id === props.currentSetId);
+  const indexOffset = props.indexOffset ?? 0;
   return props.sets.map((set, index) => {
     const type = props.setTypesById.get(set.setType);
     const suggestion = props.suggestedSets?.[index];
     return {
       key: set.id,
-      index,
+      index: index + indexOffset,
       setType: set.setType,
       setTypeLabel: type?.name ?? set.setType,
       setTypeIcon: type?.icon ?? null,
@@ -240,10 +280,8 @@ export function buildWorkoutSetCards(
                 ),
           )
         : undefined,
-      tone: set.isDone ? 'completed' : 'default',
-      isDone: set.isDone,
-      isCurrent: index === currentIndex,
-      canRemove: props.sets.length > 1,
+      ...cardState(set, index === currentIndex),
+      canRemove: props.canRemoveSets ?? props.sets.length > 1,
       readOnly: false,
       onSetTypeChange: setType =>
         props.onChangeSet(set.id, {
@@ -253,7 +291,25 @@ export function buildWorkoutSetCards(
             fieldsForType(props, setType),
           ),
         }),
-      onToggleDone: () => props.onToggleSetDone(set.id),
+      // Commit whatever the card is showing as placeholders before completing,
+      // in ONE write: each field's own `onChange` closes over the same
+      // pre-edit `fieldValues`, so filling two fields separately would have the
+      // second clobber the first. The store reads fresh state, so the toggle
+      // that follows validates against the filled set.
+      onToggleDone: () => {
+        if (!set.isDone) {
+          const filled = fillEmptyFieldsFromSuggestion(
+            type?.fields ?? [],
+            set.fieldValues,
+            suggestion,
+            props.weightUnit,
+          );
+          if (filled !== set.fieldValues) {
+            props.onChangeSet(set.id, { fieldValues: filled });
+          }
+        }
+        return props.onToggleSetDone(set.id);
+      },
       onRemove: () => props.onRemoveSet(set),
     };
   });

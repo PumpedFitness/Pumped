@@ -13,6 +13,7 @@ import type {
   WorkoutTemplate,
   WorkoutTemplateExercise,
   WorkoutTemplateSet,
+  WorkoutTemplateSuperset,
 } from '@/types/workout';
 import { db } from '@/data/local/database';
 import { notifyTableChanged } from '@/data/local/tableVersions';
@@ -21,6 +22,7 @@ import {
   scheduleSlots,
   workoutTemplateExercises,
   workoutTemplateSets,
+  workoutTemplateSupersets,
   workoutTemplates,
 } from '@/data/local/schema';
 import { LOCAL_USER_ID, requireText } from './validation';
@@ -36,10 +38,15 @@ export type WorkoutTemplateExerciseInput = {
   exerciseId: string;
   typeId?: string | null;
   color?: WorkoutTemplateColor | null;
+  /** Client-side key matching a `supersets` entry, not a row id — the save
+   *  re-mints row ids, so membership is resolved through that key. */
+  supersetId?: string | null;
   goal?: string | null;
   notes?: string | null;
   sets: WorkoutTemplateSetInput[];
 };
+
+export type WorkoutTemplateSupersetInput = WorkoutTemplateSuperset;
 
 export type SaveWorkoutTemplateInput = {
   id?: string;
@@ -49,6 +56,7 @@ export type SaveWorkoutTemplateInput = {
   icon?: IconName | null;
   picture?: string | null;
   exercises: WorkoutTemplateExerciseInput[];
+  supersets?: WorkoutTemplateSupersetInput[];
 };
 
 function validateTemplateSet(
@@ -105,6 +113,16 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
     return null;
   }
 
+  const supersets: WorkoutTemplateSuperset[] = db
+    .select({
+      id: workoutTemplateSupersets.id,
+      restSeconds: workoutTemplateSupersets.restSeconds,
+      transitionRestSeconds: workoutTemplateSupersets.transitionRestSeconds,
+    })
+    .from(workoutTemplateSupersets)
+    .where(eq(workoutTemplateSupersets.workoutTemplateId, template.id))
+    .all();
+
   const exerciseRows = db
     .select()
     .from(workoutTemplateExercises)
@@ -126,6 +144,7 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
       position: exercise.position,
       typeId: exercise.typeId,
       color: exercise.color,
+      supersetId: exercise.supersetId,
       goal: exercise.goal,
       notes: exercise.notes,
       sets,
@@ -141,6 +160,7 @@ export function getWorkoutTemplate(templateId: string): WorkoutTemplate | null {
     icon: template.icon,
     picture: template.picture,
     exercises,
+    supersets,
     createdAt: template.createdAt,
     updatedAt: template.updatedAt,
   };
@@ -200,14 +220,49 @@ function upsertTemplateRow(
   }
 }
 
+// Rewrites the superset rows and returns a map from the input's client-side
+// keys to the freshly minted row ids. Children are wiped and reinserted on every
+// save, so a key from the draft never survives as a row id — resolving through
+// this map is what keeps membership pointing at a row that exists.
+function replaceTemplateSupersets(
+  tx: Tx,
+  templateId: string,
+  supersets: WorkoutTemplateSupersetInput[],
+): Map<string, string> {
+  tx.delete(workoutTemplateSupersets)
+    .where(eq(workoutTemplateSupersets.workoutTemplateId, templateId))
+    .run();
+
+  const rowIdByKey = new Map<string, string>();
+  supersets.forEach(superset => {
+    const rowId = randomUUID();
+    rowIdByKey.set(superset.id, rowId);
+    tx.insert(workoutTemplateSupersets)
+      .values({
+        id: rowId,
+        workoutTemplateId: templateId,
+        restSeconds: superset.restSeconds,
+        transitionRestSeconds: superset.transitionRestSeconds,
+      })
+      .run();
+  });
+  return rowIdByKey;
+}
+
 function replaceTemplateChildren(
   tx: Tx,
   templateId: string,
   exercises: WorkoutTemplateExerciseInput[],
+  supersets: WorkoutTemplateSupersetInput[],
 ): void {
   tx.delete(workoutTemplateExercises)
     .where(eq(workoutTemplateExercises.workoutTemplateId, templateId))
     .run();
+  const supersetRowIdByKey = replaceTemplateSupersets(
+    tx,
+    templateId,
+    supersets,
+  );
 
   exercises.forEach((exercise, exercisePosition) => {
     const exerciseRowId = randomUUID();
@@ -219,6 +274,9 @@ function replaceTemplateChildren(
         position: exercisePosition,
         typeId: exercise.typeId ?? null,
         color: exercise.color ?? null,
+        supersetId: exercise.supersetId
+          ? supersetRowIdByKey.get(exercise.supersetId) ?? null
+          : null,
         goal: exercise.goal ?? null,
         notes: exercise.notes ?? null,
       })
@@ -254,11 +312,17 @@ export function saveWorkoutTemplate(
 
   db.transaction(tx => {
     upsertTemplateRow(tx, templateId, input, now);
-    replaceTemplateChildren(tx, templateId, validatedExercises);
+    replaceTemplateChildren(
+      tx,
+      templateId,
+      validatedExercises,
+      input.supersets ?? [],
+    );
   });
 
   notifyTableChanged(
     workoutTemplates,
+    workoutTemplateSupersets,
     workoutTemplateExercises,
     workoutTemplateSets,
   );
@@ -270,9 +334,10 @@ export function deleteWorkoutTemplate(templateId: string): void {
   assertTemplateExists(templateId);
   db.delete(workoutTemplates).where(eq(workoutTemplates.id, templateId)).run();
 
-  // Children (exercises, sets, owned schedules + slots) cascade via FK.
+  // Children (supersets, exercises, sets, owned schedules + slots) cascade via FK.
   notifyTableChanged(
     workoutTemplates,
+    workoutTemplateSupersets,
     workoutTemplateExercises,
     workoutTemplateSets,
     schedules,

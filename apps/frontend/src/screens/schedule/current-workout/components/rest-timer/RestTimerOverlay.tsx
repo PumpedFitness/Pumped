@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Portal } from 'heroui-native';
@@ -80,6 +81,16 @@ export function RestTimerOverlay({
   const dragStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
+
+  // The drag offset lives on the UI thread and outlives the dismiss, so without
+  // this the timer reopens exactly where you flicked it away. Reset on the way
+  // in rather than on the way out, so the dismissal still fades out from under
+  // your finger — the entering fade hides the frame this lands on.
+  useEffect(() => {
+    if (visible) {
+      translateY.value = 0;
+    }
+  }, [visible, translateY]);
 
   if (!visible) {
     return null;

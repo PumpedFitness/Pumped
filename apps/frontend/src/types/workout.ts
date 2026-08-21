@@ -38,6 +38,16 @@ export type WorkoutTemplateSet = {
   fieldValues: SetFieldValue[];
 };
 
+/** A superset: its members alternate one set each per round. The round count is
+ *  derived from the members' set counts, so only the rest values live here. */
+export type WorkoutTemplateSuperset = {
+  id: string;
+  /** Rest after a completed round. */
+  restSeconds: number | null;
+  /** Optional rest between two exercises inside a round. */
+  transitionRestSeconds: number | null;
+};
+
 export type WorkoutTemplateExercise = {
   id: string;
   exerciseId: string;
@@ -45,6 +55,8 @@ export type WorkoutTemplateExercise = {
   typeId: string | null;
   /** Per-placement accent color; null inherits the template color. */
   color: WorkoutTemplateColor | null;
+  /** Superset membership; null means the exercise stands alone. */
+  supersetId: string | null;
   goal: string | null;
   notes: string | null;
   sets: WorkoutTemplateSet[];
@@ -61,6 +73,7 @@ export type WorkoutTemplate = {
   /** Optional device image URI; null when none chosen. */
   picture: string | null;
   exercises: WorkoutTemplateExercise[];
+  supersets: WorkoutTemplateSuperset[];
   createdAt: number;
   updatedAt: number;
 };
@@ -86,6 +99,8 @@ export type PerformedSet = {
   exerciseId: string;
   exercisePosition: number;
   setPosition: number;
+  /** Superset the set was performed in; null for a standalone exercise. */
+  supersetId: string | null;
   setType: SetTypeId;
   restSeconds: number | null;
   fieldDefinitions: HistoricalSetField[];

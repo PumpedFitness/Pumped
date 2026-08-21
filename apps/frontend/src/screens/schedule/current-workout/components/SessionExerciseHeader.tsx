@@ -1,11 +1,8 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentWorkoutExercise } from '@/stores/currentWorkoutModel';
-import {
-  ExerciseSectionHeader,
-  type ExerciseSectionState,
-} from '@/components/exercise/ExerciseSectionHeader';
-import { exerciseColorTokens } from './exerciseColorTokens';
+import type { ExerciseSectionState } from '@/components/exercise/ExerciseSectionHeader';
+import { SessionBlockBand } from './SessionBlockBand';
 import { requestRemoveExercise } from './currentWorkoutConfirm';
 
 export type ExerciseTrayState = ExerciseSectionState;
@@ -20,8 +17,8 @@ type SessionExerciseHeaderProps = {
   onRemoveExercise: (exerciseId: string) => void;
 };
 
-// A thin, opaque band that pins while scrolling its sets. Only the active
-// exercise wears its color; finished read as done, upcoming as disabled.
+// The band that pins while scrolling this exercise's sets. Only the active
+// exercise wears the accent; finished read as done, upcoming as still ahead.
 // Memoized: unchanged exercises don't re-render when a sibling is edited.
 export const SessionExerciseHeader = memo(function SessionExerciseHeader({
   index,
@@ -34,13 +31,14 @@ export const SessionExerciseHeader = memo(function SessionExerciseHeader({
   const doneCount = exercise.sets.filter(set => set.isDone).length;
 
   return (
-    <ExerciseSectionHeader
+    <SessionBlockBand
       index={index}
-      name={name}
-      doneCount={doneCount}
-      totalCount={exercise.sets.length}
+      title={name}
+      statusLabel={t('currentWorkout.setsDoneShort', {
+        done: doneCount,
+        total: exercise.sets.length,
+      })}
       state={state}
-      tone={exerciseColorTokens(exercise.color)}
       removeAccessibilityLabel={t('currentWorkout.removeExerciseA11y', {
         name,
       })}

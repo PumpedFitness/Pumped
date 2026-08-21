@@ -4,6 +4,7 @@ import { colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { getWorkoutOverlayProgress } from '@/components/workout/current-workout-overlay/currentWorkoutOverlayModel';
 import { SessionTimer } from './SessionTimer';
+import { SessionProgressBar } from './SessionProgressBar';
 
 type SessionHeaderProps = {
   workoutName: string;
@@ -73,12 +74,11 @@ export function SessionHeader({
         </Pressable>
       </View>
 
-      <View className="mt-2 h-1 overflow-hidden rounded-full bg-surface-sunk">
-        <View
-          className="h-full rounded-full bg-accent"
-          style={{ width: `${progress.percentage}%` }}
-        />
-      </View>
+      <SessionProgressBar
+        completedSets={progress.completedSets}
+        totalSets={progress.totalSets}
+        percentage={progress.percentage}
+      />
     </View>
   );
 }

@@ -22,16 +22,14 @@ export function ExerciseSelectionScreen({
       <ExerciseSelectionList
         exercises={exerciseOptions}
         initialSelectedExerciseIds={route.params.selectedExerciseIds}
+        allowSupersets={route.params.allowSupersets ?? false}
         onCancel={() => navigation.goBack()}
-        onDone={exerciseIds => {
+        onDone={selection => {
           // Returns the selection to the calling route (identified by its
           // route key) via setParams — see RootStackParamList.
           navigation.dispatch({
             ...CommonActions.setParams({
-              exerciseSelection: {
-                id: randomUUID(),
-                exerciseIds,
-              },
+              exerciseSelection: { id: randomUUID(), ...selection },
             }),
             source: route.params.returnRouteKey,
           });

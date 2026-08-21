@@ -53,6 +53,35 @@ export const resources = {
         minutesShort: '{{count}} min',
         elapsedHoursMinutes: '{{hours}}h {{minutes}}m',
       },
+      usage: {
+        badge: {
+          activePlan: 'In active plan',
+          activePlanA11y: 'Part of your active schedule {{schedule}}',
+          schedules_one: 'In {{count}} schedule',
+          schedules_other: 'In {{count}} schedules',
+          workouts_one: 'In {{count}} workout',
+          workouts_other: 'In {{count}} workouts',
+        },
+        alert: {
+          title: 'Delete “{{name}}”?',
+          more: '{{list}} and {{count}} more',
+          template_one: 'It is planned in {{count}} schedule: {{list}}.',
+          template_other: 'It is planned in {{count}} schedules: {{list}}.',
+          exercise_one: 'It is part of {{count}} workout: {{list}}.',
+          exercise_other: 'It is part of {{count}} workouts: {{list}}.',
+          setType_one: 'It is used by {{count}} workout: {{list}}.',
+          setType_other: 'It is used by {{count}} workouts: {{list}}.',
+          consequence: {
+            template: 'Deleting it clears those planned days.',
+            exercise: 'They are left with an unknown exercise.',
+            setType: 'Their sets lose this type.',
+          },
+          activeTemplate:
+            '“{{schedule}}” is your active schedule, so this changes what you train next.',
+          activeIndirect:
+            'One of them runs in your active schedule “{{schedule}}”.',
+        },
+      },
       settings: {
         language: 'Language',
         weekStartsOn: {
@@ -810,6 +839,9 @@ export const resources = {
           edit: 'Edit sets',
           editA11y: 'Edit {{name}}',
           noSets: 'No sets yet',
+          collapseA11y: 'Collapse {{name}}',
+          expandA11y: 'Expand {{name}}',
+          viewExercise: 'View exercise',
           setSummary: {
             reps: '{{value}} reps',
             rest: '{{value}}s rest',
@@ -818,6 +850,28 @@ export const resources = {
         setEditor: {
           done: 'Done',
         },
+        superset: {
+          eyebrow: 'Superset',
+          summary_one: '{{count}} exercise · {{rounds}} rounds',
+          summary_other: '{{count}} exercises · {{rounds}} rounds',
+          rounds_one: '{{count}} round',
+          rounds_other: '{{count}} rounds',
+          ungroup: 'Ungroup',
+          roundRest: 'Rest after each round',
+          roundRestHint: 'Starts once you finish the last exercise of a round.',
+          transitionRest: 'Rest between exercises',
+          transitionRestHint:
+            'A short break to switch equipment. Leave it off to go straight on.',
+          noRest: 'No rest',
+          memberLocked:
+            'Rounds and rest are set on the superset. Each set here is one round.',
+          collapseA11y: 'Collapse this superset',
+          expandA11y: 'Expand this superset',
+          moveUpA11y: 'Move {{name}} earlier in the superset',
+          moveDownA11y: 'Move {{name}} later in the superset',
+          fewerRoundsA11y: 'One round fewer',
+          moreRoundsA11y: 'One round more',
+        },
         saveCta: 'Save template',
         deleteCta: 'Delete template',
         errors: {
@@ -825,7 +879,6 @@ export const resources = {
           saveFailed: 'The template could not be saved.',
         },
         alerts: {
-          deleteTitle: 'Delete {{name}}?',
           deleteBody:
             'This removes the template and its planned exercises. Completed workouts stay in your history.',
           deleteFailedTitle: 'Could not delete template',
@@ -921,6 +974,7 @@ export const resources = {
           targetIncrease: 'Increase other field by',
         },
         deleteSetType: 'Delete set type',
+        deleteAlertBody: 'This cannot be undone.',
         fieldSheet: {
           addTitle: 'Add field',
           editTitle: 'Edit field',
@@ -1079,6 +1133,16 @@ export const resources = {
         setsCompleted: '{{completed}} of {{total}} sets completed',
         setsDone: '{{done}} of {{total}} sets done',
         setsDoneShort: '{{done}}/{{total}}',
+        superset: {
+          eyebrow: 'Superset',
+          round: 'Round {{current}}/{{total}}',
+          roundLabel: 'Round {{round}}',
+          straightInto: 'straight into',
+          addRound: 'Add round',
+          removeRoundTitle: 'Remove round {{round}}?',
+          removeRoundBody:
+            'This removes one set from each of the {{count}} exercises in this superset.',
+        },
         removeExerciseA11y: 'Remove {{name}}',
         now: 'Now',
         exerciseBadge: 'Exercise {{number}}',
@@ -1224,7 +1288,6 @@ export const resources = {
         addExercise: 'Add Exercise',
         share: 'Share',
         handoverResult: 'UUID: {{uuid}} TTL: {{ttl}}',
-        deleteAlertTitle: 'Delete exercise',
         deleteAlertBody: 'Are you sure you want to delete "{{name}}"?',
         pickers: {
           typeTitle: 'Exercise Type',
@@ -1326,6 +1389,18 @@ export const resources = {
         selectedCount: '{{count}} selected',
         useExercises_one: 'Use {{count}} exercise',
         useExercises_other: 'Use {{count}} exercises',
+        superset: {
+          create: 'Create superset',
+          headerTitle: 'New superset',
+          title: 'Build a superset',
+          hint: 'Pick two or more exercises. Each round you do one set of every exercise, back to back.',
+          selectedCount_one: '{{count}} exercise in this superset',
+          selectedCount_other: '{{count}} exercises in this superset',
+          minimum: 'Pick at least two exercises',
+          confirm_one: 'Add superset ({{count}} exercise)',
+          confirm_other: 'Add superset ({{count}} exercises)',
+          cancel: 'Never mind',
+        },
       },
       templateImport: {
         title: 'Import from workout',
@@ -1410,6 +1485,7 @@ export const resources = {
         },
         completedSets_one: '{{count}} completed set',
         completedSets_other: '{{count}} completed sets',
+        supersetBadge: 'Superset {{label}}',
         notes: 'Notes',
         timeRange: '{{start}} - {{end}}',
       },
@@ -1599,6 +1675,35 @@ export const resources = {
         workout_other: '{{count}} Workouts',
         minutesShort: '{{count}} min',
         elapsedHoursMinutes: '{{hours}}h {{minutes}}m',
+      },
+      usage: {
+        badge: {
+          activePlan: 'Im aktiven Plan',
+          activePlanA11y: 'Teil deines aktiven Plans {{schedule}}',
+          schedules_one: 'In {{count}} Plan',
+          schedules_other: 'In {{count}} Plänen',
+          workouts_one: 'In {{count}} Workout',
+          workouts_other: 'In {{count}} Workouts',
+        },
+        alert: {
+          title: '„{{name}}“ löschen?',
+          more: '{{list}} und {{count}} weitere',
+          template_one: 'Es ist in {{count}} Plan eingeplant: {{list}}.',
+          template_other: 'Es ist in {{count}} Plänen eingeplant: {{list}}.',
+          exercise_one: 'Sie ist Teil von {{count}} Workout: {{list}}.',
+          exercise_other: 'Sie ist Teil von {{count}} Workouts: {{list}}.',
+          setType_one: 'Er wird von {{count}} Workout genutzt: {{list}}.',
+          setType_other: 'Er wird von {{count}} Workouts genutzt: {{list}}.',
+          consequence: {
+            template: 'Beim Löschen fallen diese geplanten Tage weg.',
+            exercise: 'Dort bleibt dann eine unbekannte Übung zurück.',
+            setType: 'Deren Sätze verlieren diesen Satztyp.',
+          },
+          activeTemplate:
+            '„{{schedule}}“ ist dein aktiver Plan — das ändert, was als Nächstes ansteht.',
+          activeIndirect:
+            'Eines davon läuft in deinem aktiven Plan „{{schedule}}“.',
+        },
       },
       settings: {
         language: 'Sprache',
@@ -2347,6 +2452,9 @@ export const resources = {
           edit: 'Sätze bearbeiten',
           editA11y: '{{name}} bearbeiten',
           noSets: 'Noch keine Sätze',
+          collapseA11y: '{{name}} einklappen',
+          expandA11y: '{{name}} ausklappen',
+          viewExercise: 'Übung ansehen',
           setSummary: {
             reps: '{{value}} Wdh.',
             rest: '{{value}}s Pause',
@@ -2355,6 +2463,29 @@ export const resources = {
         setEditor: {
           done: 'Fertig',
         },
+        superset: {
+          eyebrow: 'Superset',
+          summary_one: '{{count}} Übung · {{rounds}} Runden',
+          summary_other: '{{count}} Übungen · {{rounds}} Runden',
+          rounds_one: '{{count}} Runde',
+          rounds_other: '{{count}} Runden',
+          ungroup: 'Auflösen',
+          roundRest: 'Pause nach jeder Runde',
+          roundRestHint:
+            'Startet, sobald du die letzte Übung einer Runde beendest.',
+          transitionRest: 'Pause zwischen den Übungen',
+          transitionRestHint:
+            'Kurze Pause zum Umbauen. Lass sie aus, um direkt weiterzumachen.',
+          noRest: 'Keine Pause',
+          memberLocked:
+            'Runden und Pausen stellst du am Superset ein. Jeder Satz hier ist eine Runde.',
+          collapseA11y: 'Dieses Superset einklappen',
+          expandA11y: 'Dieses Superset ausklappen',
+          moveUpA11y: '{{name}} im Superset nach vorne schieben',
+          moveDownA11y: '{{name}} im Superset nach hinten schieben',
+          fewerRoundsA11y: 'Eine Runde weniger',
+          moreRoundsA11y: 'Eine Runde mehr',
+        },
         saveCta: 'Vorlage speichern',
         deleteCta: 'Vorlage löschen',
         errors: {
@@ -2362,7 +2493,6 @@ export const resources = {
           saveFailed: 'Die Vorlage konnte nicht gespeichert werden.',
         },
         alerts: {
-          deleteTitle: '{{name}} löschen?',
           deleteBody:
             'Das entfernt die Vorlage und ihre geplanten Übungen. Abgeschlossene Workouts bleiben in deinem Verlauf.',
           deleteFailedTitle: 'Vorlage konnte nicht gelöscht werden',
@@ -2469,6 +2599,7 @@ export const resources = {
           targetIncrease: 'Anderes Feld steigern um',
         },
         deleteSetType: 'Satztyp löschen',
+        deleteAlertBody: 'Das lässt sich nicht rückgängig machen.',
         fieldSheet: {
           addTitle: 'Feld hinzufügen',
           editTitle: 'Feld bearbeiten',
@@ -2628,6 +2759,16 @@ export const resources = {
         setsCompleted: '{{completed}} von {{total}} Sätzen abgeschlossen',
         setsDone: '{{done}} von {{total}} Sätzen erledigt',
         setsDoneShort: '{{done}}/{{total}}',
+        superset: {
+          eyebrow: 'Superset',
+          round: 'Runde {{current}}/{{total}}',
+          roundLabel: 'Runde {{round}}',
+          straightInto: 'ohne Pause weiter',
+          addRound: 'Runde hinzufügen',
+          removeRoundTitle: 'Runde {{round}} entfernen?',
+          removeRoundBody:
+            'Damit verschwindet je ein Satz aus allen {{count}} Übungen dieses Supersets.',
+        },
         removeExerciseA11y: '{{name}} entfernen',
         now: 'Jetzt',
         exerciseBadge: 'Übung {{number}}',
@@ -2776,7 +2917,6 @@ export const resources = {
         addExercise: 'Übung hinzufügen',
         share: 'Teilen',
         handoverResult: 'UUID: {{uuid}} TTL: {{ttl}}',
-        deleteAlertTitle: 'Übung löschen',
         deleteAlertBody: 'Möchtest du „{{name}}“ wirklich löschen?',
         pickers: {
           typeTitle: 'Übungstyp',
@@ -2879,6 +3019,18 @@ export const resources = {
         selectedCount: '{{count}} ausgewählt',
         useExercises_one: '{{count}} Übung verwenden',
         useExercises_other: '{{count}} Übungen verwenden',
+        superset: {
+          create: 'Superset erstellen',
+          headerTitle: 'Neues Superset',
+          title: 'Superset bauen',
+          hint: 'Wähle zwei oder mehr Übungen. Pro Runde machst du von jeder Übung einen Satz, direkt hintereinander.',
+          selectedCount_one: '{{count}} Übung in diesem Superset',
+          selectedCount_other: '{{count}} Übungen in diesem Superset',
+          minimum: 'Wähle mindestens zwei Übungen',
+          confirm_one: 'Superset hinzufügen ({{count}} Übung)',
+          confirm_other: 'Superset hinzufügen ({{count}} Übungen)',
+          cancel: 'Doch nicht',
+        },
       },
       templateImport: {
         title: 'Aus Workout importieren',
@@ -2963,6 +3115,7 @@ export const resources = {
         },
         completedSets_one: '{{count}} abgeschlossener Satz',
         completedSets_other: '{{count}} abgeschlossene Sätze',
+        supersetBadge: 'Superset {{label}}',
         notes: 'Notizen',
         timeRange: '{{start}} - {{end}}',
       },

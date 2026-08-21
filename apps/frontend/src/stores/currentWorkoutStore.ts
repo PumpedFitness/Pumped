@@ -7,6 +7,13 @@ import { i18n } from '@/i18n';
 import type { WorkoutTemplate } from '@/types/workout';
 import type { SetTypeFieldDef } from '@/types/setType';
 import { uniqueStrings } from '@/utils/dedupe';
+import { reflowSupersetMembers } from '@/data/local/workouts/supersets';
+import {
+  addSupersetRound,
+  removeSupersetRound,
+  roundIndexOfSet,
+  settleWorkoutSupersets,
+} from './currentWorkoutSupersets';
 import {
   createCurrentWorkoutExercise,
   createCurrentWorkoutSet,
@@ -63,6 +70,7 @@ function startWorkout(
     icon: template.icon,
     picture: template.picture,
     exercises: createTemplateSnapshot(template),
+    supersets: template.supersets,
   };
   setState({ currentWorkout });
 }
@@ -132,13 +140,22 @@ function addWorkoutSet(
   exerciseId: string,
 ) {
   const workout = requireCurrentWorkout(getState().currentWorkout);
+  const exercise = workout.exercises.find(item => item.id === exerciseId);
+  // Inside a superset a "set" is a round: every member gains one, or the
+  // members fall out of step and the alternation breaks.
+  if (exercise?.supersetId) {
+    setState({
+      currentWorkout: addSupersetRound(workout, exercise.supersetId),
+    });
+    return;
+  }
   setState({
     currentWorkout: updateCurrentWorkoutExercise(
       workout,
       exerciseId,
-      exercise => ({
-        ...exercise,
-        sets: [...exercise.sets, createCurrentWorkoutSet(exercise.sets.length)],
+      current => ({
+        ...current,
+        sets: [...current.sets, createCurrentWorkoutSet(current.sets.length)],
       }),
     ),
   });
@@ -153,6 +170,16 @@ function removeWorkoutSet(
   const workout = requireCurrentWorkout(getState().currentWorkout);
   const exercise = workout.exercises.find(item => item.id === exerciseId);
   if (!exercise?.sets.some(set => set.id === setId)) {
+    return;
+  }
+  if (exercise.supersetId) {
+    setState({
+      currentWorkout: removeSupersetRound(
+        workout,
+        exercise.supersetId,
+        roundIndexOfSet(exercise, setId),
+      ),
+    });
     return;
   }
   if (exercise.sets.length === 1) {
@@ -192,16 +219,18 @@ function selectWorkoutExercises(
     workout.exercises.map(exercise => [exercise.exerciseId, exercise]),
   );
   setState({
-    currentWorkout: {
-      ...workout,
-      exercises: normalizeCurrentWorkoutExercises(
+    currentWorkout: settleWorkoutSupersets(
+      workout,
+      // Reflowed first so a member the picker returned out of order rejoins its
+      // group instead of being stranded and losing its superset.
+      reflowSupersetMembers(
         uniqueExerciseIds.map(
           (exerciseId, position) =>
             currentByExerciseId.get(exerciseId) ??
             createCurrentWorkoutExercise(exerciseId, position, workout.color),
         ),
       ),
-    },
+    ),
   });
 }
 
@@ -234,12 +263,10 @@ function removeWorkoutExercise(
 ) {
   const workout = requireCurrentWorkout(getState().currentWorkout);
   setState({
-    currentWorkout: {
-      ...workout,
-      exercises: normalizeCurrentWorkoutExercises(
-        workout.exercises.filter(exercise => exercise.id !== exerciseId),
-      ),
-    },
+    currentWorkout: settleWorkoutSupersets(
+      workout,
+      workout.exercises.filter(exercise => exercise.id !== exerciseId),
+    ),
   });
 }
 

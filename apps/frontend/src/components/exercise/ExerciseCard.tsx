@@ -7,6 +7,8 @@ import {
 } from '@pumped/ui/clay/SwipeToDelete';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
+const FLIP = { transform: [{ rotate: '180deg' }] };
+
 type ExerciseCardProps = {
   name: string;
   description: string;
@@ -17,6 +19,11 @@ type ExerciseCardProps = {
   openAccessibilityLabel?: string;
   onOpen?: () => void;
   onRemove?: DeleteHandler;
+  /** Renders a fold toggle next to the open chevron. What actually collapses is
+   *  the caller's business — this only owns the control and its direction. */
+  isCollapsed?: boolean;
+  collapseAccessibilityLabel?: string;
+  onToggleCollapsed?: () => void;
 };
 
 export function ExerciseCard({
@@ -28,6 +35,9 @@ export function ExerciseCard({
   openAccessibilityLabel,
   onOpen,
   onRemove,
+  isCollapsed,
+  collapseAccessibilityLabel,
+  onToggleCollapsed,
 }: ExerciseCardProps) {
   const content = (
     <View className="gap-4 rounded-[22px] border border-border-hairline bg-surface-sunk p-4">
@@ -51,8 +61,25 @@ export function ExerciseCard({
             </View>
           ) : null}
         </View>
-        {onOpen || headerAccessory ? (
+        {onOpen || headerAccessory || onToggleCollapsed ? (
           <View className="flex-row items-center gap-1">
+            {onToggleCollapsed ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={collapseAccessibilityLabel}
+                accessibilityState={{ expanded: !isCollapsed }}
+                testID="toggle_exercise_collapsed"
+                hitSlop={8}
+                className="h-10 w-9 items-center justify-center rounded-full active:bg-surface-card"
+                onPress={onToggleCollapsed}
+              >
+                {/* Always the down chevron, flipped when open. A right-facing
+                    one would read as the "open exercise" arrow beside it. */}
+                <View style={isCollapsed ? undefined : FLIP}>
+                  <ClayIcon name="chevronDown" size={17} color={colors.muted} />
+                </View>
+              </Pressable>
+            ) : null}
             {onOpen ? (
               <Pressable
                 accessibilityRole="button"

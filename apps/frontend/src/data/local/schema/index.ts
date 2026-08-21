@@ -10,6 +10,7 @@ export { setTypeFields } from './setTypeField';
 export { workoutExerciseTypes } from './workoutExerciseType';
 export {
   workoutTemplates,
+  workoutTemplateSupersets,
   workoutTemplateExercises,
   workoutTemplateSets,
 } from './workoutTemplate';

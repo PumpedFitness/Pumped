@@ -26,6 +26,7 @@ import m0022 from './0022_workout_logo.sql';
 import m0023 from './0023_exercise_how_to.sql';
 import m0024 from './0024_profile_training_prefs.sql';
 import m0025 from './0025_health_raw.sql';
+import m0026 from './0026_supersets.sql';
 
 export default {
   journal,
@@ -56,5 +57,6 @@ export default {
     m0023,
     m0024,
     m0025,
+    m0026,
   },
 };

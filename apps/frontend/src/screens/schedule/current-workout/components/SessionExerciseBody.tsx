@@ -8,12 +8,12 @@ import type {
   UpdateCurrentWorkoutSetInput,
 } from '@/stores/currentWorkoutModel';
 import type { SetTypeWithFields } from '@/types/setType';
-import type { WorkoutTemplateExercise } from '@/types/workout';
 import {
   ExerciseSetTable,
   type SetTypeOption,
 } from '@/components/exercise/set-table';
 import { requestRemoveSet } from './currentWorkoutConfirm';
+import { effectiveTemplateExercise } from './sessionTemplateExercise';
 
 type SessionExerciseBodyProps = {
   exercise: CurrentWorkoutExercise;
@@ -34,55 +34,19 @@ type SessionExerciseBodyProps = {
   activeRestSetId: string | null;
   removeSet: (exerciseId: string, setId: string) => void;
   addSet: (exerciseId: string) => void;
+  // Set for a superset member. `currentSetId` is decided by the block, which is
+  // the only place that knows the round-major order; `addSetLabel` reads
+  // "Add round" because a set here is one round for the whole group.
+  currentSetId?: string | null;
+  addSetLabel?: string;
+  /** Hidden on every superset member but the last: one button adds a round to
+   *  the whole group, so repeating it under each exercise reads as a choice
+   *  that isn't there. */
+  hideAddSet?: boolean;
+  /** How many exercises share this member's superset; drives the round-removal
+   *  confirmation. Passed as a number, not a resolver, so memo still holds. */
+  supersetMemberCount?: number;
 };
-
-function fallbackTemplateExercise(
-  exercise: CurrentWorkoutExercise,
-): WorkoutTemplateExercise {
-  return {
-    id: exercise.sourceTemplateExerciseId ?? exercise.id,
-    exerciseId: exercise.exerciseId,
-    position: exercise.position,
-    typeId: null,
-    color: exercise.color,
-    goal: exercise.goal,
-    notes: exercise.notes,
-    sets: exercise.sets.map(set => ({
-      id: set.sourceTemplateSetId ?? set.id,
-      position: set.position,
-      setType: set.setType,
-      restSeconds: set.restSeconds,
-      progressionGoal: set.progressionGoal,
-      fieldValues: [],
-    })),
-  };
-}
-
-function effectiveTemplateExercise(
-  exercise: CurrentWorkoutExercise,
-): WorkoutTemplateExercise {
-  const source = exercise.sourceTemplateExercise;
-  if (!source) {
-    return fallbackTemplateExercise(exercise);
-  }
-  const sourceSets = new Map(source.sets.map(set => [set.id, set] as const));
-  return {
-    ...source,
-    sets: exercise.sets.map(set => {
-      const sourceSet = set.sourceTemplateSetId
-        ? sourceSets.get(set.sourceTemplateSetId)
-        : null;
-      return {
-        id: sourceSet?.id ?? set.sourceTemplateSetId ?? set.id,
-        position: set.position,
-        setType: set.setType,
-        restSeconds: sourceSet?.restSeconds ?? set.restSeconds,
-        progressionGoal: set.progressionGoal ?? sourceSet?.progressionGoal,
-        fieldValues: sourceSet?.fieldValues ?? [],
-      };
-    }),
-  };
-}
 
 function repeatSuggestedSets<T>(sets: T[], count: number): T[] {
   if (sets.length >= count) {
@@ -107,6 +71,10 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
   activeRestSetId,
   removeSet,
   addSet,
+  currentSetId,
+  addSetLabel,
+  hideAddSet,
+  supersetMemberCount,
 }: SessionExerciseBodyProps) {
   const { t } = useTranslation();
   const progression = useProgressionSuggestion({
@@ -143,8 +111,9 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
     [exercise, toggleSetDone, onSetLogged],
   );
   const handleRemoveSet = useCallback(
-    (set: CurrentWorkoutSet) => requestRemoveSet(t, exercise, set, removeSet),
-    [t, exercise, removeSet],
+    (set: CurrentWorkoutSet) =>
+      requestRemoveSet(t, exercise, set, removeSet, supersetMemberCount),
+    [t, exercise, removeSet, supersetMemberCount],
   );
 
   return (
@@ -155,8 +124,10 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
         setTypeOptions={setTypeOptions}
         setTypesById={setTypesById}
         weightUnit={weightUnit}
+        currentSetId={currentSetId}
+        addSetLabel={addSetLabel}
         onCreateSetType={onCreateSetType}
-        onAddSet={handleAddSet}
+        onAddSet={hideAddSet ? undefined : handleAddSet}
         onChangeSet={handleChangeSet}
         onToggleSetDone={handleToggleSetDone}
         onRemoveSet={handleRemoveSet}

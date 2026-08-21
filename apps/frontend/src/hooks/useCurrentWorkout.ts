@@ -114,6 +114,7 @@ export function useCurrentWorkout() {
             exerciseId: exercise.exerciseId,
             exercisePosition: exercise.position,
             setPosition: set.position,
+            supersetId: exercise.supersetId,
             setType: set.setType,
             restSeconds: set.restSeconds,
             fieldValues: set.fieldValues,

@@ -6,12 +6,16 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { useUndoToast } from '@/components/feedback/UndoToast';
+import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
+import { useSchedules } from '@/hooks/useSchedules';
+import { useUsage } from '@/hooks/useUsage';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
+import type { Schedule, SaveScheduleInput } from '@/types/schedule';
 import type { WorkoutTemplate } from '@/types/workout';
 import { WorkoutTemplateCard } from './WorkoutTemplateCard';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
@@ -24,16 +28,43 @@ function templateToInput(template: WorkoutTemplate): SaveWorkoutTemplateInput {
     name: template.name,
     description: template.description,
     color: template.color,
+    icon: template.icon,
+    picture: template.picture,
+    // The save re-mints superset row ids and resolves membership through the
+    // key, so the stored ids double as keys here.
+    supersets: template.supersets,
     exercises: template.exercises.map(exercise => ({
       exerciseId: exercise.exerciseId,
       typeId: exercise.typeId,
+      color: exercise.color,
+      supersetId: exercise.supersetId,
       goal: exercise.goal,
       notes: exercise.notes,
       sets: exercise.sets.map(set => ({
         setType: set.setType,
         restSeconds: set.restSeconds,
+        progressionGoal: set.progressionGoal,
         fieldValues: set.fieldValues,
       })),
+    })),
+  };
+}
+
+// A template's schedule slots cascade away with it, so undo has to re-save the
+// schedules that planned it — re-creating the template alone leaves those days
+// empty.
+function scheduleToInput(schedule: Schedule): SaveScheduleInput {
+  return {
+    id: schedule.id,
+    name: schedule.name,
+    recurrenceType: schedule.recurrenceType,
+    periodLength: schedule.periodLength,
+    anchorDay: schedule.anchorDay,
+    isActive: schedule.isActive,
+    slots: schedule.slots.map(slot => ({
+      dayOffset: slot.dayOffset,
+      position: slot.position,
+      workoutTemplateId: slot.workoutTemplateId,
     })),
   };
 }
@@ -47,15 +78,37 @@ export function WorkoutsLibrary() {
   const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
   const { isFavorite, toggleFavorite } = useLocalFavorites();
   const { showUndo } = useUndoToast();
+  const { schedules, saveSchedule } = useSchedules();
+  const usage = useUsage('template');
 
-  // Capture the template before the cascading delete so undo can restore it.
+  // Capture the template and its schedule placements before the cascading
+  // delete, and warn first when a schedule (especially the active one) plans it.
   const removeTemplate = (template: WorkoutTemplate) => {
     const snapshot = templateToInput(template);
-    deleteTemplate(template.id);
-    showUndo({
-      message: t('common.deletedNamed', { name: template.name }),
-      onUndo: () => saveTemplate(snapshot),
-    });
+    const plannedIn = schedules
+      .filter(schedule =>
+        schedule.slots.some(slot => slot.workoutTemplateId === template.id),
+      )
+      .map(scheduleToInput);
+
+    return confirmUsageDelete(
+      t,
+      {
+        kind: 'template',
+        name: template.name,
+        usage: usage.get(template.id),
+      },
+      () => {
+        deleteTemplate(template.id);
+        showUndo({
+          message: t('common.deletedNamed', { name: template.name }),
+          onUndo: () => {
+            saveTemplate(snapshot);
+            plannedIn.forEach(schedule => saveSchedule(schedule));
+          },
+        });
+      },
+    );
   };
 
   const exerciseNames = useMemo(
@@ -130,6 +183,7 @@ export function WorkoutsLibrary() {
           <WorkoutTemplateCard
             template={template}
             exerciseNames={exerciseNames}
+            usage={usage.get(template.id)}
             onEdit={openEdit}
             onStart={startTemplate}
           />

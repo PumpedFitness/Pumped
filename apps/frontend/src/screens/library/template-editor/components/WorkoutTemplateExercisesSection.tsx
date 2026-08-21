@@ -13,8 +13,9 @@ import {
 import { colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { useTemplateEditor } from '@/screens/library/template-editor/templateEditorContext';
-import type { EditorExercise } from '@/screens/library/template-editor/useEditorExercises';
+import type { EditorBlock } from '@/screens/library/template-editor/useEditorExercises';
 import { ExerciseEditorCard } from './ExerciseEditorCard';
+import { SupersetEditorCard } from './SupersetEditorCard';
 import { FormSection } from './FormSection';
 
 function ExerciseDragHandle() {
@@ -35,17 +36,34 @@ function ExerciseDragHandle() {
   );
 }
 
-function renderItem({ item }: { item: EditorExercise }) {
+function renderItem({ item }: { item: EditorBlock }) {
+  if (item.kind === 'superset') {
+    return (
+      <SupersetEditorCard block={item} dragHandle={<ExerciseDragHandle />} />
+    );
+  }
   return (
-    <ExerciseEditorCard exercise={item} dragHandle={<ExerciseDragHandle />} />
+    <ExerciseEditorCard
+      exercise={item.exercise}
+      headerAccessory={<ExerciseDragHandle />}
+    />
   );
+}
+
+/** Stable across reorders — an index in the key would change every row's key on
+ *  every drag, throwing away the memoized member cards underneath. */
+function blockKey(block: EditorBlock): string {
+  return block.kind === 'superset'
+    ? `superset-${block.group.id}`
+    : `exercise-${block.exercise.exerciseId}`;
 }
 
 export function WorkoutTemplateExercisesSection() {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { exercises, chooseExercises, reorderExercises } = useTemplateEditor();
+  const { exercises, blocks, chooseExercises, reorderBlocks } =
+    useTemplateEditor();
 
   const chooseExercisesAction = (
     <Pressable
@@ -72,15 +90,13 @@ export function WorkoutTemplateExercisesSection() {
         // this context is only read to emit the dev nesting warning.
         <ScrollViewContext.Provider value={null}>
           <NestedReorderableList
-            data={exercises}
+            data={blocks}
             scrollable={false}
-            keyExtractor={(exercise, index) =>
-              `template-exercise-${exercise.exerciseId}-${index}`
-            }
+            keyExtractor={blockKey}
             renderItem={renderItem}
             ItemSeparatorComponent={() => <View className="h-3" />}
             onReorder={({ from, to }: ReorderableListReorderEvent) =>
-              reorderExercises(from, to)
+              reorderBlocks(from, to)
             }
           />
         </ScrollViewContext.Provider>

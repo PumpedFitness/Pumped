@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { randomUUID } from 'expo-crypto';
 import { Button } from 'heroui-native';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
 import { setWorkoutSessionTemplate } from '@/data/local/workouts/sessions';
@@ -11,13 +11,12 @@ import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import {
   useWorkoutHistory,
   useWorkoutSession,
-  type WorkoutHistoryItem,
 } from '@/hooks/useWorkoutHistory';
-import type { PerformedSet } from '@/types/workout';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { displayWeight } from '@/utils/units';
-import { CompletedExerciseHistorySection } from '@/components/exercise/CompletedExerciseHistorySection';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
+import { CompletedWorkoutExercises } from './CompletedWorkoutExercises';
+import { previousSetsForExercise } from './completedWorkoutModel';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { colors } from '@pumped/ui/theme/tokens';
@@ -54,98 +53,6 @@ function CompletedWorkoutTemplateAction({
       </Button.Label>
     </Button>
   );
-}
-
-type CompletedExercise = {
-  key: string;
-  exerciseId: string;
-  exercisePosition: number;
-  sets: WorkoutHistoryItem['sets'];
-};
-
-function sortSetsByPosition(sets: PerformedSet[]): PerformedSet[] {
-  return [...sets].sort((a, b) => a.setPosition - b.setPosition);
-}
-
-function setsForExercisePlacement(
-  workout: WorkoutHistoryItem,
-  exerciseId: string,
-  exercisePosition: number,
-): PerformedSet[] | undefined {
-  const exactPlacement = workout.sets.filter(
-    set =>
-      set.exerciseId === exerciseId &&
-      set.exercisePosition === exercisePosition,
-  );
-
-  if (exactPlacement.length > 0) {
-    return sortSetsByPosition(exactPlacement);
-  }
-
-  const setsByPlacement = new Map<number, PerformedSet[]>();
-  workout.sets.forEach(set => {
-    if (set.exerciseId !== exerciseId) {
-      return;
-    }
-
-    const bucket = setsByPlacement.get(set.exercisePosition) ?? [];
-    bucket.push(set);
-    setsByPlacement.set(set.exercisePosition, bucket);
-  });
-
-  if (setsByPlacement.size !== 1) {
-    return undefined;
-  }
-
-  return sortSetsByPosition([...setsByPlacement.values()][0] ?? []);
-}
-
-function previousSetsForExercise(
-  exerciseId: string,
-  exercisePosition: number,
-  beforeTimestamp: number,
-  allWorkouts: WorkoutHistoryItem[],
-): PerformedSet[] | undefined {
-  let bestStartedAt = -Infinity;
-  let bestSets: PerformedSet[] | undefined;
-
-  for (const workout of allWorkouts) {
-    if (workout.startedAt >= beforeTimestamp) continue;
-    const sets = setsForExercisePlacement(
-      workout,
-      exerciseId,
-      exercisePosition,
-    );
-
-    if (!sets || workout.startedAt <= bestStartedAt) {
-      continue;
-    }
-
-    bestStartedAt = workout.startedAt;
-    bestSets = sets;
-  }
-
-  return bestSets;
-}
-
-function groupCompletedExercises(
-  workout: WorkoutHistoryItem,
-): CompletedExercise[] {
-  const groups = new Map<string, CompletedExercise>();
-
-  workout.sets.forEach(set => {
-    const key = `${set.exercisePosition}:${set.exerciseId}`;
-    const group = groups.get(key) ?? {
-      key,
-      exerciseId: set.exerciseId,
-      exercisePosition: set.exercisePosition,
-      sets: [],
-    };
-    group.sets.push(set);
-    groups.set(key, group);
-  });
-
-  return [...groups.values()];
 }
 
 function formatDate(timestamp: number, language: string): string {
@@ -196,26 +103,6 @@ export function CompletedWorkoutDetails({
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
 
-  const [collapsedExercises, setCollapsedExercises] = useState<Set<string>>(
-    () =>
-      new Set(
-        (workout ? groupCompletedExercises(workout) : []).map(
-          exercise => exercise.key,
-        ),
-      ),
-  );
-  const toggleCollapsed = (exerciseKey: string) => {
-    setCollapsedExercises(previous => {
-      const next = new Set(previous);
-      if (next.has(exerciseKey)) {
-        next.delete(exerciseKey);
-      } else {
-        next.add(exerciseKey);
-      }
-      return next;
-    });
-  };
-
   if (!workout) {
     return (
       <View className="flex-1 items-center justify-center gap-3 px-8">
@@ -241,7 +128,9 @@ export function CompletedWorkoutDetails({
     }
 
     try {
-      const template = saveTemplate(workoutSessionToTemplateInput(workout));
+      const template = saveTemplate(
+        workoutSessionToTemplateInput(workout, randomUUID),
+      );
       setWorkoutSessionTemplate(workout.id, template.id);
       openTemplate(template.id);
     } catch {
@@ -252,7 +141,6 @@ export function CompletedWorkoutDetails({
     }
   };
 
-  const exercises = groupCompletedExercises(workout);
   const exerciseById = new Map(
     exerciseOptions.map(exercise => [exercise.id, exercise] as const),
   );
@@ -300,39 +188,21 @@ export function CompletedWorkoutDetails({
         onPress={handleOpenTemplate}
       />
 
-      {exercises.map((exercise, index) => {
-        const option = exerciseById.get(exercise.exerciseId);
-        const isCollapsed = collapsedExercises.has(exercise.key);
-
-        return (
-          <CompletedExerciseHistorySection
-            key={exercise.key}
-            collapseControlPosition="overview"
-            index={index}
-            name={option?.name ?? t('common.unknownExercise')}
-            sets={exercise.sets}
-            previousSets={previousSetsForExercise(
-              exercise.exerciseId,
-              exercise.exercisePosition,
-              workout.startedAt,
-              allWorkouts,
-            )}
-            isCollapsed={isCollapsed}
-            onOpen={
-              option
-                ? () =>
-                    navigation.navigate('EditExercise', {
-                      exerciseId: exercise.exerciseId,
-                    })
-                : undefined
-            }
-            onToggleCollapsed={() => toggleCollapsed(exercise.key)}
-            setTypeOptions={setTypeOptions}
-            setTypesById={setTypesById}
-            weightUnit={weightUnit}
-          />
-        );
-      })}
+      <CompletedWorkoutExercises
+        workout={workout}
+        exerciseById={exerciseById}
+        setTypeOptions={setTypeOptions}
+        setTypesById={setTypesById}
+        weightUnit={weightUnit}
+        previousSetsFor={exercise =>
+          previousSetsForExercise(
+            exercise.exerciseId,
+            exercise.exercisePosition,
+            workout.startedAt,
+            allWorkouts,
+          )
+        }
+      />
 
       {workout.notes ? (
         <View className="rounded-[22px] border border-border-hairline bg-surface-card p-4">

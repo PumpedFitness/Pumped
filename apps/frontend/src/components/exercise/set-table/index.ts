@@ -6,3 +6,4 @@ export {
   formatSetFieldDetail,
 } from './exerciseSetPresentation';
 export { formatSetNumber, type SetTypeOption } from './exerciseSetTableModel';
+export { buildRestPickerConfig, formatRestValue } from './restPicker';

@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { randomUUID } from 'expo-crypto';
 import * as ImagePicker from 'expo-image-picker';
 import { asc } from 'drizzle-orm';
 import { BODY_HIGHLIGHTER_MUSCLE_GROUPS } from '@/components/body';
+import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
 import { useRepository } from '@/data/local/useRepository';
 import { exercises, exerciseTypes } from '@/data/local/schema';
+import { useUsage } from '@/hooks/useUsage';
 
 export type ExerciseToEdit = {
   id: string;
@@ -27,6 +28,7 @@ export function useExerciseDraft(
   const { t } = useTranslation();
   const exerciseRepo = useRepository(exercises);
   const typeRepo = useRepository(exerciseTypes);
+  const usage = useUsage('exercise');
 
   const [name, setName] = useState(exercise?.name ?? '');
   const [description, setDescription] = useState(exercise?.description ?? '');
@@ -99,22 +101,21 @@ export function useExerciseDraft(
 
   const handleDelete = () => {
     if (!exercise) return;
-    Alert.alert(
-      t('exerciseForm.deleteAlertTitle'),
-      t('exerciseForm.deleteAlertBody', { name: exercise.name }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: () => {
-            // The repository write re-renders the owning screen reactively;
-            // the screen notices the exercise is gone and performs the single
-            // goBack itself.
-            exerciseRepo.deleteById(exercise.id);
-          },
-        },
-      ],
+    // Spells out the workouts that would be left with an unknown exercise;
+    // falls back to the plain confirmation when nothing uses it.
+    void confirmUsageDelete(
+      t,
+      {
+        kind: 'exercise',
+        name: exercise.name,
+        usage: usage.get(exercise.id),
+        fallbackBody: t('exerciseForm.deleteAlertBody', {
+          name: exercise.name,
+        }),
+      },
+      // The repository write re-renders the owning screen reactively; the
+      // screen notices the exercise is gone and performs the single goBack.
+      () => exerciseRepo.deleteById(exercise.id),
     );
   };
 

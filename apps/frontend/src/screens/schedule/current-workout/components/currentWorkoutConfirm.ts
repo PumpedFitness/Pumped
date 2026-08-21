@@ -12,20 +12,34 @@ type RemoveExercise = ReturnType<typeof useCurrentWorkout>['removeExercise'];
 // Resolves true once the set is removed, false if the user cancels — so a
 // swipe-to-delete row can spring back instead of vanishing on a declined
 // confirmation. Done sets prompt; not-yet-done sets remove immediately.
+//
+// A superset member always prompts, whatever the set's state: removing a set
+// there removes the whole round, so sets disappear from exercises the user
+// isn't looking at. That has to be said out loud.
 export function requestRemoveSet(
   t: TFunction,
   exercise: CurrentWorkoutExercise,
   set: CurrentWorkoutSet,
   removeSet: RemoveSet,
+  supersetMemberCount?: number,
 ): Promise<boolean> {
-  if (!set.isDone) {
+  const isSupersetRound =
+    exercise.supersetId !== null && (supersetMemberCount ?? 0) > 1;
+  if (!set.isDone && !isSupersetRound) {
     removeSet(exercise.id, set.id);
     return Promise.resolve(true);
   }
+  const round = exercise.sets.findIndex(item => item.id === set.id) + 1;
   return new Promise<boolean>(resolve => {
     Alert.alert(
-      t('currentWorkout.alerts.removeSetTitle'),
-      t('currentWorkout.alerts.removeSetBody'),
+      isSupersetRound
+        ? t('currentWorkout.superset.removeRoundTitle', { round })
+        : t('currentWorkout.alerts.removeSetTitle'),
+      isSupersetRound
+        ? t('currentWorkout.superset.removeRoundBody', {
+            count: supersetMemberCount ?? 0,
+          })
+        : t('currentWorkout.alerts.removeSetBody'),
       [
         {
           text: t('common.cancel'),
