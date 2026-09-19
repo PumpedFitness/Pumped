@@ -1,36 +1,18 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
-import type { WeightUnit } from '@/data/local/schema/userProfile';
-import {
-  formatExerciseSetSummary,
-  formatSetFieldDetail,
-} from '@/components/exercise/set-table';
+import { formatExerciseSetSummary } from '@/components/exercise/set-table';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import {
   useWorkoutExerciseTypes,
   type WorkoutExerciseTypeItem,
 } from '@/hooks/useWorkoutExerciseTypes';
-import type { SetTypeWithFields } from '@/types/setType';
 import type { WorkoutTemplateColor } from '@/data/local/enums';
 import type { WorkoutTemplateSuperset } from '@/types/workout';
 import {
   groupIntoBlocks,
   type SupersetBlock,
 } from '@/data/local/workouts/supersets';
-import type {
-  EditableExercise,
-  EditableExerciseSet,
-  ExerciseOption,
-} from '@/types/exercise';
-
-/** One set, resolved to display strings for the read-only card summary. */
-export type EditorSetView = {
-  id: string;
-  typeLabel: string;
-  detail: string;
-};
+import type { EditableExercise, ExerciseOption } from '@/types/exercise';
 
 /**
  * A draft exercise with every id already resolved to the object it points at —
@@ -43,41 +25,18 @@ export type EditorExercise = {
   option: ExerciseOption | null;
   name: string;
   type: WorkoutExerciseTypeItem | null;
-  /** Per-placement accent color; null inherits the template color. */
+  /** Per-placement accent color; null inherits the workout color. */
   color: WorkoutTemplateColor | null;
   /** Superset membership; null means the exercise stands alone. */
   supersetId: string | null;
   goal: string;
   setSummary: string;
-  setViews: EditorSetView[];
-  sets: EditableExerciseSet[];
+  sets: EditableExercise['sets'];
 };
 
 /** What the exercises section actually renders: a standalone exercise or a
  *  whole superset. */
 export type EditorBlock = SupersetBlock<EditorExercise>;
-
-function buildSetView(
-  t: TFunction,
-  set: EditableExerciseSet,
-  setType: SetTypeWithFields | undefined,
-  weightUnit: WeightUnit,
-): EditorSetView {
-  const typeLabel = setType?.name ?? set.setType;
-  const parts: string[] = [];
-  (setType?.fields ?? []).forEach(field => {
-    const detail = formatSetFieldDetail(field, set.fieldValues, weightUnit);
-    if (detail) {
-      parts.push(detail);
-    }
-  });
-  if (set.restSeconds != null) {
-    parts.push(
-      t('templateEditor.exercises.setSummary.rest', { value: set.restSeconds }),
-    );
-  }
-  return { id: set.id, typeLabel, detail: parts.join(' · ') };
-}
 
 export function useEditorExercises(
   draftExercises: EditableExercise[],
@@ -85,9 +44,7 @@ export function useEditorExercises(
   exerciseOptions: ExerciseOption[],
 ): { exercises: EditorExercise[]; blocks: EditorBlock[] } {
   const { t } = useTranslation();
-  const { profile } = useUserProfile();
-  const weightUnit = profile.weightUnit;
-  const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
+  const { options: setTypeOptions } = useSetTypeLibrary();
   const exerciseTypes = useWorkoutExerciseTypes();
 
   const optionsById = useMemo(
@@ -111,20 +68,9 @@ export function useEditorExercises(
         supersetId: exercise.supersetId,
         goal: exercise.goal,
         setSummary: formatExerciseSetSummary(t, exercise.sets, setTypeOptions),
-        setViews: exercise.sets.map(set =>
-          buildSetView(t, set, setTypesById.get(set.setType), weightUnit),
-        ),
         sets: exercise.sets,
       })),
-    [
-      draftExercises,
-      optionsById,
-      exerciseTypes.items,
-      setTypeOptions,
-      setTypesById,
-      weightUnit,
-      t,
-    ],
+    [draftExercises, optionsById, exerciseTypes.items, setTypeOptions, t],
   );
 
   const blocks = useMemo(

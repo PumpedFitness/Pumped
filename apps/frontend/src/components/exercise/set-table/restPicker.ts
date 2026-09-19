@@ -1,6 +1,5 @@
-// Shared rest-picker config and formatting. Extracted from SetSheets/SetCardHeader
-// so the superset editor, which owns rest for a whole group, presents exactly
-// the same wheel and the same "2:30" / "45s" text as a single set does.
+// Shared rest-picker config and formatting for the live timer and the default
+// duration configured on a set type.
 
 import type { TFunction } from 'i18next';
 import type { OptionalWheelPickerConfig } from '@pumped/ui/forms/OptionalWheelPickerSheet';

@@ -14,7 +14,7 @@ import {
   isSetComplete,
   snapshotActualsFromTargets,
 } from '@/data/local/sets/fieldValues';
-import { supersetRestBySetId } from '@/data/local/workouts/supersets';
+import { getSetTypeWithFields } from '@/data/local/sets/setTypes';
 import { resolveExerciseColor } from '@/components/workout/workoutTemplatePresentation';
 import { uniqueBy } from '@/utils/dedupe';
 
@@ -47,7 +47,7 @@ export type CurrentWorkoutExercise = {
 
 export type CurrentWorkout = {
   id: string;
-  workoutTemplateId: string;
+  workoutTemplateId: string | null;
   name: string;
   startedAt: number;
   /** Timestamp the elapsed clock was paused at; null while running. */
@@ -80,12 +80,13 @@ export type UpdateCurrentWorkoutSetInput = Partial<
 >;
 
 export function createCurrentWorkoutSet(position: number): CurrentWorkoutSet {
+  const setType = 'NORMAL';
   return {
     id: randomUUID(),
     sourceTemplateSetId: null,
     position,
-    setType: 'NORMAL',
-    restSeconds: null,
+    setType,
+    restSeconds: getSetTypeWithFields(setType)?.defaultRestSeconds ?? null,
     progressionGoal: null,
     fieldValues: [],
     isDone: false,
@@ -118,18 +119,13 @@ export function createCurrentWorkoutExercise(
 
 function snapshotTemplateSet(
   set: WorkoutTemplateExercise['sets'][number],
-  supersetRest: Map<string, number | null>,
 ): CurrentWorkoutSet {
   return {
     id: randomUUID(),
     sourceTemplateSetId: set.id,
     position: set.position,
     setType: set.setType,
-    // A superset owns its members' rest, including "none" — so an entry in the
-    // map wins even when it is null, and only a non-member falls back.
-    restSeconds: supersetRest.has(set.id)
-      ? supersetRest.get(set.id) ?? null
-      : set.restSeconds,
+    restSeconds: getSetTypeWithFields(set.setType)?.defaultRestSeconds ?? null,
     progressionGoal: set.progressionGoal,
     fieldValues: snapshotActualsFromTargets(set.fieldValues),
     isDone: false,
@@ -147,10 +143,6 @@ export function createTemplateSnapshot(
     template.exercises,
     exercise => exercise.exerciseId,
   );
-  // Superset rest is resolved here, once, and written onto the live sets — see
-  // supersetRestBySetId.
-  const supersetRest = supersetRestBySetId(exercises, template.supersets);
-
   return exercises.map(exercise => ({
     id: randomUUID(),
     sourceTemplateExerciseId: exercise.id,
@@ -161,7 +153,7 @@ export function createTemplateSnapshot(
     supersetId: exercise.supersetId,
     goal: exercise.goal,
     notes: exercise.notes,
-    sets: exercise.sets.map(set => snapshotTemplateSet(set, supersetRest)),
+    sets: exercise.sets.map(snapshotTemplateSet),
   }));
 }
 
@@ -242,7 +234,7 @@ export function buildTemplateSyncInput(
               : null;
             return {
               setType: set.setType,
-              restSeconds: source?.restSeconds ?? null,
+              restSeconds: null,
               progressionGoal: set.progressionGoal ?? source?.progressionGoal,
               fieldValues: source?.fieldValues ?? [],
             };

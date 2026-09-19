@@ -15,24 +15,25 @@ import { ScheduleUpNextCard } from './ScheduleUpNextCard';
 import { ScheduleWeekStrip } from './ScheduleWeekStrip';
 
 type ActiveScheduleTabProps = {
-  onGoToLibrary: () => void;
+  onGoToSchedules: () => void;
 };
 
-export function ActiveScheduleTab({ onGoToLibrary }: ActiveScheduleTabProps) {
+export function ActiveScheduleTab({ onGoToSchedules }: ActiveScheduleTabProps) {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { today, skip, unskip } = useTodayWorkout();
   const { days, tomorrow, hasActiveSchedule, scheduleName } = useScheduleWeek();
   const { profile } = useUserProfile();
-  const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
+  const { currentWorkout, startTemplateWorkout, startPrivateWorkout } =
+    useCurrentWorkout();
 
   const startToday = () => {
-    const templateId =
+    const template =
       today.kind === 'pending' || today.kind === 'skipped'
-        ? today.templateId
+        ? today.template
         : null;
-    if (!templateId) {
+    if (!template) {
       return;
     }
     if (currentWorkout) {
@@ -50,7 +51,13 @@ export function ActiveScheduleTab({ onGoToLibrary }: ActiveScheduleTabProps) {
       return;
     }
     try {
-      startTemplateWorkout(templateId);
+      if (today.kind === 'pending' || today.kind === 'skipped') {
+        if (today.source === 'periodization') {
+          startPrivateWorkout(template);
+        } else {
+          startTemplateWorkout(template.id);
+        }
+      }
       openCurrentWorkout(navigation);
     } catch (error) {
       Alert.alert(
@@ -93,7 +100,7 @@ export function ActiveScheduleTab({ onGoToLibrary }: ActiveScheduleTabProps) {
         <Button
           variant="secondary"
           feedbackVariant="scale"
-          onPress={onGoToLibrary}
+          onPress={onGoToSchedules}
         >
           <Button.Label>{t('schedule.browseLibrary')}</Button.Label>
         </Button>

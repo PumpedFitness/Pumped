@@ -4,12 +4,15 @@ import { skippedDays } from '@/data/local/schema';
 import { localDayIndex } from '@/data/local/schedules/scheduleResolution';
 import { listSkippedDayIndexes } from '@/data/local/schedules/skippedDays';
 import {
+  buildEmbeddedPlanWeek,
   buildScheduleWeek,
   type ScheduleWeek,
 } from '@/screens/schedule/components/scheduleWeekModel';
 import { useSchedules } from './useSchedules';
 import { useWorkoutTemplates } from './useWorkoutTemplates';
 import { useWorkoutHistory } from './useWorkoutHistory';
+import { usePeriodizations } from './usePeriodizations';
+import { periodizationWorkoutsForDay } from '@/data/local/periodizations/periodizationResolution';
 
 type UseScheduleWeekResult = ScheduleWeek & {
   hasActiveSchedule: boolean;
@@ -20,6 +23,7 @@ type UseScheduleWeekResult = ScheduleWeek & {
 // (done) and skipped days, plus a tomorrow lookahead. Powers the Active tab.
 export function useScheduleWeek(): UseScheduleWeekResult {
   const { activeSchedule, today } = useSchedules();
+  const { activePeriodization } = usePeriodizations();
   const { templates } = useWorkoutTemplates();
   const { workouts } = useWorkoutHistory();
 
@@ -34,19 +38,36 @@ export function useScheduleWeek(): UseScheduleWeekResult {
 
   const week = useMemo(
     () =>
-      buildScheduleWeek(
-        activeSchedule,
-        templates,
-        today,
-        doneDayIndexes,
-        skippedDayIndexes,
-      ),
-    [activeSchedule, templates, today, doneDayIndexes, skippedDayIndexes],
+      activePeriodization
+        ? buildEmbeddedPlanWeek(
+            dayIndex =>
+              periodizationWorkoutsForDay(activePeriodization, dayIndex).map(
+                workout => workout.template,
+              ),
+            today,
+            doneDayIndexes,
+            skippedDayIndexes,
+          )
+        : buildScheduleWeek(
+            activeSchedule,
+            templates,
+            today,
+            doneDayIndexes,
+            skippedDayIndexes,
+          ),
+    [
+      activePeriodization,
+      activeSchedule,
+      templates,
+      today,
+      doneDayIndexes,
+      skippedDayIndexes,
+    ],
   );
 
   return {
     ...week,
-    hasActiveSchedule: activeSchedule != null,
-    scheduleName: activeSchedule?.name ?? null,
+    hasActiveSchedule: activeSchedule != null || activePeriodization != null,
+    scheduleName: activePeriodization?.name ?? activeSchedule?.name ?? null,
   };
 }

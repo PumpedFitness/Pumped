@@ -9,9 +9,10 @@ import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { motion } from '@pumped/ui/theme/tokens';
 import { useScheduleWeek } from '@/hooks/useScheduleWeek';
 import { ActiveScheduleTab } from './components/ActiveScheduleTab';
-import { ScheduleLibraryTab } from './components/ScheduleLibraryTab';
+import { SchedulesTab } from './components/SchedulesTab';
+import { PeriodizationListTab } from './periodization/PeriodizationListTab';
 
-type ScheduleSegment = 'active' | 'library';
+type ScheduleSegment = 'active' | 'schedules' | 'periodization';
 
 export function ScheduleScreen() {
   const { t } = useTranslation();
@@ -38,7 +39,11 @@ export function ScheduleScreen() {
         <SegmentedControl
           options={[
             { value: 'active', label: t('schedule.segments.active') },
-            { value: 'library', label: t('schedule.segments.library') },
+            { value: 'schedules', label: t('schedule.segments.schedules') },
+            {
+              value: 'periodization',
+              label: t('schedule.segments.periodization'),
+            },
           ]}
           value={segment}
           onChange={value => setSegment(value as ScheduleSegment)}
@@ -51,9 +56,11 @@ export function ScheduleScreen() {
         exiting={FadeOut.duration(motion.fast)}
       >
         {segment === 'active' ? (
-          <ActiveScheduleTab onGoToLibrary={() => setSegment('library')} />
+          <ActiveScheduleTab onGoToSchedules={() => setSegment('schedules')} />
+        ) : segment === 'schedules' ? (
+          <SchedulesTab />
         ) : (
-          <ScheduleLibraryTab />
+          <PeriodizationListTab />
         )}
       </Animated.View>
     </AppShell>

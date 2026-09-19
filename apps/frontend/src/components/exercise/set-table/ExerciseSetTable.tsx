@@ -18,7 +18,6 @@ export function ExerciseSetTable(props: ExerciseSetTableProps) {
       addSetLabel={props.readOnly ? undefined : props.addSetLabel}
       onAddSet={props.readOnly ? undefined : props.onAddSet}
       animateLayout={props.readOnly ? false : props.animateLayout ?? true}
-      iconOnlySetType={!props.readOnly && props.iconOnlySetType}
     />
   );
 }

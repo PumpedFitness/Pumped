@@ -1,15 +1,16 @@
 import { useMemo } from 'react';
 import { useTodayWorkout } from './useTodayWorkout';
 import { useWorkoutHistory } from './useWorkoutHistory';
-import { useWorkoutTemplates } from './useWorkoutTemplates';
 import { useUserProfile } from './useUserProfile';
 import { useSchedules } from './useSchedules';
 import { useScheduleWeek } from './useScheduleWeek';
+import { usePeriodizations } from './usePeriodizations';
 import { useTrendsData } from '@/screens/trends/useTrendsData';
 import {
   localDayIndex,
   templateIdsForDay,
 } from '@/data/local/schedules/scheduleResolution';
+import { periodizationWorkoutsForDay } from '@/data/local/periodizations/periodizationResolution';
 
 const WEEK_MS = 7 * 86_400_000;
 
@@ -55,29 +56,15 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
-type Template = ReturnType<typeof useWorkoutTemplates>['templates'][number];
 type HistoryItem = ReturnType<typeof useWorkoutHistory>['workouts'][number];
 
 function buildNextSession(
   today: ReturnType<typeof useTodayWorkout>['today'],
-  templates: Template[],
   workouts: HistoryItem[],
 ): NextSession | null {
   if (today.kind !== 'pending' && today.kind !== 'skipped') return null;
-  const { templateId, workoutName } = today;
-
-  const template = templates.find(item => item.id === templateId);
-  if (!template) {
-    return {
-      templateId,
-      name: workoutName,
-      focus: null,
-      exerciseCount: 0,
-      setCount: 0,
-      estimatedMinutes: 0,
-      targetTonnage: 0,
-    };
-  }
+  const { template, workoutName } = today;
+  const templateId = today.source === 'schedule' ? template.id : null;
 
   const setCount = template.exercises.reduce(
     (total, exercise) => total + exercise.sets.length,
@@ -87,7 +74,7 @@ function buildNextSession(
   // Target tonnage = what this workout actually moved recently (avg of the
   // last 3 logged sessions of the same template), not a made-up heuristic.
   const pastVolumes = workouts
-    .filter(workout => workout.workoutTemplateId === templateId)
+    .filter(workout => templateId && workout.workoutTemplateId === templateId)
     .slice(0, 3)
     .map(workout => workout.totalVolumeKg);
   const targetTonnage =
@@ -101,7 +88,7 @@ function buildNextSession(
 
   return {
     templateId,
-    name: template.name,
+    name: template.name || workoutName,
     focus: template.description,
     exerciseCount: template.exercises.length,
     setCount,
@@ -113,15 +100,15 @@ function buildNextSession(
 export function useHomeWidgetData(): HomeWidgetData {
   const { today } = useTodayWorkout();
   const { workouts } = useWorkoutHistory();
-  const { templates } = useWorkoutTemplates();
   const { profile } = useUserProfile();
   const { activeSchedule } = useSchedules();
+  const { activePeriodization } = usePeriodizations();
   const week = useScheduleWeek();
   const trends = useTrendsData();
 
   const nextSession = useMemo(
-    () => buildNextSession(today, templates, workouts),
-    [today, templates, workouts],
+    () => buildNextSession(today, workouts),
+    [today, workouts],
   );
 
   const weekProgress = useMemo<WeekProgress | null>(() => {
@@ -192,7 +179,9 @@ export function useHomeWidgetData(): HomeWidgetData {
     // schedule actually planned a workout there — rest days are rest days.
     for (let i = 27; i >= 0; i -= 1) {
       const dayIndex = todayIndex - i;
-      const scheduled = activeSchedule
+      const scheduled = activePeriodization
+        ? periodizationWorkoutsForDay(activePeriodization, dayIndex).length > 0
+        : activeSchedule
         ? templateIdsForDay(activeSchedule, dayIndex).length > 0
         : false;
       if (doneIndexes.has(dayIndex)) {
@@ -210,7 +199,7 @@ export function useHomeWidgetData(): HomeWidgetData {
     const tracked = done + missed;
     const percent = tracked > 0 ? Math.round((done / tracked) * 100) : 0;
     return { days, percent };
-  }, [workouts, activeSchedule]);
+  }, [workouts, activePeriodization, activeSchedule]);
 
   const muscleVolume = useMemo<MuscleVolumeRow[]>(() => {
     const now = Date.now();

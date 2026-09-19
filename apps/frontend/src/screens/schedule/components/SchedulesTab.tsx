@@ -8,7 +8,7 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { Schedule } from '@/types/schedule';
 import { ScheduleRow } from './ScheduleRow';
 
-export function ScheduleLibraryTab() {
+export function SchedulesTab() {
   const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();

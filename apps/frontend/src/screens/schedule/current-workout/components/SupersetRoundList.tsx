@@ -236,7 +236,6 @@ export function SupersetRoundList({
                       weightUnit={weightUnit}
                       activeRestSetId={activeRestSetId}
                       animateLayout={false}
-                      iconOnlySetType
                       onCreateSetType={onCreateSetType}
                       onChangeSet={(setId, values) =>
                         updateSet(exercise.id, setId, values)

@@ -28,6 +28,7 @@ import type { UsageInfo } from '@/data/local/usageModel';
 import type { ProgressionGoal, SetTypeWithFields } from '@/types/setType';
 import { ProgressionGoalEditor } from './ProgressionGoalEditor';
 import { SetTypeFieldEditorSheet } from './SetTypeFieldEditorSheet';
+import { DefaultRestPicker } from './DefaultRestPicker';
 import { setTypeToDraftFields, type DraftField } from './draft';
 
 type SetTypeEditorScreenProps = NativeStackScreenProps<
@@ -68,6 +69,7 @@ function persistDraft(
   icon: IconName | null,
   fields: DraftField[],
   progressionGoal: ProgressionGoal,
+  defaultRestSeconds: number | null,
 ): void {
   const progressionFields = fields.map(field => ({
     ...field,
@@ -80,6 +82,7 @@ function persistDraft(
       name: name.trim(),
       icon,
       progressionGoal: safeGoal,
+      defaultRestSeconds,
     });
     const keptIds = new Set(fields.filter(f => f.id).map(f => f.id));
     (existing?.fields ?? []).forEach(field => {
@@ -88,7 +91,12 @@ function persistDraft(
       }
     });
   } else {
-    typeId = library.createSetType(name.trim(), icon, safeGoal);
+    typeId = library.createSetType(
+      name.trim(),
+      icon,
+      safeGoal,
+      defaultRestSeconds,
+    );
   }
 
   const orderedIds = fields.map(field => {
@@ -202,6 +210,50 @@ function FieldsSection({
   );
 }
 
+type SetTypeNameFieldProps = {
+  value: string;
+  error: string | null;
+  onChange: (value: string) => void;
+};
+
+function SetTypeNameField({ value, error, onChange }: SetTypeNameFieldProps) {
+  const { t } = useTranslation();
+  return (
+    <View className="gap-1.5">
+      <Text className="t-eyebrow">{t('setTypeEditor.nameLabel')}</Text>
+      <Input
+        className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
+        placeholder={t('setTypeEditor.namePlaceholder')}
+        value={value}
+        onChangeText={onChange}
+      />
+      {error ? <Text className="t-caption text-danger">{error}</Text> : null}
+    </View>
+  );
+}
+
+type DeleteSetTypeButtonProps = {
+  visible: boolean;
+  onPress: () => void;
+};
+
+function DeleteSetTypeButton({ visible, onPress }: DeleteSetTypeButtonProps) {
+  const { t } = useTranslation();
+  if (!visible) return null;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      className="min-h-12 flex-row items-center justify-center gap-2 rounded-full active:bg-surface-sunk"
+      onPress={onPress}
+    >
+      <ClayIcon name="trash" size={16} color={colors.danger} />
+      <Text className="t-label text-danger">
+        {t('setTypeEditor.deleteSetType')}
+      </Text>
+    </Pressable>
+  );
+}
+
 export function SetTypeEditorScreen({
   navigation,
   route,
@@ -222,6 +274,9 @@ export function SetTypeEditorScreen({
   );
   const [progressionGoal, setProgressionGoal] = useState<ProgressionGoal>(
     existing?.progressionGoal ?? { kind: 'none' },
+  );
+  const [defaultRestSeconds, setDefaultRestSeconds] = useState<number | null>(
+    existing?.defaultRestSeconds ?? null,
   );
   const [error, setError] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<DraftField | null>(null);
@@ -264,6 +319,7 @@ export function SetTypeEditorScreen({
       icon,
       fields,
       progressionGoal,
+      defaultRestSeconds,
     );
     navigation.goBack();
   };
@@ -300,26 +356,24 @@ export function SetTypeEditorScreen({
           contentContainerClassName="gap-5 px-5 pb-10 pt-5"
           keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-1.5">
-            <Text className="t-eyebrow">{t('setTypeEditor.nameLabel')}</Text>
-            <Input
-              className="h-[50px] rounded-[16px] border-border-hairline bg-surface-sunk px-4 text-foreground"
-              placeholder={t('setTypeEditor.namePlaceholder')}
-              value={name}
-              onChangeText={value => {
-                setName(value);
-                setError(null);
-              }}
-            />
-            {error ? (
-              <Text className="t-caption text-danger">{error}</Text>
-            ) : null}
-          </View>
+          <SetTypeNameField
+            value={name}
+            error={error}
+            onChange={value => {
+              setName(value);
+              setError(null);
+            }}
+          />
 
           <View className="gap-2">
             <Text className="t-eyebrow">{t('setTypeEditor.iconLabel')}</Text>
             <IconPicker value={icon} onChange={setIcon} />
           </View>
+
+          <DefaultRestPicker
+            value={defaultRestSeconds}
+            onChange={setDefaultRestSeconds}
+          />
 
           <FieldsSection
             fields={fields}
@@ -333,18 +387,10 @@ export function SetTypeEditorScreen({
             onChange={setProgressionGoal}
           />
 
-          {existing && !existing.isBuiltIn ? (
-            <Pressable
-              accessibilityRole="button"
-              className="min-h-12 flex-row items-center justify-center gap-2 rounded-full active:bg-surface-sunk"
-              onPress={deleteSetType}
-            >
-              <ClayIcon name="trash" size={16} color={colors.danger} />
-              <Text className="t-label text-danger">
-                {t('setTypeEditor.deleteSetType')}
-              </Text>
-            </Pressable>
-          ) : null}
+          <DeleteSetTypeButton
+            visible={Boolean(existing && !existing.isBuiltIn)}
+            onPress={deleteSetType}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
 

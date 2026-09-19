@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
@@ -11,15 +12,19 @@ import { ModalHeader } from '@/components/layout/ModalHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { TemplateEditorProvider } from '@/screens/library/template-editor/templateEditorContext';
 import { useTemplateEditorController } from '@/screens/library/template-editor/useTemplateEditorController';
-import { WorkoutTemplateAppearanceSection } from './WorkoutTemplateAppearanceSection';
+import { WorkoutAppearanceControl } from './WorkoutAppearanceControl';
 import { WorkoutTemplateDetailsSection } from './WorkoutTemplateDetailsSection';
 import { WorkoutTemplateExercisesSection } from './WorkoutTemplateExercisesSection';
 
 type WorkoutTemplateEditorProps = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
-  onSave: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
-  onDelete: (templateId: string) => void;
+  onSave: (input: SaveWorkoutTemplateInput) => void;
+  onDelete?: (templateId: string) => void;
+  onClose: () => void;
+  title?: string;
+  beforeDetails?: ReactNode;
+  allowImport?: boolean;
 };
 
 const CONTENT_STYLE = {
@@ -34,6 +39,10 @@ export function WorkoutTemplateEditor({
   exerciseOptions,
   onSave,
   onDelete,
+  onClose,
+  title,
+  beforeDetails,
+  allowImport = true,
 }: WorkoutTemplateEditorProps) {
   const { t } = useTranslation();
   const { draft, updateDraft, save, requestDelete, close, context } =
@@ -42,6 +51,8 @@ export function WorkoutTemplateEditor({
       exerciseOptions,
       onSave,
       onDelete,
+      onClose,
+      allowImport,
     });
 
   return (
@@ -52,9 +63,10 @@ export function WorkoutTemplateEditor({
       >
         <ModalHeader
           title={
-            template
+            title ??
+            (template
               ? t('templateEditor.editTitle')
-              : t('templateEditor.newTitle')
+              : t('templateEditor.newTitle'))
           }
           rightLabel={t('templateEditor.save')}
           onLeftPress={close}
@@ -66,20 +78,23 @@ export function WorkoutTemplateEditor({
           contentContainerStyle={CONTENT_STYLE}
           keyboardShouldPersistTaps="handled"
         >
+          {beforeDetails}
           <WorkoutTemplateDetailsSection
             autoFocus={!template}
             name={draft.name}
             description={draft.description}
+            appearanceControl={
+              <WorkoutAppearanceControl
+                color={draft.color}
+                icon={draft.icon}
+                picture={draft.picture}
+                onColorChange={color => updateDraft({ color })}
+                onIconChange={icon => updateDraft({ icon })}
+                onPictureChange={picture => updateDraft({ picture })}
+              />
+            }
             onNameChange={name => updateDraft({ name })}
             onDescriptionChange={description => updateDraft({ description })}
-          />
-          <WorkoutTemplateAppearanceSection
-            color={draft.color}
-            icon={draft.icon}
-            picture={draft.picture}
-            onColorChange={color => updateDraft({ color })}
-            onIconChange={icon => updateDraft({ icon })}
-            onPictureChange={picture => updateDraft({ picture })}
           />
 
           <TemplateEditorProvider value={context}>
@@ -102,7 +117,7 @@ export function WorkoutTemplateEditor({
             </Button.Label>
           </Button>
 
-          {template && (
+          {template && onDelete ? (
             <Button
               className="h-14 rounded-full"
               variant="danger-soft"
@@ -112,7 +127,7 @@ export function WorkoutTemplateEditor({
               <ClayIcon name="trash" size={18} color={colors.danger} />
               <Button.Label>{t('templateEditor.deleteCta')}</Button.Label>
             </Button>
-          )}
+          ) : null}
         </ScrollViewContainer>
       </KeyboardAvoidingView>
     </AppView>

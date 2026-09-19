@@ -9,9 +9,12 @@ import { ExerciseSelectionScreen } from '@/screens/schedule/exercise-selection/E
 import { CurrentWorkoutScreen } from '@/screens/schedule/current-workout/CurrentWorkoutScreen';
 import { WorkoutPlaceholderScreen } from '@/screens/schedule/placeholder/WorkoutPlaceholderScreen';
 import { WorkoutTemplateEditorScreen } from '@/screens/library/template-editor/WorkoutTemplateEditorScreen';
-import { ExerciseSetEditorScreen } from '@/screens/library/exercise-set-editor/ExerciseSetEditorScreen';
 import { SetTypeEditorScreen } from '@/screens/library/set-type-editor/SetTypeEditorScreen';
 import { ScheduleEditorScreen } from '@/screens/schedule/schedule-editor/ScheduleEditorScreen';
+import { PeriodizationEditorScreen } from '@/screens/schedule/periodization/PeriodizationEditorScreen';
+import { PeriodizationPhaseEditorScreen } from '@/screens/schedule/periodization/PeriodizationPhaseEditorScreen';
+import { PeriodizationWorkoutEditorScreen } from '@/screens/schedule/periodization/PeriodizationWorkoutEditorScreen';
+import { PeriodizationDesignProvider } from '@/screens/schedule/periodization/PeriodizationDesignContext';
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
 import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/CompletedWorkoutScreen';
@@ -24,11 +27,7 @@ import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
 import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHistoryScreen';
 import { useAuthStore } from '@/stores/authStore';
 import { colors } from '@pumped/ui/theme/tokens';
-import type {
-  EditableExercise,
-  ExerciseEditResult,
-  ExerciseSelectionResult,
-} from '@/types/exercise';
+import type { ExerciseSelectionResult } from '@/types/exercise';
 
 export type MetricKind = 'weight' | 'bodyFat';
 
@@ -47,19 +46,19 @@ export type RootStackParamList = {
     | {
         templateId?: string;
         exerciseSelection?: ExerciseSelectionResult;
-        exerciseEdit?: ExerciseEditResult;
         importWorkoutId?: string;
       }
     | undefined;
-  ExerciseSetEditor: {
-    exercise: EditableExercise;
-    name: string;
-    returnRouteKey: string;
-    /** Set count and rest are owned by the superset, so both are locked here. */
-    supersetMember?: boolean;
-  };
   SetTypeEditor: { setTypeId?: string } | undefined;
   ScheduleEditor: { scheduleId?: string } | undefined;
+  PeriodizationEditor: undefined;
+  PeriodizationPhaseEditor: { phaseId: string };
+  PeriodizationWorkoutEditor: {
+    phaseId: string;
+    workoutId: string;
+    exerciseSelection?: ExerciseSelectionResult;
+    importWorkoutId?: string;
+  };
   CurrentWorkout:
     | {
         exerciseSelection?: ExerciseSelectionResult;
@@ -99,120 +98,125 @@ export function AppNavigator() {
   const hasOnboarded = useAuthStore(s => s.hasOnboarded);
 
   return (
-    <NavigationContainer theme={pumped}>
-      <Stack.Navigator
-        screenOptions={{ headerShown: false }}
-        initialRouteName={hasOnboarded ? 'Main' : 'Onboarding'}
-      >
-        <Stack.Screen
-          name="Onboarding"
-          component={OnboardingScreen}
-          options={{ animation: 'fade' }}
-        />
-        <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen
-          name="WidgetPicker"
-          component={WidgetPickerScreen}
-          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="SettingsGroup"
-          component={SettingsGroupScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="MetricHistory"
-          component={MetricHistoryScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="CompletedWorkout"
-          component={CompletedWorkoutScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="Trends"
-          component={TrendsScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="ImportWorkoutTemplate"
-          component={ImportWorkoutTemplateScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="AddMetric"
-          component={AddMetricScreen}
-          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="WorkoutTemplateEditor"
-          component={WorkoutTemplateEditorScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="ExerciseSetEditor"
-          component={ExerciseSetEditorScreen}
-          // gestureEnabled:false — the unsaved-changes guard uses a beforeRemove
-          // listener, which native-stack's swipe-to-dismiss races (the screen is
-          // removed natively before JS can prompt). Exit via Cancel/Done instead.
-          options={{
-            animation: 'slide_from_bottom',
-            presentation: 'modal',
-            gestureEnabled: false,
-          }}
-        />
-        <Stack.Screen
-          name="SetTypeEditor"
-          component={SetTypeEditorScreen}
-          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="ScheduleEditor"
-          component={ScheduleEditorScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="CurrentWorkout"
-          component={CurrentWorkoutScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="ExerciseSelection"
-          component={ExerciseSelectionScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="CreateExercise"
-          component={CreateExerciseScreen}
-          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="EditExercise"
-          component={EditExerciseScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="WorkoutPlaceholder"
-          component={WorkoutPlaceholderScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="CsvImport"
-          component={CsvImportScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-        <Stack.Screen
-          name="ImportHistory"
-          component={ImportHistoryScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <PeriodizationDesignProvider>
+      <NavigationContainer theme={pumped}>
+        <Stack.Navigator
+          screenOptions={{ headerShown: false }}
+          initialRouteName={hasOnboarded ? 'Main' : 'Onboarding'}
+        >
+          <Stack.Screen
+            name="Onboarding"
+            component={OnboardingScreen}
+            options={{ animation: 'fade' }}
+          />
+          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen
+            name="WidgetPicker"
+            component={WidgetPickerScreen}
+            options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="SettingsGroup"
+            component={SettingsGroupScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="MetricHistory"
+            component={MetricHistoryScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="CompletedWorkout"
+            component={CompletedWorkoutScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="Trends"
+            component={TrendsScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="ImportWorkoutTemplate"
+            component={ImportWorkoutTemplateScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="AddMetric"
+            component={AddMetricScreen}
+            options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="WorkoutTemplateEditor"
+            component={WorkoutTemplateEditorScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="SetTypeEditor"
+            component={SetTypeEditorScreen}
+            options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="ScheduleEditor"
+            component={ScheduleEditorScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="PeriodizationEditor"
+            component={PeriodizationEditorScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="PeriodizationPhaseEditor"
+            component={PeriodizationPhaseEditorScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="PeriodizationWorkoutEditor"
+            component={PeriodizationWorkoutEditorScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="CurrentWorkout"
+            component={CurrentWorkoutScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="ExerciseSelection"
+            component={ExerciseSelectionScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="CreateExercise"
+            component={CreateExerciseScreen}
+            options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="EditExercise"
+            component={EditExerciseScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="WorkoutPlaceholder"
+            component={WorkoutPlaceholderScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="CsvImport"
+            component={CsvImportScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="ImportHistory"
+            component={ImportHistoryScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PeriodizationDesignProvider>
   );
 }

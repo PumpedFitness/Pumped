@@ -26,7 +26,7 @@ export function formatExerciseSetSummary(
     counts.set(set.setType, (counts.get(set.setType) ?? 0) + 1);
   });
 
-  return order
+  const breakdown = order
     .map(id => ({
       count: counts.get(id) ?? 0,
       label: labelById.get(id) ?? id,
@@ -35,7 +35,11 @@ export function formatExerciseSetSummary(
     .map(item =>
       t('setTable.summaryItem', { count: item.count, type: item.label }),
     )
-    .join(' · ');
+    .join(', ');
+
+  return breakdown
+    ? `${t('common.set', { count: sets.length })}: ${breakdown}`
+    : '';
 }
 
 function fieldUnit(field: SetTypeFieldDef, weightUnit: WeightUnit): string {

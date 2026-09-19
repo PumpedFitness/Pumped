@@ -84,7 +84,7 @@ function CellShell({
     ? 'bg-foreground/5'
     : '';
   return (
-    <View className={`flex-1 px-3 py-2.5 ${backgroundClass}`}>{children}</View>
+    <View className={`flex-1 px-2 py-2 ${backgroundClass}`}>{children}</View>
   );
 }
 

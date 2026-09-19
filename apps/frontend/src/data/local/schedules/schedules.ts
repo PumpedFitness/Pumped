@@ -6,7 +6,7 @@ import { randomUUID } from 'expo-crypto';
 import { asc, eq, ne } from 'drizzle-orm';
 import { db } from '@/data/local/database';
 import { notifyTableChanged } from '@/data/local/tableVersions';
-import { schedules, scheduleSlots } from '@/data/local/schema';
+import { periodizations, schedules, scheduleSlots } from '@/data/local/schema';
 import type { Schedule, SaveScheduleInput } from '@/types/schedule';
 import {
   LOCAL_USER_ID,
@@ -144,13 +144,14 @@ export function setActiveSchedule(scheduleId: string, active: boolean): void {
   db.transaction(tx => {
     if (active) {
       tx.update(schedules).set({ isActive: false }).run();
+      tx.update(periodizations).set({ isActive: false }).run();
     }
     tx.update(schedules)
       .set({ isActive: active })
       .where(eq(schedules.id, scheduleId))
       .run();
   });
-  notifyTableChanged(schedules);
+  notifyTableChanged(schedules, periodizations);
 }
 
 export function deleteSchedule(scheduleId: string): void {

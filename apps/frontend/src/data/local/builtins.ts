@@ -23,6 +23,7 @@ export type BuiltInSetType = {
   /** ClayIcon name. */
   icon: string;
   color: SetTypeColorName;
+  defaultRestSeconds: number;
 };
 
 export type BuiltInSetTypeField = {
@@ -43,6 +44,7 @@ export const BUILT_IN_SET_TYPES: readonly BuiltInSetType[] = [
     labelKey: 'setTable.setTypes.warmup',
     icon: 'flame',
     color: 'honey',
+    defaultRestSeconds: 60,
   },
   {
     id: 'NORMAL',
@@ -50,6 +52,7 @@ export const BUILT_IN_SET_TYPES: readonly BuiltInSetType[] = [
     labelKey: 'setTable.setTypes.working',
     icon: 'dumbbell',
     color: 'rose',
+    defaultRestSeconds: 120,
   },
   {
     id: 'MAX_EFFORT',
@@ -57,6 +60,7 @@ export const BUILT_IN_SET_TYPES: readonly BuiltInSetType[] = [
     labelKey: 'setTable.setTypes.maxEffort',
     icon: 'bolt',
     color: 'terracotta',
+    defaultRestSeconds: 180,
   },
 ];
 

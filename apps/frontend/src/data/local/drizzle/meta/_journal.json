@@ -190,6 +190,20 @@
       "when": 1785513600000,
       "tag": "0026_supersets",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1789819484000,
+      "tag": "0027_set_type_default_rest",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "6",
+      "when": 1789820000000,
+      "tag": "0028_periodizations",
+      "breakpoints": true
     }
   ]
 }

@@ -5,7 +5,6 @@ import {
   removeDraftExercise,
   reorderBlocks,
   selectExercises,
-  setSupersetRounds,
   ungroupSuperset,
   updateSuperset,
   type SupersetDraft,
@@ -59,7 +58,7 @@ describe('addSuperset', () => {
     expect(groups(draft)).toEqual(['id-1', 'id-1', null]);
   });
 
-  it('defaults to resting between rounds but not between exercises', () => {
+  it('does not add group-level rest settings', () => {
     const draft = addSuperset(
       { exercises: [exercise('pull'), exercise('curl')], supersets: [] },
       ['pull', 'curl'],
@@ -67,11 +66,11 @@ describe('addSuperset', () => {
     );
 
     expect(draft.supersets).toEqual([
-      { id: 'id-1', restSeconds: 90, transitionRestSeconds: null },
+      { id: 'id-1', restSeconds: null, transitionRestSeconds: null },
     ]);
   });
 
-  it('levels members up to the largest set count, never deleting sets', () => {
+  it('preserves each member’s independent set count', () => {
     const draft = addSuperset(
       {
         exercises: [exercise('pull', null, 4), exercise('curl', null, 2)],
@@ -81,7 +80,7 @@ describe('addSuperset', () => {
       newId,
     );
 
-    expect(draft.exercises.map(item => item.sets.length)).toEqual([4, 4]);
+    expect(draft.exercises.map(item => item.sets.length)).toEqual([4, 2]);
   });
 
   it('refuses a group of fewer than two exercises', () => {
@@ -107,37 +106,6 @@ describe('addSuperset', () => {
 
     expect(groups(draft)).toEqual([null, 'id-2', 'id-2']);
     expect(draft.supersets.map(group => group.id)).toEqual(['id-2']);
-  });
-});
-
-describe('setSupersetRounds', () => {
-  const grouped = () =>
-    addSuperset(
-      {
-        exercises: [exercise('pull', null, 2), exercise('curl', null, 2)],
-        supersets: [],
-      },
-      ['pull', 'curl'],
-      newId,
-    );
-
-  it('adds a round to every member at once', () => {
-    const draft = setSupersetRounds(grouped(), 'id-1', 4, newId);
-
-    expect(draft.exercises.map(item => item.sets.length)).toEqual([4, 4]);
-  });
-
-  it('removes rounds from every member at once', () => {
-    const draft = setSupersetRounds(grouped(), 'id-1', 1, newId);
-
-    expect(draft.exercises.map(item => item.sets.length)).toEqual([1, 1]);
-  });
-
-  it('gives padded sets fresh ids so React keys stay unique', () => {
-    const draft = setSupersetRounds(grouped(), 'id-1', 3, newId);
-    const ids = draft.exercises.flatMap(item => item.sets.map(set => set.id));
-
-    expect(new Set(ids).size).toBe(ids.length);
   });
 });
 

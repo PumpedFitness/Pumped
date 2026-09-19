@@ -43,6 +43,7 @@ export type SetTypeLibrary = {
     name: string,
     icon?: string | null,
     progressionGoal?: ProgressionGoal,
+    defaultRestSeconds?: number | null,
   ) => string;
   updateSetType: (
     id: string,
@@ -50,6 +51,7 @@ export type SetTypeLibrary = {
       name?: string;
       icon?: string | null;
       progressionGoal?: ProgressionGoal;
+      defaultRestSeconds?: number | null;
     },
   ) => void;
   deleteSetType: (id: string) => void;
@@ -99,6 +101,7 @@ export function useSetTypeLibrary(): SetTypeLibrary {
           builtInSetTypeColor(typeRow.id) ?? deriveSetTypeColor(typeRow.id),
         isBuiltIn: typeRow.isBuiltIn,
         position: typeRow.position,
+        defaultRestSeconds: typeRow.defaultRestSeconds,
         progressionGoal: normalizeProgressionGoal(
           typeRow.progressionGoal,
           fields,
@@ -122,6 +125,7 @@ export function useSetTypeLibrary(): SetTypeLibrary {
       name: string,
       icon: string | null = null,
       progressionGoal: ProgressionGoal = { kind: 'none' },
+      defaultRestSeconds: number | null = null,
     ) => {
       const id = randomUUID();
       typeRepo.create({
@@ -130,6 +134,7 @@ export function useSetTypeLibrary(): SetTypeLibrary {
         icon,
         isBuiltIn: false,
         position: typeRows.length,
+        defaultRestSeconds,
         progressionGoal,
         createdAt: Date.now(),
       });
@@ -145,6 +150,7 @@ export function useSetTypeLibrary(): SetTypeLibrary {
         name?: string;
         icon?: string | null;
         progressionGoal?: ProgressionGoal;
+        defaultRestSeconds?: number | null;
       },
     ) => typeRepo.update(id, patch),
     [typeRepo],

@@ -25,10 +25,6 @@ import {
   type SuggestedSetValues,
 } from './exerciseSetSuggestion';
 import {
-  buildSetCardProgression,
-  type SetCardProgression,
-} from './setCardProgression';
-import {
   buildCardField,
   formatSetNumber,
   type SetCardField,
@@ -64,10 +60,6 @@ export type TemplateSetTableProps = BaseTableProps & {
   onRemoveSet: (index: number) => void;
   onDuplicateSet?: () => void;
   onCreateSetType?: (name: string) => string;
-  // Set for a superset member: the superset owns how many rounds there are and
-  // how long the rest is, so neither can be edited one member at a time.
-  lockSetCount?: boolean;
-  hideRest?: boolean;
 };
 
 type EditableExerciseSetTableProps = BaseTableProps & {
@@ -79,7 +71,6 @@ type EditableExerciseSetTableProps = BaseTableProps & {
   onRemoveSet: (set: CurrentWorkoutSet) => DeleteResult;
   onCreateSetType: (name: string) => string;
   activeRestSetId?: string | null;
-  iconOnlySetType?: boolean;
   // Which set is up next. Normally the table works that out itself, but inside
   // a superset the order runs round-major across every member, so the block
   // decides and passes it down. `null` means "not this member's turn".
@@ -118,13 +109,6 @@ export type ExerciseSetTableProps =
   | EditableExerciseSetTableProps
   | ReadOnlyExerciseSetTableProps;
 
-export type SetCardRest = {
-  value: number | null;
-  readOnly: boolean;
-  isRunning?: boolean;
-  onChange: (value: number | null) => void;
-};
-
 export type SetCardModel = {
   key: string;
   index: number;
@@ -133,8 +117,6 @@ export type SetCardModel = {
   setTypeIcon: string | null;
   setTypeColor: SetTypeColorName;
   fields: SetCardField[];
-  rest: SetCardRest | null;
-  progression?: SetCardProgression;
   progressionBadgeText?: string;
   progressionBadgeVariant?: 'default' | 'positive';
   tone: 'default' | 'completed';
@@ -149,15 +131,6 @@ export type SetCardModel = {
   onToggleDone?: () => boolean;
   onRemove: DeleteHandler;
 };
-
-function progressionModeLabelKey(
-  setGoal: { kind?: string } | null | undefined,
-  typeGoal: { kind?: string } | null | undefined,
-): 'progression.modes.rangeRollover' | 'progression.modes.linear' {
-  return (setGoal ?? typeGoal)?.kind === 'rangeRollover'
-    ? 'progression.modes.rangeRollover'
-    : 'progression.modes.linear';
-}
 
 function fieldsForType(
   context: SetTypeContext,
@@ -189,21 +162,9 @@ export function buildTemplateSetCards(
             props.onChangeSet(index, { ...set, fieldValues: next }),
         }),
       ),
-      rest: props.hideRest
-        ? null
-        : {
-            value: set.restSeconds,
-            readOnly: false,
-            isRunning: false,
-            onChange: value =>
-              props.onChangeSet(index, { ...set, restSeconds: value }),
-          },
-      progression: buildSetCardProgression(set, type, progressionGoal =>
-        props.onChangeSet(index, { ...set, progressionGoal }),
-      ),
       tone: 'default',
       isCurrent: false,
-      canRemove: !props.lockSetCount && props.sets.length > 1,
+      canRemove: props.sets.length > 1,
       readOnly: false,
       onSetTypeChange: setType =>
         props.onChangeSet(index, {
@@ -261,31 +222,14 @@ export function buildWorkoutSetCards(
           onChange: next => props.onChangeSet(set.id, { fieldValues: next }),
         }),
       ),
-      rest: {
-        value: set.restSeconds,
-        readOnly: false,
-        isRunning: props.activeRestSetId === set.id,
-        onChange: value => props.onChangeSet(set.id, { restSeconds: value }),
-      },
-      progression: buildSetCardProgression(set, type, progressionGoal =>
-        props.onChangeSet(set.id, { progressionGoal }),
-      ),
-      progressionBadgeText: suggestion
-        ? t(
-            suggestion.isLastPerformanceOnly
-              ? 'progression.modes.none'
-              : progressionModeLabelKey(
-                  set.progressionGoal,
-                  type?.progressionGoal,
-                ),
-          )
-        : undefined,
       ...cardState(set, index === currentIndex),
       canRemove: props.canRemoveSets ?? props.sets.length > 1,
       readOnly: false,
       onSetTypeChange: setType =>
         props.onChangeSet(set.id, {
           setType,
+          restSeconds:
+            props.setTypesById.get(setType)?.defaultRestSeconds ?? null,
           fieldValues: reconcileValuesForType(
             set.fieldValues,
             fieldsForType(props, setType),

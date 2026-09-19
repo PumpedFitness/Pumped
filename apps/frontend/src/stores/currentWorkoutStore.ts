@@ -28,7 +28,10 @@ import {
 
 type CurrentWorkoutState = {
   currentWorkout: CurrentWorkout | null;
-  startWorkout: (template: WorkoutTemplate) => void;
+  startWorkout: (
+    template: WorkoutTemplate,
+    workoutTemplateId?: string | null,
+  ) => void;
   updateSet: (
     exerciseId: string,
     setId: string,
@@ -55,13 +58,14 @@ function startWorkout(
   setState: StoreSet,
   getState: StoreGet,
   template: WorkoutTemplate,
+  workoutTemplateId: string | null = template.id,
 ) {
   if (getState().currentWorkout) {
     throw new Error(i18n.t('errors.workoutAlreadyInProgress'));
   }
   const currentWorkout: CurrentWorkout = {
     id: randomUUID(),
-    workoutTemplateId: template.id,
+    workoutTemplateId,
     name: template.name,
     startedAt: Date.now(),
     pausedAt: null,

@@ -51,10 +51,10 @@ appId: ${APP_ID}
 - tapOn: 'Workouts'
 - tapOn:
     id: 'create_workout'
-- assertVisible: 'Template name'
+- assertVisible: 'Workout name'
 # Settle the auto-focus keyboard animation before typing (see create_workout).
 - waitForAnimationToEnd
-- tapOn: 'Template name'
+- tapOn: 'Workout name'
 - inputText: 'E2E Template'
 - runFlow: subflows/dismiss-keyboard.yaml
 - tapOn: 'Choose exercises'
