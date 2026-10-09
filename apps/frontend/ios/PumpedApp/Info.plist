@@ -33,6 +33,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Pumped uses the camera to scan share codes from other devices.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>RCTNewArchEnabled</key>
@@ -62,6 +64,12 @@
         <key>CFBundleURLSchemes</key>
         <array>
         <string>com.googleusercontent.apps.822349081975-hi8i7c331nmm9oaipo1gjtjqvtmmitji</string>
+        </array>
+    </dict>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+        <string>pumped</string>
         </array>
     </dict>
     </array>

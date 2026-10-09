@@ -28,6 +28,7 @@ import type { UsageInfo } from '@/data/local/usageModel';
 import type { ProgressionGoal, SetTypeWithFields } from '@/types/setType';
 import { ProgressionGoalEditor } from './ProgressionGoalEditor';
 import { SetTypeFieldEditorSheet } from './SetTypeFieldEditorSheet';
+import { SetTypeShareAction } from './SetTypeShareAction';
 import { setTypeToDraftFields, type DraftField } from './draft';
 
 type SetTypeEditorScreenProps = NativeStackScreenProps<
@@ -334,16 +335,19 @@ export function SetTypeEditorScreen({
           />
 
           {existing && !existing.isBuiltIn ? (
-            <Pressable
-              accessibilityRole="button"
-              className="min-h-12 flex-row items-center justify-center gap-2 rounded-full active:bg-surface-sunk"
-              onPress={deleteSetType}
-            >
-              <ClayIcon name="trash" size={16} color={colors.danger} />
-              <Text className="t-label text-danger">
-                {t('setTypeEditor.deleteSetType')}
-              </Text>
-            </Pressable>
+            <>
+              <SetTypeShareAction setType={existing} />
+              <Pressable
+                accessibilityRole="button"
+                className="min-h-12 flex-row items-center justify-center gap-2 rounded-full active:bg-surface-sunk"
+                onPress={deleteSetType}
+              >
+                <ClayIcon name="trash" size={16} color={colors.danger} />
+                <Text className="t-label text-danger">
+                  {t('setTypeEditor.deleteSetType')}
+                </Text>
+              </Pressable>
+            </>
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
@@ -9,6 +10,8 @@ import { colors } from '@pumped/ui/theme/tokens';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { ShareSheet } from '@/components/share/ShareSheet';
+import { buildTemplateShare } from '@/data/local/share/exportShare';
 import { TemplateEditorProvider } from '@/screens/library/template-editor/templateEditorContext';
 import { useTemplateEditorController } from '@/screens/library/template-editor/useTemplateEditorController';
 import { WorkoutTemplateAppearanceSection } from './WorkoutTemplateAppearanceSection';
@@ -43,6 +46,7 @@ export function WorkoutTemplateEditor({
       onSave,
       onDelete,
     });
+  const [shareVisible, setShareVisible] = useState(false);
 
   return (
     <AppView edges={['top', 'bottom']}>
@@ -103,6 +107,19 @@ export function WorkoutTemplateEditor({
           </Button>
 
           {template && (
+            // Shares the saved template; unsaved edits stay on this device.
+            <Button
+              className="h-14 rounded-full"
+              variant="secondary"
+              feedbackVariant="scale"
+              onPress={() => setShareVisible(true)}
+            >
+              <ClayIcon name="arrowUp" size={18} color={colors.ink} />
+              <Button.Label>{t('share.send.templateCta')}</Button.Label>
+            </Button>
+          )}
+
+          {template && (
             <Button
               className="h-14 rounded-full"
               variant="danger-soft"
@@ -115,6 +132,16 @@ export function WorkoutTemplateEditor({
           )}
         </ScrollViewContainer>
       </KeyboardAvoidingView>
+
+      {template && (
+        <ShareSheet
+          visible={shareVisible}
+          onClose={() => setShareVisible(false)}
+          title={template.name}
+          kindLabel={t('share.send.kinds.template')}
+          buildEnvelope={() => buildTemplateShare(template.id)}
+        />
+      )}
     </AppView>
   );
 }

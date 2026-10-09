@@ -1,4 +1,9 @@
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import {
+  DefaultTheme,
+  NavigationContainer,
+  getStateFromPath,
+  type LinkingOptions,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
 import { OnboardingScreen } from '@/screens/onboarding/OnboardingScreen';
@@ -24,6 +29,8 @@ import { TrendsScreen } from '@/screens/trends/TrendsScreen';
 import { ImportWorkoutTemplateScreen } from '@/screens/library/import-workout-template/ImportWorkoutTemplateScreen';
 import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
 import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHistoryScreen';
+import { ScanShareScreen } from '@/screens/share/scan/ScanShareScreen';
+import { ReceiveShareScreen } from '@/screens/share/receive/ReceiveShareScreen';
 import { useAuthStore } from '@/stores/authStore';
 import { colors } from '@pumped/ui/theme/tokens';
 import type { WidgetType } from '@/types/widget';
@@ -84,6 +91,9 @@ export type RootStackParamList = {
   WorkoutPlaceholder: undefined;
   CsvImport: undefined;
   ImportHistory: undefined;
+  ScanShare: undefined;
+  /** `code` is a handover id, as carried by a `pumped://share/<id>` link. */
+  ReceiveShare: { code: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -102,11 +112,32 @@ const pumped: typeof DefaultTheme = {
   },
 };
 
+/**
+ * Deep links. Only `pumped://share/<id>` is routed — every other URL that
+ * reaches the app (the Google OAuth redirect arrives under its own scheme on
+ * both platforms) resolves to no state and is left alone.
+ *
+ * The share screen is pushed on top of whatever is open rather than replacing
+ * the stack, so a link mid-workout doesn't throw the user out of it. Before
+ * onboarding is finished there is no library to import into, so links are
+ * ignored.
+ */
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['pumped://'],
+  config: { screens: { ReceiveShare: 'share/:code' } },
+  getStateFromPath(path, options) {
+    if (!useAuthStore.getState().hasOnboarded) return undefined;
+    const state = getStateFromPath(path, options);
+    const route = state?.routes.find(entry => entry.name === 'ReceiveShare');
+    return route ? { routes: [route] } : undefined;
+  },
+};
+
 export function AppNavigator() {
   const hasOnboarded = useAuthStore(s => s.hasOnboarded);
 
   return (
-    <NavigationContainer theme={pumped}>
+    <NavigationContainer theme={pumped} linking={linking}>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
         initialRouteName={hasOnboarded ? 'Main' : 'Onboarding'}
@@ -227,6 +258,16 @@ export function AppNavigator() {
         <Stack.Screen
           name="ImportHistory"
           component={ImportHistoryScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="ScanShare"
+          component={ScanShareScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="ReceiveShare"
+          component={ReceiveShareScreen}
           options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>

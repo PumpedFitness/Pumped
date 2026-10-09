@@ -8,6 +8,10 @@ import {
   downsampleToBuckets,
   type TimedValue,
 } from '@/lib/health/algorithms/downsample';
+import {
+  WORKOUT_BUCKET_SECONDS,
+  workoutHeartRateWindow,
+} from '@/lib/health/algorithms/workoutHeartRate';
 import { AuthError } from '@/lib/health/sources/errors';
 import type { HealthSource } from '@/lib/health/sources/types';
 
@@ -17,6 +21,7 @@ import {
   recordSync,
   writeRawBatch,
 } from './rawStore';
+import { recentWorkouts, type WorkoutWindow } from './workoutWindows';
 
 /**
  * Wie weit ein Delta-Lauf hinter den bekannten Stand zurückgreift.
@@ -130,10 +135,11 @@ export async function syncHealthData(
   if (options.source.metrics.has(MetricId.heartRate)) {
     try {
       const nights = await syncNightHeartRate(options.source, now);
+      const workouts = await syncRecentWorkoutHeartRate(options.source, now);
       outcomes.push({
         metric: MetricId.heartRate,
         status: 'synced',
-        detail: nights,
+        detail: `${nights}; ${workouts}`,
       });
     } catch (error) {
       if (error instanceof AuthError && error.kind === 'needs_reauth') {
@@ -148,6 +154,72 @@ export async function syncHealthData(
   }
 
   return { outcomes, abortedBy: null, needsReauth: false };
+}
+
+/**
+ * Wie weit zurück Workouts beim Sync ihre Herzfrequenz bekommen.
+ *
+ * Die Uhr synchronisiert oft erst Stunden nach dem Training; ein paar Tage
+ * fangen das ab. Ältere Workouts holt die Detailansicht bei Bedarf nach.
+ */
+const RECENT_WORKOUT_DAYS = 3;
+
+async function syncRecentWorkoutHeartRate(
+  source: HealthSource,
+  now: Date,
+): Promise<string> {
+  const workouts = recentWorkouts(RECENT_WORKOUT_DAYS, now);
+  let written = 0;
+  for (const workout of workouts) {
+    written += await syncWorkoutHeartRate(source, workout);
+  }
+  return `${workouts.length} workouts, ${written} points`;
+}
+
+/**
+ * Holt die Herzfrequenz für das Fenster **eines** Workouts.
+ *
+ * Feiner verdichtet als eine Nacht: Ein Satz dauert vierzig Sekunden, ein
+ * Fünf-Minuten-Eimer schluckte ihn ganz. Fünf Sekunden ergeben für eine Stunde
+ * rund 800 Zeilen. Gibt die Zahl der geschriebenen Punkte zurück.
+ */
+export async function syncWorkoutHeartRate(
+  source: HealthSource,
+  workout: WorkoutWindow,
+): Promise<number> {
+  const { from, to } = workoutHeartRateWindow(
+    workout.startedAt,
+    workout.endedAt,
+  );
+  const samples: TimedValue[] = [];
+  await source.load(
+    MetricId.heartRate,
+    { from: new Date(from * 1000), to: new Date(to * 1000) },
+    batch => {
+      for (const row of batch.samples) {
+        samples.push({ ts: row.ts, value: row.value });
+      }
+      return Promise.resolve();
+    },
+  );
+
+  const buckets = downsampleToBuckets(samples, WORKOUT_BUCKET_SECONDS);
+  if (buckets.length === 0) return 0;
+
+  const tzOffsetSeconds = -new Date(workout.startedAt).getTimezoneOffset() * 60;
+  writeRawBatch({
+    samples: buckets.map(bucket => ({
+      metric: MetricId.heartRate,
+      ts: bucket.ts,
+      field: FieldId.value,
+      tzOffsetSeconds,
+      value: bucket.value,
+    })),
+    daily: [],
+    sessions: [],
+    newest: null,
+  });
+  return buckets.length;
 }
 
 /**

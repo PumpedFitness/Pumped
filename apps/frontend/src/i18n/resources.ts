@@ -1,3 +1,6 @@
+import { shareReceiveDe, shareReceiveEn } from './share/shareReceiveResources';
+import { shareSendDe, shareSendEn } from './share/shareSendResources';
+
 export const defaultLanguage = 'en';
 
 export const supportedLanguages = ['en', 'de'] as const;
@@ -12,6 +15,7 @@ export const languageLabels: Record<SupportedLanguage, string> = {
 export const resources = {
   en: {
     translation: {
+      share: { send: shareSendEn, receive: shareReceiveEn },
       common: {
         appName: 'PUMPED',
         back: 'Go back',
@@ -32,7 +36,6 @@ export const resources = {
         confirm: 'Confirm',
         add: 'Add',
         share: 'Share',
-        load: 'Load',
         start: 'Start',
         archive: 'Archive',
         from: 'From',
@@ -1348,8 +1351,6 @@ export const resources = {
         deleteCta: 'Delete Exercise',
         saveChanges: 'Save Changes',
         addExercise: 'Add Exercise',
-        share: 'Share',
-        handoverResult: 'UUID: {{uuid}} TTL: {{ttl}}',
         deleteAlertBody: 'Are you sure you want to delete "{{name}}"?',
         pickers: {
           typeTitle: 'Exercise Type',
@@ -1564,6 +1565,24 @@ export const resources = {
         supersetBadge: 'Superset {{label}}',
         notes: 'Notes',
         timeRange: '{{start}} - {{end}}',
+        heartRate: {
+          title: 'Heart rate',
+          bpm: 'bpm',
+          average: 'Average',
+          peak: 'Peak',
+          low: 'Low',
+          averageShort: 'Avg',
+          peakShort: 'Peak',
+          recoveryShort: '1 min',
+          recoveryValue: '−{{value}}',
+          recoveryHint:
+            'Avg and peak during the sets; 1 min is how far your heart rate dropped in the minute after a set.',
+          loading: 'Looking for heart rate from your watch…',
+          empty:
+            'No heart rate found for this workout. Wear your watch while training and let it sync, then check back.',
+          sparse:
+            'Your watch only measured every few minutes here. Start a workout on the watch to see heart rate per exercise.',
+        },
       },
       profile: {
         title: 'Settings',
@@ -1610,7 +1629,6 @@ export const resources = {
         importCsv: 'Import CSV',
         importHistory: 'Import history',
         resetAllData: 'Reset all data',
-        uuidPlaceholder: 'Enter uuid',
         alerts: {
           resetTitle: 'Reset All Data?',
           resetBody:
@@ -1619,10 +1637,6 @@ export const resources = {
           resetConfirmBody:
             'All workout history, templates, and personal data will be permanently erased.',
           resetEverything: 'Reset Everything',
-          importSuccessTitle: 'Success',
-          importSuccessBody: 'Data imported successfully',
-          importErrorTitle: 'Error',
-          importErrorBody: 'Failed to import data with status {{code}}',
         },
       },
       csvImport: {
@@ -1711,6 +1725,7 @@ export const resources = {
   },
   de: {
     translation: {
+      share: { send: shareSendDe, receive: shareReceiveDe },
       common: {
         appName: 'PUMPED',
         back: 'Zurück',
@@ -1731,7 +1746,6 @@ export const resources = {
         confirm: 'Bestätigen',
         add: 'Hinzufügen',
         share: 'Teilen',
-        load: 'Laden',
         start: 'Starten',
         archive: 'Archivieren',
         from: 'Von',
@@ -3051,8 +3065,6 @@ export const resources = {
         deleteCta: 'Übung löschen',
         saveChanges: 'Änderungen speichern',
         addExercise: 'Übung hinzufügen',
-        share: 'Teilen',
-        handoverResult: 'UUID: {{uuid}} TTL: {{ttl}}',
         deleteAlertBody: 'Möchtest du „{{name}}“ wirklich löschen?',
         pickers: {
           typeTitle: 'Übungstyp',
@@ -3268,6 +3280,24 @@ export const resources = {
         supersetBadge: 'Superset {{label}}',
         notes: 'Notizen',
         timeRange: '{{start}} - {{end}}',
+        heartRate: {
+          title: 'Herzfrequenz',
+          bpm: 'bpm',
+          average: 'Schnitt',
+          peak: 'Spitze',
+          low: 'Tief',
+          averageShort: 'Ø',
+          peakShort: 'Max',
+          recoveryShort: '1 Min',
+          recoveryValue: '−{{value}}',
+          recoveryHint:
+            'Ø und Max während der Sätze; 1 Min zeigt, wie stark dein Puls in der Minute nach einem Satz gefallen ist.',
+          loading: 'Suche Herzfrequenz von deiner Uhr…',
+          empty:
+            'Für dieses Workout wurde keine Herzfrequenz gefunden. Trag deine Uhr beim Training und lass sie synchronisieren.',
+          sparse:
+            'Deine Uhr hat hier nur alle paar Minuten gemessen. Starte ein Training auf der Uhr, um die Herzfrequenz je Übung zu sehen.',
+        },
       },
       profile: {
         title: 'Einstellungen',
@@ -3314,7 +3344,6 @@ export const resources = {
         importCsv: 'CSV importieren',
         importHistory: 'Importverlauf',
         resetAllData: 'Alle Daten zurücksetzen',
-        uuidPlaceholder: 'UUID eingeben',
         alerts: {
           resetTitle: 'Alle Daten zurücksetzen?',
           resetBody:
@@ -3323,10 +3352,6 @@ export const resources = {
           resetConfirmBody:
             'Der gesamte Workout-Verlauf, alle Vorlagen und persönlichen Daten werden dauerhaft gelöscht.',
           resetEverything: 'Alles zurücksetzen',
-          importSuccessTitle: 'Erfolgreich',
-          importSuccessBody: 'Daten erfolgreich importiert',
-          importErrorTitle: 'Fehler',
-          importErrorBody: 'Datenimport fehlgeschlagen mit Status {{code}}',
         },
       },
       csvImport: {

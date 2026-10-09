@@ -2,34 +2,34 @@ import * as z from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { compress, decompress } from 'shrink-string';
 import { Hono } from 'hono';
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
 
 interface Bindings {
 	HANDOVER_STORE: KVNamespace;
 	// ... other binding types
 }
 
+/** Shared payloads are small JSON documents; anything bigger is a mistake. */
+export const MAX_VALUE_BYTES = 256 * 1024;
+
+/** How long a handover lives — long enough to scan, short enough to forget. */
+export const TTL_SECONDS = 60 * 30;
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const inputSchema = z.object({
-	value: z.string(),
+	value: z.string().min(1),
 });
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.post('/', async (c) => {
-	const body = await c.req.json();
-
-	console.log({ body });
+	// Payloads are user content — never log them.
+	let body: unknown;
+	try {
+		body = await c.req.json();
+	} catch {
+		return new Response('Invalid JSON', { status: 422 });
+	}
 
 	const result = inputSchema.safeParse(body);
 
@@ -40,19 +40,21 @@ app.post('/', async (c) => {
 	const { HANDOVER_STORE } = c.env;
 	const { value } = result.data;
 
-	const compressed = await compress(value);
+	if (new TextEncoder().encode(value).byteLength > MAX_VALUE_BYTES) {
+		return new Response('Payload too large', { status: 413 });
+	}
 
-	const ttl = 60 * 30;
+	const compressed = await compress(value);
 
 	const uuid = uuidv4();
 	await HANDOVER_STORE.put(uuid, compressed, {
-		expirationTtl: ttl,
+		expirationTtl: TTL_SECONDS,
 	});
 
 	return Response.json(
 		{
 			uuid,
-			ttl,
+			ttl: TTL_SECONDS,
 		},
 		{
 			status: 201,
@@ -63,6 +65,10 @@ app.post('/', async (c) => {
 app.get('/:uuid', async (c) => {
 	const { HANDOVER_STORE } = c.env;
 	const { uuid } = c.req.param();
+
+	if (!UUID_PATTERN.test(uuid)) {
+		return new Response('Invalid id', { status: 400 });
+	}
 
 	const value = await HANDOVER_STORE.get(uuid);
 

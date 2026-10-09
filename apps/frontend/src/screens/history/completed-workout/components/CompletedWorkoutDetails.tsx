@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Alert, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -16,10 +17,14 @@ import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { displayWeight } from '@/utils/units';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { CompletedWorkoutExercises } from './CompletedWorkoutExercises';
+import { CompletedWorkoutHeartRate } from './CompletedWorkoutHeartRate';
 import { previousSetsForExercise } from './completedWorkoutModel';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { colors } from '@pumped/ui/theme/tokens';
+import { ShareIconButton } from '@/components/share/ShareIconButton';
+import { ShareSheet } from '@/components/share/ShareSheet';
+import { buildWorkoutShare } from '@/data/local/share/exportShare';
 
 type CompletedWorkoutDetailsProps = {
   workoutId: string;
@@ -102,6 +107,7 @@ export function CompletedWorkoutDetails({
   const { saveTemplate } = useWorkoutTemplates();
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
+  const [shareVisible, setShareVisible] = useState(false);
 
   if (!workout) {
     return (
@@ -152,9 +158,18 @@ export function CompletedWorkoutDetails({
     >
       <View className="gap-4 rounded-[24px] bg-moss px-5 py-5">
         <View>
-          <Text className="t-eyebrow text-surface-card/70">
-            {formatDate(workout.startedAt, i18n.language)}
-          </Text>
+          <View className="flex-row items-center justify-between">
+            <Text className="t-eyebrow flex-1 text-surface-card/70">
+              {formatDate(workout.startedAt, i18n.language)}
+            </Text>
+            <View className="-my-2 -mr-2">
+              <ShareIconButton
+                onPress={() => setShareVisible(true)}
+                color={colors.cream}
+                accessibilityLabel={t('share.send.workoutCta')}
+              />
+            </View>
+          </View>
           <Text className="t-title mt-1 text-surface-card">{workout.name}</Text>
           <Text className="t-caption mt-2 text-surface-card/70">
             {t('completedWorkout.timeRange', {
@@ -183,6 +198,11 @@ export function CompletedWorkoutDetails({
         </View>
       </View>
 
+      <CompletedWorkoutHeartRate
+        workout={workout}
+        exerciseById={exerciseById}
+      />
+
       <CompletedWorkoutTemplateAction
         hasTemplate={Boolean(workout.workoutTemplateId)}
         onPress={handleOpenTemplate}
@@ -210,6 +230,14 @@ export function CompletedWorkoutDetails({
           <Text className="t-body mt-2">{workout.notes}</Text>
         </View>
       ) : null}
+
+      <ShareSheet
+        visible={shareVisible}
+        onClose={() => setShareVisible(false)}
+        title={workout.name}
+        kindLabel={t('share.send.kinds.workout')}
+        buildEnvelope={() => buildWorkoutShare(workout.id)}
+      />
     </ScrollView>
   );
 }

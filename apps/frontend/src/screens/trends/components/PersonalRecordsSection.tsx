@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -8,6 +9,10 @@ import type {
   ExercisePrKind,
 } from '@/hooks/useExerciseAnalytics';
 import { displayWeight } from '@/utils/units';
+import { colors } from '@pumped/ui/theme/tokens';
+import { ShareIconButton } from '@/components/share/ShareIconButton';
+import { ShareSheet } from '@/components/share/ShareSheet';
+import { buildAchievementShare } from '@/data/local/share/exportShare';
 
 type PersonalRecordsSectionProps = {
   prs: ExerciseDerivedPr[];
@@ -53,10 +58,18 @@ export function PersonalRecordsSection({
   weightUnit,
 }: PersonalRecordsSectionProps) {
   const { t, i18n } = useTranslation();
+  // Kept after closing so the sheet's title doesn't blank during dismissal.
+  const [sharing, setSharing] = useState<ExerciseDerivedPr | null>(null);
+  const [shareVisible, setShareVisible] = useState(false);
 
   if (prs.length === 0 || !exerciseName) {
     return null;
   }
+
+  const openShare = (pr: ExerciseDerivedPr) => {
+    setSharing(pr);
+    setShareVisible(true);
+  };
 
   return (
     <View className="gap-[14px]">
@@ -71,7 +84,7 @@ export function PersonalRecordsSection({
         {prs.map(pr => (
           <View
             key={pr.kind}
-            className="flex-row items-center gap-3 rounded-[22px] border border-border-hairline bg-surface-card px-[18px] py-[16px]"
+            className="flex-row items-center gap-3 rounded-[22px] border border-border-hairline bg-surface-card py-[10px] pl-[18px] pr-[8px]"
             style={shadows.row}
           >
             <Text className="flex-1 text-[15px] font-[700] leading-[1.2] text-foreground">
@@ -83,9 +96,38 @@ export function PersonalRecordsSection({
             <Text className="w-[58px] text-right text-[12px] font-[600] text-muted">
               {formatPrDate(pr.achievedAt, i18n.language)}
             </Text>
+            <ShareIconButton
+              onPress={() => openShare(pr)}
+              color={colors.muted}
+              size={16}
+              accessibilityLabel={t('share.send.prA11y')}
+            />
           </View>
         ))}
       </View>
+
+      <ShareSheet
+        visible={shareVisible}
+        onClose={() => setShareVisible(false)}
+        title={
+          sharing
+            ? `${exerciseName} · ${t(PR_LABEL_KEY[sharing.kind])}`
+            : exerciseName
+        }
+        kindLabel={t('share.send.kinds.achievement')}
+        buildEnvelope={() => {
+          if (!sharing) throw new Error('No record selected');
+          return buildAchievementShare({
+            kind: sharing.kind,
+            exerciseName,
+            value: sharing.value,
+            weightKg: sharing.weightKg,
+            reps: sharing.reps,
+            achievedAt: sharing.achievedAt,
+            workoutName: sharing.workoutName,
+          });
+        }}
+      />
     </View>
   );
 }

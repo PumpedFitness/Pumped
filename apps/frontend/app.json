@@ -15,6 +15,7 @@
         "backgroundColor": "#0F1113"
       },
       "permissions": [
+        "android.permission.CAMERA",
         "android.permission.health.READ_SLEEP",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.READ_RESTING_HEART_RATE",
@@ -27,6 +28,14 @@
     "plugins": [
       "expo-sqlite",
       "react-native-health-connect",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Pumped uses the camera to scan share codes from other devices.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
       [
         "expo-build-properties",
         {

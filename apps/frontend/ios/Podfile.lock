@@ -29,6 +29,12 @@ PODS:
     - Yoga
   - ExpoAsset (56.0.21):
     - ExpoModulesCore
+  - ExpoCamera (56.0.8):
+    - ExpoModulesCore
+  - ExpoCameraBarcodeScanning (56.0.8):
+    - ExpoCamera
+    - ZXingObjC/OneD
+    - ZXingObjC/PDF417
   - ExpoCrypto (56.0.4):
     - ExpoModulesCore
   - ExpoDocumentPicker (56.0.4):
@@ -2304,11 +2310,18 @@ PODS:
     - Yoga
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
+  - ZXingObjC/Core (3.6.9)
+  - ZXingObjC/OneD (3.6.9):
+    - ZXingObjC/Core
+  - ZXingObjC/PDF417 (3.6.9):
+    - ZXingObjC/Core
 
 DEPENDENCIES:
   - "EXConstants (from `../../../node_modules/.bun/expo-constants@56.0.22+cec63a1e80be7208/node_modules/expo-constants/ios`)"
   - "Expo (from `../../../node_modules/.bun/expo@56.0.17+380c3dcbe7b366de/node_modules/expo`)"
   - "ExpoAsset (from `../../../node_modules/.bun/expo-asset@56.0.21+cec63a1e80be7208/node_modules/expo-asset/ios`)"
+  - "ExpoCamera (from `../../../node_modules/.bun/expo-camera@56.0.8+380c3dcbe7b366de/node_modules/expo-camera/ios`)"
+  - "ExpoCameraBarcodeScanning (from `../../../node_modules/.bun/expo-camera@56.0.8+380c3dcbe7b366de/node_modules/expo-camera/ios`)"
   - "ExpoCrypto (from `../../../node_modules/.bun/expo-crypto@56.0.4+380c3dcbe7b366de/node_modules/expo-crypto/ios`)"
   - "ExpoDocumentPicker (from `../../../node_modules/.bun/expo-document-picker@56.0.4+380c3dcbe7b366de/node_modules/expo-document-picker/ios`)"
   - "ExpoDomWebView (from `../../../node_modules/.bun/@expo+dom-webview@56.0.6+cec63a1e80be7208/node_modules/@expo/dom-webview/ios`)"
@@ -2416,6 +2429,7 @@ SPEC REPOS:
   trunk:
     - MMKVCore
     - SwiftUIIntrospect
+    - ZXingObjC
 
 EXTERNAL SOURCES:
   EXConstants:
@@ -2424,6 +2438,10 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/.bun/expo@56.0.17+380c3dcbe7b366de/node_modules/expo"
   ExpoAsset:
     :path: "../../../node_modules/.bun/expo-asset@56.0.21+cec63a1e80be7208/node_modules/expo-asset/ios"
+  ExpoCamera:
+    :path: "../../../node_modules/.bun/expo-camera@56.0.8+380c3dcbe7b366de/node_modules/expo-camera/ios"
+  ExpoCameraBarcodeScanning:
+    :path: "../../../node_modules/.bun/expo-camera@56.0.8+380c3dcbe7b366de/node_modules/expo-camera/ios"
   ExpoCrypto:
     :path: "../../../node_modules/.bun/expo-crypto@56.0.4+380c3dcbe7b366de/node_modules/expo-crypto/ios"
   ExpoDocumentPicker:
@@ -2632,6 +2650,8 @@ SPEC CHECKSUMS:
   EXConstants: 9fff81852f1d2e72502786a66f5ddb6d0eb76436
   Expo: d61d808084d52a00653a95fa47e861b5c67826a0
   ExpoAsset: 26f77f0cdaffe419b80e86f02cc5365722bc135e
+  ExpoCamera: 68008452cc12ad5ad5d46cc7c835073228c008da
+  ExpoCameraBarcodeScanning: 2acb6385fe6aa7563da5241c775092aac40195ce
   ExpoCrypto: b54a97c4357d46d7f8de079e69fa89029572244b
   ExpoDocumentPicker: caa9c7c1071dc31262d86a8fe48f51929d291a43
   ExpoDomWebView: 4e53b05879dc73ba374f76bff93dd64c8a0d91b3
@@ -2735,6 +2755,7 @@ SPEC CHECKSUMS:
   RNWorklets: 99162b560b53f50a127a98d1a720ef053d5f18f5
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
+  ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
 PODFILE CHECKSUM: e271f1a2172d5e58c86c279492d85f0bf7ea0d18
 

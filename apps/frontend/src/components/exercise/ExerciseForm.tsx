@@ -13,16 +13,20 @@ import { colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { Button } from '@pumped/ui/clay/Button';
 import { LibraryPicker } from '@pumped/ui/forms/LibraryPicker';
-import { useHandover } from '@/hooks/useHandover';
+import { buildExerciseShare } from '@/data/local/share/exportShare';
+import { ShareIconButton } from '@/components/share/ShareIconButton';
+import { ShareSheet } from '@/components/share/ShareSheet';
 import { LabeledField } from './LabeledField';
 import { PickerRow } from './PickerRow';
 import { useExerciseDraft, type ExerciseToEdit } from './useExerciseDraft';
 
 type FormHeaderProps = {
   onCancel: () => void;
+  /** Shown only for a saved exercise — a draft has nothing to share yet. */
+  onShare?: () => void;
 };
 
-function FormHeader({ onCancel }: FormHeaderProps) {
+function FormHeader({ onCancel, onShare }: FormHeaderProps) {
   return (
     <View className="flex-row items-center justify-between px-4 h-14">
       <Pressable
@@ -31,6 +35,7 @@ function FormHeader({ onCancel }: FormHeaderProps) {
       >
         <ClayIcon name="x" size={20} color={colors.ink} />
       </Pressable>
+      {onShare ? <ShareIconButton onPress={onShare} /> : null}
     </View>
   );
 }
@@ -90,23 +95,12 @@ function DeleteExerciseRow({ onPress }: DeleteExerciseRowProps) {
 }
 
 type FormFooterProps = {
-  displayHandoverResult: { uuid: string; ttl: number } | null;
-  isHandovering: boolean;
-  onShare: () => void;
   saveDisabled: boolean;
   saveLabel: string;
   onSave: () => void;
 };
 
-function FormFooter({
-  displayHandoverResult,
-  isHandovering,
-  onShare,
-  saveDisabled,
-  saveLabel,
-  onSave,
-}: FormFooterProps) {
-  const { t } = useTranslation();
+function FormFooter({ saveDisabled, saveLabel, onSave }: FormFooterProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -117,19 +111,6 @@ function FormFooter({
       // tappable but the bar consumes the touches.
       style={{ paddingBottom: Math.max(insets.bottom + 8, 20) }}
     >
-      {displayHandoverResult && (
-        <Text>
-          {t('exerciseForm.handoverResult', {
-            uuid: displayHandoverResult.uuid,
-            ttl: displayHandoverResult.ttl,
-          })}
-        </Text>
-      )}
-
-      <Button onPress={onShare} disabled={isHandovering}>
-        {t('exerciseForm.share')}
-      </Button>
-
       <Button
         variant="primary"
         size="lg"
@@ -178,15 +159,9 @@ export function ExerciseForm({
     handleDelete,
   } = useExerciseDraft(exercise, onSaved);
 
-  const { create } = useHandover();
-
   const nameRef = useRef<TextInput>(null);
 
-  const [isHandovering, setIsHandovering] = useState(false);
-  const [displayHandoverResult, setDisplayHandoverResult] = useState<{
-    uuid: string;
-    ttl: number;
-  } | null>(null);
+  const [shareVisible, setShareVisible] = useState(false);
 
   const [typePickerVisible, setTypePickerVisible] = useState(false);
   const [mgPickerVisible, setMgPickerVisible] = useState(false);
@@ -198,27 +173,12 @@ export function ExerciseForm({
     }
   }, [isEditing]);
 
-  const handover = async () => {
-    setIsHandovering(true);
-    const result = await create({
-      name,
-      description,
-      picture,
-      typeId,
-      muscleGroupIds,
-    });
-    setIsHandovering(false);
-
-    if (result.status === 'success') {
-      setDisplayHandoverResult(result.data);
-    } else {
-      console.error(result);
-    }
-  };
-
   return (
     <View className="flex-1">
-      <FormHeader onCancel={onCancel} />
+      <FormHeader
+        onCancel={onCancel}
+        onShare={exercise ? () => setShareVisible(true) : undefined}
+      />
 
       <ScrollView
         contentContainerClassName="pb-28"
@@ -281,9 +241,6 @@ export function ExerciseForm({
       </ScrollView>
 
       <FormFooter
-        displayHandoverResult={displayHandoverResult}
-        isHandovering={isHandovering}
-        onShare={() => void handover()}
         saveDisabled={!name.trim()}
         saveLabel={
           isEditing
@@ -313,6 +270,16 @@ export function ExerciseForm({
         onClose={() => setMgPickerVisible(false)}
         onChange={setMuscleGroupIds}
       />
+
+      {exercise ? (
+        <ShareSheet
+          visible={shareVisible}
+          onClose={() => setShareVisible(false)}
+          title={exercise.name}
+          kindLabel={t('share.send.kinds.exercise')}
+          buildEnvelope={() => buildExerciseShare(exercise.id)}
+        />
+      ) : null}
     </View>
   );
 }

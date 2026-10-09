@@ -176,10 +176,12 @@ export function listWorkoutTemplates(): WorkoutTemplate[] {
     .filter((template): template is WorkoutTemplate => template !== null);
 }
 
-type Tx = Parameters<Parameters<(typeof db)['transaction']>[0]>[0];
+export type TemplateTx = Parameters<
+  Parameters<(typeof db)['transaction']>[0]
+>[0];
 
 function upsertTemplateRow(
-  tx: Tx,
+  tx: TemplateTx,
   templateId: string,
   input: SaveWorkoutTemplateInput,
   now: number,
@@ -225,7 +227,7 @@ function upsertTemplateRow(
 // save, so a key from the draft never survives as a row id — resolving through
 // this map is what keeps membership pointing at a row that exists.
 function replaceTemplateSupersets(
-  tx: Tx,
+  tx: TemplateTx,
   templateId: string,
   supersets: WorkoutTemplateSupersetInput[],
 ): Map<string, string> {
@@ -250,7 +252,7 @@ function replaceTemplateSupersets(
 }
 
 function replaceTemplateChildren(
-  tx: Tx,
+  tx: TemplateTx,
   templateId: string,
   exercises: WorkoutTemplateExerciseInput[],
   supersets: WorkoutTemplateSupersetInput[],
@@ -300,25 +302,44 @@ function replaceTemplateChildren(
   });
 }
 
-export function saveWorkoutTemplate(
+/**
+ * Writes a template inside the caller's transaction and returns its id. For
+ * callers that must save a template atomically with other rows (share
+ * import); they own `notifyTableChanged`. Everyone else uses
+ * `saveWorkoutTemplate`.
+ */
+export function writeWorkoutTemplate(
+  tx: TemplateTx,
   input: SaveWorkoutTemplateInput,
-): WorkoutTemplate {
+): string {
   const templateId = input.id ?? randomUUID();
-  const now = Date.now();
   const validatedExercises = input.exercises.map(exercise => ({
     ...exercise,
     sets: exercise.sets.map(validateTemplateSet),
   }));
 
-  db.transaction(tx => {
-    upsertTemplateRow(tx, templateId, input, now);
-    replaceTemplateChildren(
-      tx,
-      templateId,
-      validatedExercises,
-      input.supersets ?? [],
-    );
-  });
+  upsertTemplateRow(tx, templateId, input, Date.now());
+  replaceTemplateChildren(
+    tx,
+    templateId,
+    validatedExercises,
+    input.supersets ?? [],
+  );
+  return templateId;
+}
+
+/** Tables a template write touches, for `notifyTableChanged`. */
+export const WORKOUT_TEMPLATE_TABLES = [
+  workoutTemplates,
+  workoutTemplateSupersets,
+  workoutTemplateExercises,
+  workoutTemplateSets,
+] as const;
+
+export function saveWorkoutTemplate(
+  input: SaveWorkoutTemplateInput,
+): WorkoutTemplate {
+  const templateId = db.transaction(tx => writeWorkoutTemplate(tx, input));
 
   notifyTableChanged(
     workoutTemplates,
