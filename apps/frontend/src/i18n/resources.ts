@@ -1526,6 +1526,20 @@ export const resources = {
           },
         },
       },
+      workoutComplete: {
+        title: 'Workout complete',
+        subtitle_one: '{{name}} · {{count}} exercise',
+        subtitle_other: '{{name}} · {{count}} exercises',
+        stats: {
+          duration: 'Time',
+          sets: 'Sets',
+          volume: 'Volume',
+          minutes_one: '{{count}} min',
+          minutes_other: '{{count}} min',
+        },
+        done: 'Done',
+        viewDetails: 'View workout details',
+      },
       completedWorkout: {
         title: 'Workout details',
         backA11y: 'Back to workout history',
@@ -3214,6 +3228,20 @@ export const resources = {
             statAvgMin: 'Ø Min.',
           },
         },
+      },
+      workoutComplete: {
+        title: 'Workout abgeschlossen',
+        subtitle_one: '{{name}} · {{count}} Übung',
+        subtitle_other: '{{name}} · {{count}} Übungen',
+        stats: {
+          duration: 'Zeit',
+          sets: 'Sätze',
+          volume: 'Volumen',
+          minutes_one: '{{count}} Min.',
+          minutes_other: '{{count}} Min.',
+        },
+        done: 'Fertig',
+        viewDetails: 'Workout-Details ansehen',
       },
       completedWorkout: {
         title: 'Workout-Details',

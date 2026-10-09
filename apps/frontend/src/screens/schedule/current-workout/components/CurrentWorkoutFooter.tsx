@@ -25,8 +25,8 @@ function completeWorkout(
   updateTemplate = false,
 ) {
   try {
-    finishWorkout({ updateTemplate });
-    navigation.goBack();
+    const summary = finishWorkout({ updateTemplate });
+    navigation.replace('WorkoutComplete', summary);
   } catch (error) {
     Alert.alert(
       t('currentWorkout.alerts.finishFailedTitle'),

@@ -16,6 +16,7 @@ import { ScheduleEditorScreen } from '@/screens/schedule/schedule-editor/Schedul
 import { MetricHistoryScreen } from '@/screens/tracking/metric-history/MetricHistoryScreen';
 import { AddMetricScreen } from '@/screens/tracking/add-metric/AddMetricScreen';
 import { CompletedWorkoutScreen } from '@/screens/history/completed-workout/CompletedWorkoutScreen';
+import { WorkoutCompleteScreen } from '@/screens/schedule/workout-complete/WorkoutCompleteScreen';
 import { ProfileScreen } from '@/screens/settings/ProfileScreen';
 import { SettingsGroupScreen } from '@/screens/settings/SettingsGroupScreen';
 import type { SettingsGroupId } from '@/screens/settings/settingsGroups';
@@ -26,6 +27,7 @@ import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHis
 import { useAuthStore } from '@/stores/authStore';
 import { colors } from '@pumped/ui/theme/tokens';
 import type { WidgetType } from '@/types/widget';
+import type { WorkoutFinishSummary } from '@/types/workout';
 import type {
   EditableExercise,
   ExerciseEditResult,
@@ -44,6 +46,7 @@ export type RootStackParamList = {
   Profile: undefined;
   SettingsGroup: { group: SettingsGroupId };
   CompletedWorkout: { workoutId: string };
+  WorkoutComplete: WorkoutFinishSummary;
   Trends: undefined;
   ImportWorkoutTemplate: undefined;
   AddMetric: { metric: MetricKind };
@@ -190,6 +193,11 @@ export function AppNavigator() {
           name="CurrentWorkout"
           component={CurrentWorkoutScreen}
           options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="WorkoutComplete"
+          component={WorkoutCompleteScreen}
+          options={{ animation: 'fade', gestureEnabled: false }}
         />
         <Stack.Screen
           name="ExerciseSelection"

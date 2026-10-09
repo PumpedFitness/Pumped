@@ -5,7 +5,10 @@ import {
   saveWorkoutTemplate,
 } from '@/data/local/workouts/templates';
 import { saveCompletedWorkout } from '@/data/local/workouts/sessions';
-import { getSetTypeFieldDefs } from '@/data/local/sets/setTypes';
+import {
+  getSetTypeFieldDefs,
+  resolveSetWeightReps,
+} from '@/data/local/sets/setTypes';
 import { useTableQuery } from '@/data/local/tableVersions';
 import {
   workoutTemplateExercises,
@@ -13,17 +16,39 @@ import {
   workoutTemplates,
 } from '@/data/local/schema';
 import {
+  type CurrentWorkout,
   buildTemplateSyncInput,
+  currentWorkoutElapsedMs,
   hasWorkoutStructureChanged,
   isCurrentWorkoutComplete,
   requireCurrentWorkout,
 } from '@/stores/currentWorkoutModel';
 import { useCurrentWorkoutStore } from '@/stores/currentWorkoutStore';
+import type { WorkoutFinishSummary } from '@/types/workout';
 import { useExerciseOptions } from './useExerciseOptions';
 
 type FinishCurrentWorkoutInput = {
   updateTemplate?: boolean;
 };
+
+function buildFinishSummary(
+  workout: CurrentWorkout,
+  sessionId: string,
+  endedAt: number,
+): WorkoutFinishSummary {
+  const sets = workout.exercises.flatMap(exercise => exercise.sets);
+  return {
+    workoutId: sessionId,
+    name: workout.name,
+    durationMs: currentWorkoutElapsedMs(workout, endedAt),
+    exerciseCount: workout.exercises.length,
+    setCount: sets.length,
+    totalVolumeKg: sets.reduce((total, set) => {
+      const { weight, reps } = resolveSetWeightReps(set);
+      return total + (weight ?? 0) * reps;
+    }, 0),
+  };
+}
 
 export function useCurrentWorkout() {
   const currentWorkout = useCurrentWorkoutStore(state => state.currentWorkout);
@@ -85,7 +110,7 @@ export function useCurrentWorkout() {
   );
 
   const finishWorkout = useCallback(
-    (input?: FinishCurrentWorkoutInput) => {
+    (input?: FinishCurrentWorkoutInput): WorkoutFinishSummary => {
       const workout = requireCurrentWorkout(
         useCurrentWorkoutStore.getState().currentWorkout,
       );
@@ -99,12 +124,13 @@ export function useCurrentWorkout() {
         }
         saveWorkoutTemplate(buildTemplateSyncInput(workout, template));
       }
-      saveCompletedWorkout({
+      const endedAt = Date.now();
+      const session = saveCompletedWorkout({
         id: workout.id,
         workoutTemplateId: workout.workoutTemplateId,
         name: workout.name,
         startedAt: workout.startedAt,
-        endedAt: Date.now(),
+        endedAt,
         notes: null,
         color: workout.color,
         icon: workout.icon,
@@ -123,6 +149,7 @@ export function useCurrentWorkout() {
         ),
       });
       discardWorkout();
+      return buildFinishSummary(workout, session.id, endedAt);
     },
     [discardWorkout],
   );

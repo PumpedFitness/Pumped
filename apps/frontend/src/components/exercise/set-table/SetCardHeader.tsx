@@ -4,6 +4,7 @@ import { colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon, isIconName } from '@pumped/ui/icons/ClayIcon';
 import type { SetCardModel, SetCardRest } from './exerciseSetTableModel';
 import { formatRestValue } from './restPicker';
+import { SetDoneCheck } from './SetDoneCheck';
 import { setTypeColorTokens } from './setTypeColors';
 
 type SetCardHeaderProps = {
@@ -132,15 +133,7 @@ function SetCardCompletionToggle({ card, onToggleDone }: SetCardActionsProps) {
       className="h-8 w-8 items-center justify-center rounded-full active:bg-surface-sunk"
       onPress={onToggleDone}
     >
-      <View
-        className={`h-7 w-7 items-center justify-center rounded-full ${
-          card.isDone ? 'bg-moss' : 'border-2 border-border-soft bg-background'
-        }`}
-      >
-        {card.isDone && (
-          <ClayIcon name="check" size={15} color={colors.cream} />
-        )}
-      </View>
+      <SetDoneCheck isDone={card.isDone === true} />
     </Pressable>
   );
 }

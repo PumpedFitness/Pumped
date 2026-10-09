@@ -112,3 +112,14 @@ export type PerformedSet = {
 export type WorkoutSessionDetails = WorkoutSession & {
   sets: PerformedSet[];
 };
+
+/** What the workout-complete celebration shows; built when a session is saved. */
+export type WorkoutFinishSummary = {
+  workoutId: string;
+  name: string;
+  /** Active time — paused stretches excluded. */
+  durationMs: number;
+  exerciseCount: number;
+  setCount: number;
+  totalVolumeKg: number;
+};

@@ -2,16 +2,17 @@ import './global.css';
 // Initialize i18next before the first render (side-effect import).
 import '@/i18n';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { HeroUINativeProvider } from 'heroui-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaProvider,
   initialWindowMetrics,
 } from 'react-native-safe-area-context';
-import { StatusBar, ActivityIndicator, Text, View } from 'react-native';
+import { StatusBar, Text, View } from 'react-native';
 import { Uniwind } from 'uniwind';
 import { AppNavigator } from '@/navigation/AppNavigator';
+import { LaunchScreen } from '@/components/brand/LaunchScreen';
 import { UndoToastProvider } from '@/components/feedback/UndoToast';
 import { initDatabase } from '@/data/local/database';
 import { validateHealthSources } from '@/data/local/health/source';
@@ -21,6 +22,8 @@ import { useHomescreenStore } from '@/stores/homescreenStore';
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [launchFinished, setLaunchFinished] = useState(false);
+  const finishLaunch = useCallback(() => setLaunchFinished(true), []);
   const authReady = useAuthStore(s => s.isReady);
   const userId = useAuthStore(s => s.userId);
   const initializeAuth = useAuthStore(s => s.initialize);
@@ -73,24 +76,27 @@ export default function App() {
     );
   }
 
-  if (!dbReady || !authReady) {
-    return (
-      <View className="flex-1 items-center justify-center bg-[#EAE3D5]">
-        <ActivityIndicator size="large" color="#C67B52" />
-      </View>
-    );
-  }
+  const appReady = dbReady && authReady;
 
+  // The app mounts behind the launch screen as soon as it is ready, so the
+  // first render has settled by the time the launch animation lifts away.
   return (
-    <GestureHandlerRootView style={{ flex: 1 }} className="flex-1">
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <HeroUINativeProvider>
-          <UndoToastProvider>
-            <StatusBar barStyle="dark-content" />
-            <AppNavigator />
-          </UndoToastProvider>
-        </HeroUINativeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <View className="flex-1 bg-[#EAE3D5]">
+      {appReady ? (
+        <GestureHandlerRootView style={{ flex: 1 }} className="flex-1">
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <HeroUINativeProvider>
+              <UndoToastProvider>
+                <StatusBar barStyle="dark-content" />
+                <AppNavigator />
+              </UndoToastProvider>
+            </HeroUINativeProvider>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      ) : null}
+      {launchFinished ? null : (
+        <LaunchScreen ready={appReady} onFinished={finishLaunch} />
+      )}
+    </View>
   );
 }
