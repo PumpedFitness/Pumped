@@ -13,7 +13,10 @@ export type WidgetType =
   | 'adherenceFull'
   | 'bodyweightCompact'
   | 'bodyweightWide'
-  | 'muscleVolumeFull';
+  | 'muscleVolumeFull'
+  | 'metricTrackerCompact'
+  | 'metricTrackerWide'
+  | 'metricTrackerFull';
 
 export type WidgetGroup =
   | 'todaySession'
@@ -23,7 +26,8 @@ export type WidgetGroup =
   | 'e1rm'
   | 'adherence'
   | 'bodyweight'
-  | 'muscleVolume';
+  | 'muscleVolume'
+  | 'metricTracker';
 
 export type WidgetPlacement = {
   id: string;
@@ -31,6 +35,22 @@ export type WidgetPlacement = {
   colSpan: number; // 1, 2, or 3
   row: number;
   column: number;
+  /**
+   * Per-placement settings for configurable widget types (metric tracker).
+   * Opaque here — the owning widget parses and validates it.
+   */
+  config?: unknown;
+};
+
+export type WidgetComponentProps = {
+  colSpan: number;
+  width: number;
+  /** The grid's edit mode — widgets with their own edit affordances read it. */
+  editing: boolean;
+  /** The placement being rendered; absent in the picker's previews. */
+  widgetId?: string;
+  /** The placement's config (see WidgetPlacement.config). */
+  config?: unknown;
 };
 
 export type WidgetNameKey = `widgets.names.${Extract<
@@ -44,6 +64,11 @@ export type WidgetMeta = {
   nameKey: WidgetNameKey;
   icon: IconName;
   colSpan: 1 | 2 | 3;
+  /**
+   * Configurable types can be placed more than once; the picker then always
+   * offers "Add" and routes through the config screen first.
+   */
+  configurable?: boolean;
   /**
    * Roughly how tall this widget renders, in points.
    *

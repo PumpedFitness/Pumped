@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabs } from './MainTabs';
 import { OnboardingScreen } from '@/screens/onboarding/OnboardingScreen';
 import { WidgetPickerScreen } from '@/screens/home/widget-picker/WidgetPickerScreen';
+import { MetricWidgetConfigScreen } from '@/screens/home/metric-widget-config/MetricWidgetConfigScreen';
 import { CreateExerciseScreen } from '@/screens/library/create-exercise/CreateExerciseScreen';
 import { EditExerciseScreen } from '@/screens/library/edit-exercise/EditExerciseScreen';
 import { ExerciseSelectionScreen } from '@/screens/schedule/exercise-selection/ExerciseSelectionScreen';
@@ -24,6 +25,7 @@ import { CsvImportScreen } from '@/screens/settings/csv-import/CsvImportScreen';
 import { ImportHistoryScreen } from '@/screens/settings/import-history/ImportHistoryScreen';
 import { useAuthStore } from '@/stores/authStore';
 import { colors } from '@pumped/ui/theme/tokens';
+import type { WidgetType } from '@/types/widget';
 import type {
   EditableExercise,
   ExerciseEditResult,
@@ -36,6 +38,8 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Main: undefined;
   WidgetPicker: undefined;
+  /** Edit an existing tracker (`widgetId`) or set up a new one (`type`). */
+  MetricWidgetConfig: { widgetId: string } | { type: WidgetType };
   MetricHistory: { metric: MetricKind };
   Profile: undefined;
   SettingsGroup: { group: SettingsGroupId };
@@ -113,6 +117,11 @@ export function AppNavigator() {
         <Stack.Screen
           name="WidgetPicker"
           component={WidgetPickerScreen}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="MetricWidgetConfig"
+          component={MetricWidgetConfigScreen}
           options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
         />
         <Stack.Screen

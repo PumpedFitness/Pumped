@@ -99,6 +99,8 @@ export function GridItem({
           colSpan={placement.colSpan}
           width={width}
           editing={editing}
+          widgetId={placement.id}
+          config={placement.config}
         />
       </DraggableWidget>
     </Animated.View>

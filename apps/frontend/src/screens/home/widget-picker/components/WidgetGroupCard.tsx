@@ -1,4 +1,5 @@
 import { Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@pumped/ui/clay/Card';
 import { Button } from '@pumped/ui/clay/Button';
@@ -44,6 +45,7 @@ export function WidgetGroupCard({
   placedTypes,
 }: WidgetGroupCardProps) {
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const addWidget = useHomescreenStore(state => state.addWidget);
   const groupMeta = widgetRegistry[variants[0]].meta;
 
@@ -60,7 +62,9 @@ export function WidgetGroupCard({
 
       {variants.map((type, index) => {
         const meta = widgetRegistry[type].meta;
-        const placed = placedTypes.has(type);
+        // Configurable widgets can be placed any number of times — each one
+        // is set up in the config screen before it lands on the grid.
+        const placed = !meta.configurable && placedTypes.has(type);
         const sizeLabel =
           meta.colSpan === 1
             ? t('widgetPicker.compact')
@@ -87,7 +91,11 @@ export function WidgetGroupCard({
               variant={placed ? 'ghost' : 'secondary'}
               size="sm"
               disabled={placed}
-              onPress={() => addWidget(type)}
+              onPress={() =>
+                meta.configurable
+                  ? navigation.navigate('MetricWidgetConfig', { type })
+                  : addWidget(type)
+              }
             >
               {placed ? t('widgetPicker.added') : t('common.add')}
             </Button>

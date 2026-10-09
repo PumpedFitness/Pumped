@@ -14,10 +14,10 @@ export function WidgetLabelRow({
   inverted,
 }: WidgetLabelRowProps) {
   return (
-    <View className="flex-row items-center justify-between">
+    <View className="flex-row items-center justify-between gap-2">
       <Text
         className={
-          'text-[12px] font-[600] ' +
+          'shrink text-[12px] font-[600] ' +
           (inverted ? 'text-cream-dim' : 'text-muted')
         }
       >

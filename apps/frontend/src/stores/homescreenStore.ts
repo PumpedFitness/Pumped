@@ -50,6 +50,7 @@ type StoredWidgetPlacement = {
   colSpan: number;
   row?: number;
   column?: number;
+  config?: unknown;
 };
 
 function migrateType(type: string, colSpan: number): WidgetType | null {
@@ -200,7 +201,8 @@ type HomescreenState = {
   quickActions: QuickActionKey[];
   initialize: () => void;
   setLayout: (layout: WidgetPlacement[]) => void;
-  addWidget: (type: WidgetType) => void;
+  addWidget: (type: WidgetType, config?: unknown) => void;
+  updateWidgetConfig: (id: string, config: unknown) => void;
   removeWidget: (id: string) => void;
   addQuickAction: (key: QuickActionKey) => void;
   removeQuickAction: (key: QuickActionKey) => void;
@@ -250,7 +252,7 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
     set({ layout });
   },
 
-  addWidget: (type: WidgetType) => {
+  addWidget: (type: WidgetType, config?: unknown) => {
     const meta = widgetRegistry[type].meta;
     const layout = [
       ...get().layout,
@@ -263,8 +265,17 @@ export const useHomescreenStore = create<HomescreenState>((set, get) => ({
           0,
         ),
         column: 0,
+        ...(config === undefined ? {} : { config }),
       },
     ];
+    persist(layout);
+    set({ layout });
+  },
+
+  updateWidgetConfig: (id: string, config: unknown) => {
+    const layout = get().layout.map(widget =>
+      widget.id === id ? { ...widget, config } : widget,
+    );
     persist(layout);
     set({ layout });
   },

@@ -1,5 +1,10 @@
 import type { ComponentType } from 'react';
-import type { WidgetGroup, WidgetType, WidgetMeta } from '@/types/widget';
+import type {
+  WidgetComponentProps,
+  WidgetGroup,
+  WidgetMeta,
+  WidgetType,
+} from '@/types/widget';
 import {
   TonnageCompactWidget,
   TonnageWideWidget,
@@ -17,13 +22,7 @@ import { MuscleVolumeFullWidget } from './muscle-volume/MuscleVolumeFullWidget';
 import { TodaySessionWidget } from './today/TodaySessionWidget';
 import { QuickActionsWidget } from './quick-actions/QuickActionsWidget';
 import { NotificationsWidget } from './notifications/NotificationsWidget';
-
-type WidgetComponentProps = {
-  colSpan: number;
-  width: number;
-  /** The grid's edit mode — widgets with their own edit affordances read it. */
-  editing: boolean;
-};
+import { MetricTrackerWidget } from './metric-tracker/MetricTrackerWidget';
 
 type WidgetRegistryEntry = {
   component: ComponentType<WidgetComponentProps>;
@@ -163,6 +162,42 @@ export const widgetRegistry: Record<WidgetType, WidgetRegistryEntry> = {
       estimatedHeight: 200,
     },
   },
+  metricTrackerCompact: {
+    component: MetricTrackerWidget,
+    meta: {
+      type: 'metricTrackerCompact',
+      group: 'metricTracker',
+      nameKey: 'widgets.names.metricTracker',
+      icon: 'pulse',
+      colSpan: 1,
+      configurable: true,
+      estimatedHeight: 130,
+    },
+  },
+  metricTrackerWide: {
+    component: MetricTrackerWidget,
+    meta: {
+      type: 'metricTrackerWide',
+      group: 'metricTracker',
+      nameKey: 'widgets.names.metricTracker',
+      icon: 'pulse',
+      colSpan: 2,
+      configurable: true,
+      estimatedHeight: 150,
+    },
+  },
+  metricTrackerFull: {
+    component: MetricTrackerWidget,
+    meta: {
+      type: 'metricTrackerFull',
+      group: 'metricTracker',
+      nameKey: 'widgets.names.metricTracker',
+      icon: 'pulse',
+      colSpan: 3,
+      configurable: true,
+      estimatedHeight: 210,
+    },
+  },
 };
 
 // Picker gallery ordering: one card per family, variants in size order.
@@ -178,4 +213,12 @@ export const widgetGroups: Array<{
   { group: 'adherence', variants: ['adherenceWide', 'adherenceFull'] },
   { group: 'bodyweight', variants: ['bodyweightCompact', 'bodyweightWide'] },
   { group: 'muscleVolume', variants: ['muscleVolumeFull'] },
+  {
+    group: 'metricTracker',
+    variants: [
+      'metricTrackerCompact',
+      'metricTrackerWide',
+      'metricTrackerFull',
+    ],
+  },
 ];
