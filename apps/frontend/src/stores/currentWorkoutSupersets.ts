@@ -4,11 +4,9 @@
 // removing one takes a set from every member. Keeping that here rather than in
 // the store means the "all members stay level" rule has exactly one home.
 
-import type { WorkoutTemplateSuperset } from '@/types/workout';
 import {
   groupIntoBlocks,
   normalizeSupersets,
-  supersetRestSeconds,
 } from '@/data/local/workouts/supersets';
 import {
   createCurrentWorkoutSet,
@@ -42,7 +40,7 @@ export function settleWorkoutSupersets(
   };
 }
 
-/** Adds a round: one new set on every member, carrying that member's rest. */
+/** Adds a round: one new set on every member. */
 export function addSupersetRound(
   workout: CurrentWorkout,
   supersetId: string,
@@ -51,9 +49,6 @@ export function addSupersetRound(
   if (members.length === 0) {
     return workout;
   }
-  const group: WorkoutTemplateSuperset = workout.supersets.find(
-    candidate => candidate.id === supersetId,
-  ) ?? { id: supersetId, restSeconds: null, transitionRestSeconds: null };
   const memberIndexById = new Map(
     members.map((member, index) => [member.id, index] as const),
   );
@@ -66,19 +61,11 @@ export function addSupersetRound(
         if (memberIndex === undefined) {
           return exercise;
         }
-        const set = createCurrentWorkoutSet(exercise.sets.length);
         return {
           ...exercise,
           sets: [
             ...exercise.sets,
-            {
-              ...set,
-              restSeconds: supersetRestSeconds(
-                group,
-                memberIndex,
-                members.length,
-              ),
-            },
+            createCurrentWorkoutSet(exercise.sets.length),
           ],
         };
       }),

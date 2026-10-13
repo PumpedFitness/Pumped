@@ -55,6 +55,7 @@ export function WorkoutTemplateEditorScreen({
       exerciseOptions={exerciseOptions}
       onSave={saveTemplate}
       onDelete={deleteTemplate}
+      onClose={() => navigation.goBack()}
     />
   );
 }

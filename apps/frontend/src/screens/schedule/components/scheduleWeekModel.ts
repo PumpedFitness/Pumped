@@ -58,6 +58,56 @@ function toScheduledTemplate(template: WorkoutTemplate): ScheduledTemplate {
   };
 }
 
+function buildPlanWeek(
+  todayIndex: number,
+  doneDayIndexes: Set<number>,
+  skippedDayIndexes: number[],
+  templatesForDay: (dayIndex: number) => ScheduledTemplate[],
+): ScheduleWeek {
+  const skipped = new Set(skippedDayIndexes);
+  const weekStart = startOfWeek(todayIndex);
+  const days = Array.from({ length: DAYS_PER_WEEK }, (_, offset): WeekDay => {
+    const dayIndex = weekStart + offset;
+    const dayTemplates = templatesForDay(dayIndex);
+    return {
+      dayIndex,
+      weekday: weekdayMon0(dayIndex),
+      isToday: dayIndex === todayIndex,
+      isPast: dayIndex < todayIndex,
+      status: dayStatus(
+        dayTemplates,
+        doneDayIndexes.has(dayIndex),
+        skipped.has(dayIndex),
+        dayIndex < todayIndex,
+      ),
+      templates: dayTemplates,
+    };
+  });
+
+  const tomorrowTemplates = templatesForDay(todayIndex + 1);
+  return {
+    days,
+    tomorrow: {
+      isRest: tomorrowTemplates.length === 0,
+      templates: tomorrowTemplates,
+    },
+  };
+}
+
+export function buildEmbeddedPlanWeek(
+  templatesForDay: (dayIndex: number) => WorkoutTemplate[],
+  todayIndex: number,
+  doneDayIndexes: Set<number>,
+  skippedDayIndexes: number[],
+): ScheduleWeek {
+  return buildPlanWeek(
+    todayIndex,
+    doneDayIndexes,
+    skippedDayIndexes,
+    dayIndex => templatesForDay(dayIndex).map(toScheduledTemplate),
+  );
+}
+
 function resolveTemplates(
   ids: string[],
   templatesById: Map<string, WorkoutTemplate>,
@@ -101,39 +151,15 @@ export function buildScheduleWeek(
   const templatesById = new Map(
     templates.map(template => [template.id, template]),
   );
-  const skipped = new Set(skippedDayIndexes);
-  const weekStart = startOfWeek(todayIndex);
-
   const templatesForDay = (dayIndex: number): ScheduledTemplate[] =>
     schedule
       ? resolveTemplates(templateIdsForDay(schedule, dayIndex), templatesById)
       : [];
 
-  const days = Array.from({ length: DAYS_PER_WEEK }, (_, offset): WeekDay => {
-    const dayIndex = weekStart + offset;
-    const dayTemplates = templatesForDay(dayIndex);
-    return {
-      dayIndex,
-      weekday: weekdayMon0(dayIndex),
-      isToday: dayIndex === todayIndex,
-      isPast: dayIndex < todayIndex,
-      status: dayStatus(
-        dayTemplates,
-        doneDayIndexes.has(dayIndex),
-        skipped.has(dayIndex),
-        dayIndex < todayIndex,
-      ),
-      templates: dayTemplates,
-    };
-  });
-
-  const tomorrowTemplates = templatesForDay(todayIndex + 1);
-
-  return {
-    days,
-    tomorrow: {
-      isRest: tomorrowTemplates.length === 0,
-      templates: tomorrowTemplates,
-    },
-  };
+  return buildPlanWeek(
+    todayIndex,
+    doneDayIndexes,
+    skippedDayIndexes,
+    templatesForDay,
+  );
 }

@@ -9,6 +9,7 @@ import {
   bodyWeightEntries,
   exercises,
   importBatches,
+  periodizations,
   performedSets,
   scheduleSlots,
   schedules,
@@ -25,6 +26,7 @@ export function resetAllData(): void {
   db.delete(workoutSessions).run();
   db.delete(scheduleSlots).run();
   db.delete(schedules).run();
+  db.delete(periodizations).run();
   db.delete(workoutTemplateSets).run();
   db.delete(workoutTemplateExercises).run();
   db.delete(workoutTemplates).run();
@@ -43,6 +45,7 @@ export function resetAllData(): void {
     workoutSessions,
     scheduleSlots,
     schedules,
+    periodizations,
     workoutTemplateSets,
     workoutTemplateExercises,
     workoutTemplates,

@@ -14,6 +14,7 @@ export const setTypes = sqliteTable('set_type', {
     .notNull()
     .default(false),
   position: integer('position').notNull().default(0),
+  defaultRestSeconds: integer('default_rest_seconds'),
   progressionGoal: jsonObject<ProgressionGoal>()('progression_goal')
     .notNull()
     .default({ kind: 'none' }),

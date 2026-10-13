@@ -9,11 +9,11 @@ import {
   rangeRolloverTargetField,
   rangeRolloverTargetFields,
 } from '@/data/local/sets/progressionGoals';
-import type { ProgressionGoal } from '@/types/setType';
+import type { ProgressionGoal, SetTypeFieldDef } from '@/types/setType';
 
-import type { SetCardModel } from './exerciseSetTableModel';
-
-type RangeProgression = NonNullable<SetCardModel['progression']>;
+type RangeProgression = {
+  fields: SetTypeFieldDef[];
+};
 
 function parseInputNumber(text: string, fallback: number): number {
   const value = Number(text.replace(',', '.'));

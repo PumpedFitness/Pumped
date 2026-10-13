@@ -1,11 +1,10 @@
-import { Fragment, memo, useState } from 'react';
+import { Fragment, memo, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import * as Haptics from 'expo-haptics';
 import { SwipeTo, type SwipeAction } from '@pumped/ui/clay/SwipeTo';
-import { shadows } from '@pumped/ui/theme/tokens';
-import { SetCardHeader } from './SetCardHeader';
+import { SetCardHeader, SetCardIdentity } from './SetCardHeader';
 import { SetFieldCell } from './SetFieldCell';
 import { useSetSheetOpeners } from './SetSheets';
 import type {
@@ -17,11 +16,12 @@ import type {
 
 type SetCardProps = {
   card: SetCardModel;
-  iconOnlySetType?: boolean;
 };
 
 type SetCardFieldsProps = {
   cells: SetCardField[];
+  leading: ReactNode;
+  trailing?: ReactNode;
   showValidation: boolean;
   showRequired: boolean;
   onOpenWheel: (field: SetCardNumberField) => void;
@@ -67,22 +67,39 @@ function buildFieldRows(cells: SetCardField[]): SetCardFieldRow[] {
 
 function SetCardFields({
   cells,
+  leading,
+  trailing,
   showValidation,
   showRequired,
   onOpenWheel,
   onOpenRange,
 }: SetCardFieldsProps) {
-  if (cells.length === 0) {
-    return null;
-  }
   const rows = buildFieldRows(cells);
+
+  if (rows.length === 0) {
+    return (
+      <View className="min-h-14 flex-row overflow-hidden">
+        {leading}
+        {trailing ? (
+          <>
+            <View className="my-2.5 w-px bg-border-soft" />
+            {trailing}
+          </>
+        ) : null}
+      </View>
+    );
+  }
+
   return (
     <View className="gap-2">
-      {rows.map(row => (
-        <View
-          key={row.key}
-          className="flex-row overflow-hidden rounded-[14px] bg-surface-sunk"
-        >
+      {rows.map((row, rowIndex) => (
+        <View key={row.key} className="flex-row overflow-hidden">
+          {rowIndex === 0 ? (
+            <>
+              {leading}
+              <View className="my-2.5 w-px bg-border-soft" />
+            </>
+          ) : null}
           {row.cells.map((field, index) => (
             <Fragment key={field.id}>
               {index > 0 ? (
@@ -97,6 +114,12 @@ function SetCardFields({
               />
             </Fragment>
           ))}
+          {rowIndex === 0 && trailing ? (
+            <>
+              <View className="my-2.5 w-px bg-border-soft" />
+              {trailing}
+            </>
+          ) : null}
         </View>
       ))}
     </View>
@@ -154,18 +177,9 @@ const UPCOMING = { opacity: 0.72 };
 
 // Memoized: with a stable `card` (and the stable open-handlers from the table
 // host) an edit to one set re-renders only that set's card, not its siblings.
-export const SetCard = memo(function SetCard({
-  card,
-  iconOnlySetType = false,
-}: SetCardProps) {
+export const SetCard = memo(function SetCard({ card }: SetCardProps) {
   const { t } = useTranslation();
-  const {
-    openSetTypePicker,
-    openProgressionPicker,
-    openWheel,
-    openRange,
-    openRestPicker,
-  } = useSetSheetOpeners();
+  const { openSetTypePicker, openWheel, openRange } = useSetSheetOpeners();
   const [showValidation, setShowValidation] = useState(false);
 
   const attemptDone = () => {
@@ -184,36 +198,34 @@ export const SetCard = memo(function SetCard({
     t,
     attemptDone,
   );
-
+  const isStateBand = card.isDone || card.isCurrent;
+  const extendsThroughTrailingGutter = isStateBand || removeAction != null;
   const containerClass = card.isDone
-    ? 'border border-moss bg-sage/15'
+    ? 'border-l-2 border-l-moss bg-sage/15'
     : card.isCurrent
-    ? 'border-2 border-accent bg-surface-card'
-    : 'border border-border-hairline bg-surface-card';
+    ? 'border-l-2 border-l-accent bg-accent-soft'
+    : 'border-l-2 border-l-transparent';
 
-  // The set you are on is raised off the page, not just ringed — the ring alone
-  // had to compete with every other card at the same elevation.
   const content = (
     <View
-      className={`gap-3 rounded-[20px] p-3 ${containerClass}`}
-      style={
-        card.isCurrent ? shadows.row : card.isUpcoming ? UPCOMING : undefined
-      }
+      className={`w-full border-b border-border-soft bg-background py-1 ${
+        extendsThroughTrailingGutter ? 'pr-4' : ''
+      } ${containerClass}`}
+      style={card.isUpcoming ? UPCOMING : undefined}
     >
-      <SetCardHeader
-        card={card}
-        iconOnlySetType={iconOnlySetType}
-        onOpenSetTypePicker={() => openSetTypePicker(card)}
-        onOpenProgressionPicker={() => openProgressionPicker(card)}
-        onOpenRestPicker={() => {
-          if (card.rest) {
-            openRestPicker(card.rest);
-          }
-        }}
-        onToggleDone={attemptDone}
-      />
       <SetCardFields
         cells={card.fields}
+        leading={
+          <SetCardIdentity
+            card={card}
+            onOpenSetTypePicker={() => openSetTypePicker(card)}
+          />
+        }
+        trailing={
+          card.progressionBadgeText || card.onToggleDone ? (
+            <SetCardHeader card={card} onToggleDone={attemptDone} />
+          ) : undefined
+        }
         showValidation={showValidation}
         showRequired={card.onToggleDone != null}
         onOpenWheel={openWheel}
@@ -223,10 +235,19 @@ export const SetCard = memo(function SetCard({
   );
 
   if (finishAction || removeAction) {
-    return (
-      <SwipeTo left={finishAction} right={removeAction} borderRadius={20}>
+    const swipeable = (
+      <SwipeTo left={finishAction} right={removeAction} borderRadius={0}>
         {content}
       </SwipeTo>
+    );
+
+    // The live workout body has horizontal padding so ordinary rows align with
+    // the exercise content. State bands and a revealed delete action carry
+    // through the trailing gutter, while their controls retain an inset.
+    return extendsThroughTrailingGutter ? (
+      <View className="-mr-4">{swipeable}</View>
+    ) : (
+      swipeable
     );
   }
   return content;

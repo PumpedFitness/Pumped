@@ -133,7 +133,6 @@ export const SessionExerciseBody = memo(function SessionExerciseBody({
         onRemoveSet={handleRemoveSet}
         activeRestSetId={activeRestSetId}
         animateLayout={false}
-        iconOnlySetType
       />
     </>
   );

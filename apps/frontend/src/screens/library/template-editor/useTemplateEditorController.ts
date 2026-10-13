@@ -15,12 +15,7 @@ import { useUsage } from '@/hooks/useUsage';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import { getWorkoutSession } from '@/data/local/workouts/sessions';
 import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
-import type {
-  EditableExercise,
-  ExerciseEditResult,
-  ExerciseOption,
-  ExerciseSelectionResult,
-} from '@/types/exercise';
+import type { ExerciseOption, ExerciseSelectionResult } from '@/types/exercise';
 import type { WorkoutTemplate } from '@/types/workout';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useEditorExercises, type EditorExercise } from './useEditorExercises';
@@ -33,11 +28,11 @@ import { useDiscardGuard } from './useDiscardGuard';
 import { useExpandedCards } from './useExpandedCards';
 import type { TemplateEditorContextValue } from './templateEditorContext';
 
-type EditorNavigation = NativeStackNavigationProp<
+type EditorNavigation = NativeStackNavigationProp<RootStackParamList>;
+type EditorRoute = RouteProp<
   RootStackParamList,
-  'WorkoutTemplateEditor'
+  'WorkoutTemplateEditor' | 'PeriodizationWorkoutEditor'
 >;
-type EditorRoute = RouteProp<RootStackParamList, 'WorkoutTemplateEditor'>;
 
 function templateInputExercisesToDraft(
   exercises: SaveWorkoutTemplateInput['exercises'],
@@ -51,7 +46,6 @@ function templateInputExercisesToDraft(
     notes: exercise.notes ?? null,
     sets: exercise.sets.map(set => ({
       ...createDraftSet(set.setType),
-      restSeconds: set.restSeconds ?? null,
       fieldValues: set.fieldValues ?? [],
       progressionGoal: undefined,
     })),
@@ -92,24 +86,20 @@ function confirmDeleteTemplate(
 type UseTemplateEditorControllerOptions = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
-  onSave: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
-  onDelete: (templateId: string) => void;
+  onSave: (input: SaveWorkoutTemplateInput) => void;
+  onDelete?: (templateId: string) => void;
+  onClose: () => void;
+  allowImport: boolean;
 };
 
-// Applies the screen results returned by the exercise picker and the set editor
-// to the draft, each guarded by an applied-id ref so a result is consumed once.
-function useAppliedExerciseResults(
+// Applies the screen result returned by the exercise picker, guarded by an
+// applied-id ref so a result is consumed once.
+function useAppliedExerciseSelection(
   exerciseSelection: ExerciseSelectionResult | undefined,
-  exerciseEdit: ExerciseEditResult | undefined,
   updateSelectedExercises: (exerciseIds: string[]) => void,
   addSuperset: (exerciseIds: string[]) => void,
-  updateExercise: (
-    exerciseId: string,
-    update: (exercise: EditableExercise) => EditableExercise,
-  ) => void,
 ) {
   const appliedSelectionId = useRef<string | null>(null);
-  const appliedEditId = useRef<string | null>(null);
 
   useEffect(() => {
     if (
@@ -125,16 +115,6 @@ function useAppliedExerciseResults(
       }
     }
   }, [exerciseSelection, updateSelectedExercises, addSuperset]);
-
-  useEffect(() => {
-    if (exerciseEdit && exerciseEdit.id !== appliedEditId.current) {
-      appliedEditId.current = exerciseEdit.id;
-      updateExercise(
-        exerciseEdit.exercise.exerciseId,
-        () => exerciseEdit.exercise,
-      );
-    }
-  }, [exerciseEdit, updateExercise]);
 }
 
 export function useTemplateEditorController({
@@ -142,6 +122,8 @@ export function useTemplateEditorController({
   exerciseOptions,
   onSave,
   onDelete,
+  onClose,
+  allowImport,
 }: UseTemplateEditorControllerOptions) {
   const { t } = useTranslation();
   const navigation = useNavigation<EditorNavigation>();
@@ -153,11 +135,11 @@ export function useTemplateEditorController({
   // dirty-state back-guard doesn't prompt for those. A plain cancel/back does
   // NOT flip it, so the guard prompts when there are unsaved changes.
   const bypassGuard = useRef(false);
-  const close = useCallback(() => navigation.goBack(), [navigation]);
+  const close = useCallback(onClose, [onClose]);
   const closeAfterAction = useCallback(() => {
     bypassGuard.current = true;
-    navigation.goBack();
-  }, [navigation]);
+    onClose();
+  }, [onClose]);
 
   const {
     draft,
@@ -169,8 +151,6 @@ export function useTemplateEditorController({
     updateSelectedExercises,
     addSuperset,
     ungroupSuperset,
-    updateSuperset,
-    setSupersetRounds,
     moveSupersetMember,
     save,
   } = useWorkoutTemplateEditorDraft({
@@ -205,12 +185,10 @@ export function useTemplateEditorController({
   }, [navigation, route.params?.importWorkoutId, updateDraft]);
 
   useDiscardGuard(isDirty, bypassGuard);
-  useAppliedExerciseResults(
+  useAppliedExerciseSelection(
     route.params?.exerciseSelection,
-    route.params?.exerciseEdit,
     updateSelectedExercises,
     addSuperset,
-    updateExercise,
   );
 
   const { isExpanded, toggleExpanded } = useExpandedCards();
@@ -229,24 +207,6 @@ export function useTemplateEditorController({
     });
   }, [navigation, route.key, draft.exercises]);
 
-  const editExercise = useCallback(
-    (exercise: EditorExercise) => {
-      const editable = draft.exercises.find(
-        candidate => candidate.exerciseId === exercise.exerciseId,
-      );
-      if (editable) {
-        navigation.navigate('ExerciseSetEditor', {
-          exercise: editable,
-          name: exercise.name,
-          returnRouteKey: route.key,
-          // Rounds and rest belong to the superset, not to one member.
-          supersetMember: editable.supersetId !== null,
-        });
-      }
-    },
-    [navigation, route.key, draft.exercises],
-  );
-
   const openExerciseOverview = useCallback(
     (exercise: EditorExercise) => {
       navigation.navigate('EditExercise', { exerciseId: exercise.exerciseId });
@@ -255,7 +215,7 @@ export function useTemplateEditorController({
   );
 
   const requestDelete = useCallback(() => {
-    if (template) {
+    if (template && onDelete) {
       confirmDeleteTemplate(
         t,
         template,
@@ -271,14 +231,13 @@ export function useTemplateEditorController({
       exercises,
       blocks,
       chooseExercises,
-      editExercise,
       openExerciseOverview,
+      updateExercise,
       reorderBlocks,
       removeExercise,
       ungroupSuperset,
-      updateSuperset,
-      setSupersetRounds,
       moveSupersetMember,
+      allowImport,
       isExpanded,
       toggleExpanded,
     }),
@@ -286,14 +245,13 @@ export function useTemplateEditorController({
       exercises,
       blocks,
       chooseExercises,
-      editExercise,
       openExerciseOverview,
+      updateExercise,
       reorderBlocks,
       removeExercise,
       ungroupSuperset,
-      updateSuperset,
-      setSupersetRounds,
       moveSupersetMember,
+      allowImport,
       isExpanded,
       toggleExpanded,
     ],

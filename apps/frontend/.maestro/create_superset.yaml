@@ -23,9 +23,9 @@ appId: ${APP_ID}
 - waitForAnimationToEnd
 - tapOn:
     id: 'create_workout'
-- assertVisible: 'New template'
+- assertVisible: 'New workout'
 - waitForAnimationToEnd
-- tapOn: 'Template name'
+- tapOn: 'Workout name'
 - runFlow: subflows/warmup-keyboard.yaml
 - inputText: 'Maestro Superset'
 - runFlow: subflows/dismiss-keyboard.yaml

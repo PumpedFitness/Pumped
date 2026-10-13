@@ -15,11 +15,11 @@ appId: ${APP_ID}
 - tapOn:
     id: 'create_workout'
 
-- assertVisible: 'New template'
+- assertVisible: 'New workout'
 # The name fields auto-focus with a delay; tapping/typing while that keyboard
 # animation is in flight drops keystrokes on slow simulators — settle first.
 - waitForAnimationToEnd
-- tapOn: 'Template name'
+- tapOn: 'Workout name'
 # First text entry of the flow — see the subflow header for why.
 - runFlow: subflows/warmup-keyboard.yaml
 - inputText: 'Maestro Workout'

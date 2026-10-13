@@ -32,7 +32,6 @@ type ExerciseSetTableContentProps = {
   onAddSet?: () => void;
   onDuplicateSet?: () => void;
   animateLayout?: boolean;
-  iconOnlySetType?: boolean;
 };
 
 // The set-type / wheel / range sheets are NOT here — they live once per screen
@@ -44,12 +43,11 @@ export function ExerciseSetTableContent({
   onAddSet,
   onDuplicateSet,
   animateLayout = true,
-  iconOnlySetType = false,
 }: ExerciseSetTableContentProps) {
   const { t } = useTranslation();
 
   return (
-    <View className="gap-3">
+    <View className="gap-1">
       {cards.map(card => (
         // Layout animation: a removed set fades out and the cards below slide up
         // smoothly. No `entering` — fading every card in on mount janks the
@@ -62,7 +60,7 @@ export function ExerciseSetTableContent({
           }
           exiting={FadeOut.duration(motion.fast)}
         >
-          <SetCard card={card} iconOnlySetType={iconOnlySetType} />
+          <SetCard card={card} />
         </Animated.View>
       ))}
 

@@ -23,12 +23,6 @@ export type ExerciseSelectionResult = {
   newSupersetExerciseIds?: string[];
 };
 
-/** Result returned by the ExerciseSetEditor screen — a fully edited exercise. */
-export type ExerciseEditResult = {
-  id: string;
-  exercise: EditableExercise;
-};
-
 export type EditableExerciseSet = {
   /** Local-only identity for stable React keys; never persisted. */
   id: string;

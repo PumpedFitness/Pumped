@@ -16,9 +16,7 @@ import {
   removeDraftExercise,
   reorderBlocks as reorderBlocksInDraft,
   selectExercises,
-  setSupersetRounds as setSupersetRoundsInDraft,
   ungroupSuperset as ungroupSupersetInDraft,
-  updateSuperset as updateSupersetInDraft,
   type SupersetDraft,
 } from './templateDraftSupersets';
 
@@ -74,7 +72,7 @@ function createInitialDraft(
         sets: exercise.sets.map(set => ({
           id: randomUUID(),
           setType: set.setType,
-          restSeconds: set.restSeconds,
+          restSeconds: null,
           progressionGoal: set.progressionGoal,
           fieldValues: set.fieldValues,
         })),
@@ -108,7 +106,7 @@ function buildExerciseInput(
     notes: exercise.notes,
     sets: exercise.sets.map(set => ({
       setType: set.setType,
-      restSeconds: set.restSeconds,
+      restSeconds: null,
       progressionGoal: set.progressionGoal,
       fieldValues: set.fieldValues,
     })),
@@ -230,22 +228,6 @@ export function useWorkoutTemplateEditorDraft({
     [applySupersets],
   );
 
-  const updateSuperset = useCallback(
-    (supersetId: string, patch: Partial<Omit<WorkoutTemplateSuperset, 'id'>>) =>
-      applySupersets(current =>
-        updateSupersetInDraft(current, supersetId, patch),
-      ),
-    [applySupersets],
-  );
-
-  const setSupersetRounds = useCallback(
-    (supersetId: string, rounds: number) =>
-      applySupersets(current =>
-        setSupersetRoundsInDraft(current, supersetId, rounds, randomUUID),
-      ),
-    [applySupersets],
-  );
-
   const moveSupersetMember = useCallback(
     (supersetId: string, from: number, to: number) =>
       applySupersets(current =>
@@ -287,8 +269,6 @@ export function useWorkoutTemplateEditorDraft({
     updateSelectedExercises,
     addSuperset,
     ungroupSuperset,
-    updateSuperset,
-    setSupersetRounds,
     moveSupersetMember,
     save,
   };
