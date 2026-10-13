@@ -6,7 +6,6 @@ import { Button } from 'heroui-native';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { useTodayWorkout } from '@/hooks/useTodayWorkout';
 import { useScheduleWeek } from '@/hooks/useScheduleWeek';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -24,7 +23,6 @@ export function ActiveScheduleTab({ onGoToSchedules }: ActiveScheduleTabProps) {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { today, skip, unskip } = useTodayWorkout();
   const { days, tomorrow, hasActiveSchedule, scheduleName } = useScheduleWeek();
-  const { profile } = useUserProfile();
   const { currentWorkout, startTemplateWorkout, startPrivateWorkout } =
     useCurrentWorkout();
 
@@ -84,7 +82,6 @@ export function ActiveScheduleTab({ onGoToSchedules }: ActiveScheduleTabProps) {
       <ScheduleTodayHeader
         state={today}
         scheduleName={scheduleName}
-        weightUnit={profile.weightUnit}
         onStart={startToday}
         onSkip={skip}
         onStartAnyway={startAnyway}

@@ -1,7 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Alert } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import {
   useNavigation,
   useRoute,
@@ -9,9 +6,6 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { randomUUID } from 'expo-crypto';
-import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
-import type { UsageInfo } from '@/data/local/usageModel';
-import { useUsage } from '@/hooks/useUsage';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import { getWorkoutSession } from '@/data/local/workouts/sessions';
 import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
@@ -52,42 +46,10 @@ function templateInputExercisesToDraft(
   }));
 }
 
-// Warns when a schedule still plans this template — its slots cascade away
-// with it, and the editor offers no undo.
-function confirmDeleteTemplate(
-  t: TFunction,
-  template: WorkoutTemplate,
-  usage: UsageInfo | undefined,
-  onDelete: (templateId: string) => void,
-  onDeleted: () => void,
-): void {
-  void confirmUsageDelete(
-    t,
-    {
-      kind: 'template',
-      name: template.name,
-      usage,
-      fallbackBody: t('templateEditor.alerts.deleteBody'),
-    },
-    () => {
-      try {
-        onDelete(template.id);
-        onDeleted();
-      } catch (error) {
-        Alert.alert(
-          t('templateEditor.alerts.deleteFailedTitle'),
-          error instanceof Error ? error.message : t('common.tryAgain'),
-        );
-      }
-    },
-  );
-}
-
 type UseTemplateEditorControllerOptions = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
   onSave: (input: SaveWorkoutTemplateInput) => void;
-  onDelete?: (templateId: string) => void;
   onClose: () => void;
   allowImport: boolean;
 };
@@ -121,17 +83,14 @@ export function useTemplateEditorController({
   template,
   exerciseOptions,
   onSave,
-  onDelete,
   onClose,
   allowImport,
 }: UseTemplateEditorControllerOptions) {
-  const { t } = useTranslation();
   const navigation = useNavigation<EditorNavigation>();
   const route = useRoute<EditorRoute>();
-  const templateUsage = useUsage('template');
   const appliedImportWorkoutId = useRef<string | null>(null);
 
-  // Flipped right before an intentional navigation (save / delete) so the
+  // Flipped right before an intentional navigation after saving so the
   // dirty-state back-guard doesn't prompt for those. A plain cancel/back does
   // NOT flip it, so the guard prompts when there are unsaved changes.
   const bypassGuard = useRef(false);
@@ -214,18 +173,6 @@ export function useTemplateEditorController({
     [navigation],
   );
 
-  const requestDelete = useCallback(() => {
-    if (template && onDelete) {
-      confirmDeleteTemplate(
-        t,
-        template,
-        templateUsage.get(template.id),
-        onDelete,
-        closeAfterAction,
-      );
-    }
-  }, [template, t, templateUsage, onDelete, closeAfterAction]);
-
   const context = useMemo<TemplateEditorContextValue>(
     () => ({
       exercises,
@@ -257,5 +204,5 @@ export function useTemplateEditorController({
     ],
   );
 
-  return { draft, updateDraft, save, requestDelete, close, context };
+  return { draft, updateDraft, save, close, context };
 }

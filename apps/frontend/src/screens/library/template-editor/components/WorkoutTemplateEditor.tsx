@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
@@ -6,12 +6,8 @@ import { ScrollViewContainer } from 'react-native-reorderable-list';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { ExerciseOption } from '@/types/exercise';
 import type { WorkoutTemplate } from '@/types/workout';
-import { colors } from '@pumped/ui/theme/tokens';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
-import { ShareSheet } from '@/components/share/ShareSheet';
-import { buildTemplateShare } from '@/data/local/share/exportShare';
 import { TemplateEditorProvider } from '@/screens/library/template-editor/templateEditorContext';
 import { useTemplateEditorController } from '@/screens/library/template-editor/useTemplateEditorController';
 import { WorkoutAppearanceControl } from './WorkoutAppearanceControl';
@@ -22,12 +18,10 @@ type WorkoutTemplateEditorProps = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
   onSave: (input: SaveWorkoutTemplateInput) => void;
-  onDelete?: (templateId: string) => void;
   onClose: () => void;
   title?: string;
   beforeDetails?: ReactNode;
   allowImport?: boolean;
-  allowShare?: boolean;
 };
 
 const CONTENT_STYLE = {
@@ -41,24 +35,20 @@ export function WorkoutTemplateEditor({
   template,
   exerciseOptions,
   onSave,
-  onDelete,
   onClose,
   title,
   beforeDetails,
   allowImport = true,
-  allowShare = true,
 }: WorkoutTemplateEditorProps) {
   const { t } = useTranslation();
-  const { draft, updateDraft, save, requestDelete, close, context } =
+  const { draft, updateDraft, save, close, context } =
     useTemplateEditorController({
       template,
       exerciseOptions,
       onSave,
-      onDelete,
       onClose,
       allowImport,
     });
-  const [shareVisible, setShareVisible] = useState(false);
 
   return (
     <AppView edges={['top', 'bottom']}>
@@ -121,43 +111,8 @@ export function WorkoutTemplateEditor({
               {t('templateEditor.saveCta')}
             </Button.Label>
           </Button>
-
-          {template && allowShare && (
-            // Shares the saved template; unsaved edits stay on this device.
-            <Button
-              className="h-14 rounded-full"
-              variant="secondary"
-              feedbackVariant="scale"
-              onPress={() => setShareVisible(true)}
-            >
-              <ClayIcon name="arrowUp" size={18} color={colors.ink} />
-              <Button.Label>{t('share.send.templateCta')}</Button.Label>
-            </Button>
-          )}
-
-          {template && onDelete ? (
-            <Button
-              className="h-14 rounded-full"
-              variant="danger-soft"
-              feedbackVariant="scale"
-              onPress={requestDelete}
-            >
-              <ClayIcon name="trash" size={18} color={colors.danger} />
-              <Button.Label>{t('templateEditor.deleteCta')}</Button.Label>
-            </Button>
-          ) : null}
         </ScrollViewContainer>
       </KeyboardAvoidingView>
-
-      {template && allowShare && (
-        <ShareSheet
-          visible={shareVisible}
-          onClose={() => setShareVisible(false)}
-          title={template.name}
-          kindLabel={t('share.send.kinds.template')}
-          buildEnvelope={() => buildTemplateShare(template.id)}
-        />
-      )}
     </AppView>
   );
 }

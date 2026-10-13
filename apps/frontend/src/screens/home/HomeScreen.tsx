@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, useWindowDimensions } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProfileAvatarButton } from '@/components/layout/ProfileAvatarButton';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
@@ -52,19 +53,14 @@ export function HomeScreen() {
         onLayout={autoScroll.onLayout}
         onContentSizeChange={autoScroll.onContentSizeChange}
         onScroll={autoScroll.onScroll}
-        contentContainerClassName="pb-6 px-[18px] pt-4"
+        contentContainerClassName="pb-6 px-5 pt-4"
       >
-        <View className="mb-[14px] mt-[6px] flex-row items-center justify-between gap-3">
-          <View className="flex-1">
-            <Text className="text-[17px] font-[800] tracking-[-0.3px] text-foreground">
-              {dateLabel}
-            </Text>
-            <Text className="t-caption mt-0.5" numberOfLines={1}>
-              {buildPlanStatus(t, data)}
-            </Text>
-          </View>
-          <ProfileAvatarButton />
-        </View>
+        <ScreenHeader
+          className="mb-5"
+          title={t('tabs.home')}
+          subtitle={`${dateLabel} · ${buildPlanStatus(t, data)}`}
+          trailing={<ProfileAvatarButton />}
+        />
 
         <WidgetGrid
           layout={layout}

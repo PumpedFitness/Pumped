@@ -123,7 +123,6 @@ export function PeriodizationWorkoutEditorScreen({
       title={t('schedule.periodization.workoutEditorTitle')}
       beforeDetails={timing}
       allowImport={false}
-      allowShare={false}
       onSave={save}
       onClose={() => navigation.goBack()}
     />

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, Text, type TextInput } from 'react-native';
+import { View, type TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -10,6 +10,7 @@ import {
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { randomUUID } from 'expo-crypto';
 import type { InferInsertModel } from 'drizzle-orm';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { AddMetricHeader } from './components/AddMetricHeader';
 import { MetricFormCard } from './components/MetricFormCard';
@@ -71,14 +72,15 @@ export function AddMetricScreen() {
         onSave={handleSave}
       />
 
-      {/* Icon + Title */}
-      <View className="items-center mt-8">
-        <View className="w-20 h-20 rounded-full bg-surface-sunk items-center justify-center">
-          <ClayIcon name={iconName} size={36} color={colors.accent} />
-        </View>
-        <Text className="text-[21px] font-bold text-foreground mt-3">
-          {title}
-        </Text>
+      <View className="px-5 pb-4 pt-4">
+        <ScreenHeader
+          title={title}
+          trailing={
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-sunk">
+              <ClayIcon name={iconName} size={22} color={colors.accent} />
+            </View>
+          }
+        />
       </View>
 
       <MetricFormCard

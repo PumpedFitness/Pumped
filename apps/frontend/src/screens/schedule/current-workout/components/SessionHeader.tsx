@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { getWorkoutOverlayProgress } from '@/components/workout/current-workout-overlay/currentWorkoutOverlayModel';
 import { SessionTimer } from './SessionTimer';
@@ -32,8 +33,8 @@ export function SessionHeader({
   const isPaused = pausedAt != null;
 
   return (
-    <View className="border-b border-border-soft bg-background px-4 pt-1 pb-2">
-      <View className="flex-row items-center gap-2">
+    <View className="bg-background px-5 pt-1 pb-2">
+      <View className="h-[52px] flex-row items-center gap-2">
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('currentWorkout.backToPlanA11y')}
@@ -43,9 +44,7 @@ export function SessionHeader({
           <ClayIcon name="back" size={20} color={colors.ink} />
         </Pressable>
 
-        <Text className="t-heading flex-1" numberOfLines={1}>
-          {workoutName}
-        </Text>
+        <View className="flex-1" />
 
         <SessionTimer
           startedAt={startedAt}
@@ -73,6 +72,8 @@ export function SessionHeader({
           />
         </Pressable>
       </View>
+
+      <ScreenHeader title={workoutName} className="pb-4 pt-4" />
 
       <SessionProgressBar
         completedSets={progress.completedSets}

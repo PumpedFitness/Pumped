@@ -6,7 +6,6 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
 import { AppView } from '@/components/layout/AppView';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { WorkoutHistoryList } from '@/screens/history/components/WorkoutHistoryList';
@@ -21,7 +20,6 @@ export function ImportWorkoutTemplateScreen({
 }: ImportWorkoutTemplateScreenProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const { profile } = useUserProfile();
   const { workouts } = useWorkoutHistory();
 
   const filteredWorkouts = useMemo(() => {
@@ -56,7 +54,6 @@ export function ImportWorkoutTemplateScreen({
       <View className="flex-1">
         <WorkoutHistoryList
           workouts={filteredWorkouts}
-          weightUnit={profile.weightUnit}
           onWorkoutPress={workoutId =>
             navigation.popTo('WorkoutTemplateEditor', {
               importWorkoutId: workoutId,

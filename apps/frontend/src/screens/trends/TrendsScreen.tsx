@@ -66,7 +66,7 @@ export function TrendsScreen() {
     <AppView>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-5 px-5 pb-12 pt-2"
+        contentContainerClassName="gap-5 px-5 pb-12 pt-4"
         showsVerticalScrollIndicator={false}
       >
         <TrendsHeader onBack={() => navigation.goBack()} />
@@ -101,7 +101,6 @@ export function TrendsScreen() {
 
         <TrendsHistorySection
           workouts={workouts}
-          weightUnit={profile.weightUnit}
           onWorkoutPress={workoutId =>
             navigation.navigate('CompletedWorkout', { workoutId })
           }

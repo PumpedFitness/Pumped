@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import { SearchableLibrary } from '@/components/layout/SearchableLibrary';
 import { useUndoToast } from '@/components/feedback/UndoToast';
-import { confirmUsageDelete } from '@/components/feedback/confirmUsageDelete';
 import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
 import { useCurrentWorkout } from '@/hooks/useCurrentWorkout';
 import { useLocalFavorites } from '@/hooks/useLocalFavorites';
@@ -19,6 +18,7 @@ import type { Schedule, SaveScheduleInput } from '@/types/schedule';
 import type { WorkoutTemplate } from '@/types/workout';
 import { WorkoutTemplateCard } from './WorkoutTemplateCard';
 import { LibrarySwipeRow } from './LibrarySwipeRow';
+import { useTemplateLibraryActions } from './useTemplateLibraryActions';
 
 // Flatten a stored template back into the save shape so an undo can re-create
 // it (and its exercises + sets) after a cascading delete.
@@ -91,24 +91,14 @@ export function WorkoutsLibrary() {
       )
       .map(scheduleToInput);
 
-    return confirmUsageDelete(
-      t,
-      {
-        kind: 'template',
-        name: template.name,
-        usage: usage.get(template.id),
+    deleteTemplate(template.id);
+    showUndo({
+      message: t('common.deletedNamed', { name: template.name }),
+      onUndo: () => {
+        saveTemplate(snapshot);
+        plannedIn.forEach(schedule => saveSchedule(schedule));
       },
-      () => {
-        deleteTemplate(template.id);
-        showUndo({
-          message: t('common.deletedNamed', { name: template.name }),
-          onUndo: () => {
-            saveTemplate(snapshot);
-            plannedIn.forEach(schedule => saveSchedule(schedule));
-          },
-        });
-      },
-    );
+    });
   };
 
   const exerciseNames = useMemo(
@@ -123,19 +113,18 @@ export function WorkoutsLibrary() {
     navigation.navigate('WorkoutTemplateEditor', { templateId: template.id });
   };
 
+  const { popups, openOptions, requestDelete, warnWorkoutInProgress } =
+    useTemplateLibraryActions({
+      usage,
+      currentWorkoutName: currentWorkout?.name ?? null,
+      onEdit: openEdit,
+      onDelete: removeTemplate,
+      onOpenWorkout: () => openCurrentWorkout(navigation),
+    });
+
   const startTemplate = (template: WorkoutTemplate) => {
     if (currentWorkout) {
-      Alert.alert(
-        t('plan.alerts.inProgressTitle'),
-        t('plan.alerts.inProgressBody', { name: currentWorkout.name }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('plan.alerts.openWorkout'),
-            onPress: () => openCurrentWorkout(navigation),
-          },
-        ],
-      );
+      warnWorkoutInProgress();
       return;
     }
     try {
@@ -161,39 +150,41 @@ export function WorkoutsLibrary() {
   );
 
   return (
-    <SearchableLibrary
-      items={templates}
-      keyExtractor={template => template.id}
-      getSearchText={template =>
-        [
-          template.name,
-          template.description ?? '',
-          ...template.exercises.map(
-            exercise => exerciseNames.get(exercise.exerciseId) ?? '',
-          ),
-        ].join(' ')
-      }
-      renderItem={template => (
-        <LibrarySwipeRow
-          favorited={isFavorite(template.id)}
-          onToggleFavorite={() => toggleFavorite(template.id)}
-          onDelete={() => removeTemplate(template)}
-          borderRadius={24}
-        >
-          <WorkoutTemplateCard
-            template={template}
-            exerciseNames={exerciseNames}
-            usage={usage.get(template.id)}
-            onEdit={openEdit}
-            onStart={startTemplate}
-          />
-        </LibrarySwipeRow>
-      )}
-      namespace="plan"
-      createTestID="create_workout"
-      onCreate={() => navigation.navigate('WorkoutTemplateEditor')}
-      noMatchAction={browseWorkoutsAction}
-      searchFooter={browseWorkoutsAction}
-    />
+    <>
+      <SearchableLibrary
+        items={templates}
+        keyExtractor={template => template.id}
+        getSearchText={template =>
+          [
+            template.name,
+            template.description ?? '',
+            ...template.exercises.map(
+              exercise => exerciseNames.get(exercise.exerciseId) ?? '',
+            ),
+          ].join(' ')
+        }
+        renderItem={template => (
+          <LibrarySwipeRow
+            favorited={isFavorite(template.id)}
+            onToggleFavorite={() => toggleFavorite(template.id)}
+            onDelete={() => requestDelete(template)}
+            borderRadius={24}
+          >
+            <WorkoutTemplateCard
+              template={template}
+              onEdit={openEdit}
+              onStart={startTemplate}
+              onOptions={openOptions}
+            />
+          </LibrarySwipeRow>
+        )}
+        namespace="plan"
+        createTestID="create_workout"
+        onCreate={() => navigation.navigate('WorkoutTemplateEditor')}
+        noMatchAction={browseWorkoutsAction}
+        searchFooter={browseWorkoutsAction}
+      />
+      {popups}
+    </>
   );
 }

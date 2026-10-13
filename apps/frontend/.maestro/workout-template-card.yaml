@@ -1,0 +1,55 @@
+# Uses the sample library; never confirms deletion or uploads a share.
+appId: ${APP_ID}
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    point: 92%,92%
+- tapOn: 'Library'
+- assertVisible:
+    id: 'template-options-sample:template-push'
+- assertNotVisible: 'In active plan'
+- tapOn:
+    id: 'template-options-sample:template-push'
+- assertVisible: 'Choose what to do with this workout.'
+- assertVisible: 'Share template'
+- tapOn:
+    id: template-menu-edit
+- assertVisible: 'Edit workout'
+- assertNotVisible: 'Share template'
+- tapOn: '^Cancel$'
+- tapOn:
+    id: 'template-edit-sample:template-push'
+- assertVisible: 'Edit workout'
+- tapOn: '^Cancel$'
+- tapOn:
+    id: 'template-options-sample:template-push'
+- tapOn:
+    id: template-menu-delete
+- assertVisible:
+    text: 'Delete.*Push Strength.*'
+- assertVisible:
+    text: '.*active schedule.*'
+- tapOn: '^Cancel$'
+- assertVisible:
+    id: 'template-start-sample:template-push'
+- tapOn:
+    id: 'template-start-sample:template-push'
+- assertVisible: '^Push Strength$'
+- pressKey: Back
+- tapOn: 'Library'
+- tapOn:
+    id: 'template-start-sample:template-push'
+- assertVisible: 'Workout already in progress'
+- assertVisible: 'Open workout'
+- tapOn: '^Cancel$'
+- assertVisible:
+    id: 'template-options-sample:template-push'
+
+# A process restart clears the temporary in-memory workout used above.
+- stopApp
+- launchApp

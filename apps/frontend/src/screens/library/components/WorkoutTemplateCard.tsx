@@ -2,124 +2,79 @@ import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
 import type { WorkoutTemplate } from '@/types/workout';
+import { WorkoutAvatar } from '@/components/workout/WorkoutAvatar';
 import { shadows, colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
-import { UsageBadge } from '@/components/feedback/UsageBadge';
-import type { UsageInfo } from '@/data/local/usageModel';
-import {
-  countTemplateSets,
-  getWorkoutTemplateColor,
-} from '@/components/workout/workoutTemplatePresentation';
 
 type WorkoutTemplateCardProps = {
   template: WorkoutTemplate;
-  exerciseNames: Map<string, string>;
-  /** Schedules planning this template — marks it as in use before a delete. */
-  usage?: UsageInfo;
   onEdit: (template: WorkoutTemplate) => void;
   onStart: (template: WorkoutTemplate) => void;
+  onOptions: (template: WorkoutTemplate) => void;
 };
 
 export function WorkoutTemplateCard({
   template,
-  exerciseNames,
-  usage,
   onEdit,
   onStart,
+  onOptions,
 }: WorkoutTemplateCardProps) {
   const { t } = useTranslation();
-  const preview = template.exercises
-    .slice(0, 3)
-    .map(
-      exercise =>
-        exerciseNames.get(exercise.exerciseId) ??
-        t('plan.card.fallbackExercise'),
-    )
-    .join(' · ');
-  const remainingExercises = Math.max(template.exercises.length - 3, 0);
-  const setCount = countTemplateSets(template);
-  const templateColor = getWorkoutTemplateColor(template.color).hex;
-  const morePreviewLabel: string = t('plan.card.morePreview', {
-    count: remainingExercises,
-  });
-
   return (
     <Pressable
+      testID={`template-edit-${template.id}`}
       accessibilityRole="button"
       accessibilityLabel={t('plan.card.editA11y', { name: template.name })}
-      className="overflow-hidden rounded-[24px] bg-surface-card p-[18px] active:bg-surface-sunk"
+      className="flex-row items-center gap-2.5 rounded-[24px] bg-surface-card p-3 active:bg-surface-sunk"
       style={shadows.row}
       onPress={() => onEdit(template)}
     >
-      <View className="flex-row items-start gap-3">
-        <View
-          className="h-11 w-11 items-center justify-center rounded-[14px]"
-          style={{ backgroundColor: `${templateColor}22` }}
-        >
-          <ClayIcon name="dumbbell" size={22} color={templateColor} />
-        </View>
-
-        <View className="flex-1">
-          <View className="flex-row items-start gap-2">
-            <Text className="flex-1 text-[16px] font-bold text-foreground leading-[1.25]">
-              {template.name}
-            </Text>
-            <UsageBadge usage={usage} kind="template" />
-          </View>
-          {template.description ? (
-            <Text className="text-[12px] font-medium text-muted leading-[1.4] mt-[7px]">
-              {template.description}
-            </Text>
-          ) : null}
-        </View>
-      </View>
-
-      <View className="mt-4 flex-row gap-2">
-        <View className="rounded-full bg-surface-sunk px-3 py-2">
-          <Text className="t-caption text-foreground-secondary">
-            {t('common.exercise', { count: template.exercises.length })}
-          </Text>
-        </View>
-        <View className="rounded-full bg-surface-sunk px-3 py-2">
-          <Text className="t-caption text-foreground-secondary">
-            {t('common.set', { count: setCount })}
-          </Text>
-        </View>
-      </View>
-
-      {preview ? (
-        <Text className="t-caption mt-3">
-          {preview}
-          {remainingExercises > 0 ? ` · ${morePreviewLabel}` : ''}
+      <WorkoutAvatar
+        picture={template.picture}
+        icon={template.icon}
+        color={template.color}
+        size={36}
+        radius={12}
+      />
+      <View className="flex-1 gap-1.5">
+        <Text className="text-[16px] font-bold leading-[1.25] text-foreground">
+          {template.name}
         </Text>
-      ) : (
-        <Text className="t-caption mt-3">{t('plan.card.noExercisesYet')}</Text>
-      )}
-
-      <View className="mt-4 flex-row gap-2">
+        {template.description ? (
+          <Text className="text-[12px] font-medium leading-[1.4] text-muted">
+            {template.description}
+          </Text>
+        ) : null}
+      </View>
+      <View className="shrink-0 gap-2">
         <Button
-          accessibilityLabel={t('plan.card.editA11y', { name: template.name })}
-          className="h-11 flex-1 rounded-full"
-          variant="secondary"
+          testID={`template-options-${template.id}`}
+          accessibilityLabel={t('plan.card.optionsA11y', {
+            name: template.name,
+          })}
+          className="h-9 w-9 min-w-9 rounded-full p-0"
+          variant="ghost"
+          hitSlop={4}
           feedbackVariant="scale"
-          onPress={() => onEdit(template)}
+          onPress={event => {
+            event.stopPropagation();
+            onOptions(template);
+          }}
         >
-          <ClayIcon name="edit" size={16} color={colors.ink} />
-          <Button.Label className="font-semibold text-foreground">
-            {t('plan.card.edit')}
-          </Button.Label>
+          <ClayIcon name="more" size={18} color={colors.ink} />
         </Button>
-
         <Button
+          testID={`template-start-${template.id}`}
           accessibilityLabel={t('plan.card.startA11y', { name: template.name })}
-          className="h-11 flex-1 rounded-full bg-accent"
+          className="h-9 w-9 min-w-9 rounded-full bg-accent p-0"
+          hitSlop={4}
           feedbackVariant="scale"
-          onPress={() => onStart(template)}
+          onPress={event => {
+            event.stopPropagation();
+            onStart(template);
+          }}
         >
           <ClayIcon name="play" size={16} color={colors.onInk} />
-          <Button.Label className="font-semibold text-accent-foreground">
-            {t('plan.card.start')}
-          </Button.Label>
         </Button>
       </View>
     </Pressable>
