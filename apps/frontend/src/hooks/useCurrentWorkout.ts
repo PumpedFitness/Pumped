@@ -75,7 +75,7 @@ export function useCurrentWorkout() {
   const sourceTemplate = useTableQuery(
     [workoutTemplates, workoutTemplateExercises, workoutTemplateSets],
     () =>
-      currentWorkout
+      currentWorkout?.workoutTemplateId
         ? getWorkoutTemplate(currentWorkout.workoutTemplateId)
         : null,
     [currentWorkout?.workoutTemplateId],
@@ -104,7 +104,17 @@ export function useCurrentWorkout() {
       if (!template) {
         throw new Error(i18n.t('errors.templateNotFound'));
       }
-      startWorkout(template);
+      startWorkout(template, template.id);
+    },
+    [startWorkout],
+  );
+
+  const startPrivateWorkout = useCallback(
+    (template: Parameters<typeof startWorkout>[0]) => {
+      if (useCurrentWorkoutStore.getState().currentWorkout) {
+        throw new Error(i18n.t('errors.workoutAlreadyInProgress'));
+      }
+      startWorkout(template, null);
     },
     [startWorkout],
   );
@@ -118,6 +128,9 @@ export function useCurrentWorkout() {
         throw new Error(i18n.t('errors.completeEverySet'));
       }
       if (input?.updateTemplate) {
+        if (!workout.workoutTemplateId) {
+          throw new Error(i18n.t('errors.templateNotFound'));
+        }
         const template = getWorkoutTemplate(workout.workoutTemplateId);
         if (!template) {
           throw new Error(i18n.t('errors.templateNotFound'));
@@ -163,7 +176,7 @@ export function useCurrentWorkout() {
   );
   const structureChanged = useMemo(
     () =>
-      currentWorkout
+      currentWorkout && sourceTemplate
         ? hasWorkoutStructureChanged(currentWorkout, sourceTemplate)
         : false,
     [currentWorkout, sourceTemplate],
@@ -173,6 +186,7 @@ export function useCurrentWorkout() {
     currentWorkout,
     exerciseOptions,
     startTemplateWorkout,
+    startPrivateWorkout,
     discardWorkout,
     finishWorkout,
     updateSet,

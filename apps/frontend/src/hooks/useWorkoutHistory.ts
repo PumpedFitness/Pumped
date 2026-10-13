@@ -1,15 +1,21 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   deleteWorkoutSession,
   getWorkoutSession,
   listWorkoutSessions,
 } from '@/data/local/workouts/sessions';
 import { useTableQuery } from '@/data/local/tableVersions';
-import { performedSets, workoutSessions } from '@/data/local/schema';
+import {
+  healthRawSample,
+  performedSets,
+  workoutSessions,
+} from '@/data/local/schema';
 import { resolveSetWeightReps } from '@/data/local/sets/setTypes';
 import type { ExerciseOption } from '@/types/exercise';
 import type { PerformedSet, WorkoutSessionDetails } from '@/types/workout';
 import { useExerciseOptions } from './useExerciseOptions';
+import { workoutRecordCounts } from '@/data/local/workouts/workoutRecordCounts';
+import { loadWorkoutHeartRateAverages } from '@/data/local/workouts/workoutHeartRate';
 
 // Volume = weight × reps, resolved generically from the set type's fields.
 function performedSetVolume(set: PerformedSet): number {
@@ -23,11 +29,15 @@ export type WorkoutHistoryItem = WorkoutSessionDetails & {
   exerciseNames: string[];
   muscleGroupNames: string[];
   totalVolumeKg: number;
+  recordCount: number;
+  averageHeartRate: number | null;
 };
 
 function buildWorkoutHistoryItem(
   session: WorkoutSessionDetails,
   exerciseById: Map<string, ExerciseOption>,
+  recordCount: number,
+  averageHeartRate: number | null,
 ): WorkoutHistoryItem {
   const exerciseIds = [
     ...new Set(
@@ -47,6 +57,8 @@ function buildWorkoutHistoryItem(
 
   return {
     ...session,
+    recordCount,
+    averageHeartRate,
     durationMinutes: Math.max(
       1,
       Math.round(
@@ -76,20 +88,52 @@ type UseWorkoutHistoryResult = {
   deleteWorkout: (workoutId: string) => void;
 };
 
+function loadCompletedHistory(
+  exerciseOptions: ExerciseOption[],
+): WorkoutHistoryItem[] {
+  const exerciseById = buildExerciseMap(exerciseOptions);
+  const sessions = listWorkoutSessions()
+    .filter(session => session.endedAt !== null)
+    .map(session => getWorkoutSession(session.id))
+    .filter((session): session is WorkoutSessionDetails => session !== null);
+  const recordCounts = workoutRecordCounts(
+    sessions.map(session => ({
+      ...session,
+      sets: session.sets.map(set => {
+        const { weight, reps } = resolveSetWeightReps(set);
+        return { exerciseId: set.exerciseId, weightKg: weight, reps };
+      }),
+    })),
+  );
+  return sessions.map(session =>
+    buildWorkoutHistoryItem(
+      session,
+      exerciseById,
+      recordCounts.get(session.id) ?? 0,
+      null,
+    ),
+  );
+}
+
 export function useWorkoutHistory(): UseWorkoutHistoryResult {
   const exerciseOptions = useExerciseOptions();
-
-  const workouts = useTableQuery(
+  const history = useTableQuery(
     [workoutSessions, performedSets],
-    () => {
-      const exerciseById = buildExerciseMap(exerciseOptions);
-      return listWorkoutSessions()
-        .filter(session => session.endedAt !== null)
-        .map(session => getWorkoutSession(session.id))
-        .filter((session): session is WorkoutSessionDetails => session !== null)
-        .map(session => buildWorkoutHistoryItem(session, exerciseById));
-    },
+    () => loadCompletedHistory(exerciseOptions),
     [exerciseOptions],
+  );
+
+  const heartRates = useTableQuery(
+    [workoutSessions, healthRawSample],
+    loadWorkoutHeartRateAverages,
+  );
+  const workouts = useMemo(
+    () =>
+      history.map(workout => ({
+        ...workout,
+        averageHeartRate: heartRates.get(workout.id) ?? null,
+      })),
+    [history, heartRates],
   );
 
   const deleteWorkout = useCallback(
@@ -100,24 +144,10 @@ export function useWorkoutHistory(): UseWorkoutHistoryResult {
   return { workouts, deleteWorkout };
 }
 
-/** Loads a single completed workout without hydrating the whole history. */
+/** Loads a completed workout with the same records and health summary as History. */
 export function useWorkoutSession(
   workoutId: string,
 ): WorkoutHistoryItem | null {
-  const exerciseOptions = useExerciseOptions();
-
-  return useTableQuery(
-    [workoutSessions, performedSets],
-    () => {
-      const session = getWorkoutSession(workoutId);
-      if (!session || session.endedAt === null) {
-        return null;
-      }
-      return buildWorkoutHistoryItem(
-        session,
-        buildExerciseMap(exerciseOptions),
-      );
-    },
-    [workoutId, exerciseOptions],
-  );
+  const { workouts } = useWorkoutHistory();
+  return workouts.find(workout => workout.id === workoutId) ?? null;
 }

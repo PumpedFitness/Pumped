@@ -14,8 +14,8 @@ export function TemplateSetTable(props: TemplateSetTableProps) {
       cards={cards}
       addSetLabel={props.addSetLabel ?? t('setTable.addSet')}
       duplicateSetLabel={t('setTable.duplicateSet')}
-      onAddSet={props.lockSetCount ? undefined : props.onAddSet}
-      onDuplicateSet={props.lockSetCount ? undefined : props.onDuplicateSet}
+      onAddSet={props.onAddSet}
+      onDuplicateSet={props.onDuplicateSet}
     />
   );
 }

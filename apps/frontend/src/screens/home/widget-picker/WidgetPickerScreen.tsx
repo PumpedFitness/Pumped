@@ -1,11 +1,10 @@
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/AppShell';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { widgetGroups } from '@/components/widgets/registry';
 import { useHomescreenStore } from '@/stores/homescreenStore';
-import { colors } from '@pumped/ui/theme/tokens';
 import { WidgetGroupCard } from './components/WidgetGroupCard';
 
 export function WidgetPickerScreen() {
@@ -16,21 +15,12 @@ export function WidgetPickerScreen() {
 
   return (
     <AppShell showTabBar={false} padTop padHorizontal={0}>
-      {/* Header */}
-      <View className="flex-row justify-between items-center px-5 pb-4 pt-2">
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
-          <ClayIcon name="x" size={22} color={colors.ink} />
-        </Pressable>
-        <Text className="text-[17px] font-bold text-foreground">
-          {t('widgetPicker.title')}
-        </Text>
-        <View className="w-[22px]" />
-      </View>
-
-      {/* Subtitle */}
-      <Text className="mb-4 px-10 text-center text-[14px] text-muted">
-        {t('widgetPicker.subtitle')}
-      </Text>
+      <ScreenHeader
+        title={t('widgetPicker.title')}
+        subtitle={t('widgetPicker.subtitle')}
+        onBack={() => navigation.goBack()}
+        backAccessibilityLabel={t('common.back')}
+      />
 
       {/* Widget gallery */}
       <ScrollView

@@ -10,7 +10,6 @@ import { AppShell } from '@/components/layout/AppShell';
 import { TabBarInsetSpacer } from '@/components/layout/TabBarInsetSpacer';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
 import { WorkoutHistoryList } from './components/WorkoutHistoryList';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import type { MainTabParamList } from '@/navigation/mainTabsShared';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -23,7 +22,6 @@ type HistoryScreenProps = CompositeScreenProps<
 export function HistoryScreen({ navigation }: HistoryScreenProps) {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const { profile } = useUserProfile();
   const { workouts, deleteWorkout } = useWorkoutHistory();
   const earliest = useMemo(() => {
     const oldest = workouts[workouts.length - 1];
@@ -56,7 +54,7 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
     <AppShell showTabBar>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-5 px-5 pb-8 pt-7"
+        contentContainerClassName="gap-5 px-5 pb-8 pt-4"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -83,7 +81,6 @@ export function HistoryScreen({ navigation }: HistoryScreenProps) {
         <WorkoutHistoryList
           deletable
           workouts={filteredWorkouts}
-          weightUnit={profile.weightUnit}
           hasSearchQuery={searchQuery.trim().length > 0}
           onWorkoutPress={workoutId =>
             navigation.navigate('CompletedWorkout', { workoutId })

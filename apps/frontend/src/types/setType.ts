@@ -61,6 +61,8 @@ export type SetTypeWithFields = {
   color: SetTypeColorName;
   isBuiltIn: boolean;
   position: number;
+  /** Rest timer duration applied when a live set of this type starts. */
+  defaultRestSeconds: number | null;
   progressionGoal: ProgressionGoal;
   fields: SetTypeFieldDef[];
 };

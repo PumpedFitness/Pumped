@@ -60,6 +60,7 @@ function toSetTypeWithFields(
     color: builtInSetTypeColor(row.id) ?? deriveSetTypeColor(row.id),
     isBuiltIn: row.isBuiltIn,
     position: row.position,
+    defaultRestSeconds: row.defaultRestSeconds,
     progressionGoal: normalizeProgressionGoal(row.progressionGoal, fieldDefs),
     fields: fieldDefs,
   };

@@ -1,11 +1,8 @@
 import { useCallback, useState } from 'react';
 
 /**
- * Which editor cards are unfolded. Tracks what is OPEN rather than what is
- * closed, so cards default to folded and a newly added exercise is folded like
- * everything else instead of having to be registered first.
- *
- * Keys are the exercise id for a card, `superset:<id>` for a whole block.
+ * Which superset blocks are unfolded. Tracks what is OPEN rather than what is
+ * closed, so newly added groups default to folded without registration.
  */
 export function useExpandedCards() {
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(

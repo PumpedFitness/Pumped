@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
@@ -30,7 +31,7 @@ export function ExerciseSelectionHeader({
 
   return (
     <>
-      <View className="flex-row items-center justify-between border-b border-border-soft px-5 py-3">
+      <View className="h-[52px] flex-row items-center justify-between px-5">
         <Pressable
           accessibilityRole="button"
           className="h-11 min-w-16 items-start justify-center"
@@ -40,13 +41,6 @@ export function ExerciseSelectionHeader({
             {t('common.cancel')}
           </Text>
         </Pressable>
-        <Text className="t-heading">
-          {t(
-            isSuperset
-              ? 'exerciseSelection.superset.headerTitle'
-              : 'exerciseSelection.headerTitle',
-          )}
-        </Text>
         <Pressable
           accessibilityRole="button"
           className="h-11 min-w-16 items-end justify-center"
@@ -56,34 +50,30 @@ export function ExerciseSelectionHeader({
         </Pressable>
       </View>
 
-      <View className="gap-4 px-5 pb-3 pt-5">
-        <View className="flex-row items-end justify-between">
-          <View className="flex-1 pr-3">
-            <Text className="t-display">
-              {t(
-                isSuperset
-                  ? 'exerciseSelection.superset.title'
-                  : 'exerciseSelection.libraryTitle',
-              )}
-            </Text>
-            <Text className="t-caption mt-1">
-              {t(
-                isSuperset
-                  ? 'exerciseSelection.superset.selectedCount'
-                  : 'exerciseSelection.selectedCount',
-                { count: selectedCount },
-              )}
-            </Text>
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('library.createA11y')}
-            className="h-10 w-10 items-center justify-center rounded-full bg-accent"
-            onPress={onCreateExercise}
-          >
-            <ClayIcon name="plus" size={20} color={colors.cream} />
-          </Pressable>
-        </View>
+      <View className="gap-4 px-5 pb-3 pt-4">
+        <ScreenHeader
+          title={t(
+            isSuperset
+              ? 'exerciseSelection.superset.title'
+              : 'exerciseSelection.libraryTitle',
+          )}
+          subtitle={t(
+            isSuperset
+              ? 'exerciseSelection.superset.selectedCount'
+              : 'exerciseSelection.selectedCount',
+            { count: selectedCount },
+          )}
+          trailing={
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('library.createA11y')}
+              className="h-10 w-10 items-center justify-center rounded-full bg-accent"
+              onPress={onCreateExercise}
+            >
+              <ClayIcon name="plus" size={20} color={colors.cream} />
+            </Pressable>
+          }
+        />
 
         {isSuperset ? (
           <View className="flex-row gap-2.5 rounded-[16px] bg-accent-soft px-4 py-3">

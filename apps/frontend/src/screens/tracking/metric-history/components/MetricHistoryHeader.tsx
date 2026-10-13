@@ -1,4 +1,6 @@
-import { View, Text, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { colors } from '@pumped/ui/theme/tokens';
 
@@ -13,23 +15,22 @@ export function MetricHistoryHeader({
   onBack,
   onAdd,
 }: MetricHistoryHeaderProps) {
+  const { t } = useTranslation();
   return (
-    <View className="flex-row items-center justify-between px-4 h-[52px]">
-      <Pressable
-        onPress={onBack}
-        className="w-10 h-10 rounded-full items-center justify-center active:opacity-60"
-      >
-        <ClayIcon name="back" size={22} color={colors.ink} />
-      </Pressable>
-
-      <Text className="text-[17px] font-bold text-foreground">{title}</Text>
-
-      <Pressable
-        onPress={onAdd}
-        className="w-10 h-10 rounded-full items-center justify-center active:opacity-60"
-      >
-        <ClayIcon name="plus" size={22} color={colors.accent} />
-      </Pressable>
-    </View>
+    <ScreenHeader
+      title={title}
+      onBack={onBack}
+      backAccessibilityLabel={t('common.back')}
+      right={
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('common.add')}
+          onPress={onAdd}
+          className="h-10 w-10 items-center justify-center rounded-full active:bg-surface-card"
+        >
+          <ClayIcon name="plus" size={22} color={colors.accent} />
+        </Pressable>
+      }
+    />
   );
 }

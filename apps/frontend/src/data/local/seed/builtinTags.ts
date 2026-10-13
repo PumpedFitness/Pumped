@@ -34,6 +34,7 @@ export function seedBuiltInTags(database: LocalDatabase, now: number): void {
         icon: type.icon,
         isBuiltIn: true,
         position: index,
+        defaultRestSeconds: type.defaultRestSeconds,
         progressionGoal: builtInProgressionGoal(type.id),
         createdAt: now,
       })),

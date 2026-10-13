@@ -1,124 +1,103 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
-import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { colors } from '@pumped/ui/theme/tokens';
-import { displayWeight } from '@/utils/units';
-import { ClayIcon, type IconName } from '@pumped/ui/icons/ClayIcon';
+import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { WorkoutAvatar } from '@/components/workout/WorkoutAvatar';
 
 type WorkoutHistoryItemCardProps = {
   workout: WorkoutHistoryItem;
-  weightUnit: WeightUnit;
   onPress: () => void;
 };
+type WorkoutStatProps = { label: string; value: string; testID?: string };
 
-type StatPillProps = {
-  icon: IconName;
-  label: string;
-};
-
-function StatPill({ icon, label }: StatPillProps) {
+function WorkoutStat({ label, value, testID }: WorkoutStatProps) {
   return (
-    <View className="min-w-0 flex-1 flex-row items-center gap-2 rounded-[16px] border border-border-soft bg-surface-sunk px-3 py-2.5">
-      <ClayIcon name={icon} size={15} color={colors.muted} />
-      <Text className="t-label flex-1" numberOfLines={1}>
-        {label}
+    <View className="min-w-0 flex-1 gap-0.5">
+      <Text
+        testID={testID}
+        className="text-[16px] font-bold tabular-nums text-foreground"
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+      >
+        {value}
       </Text>
+      <Text className="text-[11px] font-medium text-muted">{label}</Text>
     </View>
   );
 }
 
-function formatWorkoutDate(timestamp: number, language: string): string {
-  return new Date(timestamp).toLocaleDateString(language, {
+export function WorkoutHistoryItemCard({
+  workout,
+  onPress,
+}: WorkoutHistoryItemCardProps) {
+  const { t, i18n } = useTranslation();
+  const date = new Date(workout.startedAt).toLocaleDateString(i18n.language, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   });
-}
-
-function formatVolume(
-  t: TFunction,
-  volumeKg: number,
-  weightUnit: WeightUnit,
-): string {
-  const value = displayWeight(volumeKg, weightUnit);
-  if (value >= 1_000) {
-    return t('history.item.volumeK', {
-      value: (value / 1_000).toFixed(1),
-      unit: weightUnit,
-    });
-  }
-  return `${Math.round(value).toLocaleString()} ${weightUnit}`;
-}
-
-export function WorkoutHistoryItemCard({
-  workout,
-  weightUnit,
-  onPress,
-}: WorkoutHistoryItemCardProps) {
-  const { t, i18n } = useTranslation();
-  const exerciseSummary =
-    workout.exerciseNames.length > 0
-      ? workout.exerciseNames.slice(0, 3).join(' · ')
-      : t('history.item.noExerciseDetails');
-  const muscleSummary = workout.muscleGroupNames.slice(0, 3).join(' + ');
-
+  const volume = workout.totalVolumeKg.toLocaleString(i18n.language, {
+    maximumFractionDigits: 0,
+  });
+  const heartRate =
+    workout.averageHeartRate === null
+      ? '—'
+      : Math.round(workout.averageHeartRate).toLocaleString(i18n.language);
   return (
     <Pressable
+      testID={`history-workout-${workout.id}`}
       accessibilityRole="button"
       accessibilityLabel={t('history.item.viewA11y', { name: workout.name })}
-      className="gap-4 rounded-[24px] border border-border-soft bg-surface-card p-4 active:bg-surface-sunk"
+      className="gap-3 rounded-[24px] bg-surface-card p-3 active:bg-surface-sunk"
       onPress={onPress}
     >
-      <View className="flex-row items-start gap-3">
+      <View className="flex-row items-center gap-2.5">
         <WorkoutAvatar
           picture={workout.picture}
           icon={workout.icon}
           color={workout.color}
-          size={52}
-          radius={17}
+          size={36}
+          radius={12}
         />
-        <View className="flex-1">
-          <View className="flex-row items-start justify-between gap-3">
-            <Text className="t-heading flex-1" numberOfLines={1}>
-              {workout.name}
+        <View className="min-w-0 flex-1 gap-0.5">
+          <Text
+            className="text-[16px] font-bold text-foreground"
+            numberOfLines={1}
+          >
+            {workout.name}
+          </Text>
+          <Text className="text-[11px] font-medium text-muted">{date}</Text>
+        </View>
+        {workout.recordCount > 0 ? (
+          <View
+            testID={`workout-records-${workout.id}`}
+            className="flex-row items-center gap-1 rounded-full bg-accent-soft px-2 py-1"
+          >
+            <ClayIcon name="award" size={14} color={colors.accent} />
+            <Text className="text-[11px] font-bold text-accent">
+              {t('history.item.records', { count: workout.recordCount })}
             </Text>
-            <View className="rounded-full bg-surface-sunk px-2.5 py-1">
-              <Text className="t-caption">
-                {formatWorkoutDate(workout.startedAt, i18n.language)}
-              </Text>
-            </View>
           </View>
-          <Text className="t-caption mt-1" numberOfLines={2}>
-            {exerciseSummary}
-          </Text>
-        </View>
+        ) : null}
       </View>
-
-      <View className="flex-row gap-2">
-        <StatPill
-          icon="clock"
-          label={t('common.minutesShort', { count: workout.durationMinutes })}
+      <View className="flex-row gap-3 border-t border-border-hairline pt-3">
+        <WorkoutStat
+          label={t('history.item.time')}
+          value={t('common.minutesShort', { count: workout.durationMinutes })}
         />
-        <StatPill
-          icon="bolt"
-          label={t('common.set', { count: workout.sets.length })}
+        <WorkoutStat
+          testID={`history-volume-${workout.id}`}
+          label={t('history.item.volume')}
+          value={`${volume} kg`}
         />
-        <StatPill
-          icon="trend"
-          label={formatVolume(t, workout.totalVolumeKg, weightUnit)}
+        <WorkoutStat
+          testID={`history-heart-rate-${workout.id}`}
+          label={t('history.item.averageHeartRate')}
+          value={`${heartRate} ${t('completedWorkout.heartRate.bpm')}`}
         />
       </View>
-
-      {muscleSummary ? (
-        <View className="rounded-[16px] bg-surface-sunk px-3 py-2">
-          <Text className="t-caption flex-1" numberOfLines={1}>
-            {t('history.item.focus', { muscles: muscleSummary })}
-          </Text>
-        </View>
-      ) : null}
     </Pressable>
   );
 }

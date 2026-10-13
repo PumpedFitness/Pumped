@@ -1,6 +1,5 @@
 import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { colors } from '@pumped/ui/theme/tokens';
 import { EmptyState } from '@pumped/ui/clay/EmptyState';
@@ -11,7 +10,6 @@ import { confirmDeleteWorkout } from './confirmDeleteWorkout';
 
 type BaseWorkoutHistoryListProps = {
   workouts: WorkoutHistoryItem[];
-  weightUnit: WeightUnit;
   hasSearchQuery: boolean;
   onWorkoutPress: (workoutId: string) => void;
 };
@@ -58,7 +56,6 @@ function groupWorkouts(
 
 export function WorkoutHistoryList({
   workouts,
-  weightUnit,
   hasSearchQuery,
   onWorkoutPress,
   ...deleteProps
@@ -111,7 +108,6 @@ export function WorkoutHistoryList({
               >
                 <WorkoutHistoryItemCard
                   workout={workout}
-                  weightUnit={weightUnit}
                   onPress={() => onWorkoutPress(workout.id)}
                 />
               </SwipeToDelete>
@@ -119,7 +115,6 @@ export function WorkoutHistoryList({
               <WorkoutHistoryItemCard
                 key={workout.id}
                 workout={workout}
-                weightUnit={weightUnit}
                 onPress={() => onWorkoutPress(workout.id)}
               />
             ),

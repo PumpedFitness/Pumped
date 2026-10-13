@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
+import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { SegmentedControl } from '@pumped/ui/clay/SegmentedControl';
 import { colors, motion } from '@pumped/ui/theme/tokens';
 import { ProfileAvatarButton } from '@/components/layout/ProfileAvatarButton';
 import { useHealthConnection } from '@/hooks/useHealthConnection';
 import { useHealthSnapshot } from '@/hooks/useHealthSnapshot';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import {
-  formatChartDate,
-  formatMetric,
-  greetingKey,
-  syncedAtKey,
-} from './formatMetric';
+import { formatChartDate, formatMetric, syncedAtKey } from './formatMetric';
 import { DeviationRow } from './components/DeviationRow';
 import { ReadinessHero } from './components/ReadinessHero';
 import { IllnessPanel } from './components/IllnessPanel';
@@ -42,33 +37,6 @@ function useMinuteTick(): number {
   return now;
 }
 
-function GreetingHeader({
-  greeting,
-  name,
-  line,
-}: {
-  greeting: string;
-  name: string;
-  line: string;
-}) {
-  return (
-    <Animated.View
-      entering={FadeInDown.duration(300)}
-      className="mb-4 flex-row items-start gap-3"
-    >
-      <View className="flex-1">
-        <Text className="text-[30px] font-[800] text-foreground tracking-[-0.9px]">
-          {name === '' ? greeting : `${greeting}, ${name}`}
-        </Text>
-        <Text className="text-[13px] text-muted mt-0.5">{line}</Text>
-      </View>
-      <View className="pt-0.5">
-        <ProfileAvatarButton />
-      </View>
-    </Animated.View>
-  );
-}
-
 type HealthSegment = (typeof SEGMENTS)[number];
 
 /**
@@ -88,11 +56,8 @@ export function HealthScreen() {
   const [segment, setSegment] = useState<HealthSegment>('recovery');
   const snapshot = useHealthSnapshot();
   const connection = useHealthConnection();
-  const profile = useUserProfile();
   const { result } = snapshot;
 
-  const name = profile.profile.name.trim();
-  const greeting = t(greetingKey(new Date().getHours()));
   const now = useMinuteTick();
 
   const synced = syncedAtKey(connection.lastSyncedAt, now);
@@ -113,16 +78,22 @@ export function HealthScreen() {
     // nicht nachladen — dort, wo man es am ehesten versucht.
     return (
       <ScrollView
-        contentContainerClassName="flex-1 items-center justify-center px-10"
+        contentContainerClassName="flex-grow px-5 pt-4 pb-8"
         refreshControl={refresh}
       >
-        <ClayIcon name="pulse" size={34} color={colors.muted} />
-        <Text className="text-[17px] font-semibold text-foreground mt-4 text-center">
-          {t('health.metrics.emptyTitle')}
-        </Text>
-        <Text className="text-[13.5px] text-muted mt-2 text-center leading-[20px]">
-          {t('health.metrics.emptyBody')}
-        </Text>
+        <ScreenHeader
+          title={t('tabs.recovery')}
+          trailing={<ProfileAvatarButton />}
+        />
+        <View className="flex-1 items-center justify-center px-5">
+          <ClayIcon name="pulse" size={34} color={colors.muted} />
+          <Text className="text-[17px] font-semibold text-foreground mt-4 text-center">
+            {t('health.metrics.emptyTitle')}
+          </Text>
+          <Text className="text-[13.5px] text-muted mt-2 text-center leading-[20px]">
+            {t('health.metrics.emptyBody')}
+          </Text>
+        </View>
       </ScrollView>
     );
   }
@@ -139,14 +110,15 @@ export function HealthScreen() {
 
   return (
     <ScrollView
-      contentContainerClassName="px-5 pt-1 pb-8"
+      contentContainerClassName="px-5 pt-4 pb-8"
       showsVerticalScrollIndicator={false}
       refreshControl={refresh}
     >
-      <GreetingHeader
-        greeting={greeting}
-        name={name}
-        line={t('health.metrics.syncedLine', {
+      <ScreenHeader
+        className="mb-4"
+        title={t('tabs.recovery')}
+        trailing={<ProfileAvatarButton />}
+        subtitle={t('health.metrics.syncedLine', {
           date: formatChartDate(snapshot.referenceDate.date, i18n.language),
           status: statusLine,
         })}

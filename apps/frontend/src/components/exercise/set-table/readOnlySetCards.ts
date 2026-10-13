@@ -55,17 +55,6 @@ function fieldsForReadOnlySet(
   return type?.fields ?? [];
 }
 
-function readOnlyRest(restSeconds: number | null): SetCardModel['rest'] {
-  if (restSeconds == null) {
-    return null;
-  }
-  return {
-    value: restSeconds,
-    readOnly: true,
-    onChange: () => undefined,
-  };
-}
-
 function buildReadOnlySetCard(
   context: ReadOnlyCardContext,
   set: ReadOnlyExerciseSet,
@@ -96,7 +85,6 @@ function buildReadOnlySetCard(
         previousValues,
       }),
     ),
-    rest: readOnlyRest(set.restSeconds),
     progressionBadgeText: isAdditionalSet
       ? t('progression.additionalSet')
       : undefined,

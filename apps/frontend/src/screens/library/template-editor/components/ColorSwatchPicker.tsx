@@ -14,12 +14,14 @@ type ColorSwatchPickerProps<T extends string> = {
   value: T | null;
   options: ColorSwatchOption<T>[];
   onChange: (value: T) => void;
+  compact?: boolean;
 };
 
 export function ColorSwatchPicker<T extends string>({
   value,
   options,
   onChange,
+  compact = false,
 }: ColorSwatchPickerProps<T>) {
   return (
     <View className="flex-row flex-wrap gap-3">
@@ -31,13 +33,15 @@ export function ColorSwatchPicker<T extends string>({
             accessibilityRole="radio"
             accessibilityLabel={option.label}
             accessibilityState={{ selected }}
-            className={`h-12 w-12 items-center justify-center rounded-full border-2 ${
-              selected ? 'border-foreground' : 'border-transparent'
-            }`}
+            className={`items-center justify-center rounded-full border-2 ${
+              compact ? 'h-10 w-10' : 'h-12 w-12'
+            } ${selected ? 'border-foreground' : 'border-transparent'}`}
             onPress={() => onChange(option.value)}
           >
             <View
-              className="h-9 w-9 items-center justify-center rounded-full"
+              className={`items-center justify-center rounded-full ${
+                compact ? 'h-7 w-7' : 'h-9 w-9'
+              }`}
               style={{ backgroundColor: option.color }}
             >
               {selected && (

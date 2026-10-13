@@ -1,7 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
-import type { WeightUnit } from '@/data/local/schema/userProfile';
 import type { TodayWorkout } from '@/hooks/useTodayWorkout';
 import { colors, shadows } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
@@ -10,7 +9,6 @@ import { WorkoutHistoryItemCard } from '@/screens/history/components/workout-his
 type ScheduleTodayHeaderProps = {
   state: TodayWorkout;
   scheduleName: string | null;
-  weightUnit: WeightUnit;
   onStart: () => void;
   onSkip: () => void;
   onStartAnyway: () => void;
@@ -20,7 +18,6 @@ type ScheduleTodayHeaderProps = {
 export function ScheduleTodayHeader({
   state,
   scheduleName,
-  weightUnit,
   onStart,
   onSkip,
   onStartAnyway,
@@ -47,7 +44,6 @@ export function ScheduleTodayHeader({
         </Text>
         <WorkoutHistoryItemCard
           workout={state.workout}
-          weightUnit={weightUnit}
           onPress={() => onViewWorkout(state.workout.id)}
         />
       </View>

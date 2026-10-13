@@ -20,6 +20,7 @@ import { useTodayWorkout } from '@/hooks/useTodayWorkout';
 import { useHealthSettingsStore } from '@/stores/healthSettingsStore';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { openCurrentWorkout } from '@/navigation/openCurrentWorkout';
+import type { WorkoutTemplate } from '@/types/workout';
 import {
   buildRecoveryReadout,
   buildTodayCard,
@@ -136,7 +137,8 @@ export function TodaySessionWidget(_props: WidgetProps) {
   const { today, unskip } = useTodayWorkout();
   const { days } = useScheduleWeek();
   const { nextSession } = useHomeWidgetData();
-  const { currentWorkout, startTemplateWorkout } = useCurrentWorkout();
+  const { currentWorkout, startTemplateWorkout, startPrivateWorkout } =
+    useCurrentWorkout();
   const health = useHealthSnapshot();
   const sourceConnected = useHealthSettingsStore(
     state => state.sourceConnected,
@@ -147,9 +149,13 @@ export function TodaySessionWidget(_props: WidgetProps) {
   const progress = weekBlockProgress(days);
 
   const startTemplate = useCallback(
-    (templateId: string) => {
+    (template: WorkoutTemplate, source: 'schedule' | 'periodization') => {
       try {
-        startTemplateWorkout(templateId);
+        if (source === 'periodization') {
+          startPrivateWorkout(template);
+        } else {
+          startTemplateWorkout(template.id);
+        }
         openCurrentWorkout(navigation);
       } catch (error) {
         Alert.alert(
@@ -158,7 +164,7 @@ export function TodaySessionWidget(_props: WidgetProps) {
         );
       }
     },
-    [navigation, startTemplateWorkout, t],
+    [navigation, startPrivateWorkout, startTemplateWorkout, t],
   );
 
   const goToTab = useCallback(
@@ -196,7 +202,7 @@ export function TodaySessionWidget(_props: WidgetProps) {
       // Starting a day that was written off clears the skip first, so the
       // schedule stops reporting a day the user is standing in the middle of.
       if (kind === 'startAnyway') unskip();
-      startTemplate(today.templateId);
+      startTemplate(today.template, today.source);
     },
     [goToTab, navigation, startTemplate, today, unskip],
   );

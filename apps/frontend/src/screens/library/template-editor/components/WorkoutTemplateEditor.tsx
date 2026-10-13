@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'heroui-native';
@@ -6,23 +6,22 @@ import { ScrollViewContainer } from 'react-native-reorderable-list';
 import type { SaveWorkoutTemplateInput } from '@/data/local/workouts/templates';
 import type { ExerciseOption } from '@/types/exercise';
 import type { WorkoutTemplate } from '@/types/workout';
-import { colors } from '@pumped/ui/theme/tokens';
 import { AppView } from '@/components/layout/AppView';
 import { ModalHeader } from '@/components/layout/ModalHeader';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
-import { ShareSheet } from '@/components/share/ShareSheet';
-import { buildTemplateShare } from '@/data/local/share/exportShare';
 import { TemplateEditorProvider } from '@/screens/library/template-editor/templateEditorContext';
 import { useTemplateEditorController } from '@/screens/library/template-editor/useTemplateEditorController';
-import { WorkoutTemplateAppearanceSection } from './WorkoutTemplateAppearanceSection';
+import { WorkoutAppearanceControl } from './WorkoutAppearanceControl';
 import { WorkoutTemplateDetailsSection } from './WorkoutTemplateDetailsSection';
 import { WorkoutTemplateExercisesSection } from './WorkoutTemplateExercisesSection';
 
 type WorkoutTemplateEditorProps = {
   template: WorkoutTemplate | null;
   exerciseOptions: ExerciseOption[];
-  onSave: (input: SaveWorkoutTemplateInput) => WorkoutTemplate;
-  onDelete: (templateId: string) => void;
+  onSave: (input: SaveWorkoutTemplateInput) => void;
+  onClose: () => void;
+  title?: string;
+  beforeDetails?: ReactNode;
+  allowImport?: boolean;
 };
 
 const CONTENT_STYLE = {
@@ -36,17 +35,20 @@ export function WorkoutTemplateEditor({
   template,
   exerciseOptions,
   onSave,
-  onDelete,
+  onClose,
+  title,
+  beforeDetails,
+  allowImport = true,
 }: WorkoutTemplateEditorProps) {
   const { t } = useTranslation();
-  const { draft, updateDraft, save, requestDelete, close, context } =
+  const { draft, updateDraft, save, close, context } =
     useTemplateEditorController({
       template,
       exerciseOptions,
       onSave,
-      onDelete,
+      onClose,
+      allowImport,
     });
-  const [shareVisible, setShareVisible] = useState(false);
 
   return (
     <AppView edges={['top', 'bottom']}>
@@ -56,9 +58,10 @@ export function WorkoutTemplateEditor({
       >
         <ModalHeader
           title={
-            template
+            title ??
+            (template
               ? t('templateEditor.editTitle')
-              : t('templateEditor.newTitle')
+              : t('templateEditor.newTitle'))
           }
           rightLabel={t('templateEditor.save')}
           onLeftPress={close}
@@ -70,20 +73,23 @@ export function WorkoutTemplateEditor({
           contentContainerStyle={CONTENT_STYLE}
           keyboardShouldPersistTaps="handled"
         >
+          {beforeDetails}
           <WorkoutTemplateDetailsSection
             autoFocus={!template}
             name={draft.name}
             description={draft.description}
+            appearanceControl={
+              <WorkoutAppearanceControl
+                color={draft.color}
+                icon={draft.icon}
+                picture={draft.picture}
+                onColorChange={color => updateDraft({ color })}
+                onIconChange={icon => updateDraft({ icon })}
+                onPictureChange={picture => updateDraft({ picture })}
+              />
+            }
             onNameChange={name => updateDraft({ name })}
             onDescriptionChange={description => updateDraft({ description })}
-          />
-          <WorkoutTemplateAppearanceSection
-            color={draft.color}
-            icon={draft.icon}
-            picture={draft.picture}
-            onColorChange={color => updateDraft({ color })}
-            onIconChange={icon => updateDraft({ icon })}
-            onPictureChange={picture => updateDraft({ picture })}
           />
 
           <TemplateEditorProvider value={context}>
@@ -105,43 +111,8 @@ export function WorkoutTemplateEditor({
               {t('templateEditor.saveCta')}
             </Button.Label>
           </Button>
-
-          {template && (
-            // Shares the saved template; unsaved edits stay on this device.
-            <Button
-              className="h-14 rounded-full"
-              variant="secondary"
-              feedbackVariant="scale"
-              onPress={() => setShareVisible(true)}
-            >
-              <ClayIcon name="arrowUp" size={18} color={colors.ink} />
-              <Button.Label>{t('share.send.templateCta')}</Button.Label>
-            </Button>
-          )}
-
-          {template && (
-            <Button
-              className="h-14 rounded-full"
-              variant="danger-soft"
-              feedbackVariant="scale"
-              onPress={requestDelete}
-            >
-              <ClayIcon name="trash" size={18} color={colors.danger} />
-              <Button.Label>{t('templateEditor.deleteCta')}</Button.Label>
-            </Button>
-          )}
         </ScrollViewContainer>
       </KeyboardAvoidingView>
-
-      {template && (
-        <ShareSheet
-          visible={shareVisible}
-          onClose={() => setShareVisible(false)}
-          title={template.name}
-          kindLabel={t('share.send.kinds.template')}
-          buildEnvelope={() => buildTemplateShare(template.id)}
-        />
-      )}
     </AppView>
   );
 }

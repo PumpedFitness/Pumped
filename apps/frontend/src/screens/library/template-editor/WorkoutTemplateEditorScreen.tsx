@@ -17,8 +17,7 @@ export function WorkoutTemplateEditorScreen({
   route,
 }: WorkoutTemplateEditorScreenProps) {
   const { t } = useTranslation();
-  const { templates, exerciseOptions, saveTemplate, deleteTemplate } =
-    useWorkoutTemplates();
+  const { templates, exerciseOptions, saveTemplate } = useWorkoutTemplates();
   const templateId = route.params?.templateId;
   const template = templateId
     ? templates.find(candidate => candidate.id === templateId) ?? null
@@ -54,7 +53,7 @@ export function WorkoutTemplateEditorScreen({
       template={template}
       exerciseOptions={exerciseOptions}
       onSave={saveTemplate}
-      onDelete={deleteTemplate}
+      onClose={() => navigation.goBack()}
     />
   );
 }

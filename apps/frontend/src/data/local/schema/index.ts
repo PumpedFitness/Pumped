@@ -15,6 +15,7 @@ export {
   workoutTemplateSets,
 } from './workoutTemplate';
 export { schedules, scheduleSlots } from './schedule';
+export { periodizations } from './periodization';
 export { workoutSessions, performedSets } from './workoutSession';
 export { skippedDays } from './skippedDay';
 export { bodyWeightEntries, bodyFatEntries } from './bodyMetrics';

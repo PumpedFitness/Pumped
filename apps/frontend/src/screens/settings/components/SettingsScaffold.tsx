@@ -50,7 +50,7 @@ export function SettingsScaffold({
       </View>
 
       <ScrollView
-        contentContainerClassName="px-5 pb-10 pt-1"
+        contentContainerClassName="px-5 pb-10 pt-4"
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
