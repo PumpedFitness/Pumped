@@ -126,13 +126,13 @@ export function QuickActions({
             onPress={editing ? undefined : action.onPress}
           >
             {editing ? (
-              <View className="absolute -right-2 -top-2">
+              <View className="absolute -bottom-2 -right-2">
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={removeLabel(action.label)}
                   hitSlop={10}
                   onPress={() => onRemove(action.key)}
-                  className="h-7 w-7 items-center justify-center rounded-full bg-foreground active:opacity-80"
+                  className="h-7 w-7 items-center justify-center rounded-full bg-danger active:opacity-80"
                 >
                   <ClayIcon name="x" size={15} color={colors.cream} />
                 </Pressable>
@@ -152,11 +152,15 @@ export function QuickActions({
               accessibilityLabel={addLabel(option.label)}
               onPress={() => onAdd(option.key)}
             >
-              <View className="absolute -right-2 -top-2">
-                <View className="h-7 w-7 items-center justify-center rounded-full bg-accent">
-                  <ClayIcon name="plus" size={15} color={colors.cream} />
-                </View>
-              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={addLabel(option.label)}
+                hitSlop={10}
+                onPress={() => onAdd(option.key)}
+                className="absolute -bottom-2 -right-2 h-7 w-7 items-center justify-center rounded-full bg-accent active:opacity-80"
+              >
+                <ClayIcon name="plus" size={15} color={colors.cream} />
+              </Pressable>
             </QuickActionCircle>
           ))
         : null}
