@@ -1580,9 +1580,10 @@ export const resources = {
         backA11y: 'Back to workout history',
         notFoundTitle: 'Workout not found',
         notFoundBody: 'This workout is no longer available in your history.',
-        createTemplate: 'Save as workout',
-        editTemplate: 'Edit workout',
-        templateErrorTitle: 'Could not create workout',
+        createTemplate: 'Create template',
+        optionsA11y: 'Workout options',
+        editTemplate: 'Edit template',
+        templateErrorTitle: 'Could not create template',
         templateErrorBody: 'Please try again.',
         stats: {
           duration: 'Duration',
@@ -3327,9 +3328,10 @@ export const resources = {
         notFoundTitle: 'Workout nicht gefunden',
         notFoundBody:
           'Dieses Workout ist in deinem Verlauf nicht mehr verfügbar.',
-        createTemplate: 'Als Workout speichern',
-        editTemplate: 'Workout bearbeiten',
-        templateErrorTitle: 'Workout konnte nicht erstellt werden',
+        createTemplate: 'Vorlage erstellen',
+        optionsA11y: 'Workout-Optionen',
+        editTemplate: 'Vorlage bearbeiten',
+        templateErrorTitle: 'Vorlage konnte nicht erstellt werden',
         templateErrorBody: 'Bitte versuche es erneut.',
         stats: {
           duration: 'Dauer',

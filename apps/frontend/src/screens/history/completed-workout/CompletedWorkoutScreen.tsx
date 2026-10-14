@@ -1,7 +1,8 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useTranslation } from 'react-i18next';
 import { AppView } from '@/components/layout/AppView';
-import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { CompletedWorkoutHeader } from './components/CompletedWorkoutHeader';
+import { useCompletedWorkoutActions } from './components/useCompletedWorkoutActions';
+import { useWorkoutHistory } from '@/hooks/useWorkoutHistory';
 import { CompletedWorkoutDetails } from './components/CompletedWorkoutDetails';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -15,21 +16,32 @@ export function CompletedWorkoutScreen({
   navigation,
   route,
 }: CompletedWorkoutScreenProps) {
-  const { t } = useTranslation();
   const { profile } = useUserProfile();
+  const { workouts, deleteWorkout } = useWorkoutHistory();
+  const workout =
+    workouts.find(item => item.id === route.params.workoutId) ?? null;
+  const close = () =>
+    navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Main');
+  const { actions, openOptions } = useCompletedWorkoutActions({
+    workout,
+    onDelete: () => deleteWorkout(route.params.workoutId),
+    onDeleted: close,
+  });
 
   return (
     <AppView edges={['top', 'bottom']}>
-      <ScreenHeader
-        title={t('completedWorkout.title')}
-        onBack={() => navigation.goBack()}
-        backAccessibilityLabel={t('completedWorkout.backA11y')}
+      <CompletedWorkoutHeader
+        onBack={close}
+        onOptions={openOptions}
+        showOptions={workout !== null}
       />
 
       <CompletedWorkoutDetails
-        workoutId={route.params.workoutId}
+        workout={workout}
+        allWorkouts={workouts}
         weightUnit={profile.weightUnit}
       />
+      {actions}
     </AppView>
   );
 }

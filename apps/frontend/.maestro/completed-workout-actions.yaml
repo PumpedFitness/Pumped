@@ -1,0 +1,63 @@
+# Uses a sample session. Deletion is cancelled; the template copy is renamed and cleaned up.
+appId: ${APP_ID}
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    point: 92%,92%
+- tapOn: History
+- tapOn:
+    id: history-workout-sample:session-1-lower
+- assertVisible:
+    id: completed-workout-header
+- tapOn:
+    id: completed-workout-options
+- assertVisible:
+    id: workout-menu-edit
+- assertVisible:
+    id: workout-menu-template
+- assertVisible:
+    id: workout-menu-share
+- assertVisible:
+    id: workout-menu-delete
+- tapOn:
+    id: workout-menu-edit
+- assertVisible: Edit workout
+- tapOn: '^Cancel$'
+- tapOn:
+    id: completed-workout-options
+- tapOn:
+    id: workout-menu-delete
+- assertVisible:
+    text: 'Delete.*Lower Body Builder.*'
+- tapOn: '^Cancel$'
+- assertVisible:
+    id: completed-workout-header
+- tapOn:
+    id: completed-workout-options
+- tapOn:
+    id: workout-menu-template
+- assertVisible: Edit workout
+- tapOn: 'Lower Body Builder'
+- eraseText
+- inputText: 'Maestro Completed Workout Copy'
+- runFlow: subflows/dismiss-keyboard.yaml
+- tapOn: '^Save$'
+- assertVisible:
+    id: completed-workout-header
+- tapOn: Back to workout history
+- tapOn: Library
+- tapOn: Search by name or exercise
+- inputText: 'Maestro Completed Workout Copy'
+- runFlow: subflows/dismiss-keyboard.yaml
+- tapOn: 'Options for Maestro Completed Workout Copy'
+- tapOn:
+    id: template-menu-delete
+- assertVisible:
+    text: 'Delete.*Maestro Completed Workout Copy.*'
+- tapOn: '^Delete$'
+- assertNotVisible: '^Maestro Completed Workout Copy$'

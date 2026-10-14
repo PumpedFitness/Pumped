@@ -7,22 +7,30 @@ import { Button } from '@pumped/ui/clay/Button';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { colors } from '@pumped/ui/theme/tokens';
 
-export type TemplateAction = 'edit' | 'share' | 'delete';
-type WorkoutTemplateOptionsSheetProps = {
+export type WorkoutAction = 'edit' | 'share' | 'delete' | 'template';
+type WorkoutOptionsSheetProps = {
   open: boolean;
   title: string;
+  editLabel: string;
+  shareLabel: string;
+  templateLabel?: string;
+  testIDPrefix?: string;
   onClose: () => void;
-  onSelect: (action: TemplateAction) => void;
+  onSelect: (action: WorkoutAction) => void;
 };
 
-export function WorkoutTemplateOptionsSheet({
+export function WorkoutOptionsSheet({
   open,
   title,
+  editLabel,
+  shareLabel,
+  templateLabel,
+  testIDPrefix = 'workout-menu',
   onClose,
   onSelect,
-}: WorkoutTemplateOptionsSheetProps) {
+}: WorkoutOptionsSheetProps) {
   const { t } = useTranslation();
-  const choose = (action: TemplateAction) => {
+  const choose = (action: WorkoutAction) => {
     onClose();
     onSelect(action);
   };
@@ -36,20 +44,29 @@ export function WorkoutTemplateOptionsSheet({
         </BottomSheet.Description>
         <View className="mt-5 overflow-hidden rounded-[20px] bg-surface-card">
           <ListRow
-            testID="template-menu-edit"
-            label={t('plan.card.edit')}
+            testID={`${testIDPrefix}-edit`}
+            label={editLabel}
             icon={<ClayIcon name="edit" size={18} color={colors.ink} />}
             onPress={() => choose('edit')}
           />
+          {templateLabel ? (
+            <ListRow
+              testID={`${testIDPrefix}-template`}
+              divider
+              label={templateLabel}
+              icon={<ClayIcon name="plus" size={18} color={colors.ink} />}
+              onPress={() => choose('template')}
+            />
+          ) : null}
           <ListRow
-            testID="template-menu-share"
+            testID={`${testIDPrefix}-share`}
             divider
-            label={t('share.send.templateCta')}
+            label={shareLabel}
             icon={<ClayIcon name="arrowUp" size={18} color={colors.ink} />}
             onPress={() => choose('share')}
           />
           <ListRow
-            testID="template-menu-delete"
+            testID={`${testIDPrefix}-delete`}
             divider
             label={<Text className="text-danger">{t('common.delete')}</Text>}
             icon={<ClayIcon name="trash" size={18} color={colors.danger} />}

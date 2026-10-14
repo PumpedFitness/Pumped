@@ -1,64 +1,21 @@
-import { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { randomUUID } from 'expo-crypto';
-import { Button } from 'heroui-native';
 import type { WeightUnit } from '@/data/local/schema/userProfile';
-import { setWorkoutSessionTemplate } from '@/data/local/workouts/sessions';
-import { workoutSessionToTemplateInput } from '@/data/local/workouts/workoutTemplateConversion';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
-import {
-  useWorkoutHistory,
-  useWorkoutSession,
-} from '@/hooks/useWorkoutHistory';
-import { useWorkoutTemplates } from '@/hooks/useWorkoutTemplates';
+import type { WorkoutHistoryItem } from '@/hooks/useWorkoutHistory';
 import { displayWeight } from '@/utils/units';
 import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { CompletedWorkoutExercises } from './CompletedWorkoutExercises';
 import { CompletedWorkoutHeartRate } from './CompletedWorkoutHeartRate';
 import { previousSetsForExercise } from './completedWorkoutModel';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { colors } from '@pumped/ui/theme/tokens';
-import { ShareIconButton } from '@/components/share/ShareIconButton';
-import { ShareSheet } from '@/components/share/ShareSheet';
-import { buildWorkoutShare } from '@/data/local/share/exportShare';
 
 type CompletedWorkoutDetailsProps = {
-  workoutId: string;
+  workout: WorkoutHistoryItem | null;
+  allWorkouts: WorkoutHistoryItem[];
   weightUnit: WeightUnit;
 };
-
-type CompletedWorkoutTemplateActionProps = {
-  hasTemplate: boolean;
-  onPress: () => void;
-};
-
-function CompletedWorkoutTemplateAction({
-  hasTemplate,
-  onPress,
-}: CompletedWorkoutTemplateActionProps) {
-  const { t } = useTranslation();
-
-  return (
-    <Button
-      className="mx-5 rounded-full"
-      variant="secondary"
-      feedbackVariant="scale"
-      onPress={onPress}
-    >
-      <Button.Label>
-        {t(
-          hasTemplate
-            ? 'completedWorkout.editTemplate'
-            : 'completedWorkout.createTemplate',
-        )}
-      </Button.Label>
-    </Button>
-  );
-}
 
 function formatDate(timestamp: number, language: string): string {
   return new Date(timestamp).toLocaleDateString(language, {
@@ -81,33 +38,30 @@ function formatVolume(volumeKg: number, weightUnit: WeightUnit): string {
   return `${Math.round(volume).toLocaleString()} ${weightUnit}`;
 }
 
-type StatTileProps = {
+type WorkoutStatProps = {
   label: string;
   value: string;
 };
 
-function StatTile({ label, value }: StatTileProps) {
+function WorkoutStat({ label, value }: WorkoutStatProps) {
   return (
-    <View className="flex-1 rounded-[14px] bg-surface-card/10 px-3 py-2.5">
-      <Text className="t-eyebrow text-surface-card/60">{label}</Text>
-      <Text className="t-label mt-1 text-surface-card">{value}</Text>
+    <View className="flex-1 gap-1">
+      <Text className="text-[18px] font-semibold tabular-nums text-surface-card">
+        {value}
+      </Text>
+      <Text className="t-caption text-surface-card/60">{label}</Text>
     </View>
   );
 }
 
 export function CompletedWorkoutDetails({
-  workoutId,
+  workout,
+  allWorkouts,
   weightUnit,
 }: CompletedWorkoutDetailsProps) {
   const { t, i18n } = useTranslation();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const workout = useWorkoutSession(workoutId);
-  const { workouts: allWorkouts } = useWorkoutHistory();
-  const { saveTemplate } = useWorkoutTemplates();
   const exerciseOptions = useExerciseOptions();
   const { options: setTypeOptions, byId: setTypesById } = useSetTypeLibrary();
-  const [shareVisible, setShareVisible] = useState(false);
 
   if (!workout) {
     return (
@@ -123,30 +77,6 @@ export function CompletedWorkoutDetails({
     );
   }
 
-  const handleOpenTemplate = () => {
-    const openTemplate = (templateId: string) => {
-      navigation.navigate('WorkoutTemplateEditor', { templateId });
-    };
-
-    if (workout.workoutTemplateId) {
-      openTemplate(workout.workoutTemplateId);
-      return;
-    }
-
-    try {
-      const template = saveTemplate(
-        workoutSessionToTemplateInput(workout, randomUUID),
-      );
-      setWorkoutSessionTemplate(workout.id, template.id);
-      openTemplate(template.id);
-    } catch {
-      Alert.alert(
-        t('completedWorkout.templateErrorTitle'),
-        t('completedWorkout.templateErrorBody'),
-      );
-    }
-  };
-
   const exerciseById = new Map(
     exerciseOptions.map(exercise => [exercise.id, exercise] as const),
   );
@@ -158,18 +88,9 @@ export function CompletedWorkoutDetails({
     >
       <View className="gap-4 rounded-[24px] bg-moss px-5 py-5">
         <View>
-          <View className="flex-row items-center justify-between">
-            <Text className="t-eyebrow flex-1 text-surface-card/70">
-              {formatDate(workout.startedAt, i18n.language)}
-            </Text>
-            <View className="-my-2 -mr-2">
-              <ShareIconButton
-                onPress={() => setShareVisible(true)}
-                color={colors.cream}
-                accessibilityLabel={t('share.send.workoutCta')}
-              />
-            </View>
-          </View>
+          <Text className="t-caption text-surface-card/70">
+            {formatDate(workout.startedAt, i18n.language)}
+          </Text>
           <Text className="t-title mt-1 text-surface-card">{workout.name}</Text>
           <Text className="t-caption mt-2 text-surface-card/70">
             {t('completedWorkout.timeRange', {
@@ -182,30 +103,33 @@ export function CompletedWorkoutDetails({
           </Text>
         </View>
 
-        <View className="flex-row gap-2">
-          <StatTile
+        <View className="flex-row gap-3 border-t border-surface-card/15 pt-4">
+          <WorkoutStat
             label={t('completedWorkout.stats.duration')}
             value={t('common.minutesShort', { count: workout.durationMinutes })}
           />
-          <StatTile
+          <WorkoutStat
             label={t('completedWorkout.stats.sets')}
             value={`${workout.sets.length}`}
           />
-          <StatTile
+          <WorkoutStat
             label={t('completedWorkout.stats.volume')}
             value={formatVolume(workout.totalVolumeKg, weightUnit)}
           />
         </View>
+        {workout.notes ? (
+          <View className="gap-1 border-t border-surface-card/15 pt-3">
+            <Text className="t-caption text-surface-card/60">
+              {t('completedWorkout.notes')}
+            </Text>
+            <Text className="t-body text-surface-card">{workout.notes}</Text>
+          </View>
+        ) : null}
       </View>
 
       <CompletedWorkoutHeartRate
         workout={workout}
         exerciseById={exerciseById}
-      />
-
-      <CompletedWorkoutTemplateAction
-        hasTemplate={Boolean(workout.workoutTemplateId)}
-        onPress={handleOpenTemplate}
       />
 
       <CompletedWorkoutExercises
@@ -222,21 +146,6 @@ export function CompletedWorkoutDetails({
             allWorkouts,
           )
         }
-      />
-
-      {workout.notes ? (
-        <View className="rounded-[22px] border border-border-hairline bg-surface-card p-4">
-          <Text className="t-eyebrow">{t('completedWorkout.notes')}</Text>
-          <Text className="t-body mt-2">{workout.notes}</Text>
-        </View>
-      ) : null}
-
-      <ShareSheet
-        visible={shareVisible}
-        onClose={() => setShareVisible(false)}
-        title={workout.name}
-        kindLabel={t('share.send.kinds.workout')}
-        buildEnvelope={() => buildWorkoutShare(workout.id)}
       />
     </ScrollView>
   );
