@@ -14,6 +14,7 @@ import { useExerciseAnalytics } from '@/hooks/useExerciseAnalytics';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useExerciseOptions } from '@/hooks/useExerciseOptions';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm.tsx';
+import { useExerciseActions } from './components/useExerciseActions';
 import { DashboardTab } from './components/DashboardTab';
 import { SummaryTab } from './components/SummaryTab';
 import { HistoryTab } from './components/HistoryTab';
@@ -33,6 +34,9 @@ export function EditExerciseScreen({
   const repo = useRepository(exercises);
   const exercise = repo.getById(route.params.exerciseId);
   const [isEditing, setIsEditing] = useState(false);
+  const { actions, openOptions } = useExerciseActions(exercise, () =>
+    setIsEditing(true),
+  );
   const [tab, setTab] = useState<ExerciseTab>('dashboard');
   const { profile } = useUserProfile();
   const analytics = useExerciseAnalytics(route.params.exerciseId);
@@ -76,11 +80,12 @@ export function EditExerciseScreen({
         right={
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('exerciseOverview.editA11y')}
-            onPress={() => setIsEditing(true)}
-            className="h-9 w-9 items-center justify-center rounded-full bg-accent-soft active:opacity-70"
+            accessibilityLabel={t('exerciseOverview.optionsA11y')}
+            onPress={openOptions}
+            testID="exercise-options"
+            className="h-11 w-11 items-center justify-center rounded-full active:bg-surface-card"
           >
-            <ClayIcon name="edit" size={17} color={colors.accent} />
+            <ClayIcon name="more" size={18} color={colors.ink} />
           </Pressable>
         }
       />
@@ -120,6 +125,7 @@ export function EditExerciseScreen({
           }
         />
       ) : null}
+      {actions}
     </AppView>
   );
 }

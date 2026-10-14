@@ -21,11 +21,13 @@ appId: ${APP_ID}
     id: template-menu-edit
 - assertVisible: 'Edit workout'
 - assertNotVisible: 'Share template'
-- tapOn: '^Cancel$'
+- tapOn:
+    id: page-header-back
 - tapOn:
     id: 'template-edit-sample:template-push'
 - assertVisible: 'Edit workout'
-- tapOn: '^Cancel$'
+- tapOn:
+    id: page-header-back
 - tapOn:
     id: 'template-options-sample:template-push'
 - tapOn:

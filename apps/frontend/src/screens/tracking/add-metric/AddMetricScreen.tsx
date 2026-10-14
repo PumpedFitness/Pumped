@@ -10,16 +10,13 @@ import {
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { randomUUID } from 'expo-crypto';
 import type { InferInsertModel } from 'drizzle-orm';
-import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
-import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
-import { AddMetricHeader } from './components/AddMetricHeader';
+import { ModalHeader } from '@/components/layout/ModalHeader';
 import { MetricFormCard } from './components/MetricFormCard';
 import { useRepository } from '@/data/local/useRepository';
 import {
   bodyWeightEntries,
   bodyFatEntries,
 } from '@/data/local/schema/bodyMetrics';
-import { colors } from '@pumped/ui/theme/tokens';
 
 type AddMetricRouteProp = RouteProp<RootStackParamList, 'AddMetric'>;
 
@@ -40,7 +37,6 @@ export function AddMetricScreen() {
   const title =
     metric === 'weight' ? t('metrics.weight') : t('metrics.bodyFat');
   const unit = metric === 'weight' ? 'kg' : '%';
-  const iconName = metric === 'weight' ? 'scale' : 'percent';
   const placeholder =
     metric === 'weight'
       ? t('metrics.addPlaceholderWeight')
@@ -67,21 +63,12 @@ export function AddMetricScreen() {
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-      <AddMetricHeader
-        onClose={() => navigation.goBack()}
-        onSave={handleSave}
+      <ModalHeader
+        title={title}
+        rightLabel={t('common.save')}
+        onLeftPress={() => navigation.goBack()}
+        onRightPress={handleSave}
       />
-
-      <View className="px-5 pb-4 pt-4">
-        <ScreenHeader
-          title={title}
-          trailing={
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-sunk">
-              <ClayIcon name={iconName} size={22} color={colors.accent} />
-            </View>
-          }
-        />
-      </View>
 
       <MetricFormCard
         value={value}

@@ -1,0 +1,51 @@
+# Menu actions are checked without uploading a share or deleting sample data.
+appId: ${APP_ID}
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    point: 92%,92%
+- tapOn: Library
+- tapOn:
+    id: segment-exercises
+- tapOn: '^Barbell Back Squat$'
+- assertVisible:
+    id: exercise-options
+- tapOn:
+    id: exercise-options
+- assertVisible:
+    id: exercise-menu-edit
+- assertVisible:
+    id: exercise-menu-share
+- assertVisible:
+    id: exercise-menu-delete
+- assertVisible: Share exercise
+- tapOn:
+    id: exercise-menu-edit
+- assertVisible: Edit Exercise
+- assertNotVisible: Share
+- assertNotVisible: Delete exercise
+- assertVisible:
+    id: page-header-action
+- swipe:
+    direction: UP
+- assertNotVisible: Share
+- assertNotVisible: Delete exercise
+- tapOn:
+    id: page-header-back
+- assertVisible:
+    id: exercise-options
+- tapOn:
+    id: exercise-options
+- tapOn:
+    id: exercise-menu-delete
+- assertVisible:
+    text: 'Delete.*Barbell Back Squat.*'
+- tapOn: '^Cancel$'
+- assertVisible:
+    id: exercise-options

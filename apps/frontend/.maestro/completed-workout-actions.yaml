@@ -27,7 +27,8 @@ appId: ${APP_ID}
 - tapOn:
     id: workout-menu-edit
 - assertVisible: Edit workout
-- tapOn: '^Cancel$'
+- tapOn:
+    id: page-header-back
 - tapOn:
     id: completed-workout-options
 - tapOn:

@@ -1,0 +1,89 @@
+# Check shared page navigation and editor actions without creating user data.
+appId: ${APP_ID}
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: screen-home
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    point: 92%,92%
+- tapOn: Home
+- assertVisible:
+    id: screen-home
+- tapOn:
+    id: profile_avatar
+- assertVisible:
+    id: screen-profile
+- assertVisible:
+    id: page-header-back
+- tapOn:
+    id: settings-group-training
+- assertVisible:
+    id: screen-settings-training
+- tapOn:
+    id: page-header-back
+- assertVisible:
+    id: screen-profile
+- tapOn:
+    id: settings-group-app
+- assertVisible:
+    id: screen-settings-app
+- tapOn:
+    id: page-header-back
+- tapOn:
+    id: settings-group-you
+- assertVisible:
+    id: screen-settings-you
+- tapOn:
+    id: page-header-back
+- tapOn:
+    id: settings-group-recovery
+- assertVisible:
+    id: screen-settings-recovery
+- tapOn:
+    id: page-header-back
+- assertVisible:
+    id: screen-profile
+- waitForAnimationToEnd
+- tapOn:
+    id: page-header-back
+- waitForAnimationToEnd
+- assertVisible:
+    id: screen-home
+- tapOn: Library
+- tapOn:
+    id: template-edit-sample:template-push
+- assertVisible: Edit workout
+- assertVisible:
+    id: page-header-action
+- assertNotVisible: '^Cancel$'
+- tapOn:
+    id: page-header-action
+- assertVisible:
+    id: template-edit-sample:template-push
+- tapOn: Create workout
+- assertVisible: New workout
+- waitForAnimationToEnd
+- runFlow: subflows/dismiss-keyboard.yaml
+- tapOn: Add exercise
+- assertVisible: Exercise library
+- assertVisible:
+    id: page-header-action
+- tapOn: Create exercise
+- assertVisible: New Exercise
+- assertVisible:
+    id: page-header-action
+- runFlow: subflows/dismiss-keyboard.yaml
+- tapOn:
+    id: page-header-back
+- assertVisible: Exercise library
+- tapOn:
+    id: page-header-back
+- assertVisible: New workout
+- tapOn:
+    id: page-header-back
+- assertVisible:
+    id: template-edit-sample:template-push

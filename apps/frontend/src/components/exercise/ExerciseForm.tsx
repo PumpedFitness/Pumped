@@ -13,44 +13,17 @@ import { colors } from '@pumped/ui/theme/tokens';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { Button } from '@pumped/ui/clay/Button';
 import { LibraryPicker } from '@pumped/ui/forms/LibraryPicker';
-import { buildExerciseShare } from '@/data/local/share/exportShare';
-import { ShareIconButton } from '@/components/share/ShareIconButton';
-import { ShareSheet } from '@/components/share/ShareSheet';
+import { ModalHeader } from '@/components/layout/ModalHeader';
 import { LabeledField } from './LabeledField';
 import { PickerRow } from './PickerRow';
 import { useExerciseDraft, type ExerciseToEdit } from './useExerciseDraft';
 
-type FormHeaderProps = {
-  onCancel: () => void;
-  /** Shown only for a saved exercise — a draft has nothing to share yet. */
-  onShare?: () => void;
-};
-
-function FormHeader({ onCancel, onShare }: FormHeaderProps) {
-  return (
-    <View className="flex-row items-center justify-between px-4 h-14">
-      <Pressable
-        onPress={onCancel}
-        className="w-11 h-11 rounded-full bg-surface-sunk items-center justify-center active:opacity-60"
-      >
-        <ClayIcon name="x" size={20} color={colors.ink} />
-      </Pressable>
-      {onShare ? <ShareIconButton onPress={onShare} /> : null}
-    </View>
-  );
-}
-
 type PictureSectionProps = {
   picture: string | null;
-  isEditing: boolean;
   onPickImage: () => void;
 };
 
-function PictureSection({
-  picture,
-  isEditing,
-  onPickImage,
-}: PictureSectionProps) {
+function PictureSection({ picture, onPickImage }: PictureSectionProps) {
   const { t } = useTranslation();
 
   return (
@@ -67,30 +40,7 @@ function PictureSection({
       <Text className="text-[12.5px] text-muted mt-2">
         {picture ? t('exerciseForm.tapToChange') : t('exerciseForm.addPhoto')}
       </Text>
-      <Text className="text-[21px] font-bold text-foreground mt-2">
-        {isEditing ? t('exerciseForm.editTitle') : t('exerciseForm.newTitle')}
-      </Text>
     </View>
-  );
-}
-
-type DeleteExerciseRowProps = {
-  onPress: () => void;
-};
-
-function DeleteExerciseRow({ onPress }: DeleteExerciseRowProps) {
-  const { t } = useTranslation();
-
-  return (
-    <Pressable
-      onPress={onPress}
-      className="flex-row items-center justify-center gap-2 py-3.5 mt-2"
-    >
-      <ClayIcon name="trash" size={18} color={colors.danger} />
-      <Text className="text-[15px] font-medium text-danger">
-        {t('exerciseForm.deleteCta')}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -156,12 +106,9 @@ export function ExerciseForm({
     pickImage,
     handleCreateType,
     handleSave,
-    handleDelete,
   } = useExerciseDraft(exercise, onSaved);
 
   const nameRef = useRef<TextInput>(null);
-
-  const [shareVisible, setShareVisible] = useState(false);
 
   const [typePickerVisible, setTypePickerVisible] = useState(false);
   const [mgPickerVisible, setMgPickerVisible] = useState(false);
@@ -175,9 +122,14 @@ export function ExerciseForm({
 
   return (
     <View className="flex-1">
-      <FormHeader
-        onCancel={onCancel}
-        onShare={exercise ? () => setShareVisible(true) : undefined}
+      <ModalHeader
+        title={
+          isEditing ? t('exerciseForm.editTitle') : t('exerciseForm.newTitle')
+        }
+        rightLabel={t('common.save')}
+        rightDisabled={!name.trim()}
+        onLeftPress={onCancel}
+        onRightPress={handleSave}
       />
 
       <ScrollView
@@ -187,7 +139,6 @@ export function ExerciseForm({
       >
         <PictureSection
           picture={picture}
-          isEditing={isEditing}
           onPickImage={() => void pickImage()}
         />
 
@@ -235,8 +186,6 @@ export function ExerciseForm({
             numberOfLines={2}
             onPress={() => setMgPickerVisible(true)}
           />
-
-          {isEditing && <DeleteExerciseRow onPress={handleDelete} />}
         </View>
       </ScrollView>
 
@@ -270,16 +219,6 @@ export function ExerciseForm({
         onClose={() => setMgPickerVisible(false)}
         onChange={setMuscleGroupIds}
       />
-
-      {exercise ? (
-        <ShareSheet
-          visible={shareVisible}
-          onClose={() => setShareVisible(false)}
-          title={exercise.name}
-          kindLabel={t('share.send.kinds.exercise')}
-          buildEnvelope={() => buildExerciseShare(exercise.id)}
-        />
-      ) : null}
     </View>
   );
 }

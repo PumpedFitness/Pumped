@@ -7,30 +7,32 @@ import { Button } from '@pumped/ui/clay/Button';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { colors } from '@pumped/ui/theme/tokens';
 
-export type WorkoutAction = 'edit' | 'share' | 'delete' | 'template';
-type WorkoutOptionsSheetProps = {
+export type ItemAction = 'edit' | 'share' | 'delete' | 'template';
+type ItemOptionsSheetProps = {
   open: boolean;
   title: string;
+  description: string;
   editLabel: string;
   shareLabel: string;
   templateLabel?: string;
   testIDPrefix?: string;
   onClose: () => void;
-  onSelect: (action: WorkoutAction) => void;
+  onSelect: (action: ItemAction) => void;
 };
 
-export function WorkoutOptionsSheet({
+export function ItemOptionsSheet({
   open,
   title,
+  description,
   editLabel,
   shareLabel,
   templateLabel,
   testIDPrefix = 'workout-menu',
   onClose,
   onSelect,
-}: WorkoutOptionsSheetProps) {
+}: ItemOptionsSheetProps) {
   const { t } = useTranslation();
-  const choose = (action: WorkoutAction) => {
+  const choose = (action: ItemAction) => {
     onClose();
     onSelect(action);
   };
@@ -40,7 +42,7 @@ export function WorkoutOptionsSheet({
       <AppBottomSheet.Content backgroundClassName="bg-background">
         <BottomSheet.Title className="t-title">{title}</BottomSheet.Title>
         <BottomSheet.Description className="t-caption mt-1">
-          {t('plan.card.optionsBody')}
+          {description}
         </BottomSheet.Description>
         <View className="mt-5 overflow-hidden rounded-[20px] bg-surface-card">
           <ListRow

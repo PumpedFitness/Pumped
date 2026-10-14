@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
-import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { getWorkoutOverlayProgress } from '@/components/workout/current-workout-overlay/currentWorkoutOverlayModel';
 import { SessionTimer } from './SessionTimer';
@@ -33,19 +33,31 @@ export function SessionHeader({
   const isPaused = pausedAt != null;
 
   return (
-    <View className="bg-background px-5 pt-1 pb-2">
-      <View className="h-[52px] flex-row items-center gap-2">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('currentWorkout.backToPlanA11y')}
-          className="h-10 w-10 items-center justify-center rounded-full active:bg-surface-card"
-          onPress={onBack}
-        >
-          <ClayIcon name="back" size={20} color={colors.ink} />
-        </Pressable>
-
-        <View className="flex-1" />
-
+    <View className="bg-background pb-2">
+      <ScreenHeader
+        title={workoutName}
+        onBack={onBack}
+        backAccessibilityLabel={t('currentWorkout.backToPlanA11y')}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              isPaused
+                ? t('currentWorkout.resumeWorkoutA11y')
+                : t('currentWorkout.pauseWorkoutA11y')
+            }
+            className="h-10 w-10 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
+            onPress={onTogglePause}
+          >
+            <ClayIcon
+              name={isPaused ? 'play' : 'pause'}
+              size={17}
+              color={colors.ink}
+            />
+          </Pressable>
+        }
+      />
+      <View className="flex-row items-center justify-between px-5 py-2">
         <SessionTimer
           startedAt={startedAt}
           pausedAt={pausedAt}
@@ -54,32 +66,14 @@ export function SessionHeader({
         <Text className="text-[17px] font-bold text-accent tabular-nums tracking-[-0.3px]">
           {progress.percentage}%
         </Text>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            isPaused
-              ? t('currentWorkout.resumeWorkoutA11y')
-              : t('currentWorkout.pauseWorkoutA11y')
-          }
-          className="h-10 w-10 items-center justify-center rounded-full border border-border-hairline bg-surface-card active:bg-surface-sunk"
-          onPress={onTogglePause}
-        >
-          <ClayIcon
-            name={isPaused ? 'play' : 'pause'}
-            size={17}
-            color={colors.ink}
-          />
-        </Pressable>
       </View>
-
-      <ScreenHeader title={workoutName} className="pb-4 pt-4" />
-
-      <SessionProgressBar
-        completedSets={progress.completedSets}
-        totalSets={progress.totalSets}
-        percentage={progress.percentage}
-      />
+      <View className="px-5">
+        <SessionProgressBar
+          completedSets={progress.completedSets}
+          totalSets={progress.totalSets}
+          percentage={progress.percentage}
+        />
+      </View>
     </View>
   );
 }

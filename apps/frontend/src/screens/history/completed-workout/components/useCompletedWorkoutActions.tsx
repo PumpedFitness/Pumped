@@ -6,9 +6,9 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { randomUUID } from 'expo-crypto';
 import { OptionPopup } from '@pumped/ui/clay/option-popup';
 import {
-  WorkoutOptionsSheet,
-  type WorkoutAction,
-} from '@/components/workout/WorkoutOptionsSheet';
+  ItemOptionsSheet,
+  type ItemAction,
+} from '@/components/layout/ItemOptionsSheet';
 import { ShareSheet } from '@/components/share/ShareSheet';
 import { buildWorkoutShare } from '@/data/local/share/exportShare';
 import { setWorkoutSessionTemplate } from '@/data/local/workouts/sessions';
@@ -58,14 +58,15 @@ export function useCompletedWorkoutActions({
       );
     }
   };
-  const chooseAction = (action: WorkoutAction) => {
+  const chooseAction = (action: ItemAction) => {
     if (action === 'delete') setDeleteVisible(true);
     else if (action === 'share') setShareVisible(true);
     else openTemplate(action === 'template');
   };
   const actions = (
     <>
-      <WorkoutOptionsSheet
+      <ItemOptionsSheet
+        description={t('plan.card.optionsBody')}
         open={menuVisible && workout !== null}
         title={workout?.name ?? ''}
         editLabel={t('completedWorkout.editTemplate')}

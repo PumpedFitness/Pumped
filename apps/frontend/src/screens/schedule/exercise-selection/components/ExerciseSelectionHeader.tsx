@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@pumped/ui/theme/tokens';
-import { ScreenHeader } from '@pumped/ui/clay/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SearchInput } from '@pumped/ui/forms/SearchInput';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 
@@ -31,50 +31,24 @@ export function ExerciseSelectionHeader({
 
   return (
     <>
-      <View className="h-[52px] flex-row items-center justify-between px-5">
-        <Pressable
-          accessibilityRole="button"
-          className="h-11 min-w-16 items-start justify-center"
-          onPress={onCancel}
-        >
-          <Text className="t-label text-foreground-secondary">
-            {t('common.cancel')}
-          </Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          className="h-11 min-w-16 items-end justify-center"
-          onPress={onDone}
-        >
-          <Text className="t-label text-accent">{t('common.done')}</Text>
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title={t(
+          isSuperset
+            ? 'exerciseSelection.superset.title'
+            : 'exerciseSelection.libraryTitle',
+        )}
+        subtitle={t(
+          isSuperset
+            ? 'exerciseSelection.superset.selectedCount'
+            : 'exerciseSelection.selectedCount',
+          { count: selectedCount },
+        )}
+        onBack={onCancel}
+        actionLabel={t('common.done')}
+        onAction={onDone}
+      />
 
-      <View className="gap-4 px-5 pb-3 pt-4">
-        <ScreenHeader
-          title={t(
-            isSuperset
-              ? 'exerciseSelection.superset.title'
-              : 'exerciseSelection.libraryTitle',
-          )}
-          subtitle={t(
-            isSuperset
-              ? 'exerciseSelection.superset.selectedCount'
-              : 'exerciseSelection.selectedCount',
-            { count: selectedCount },
-          )}
-          trailing={
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('library.createA11y')}
-              className="h-10 w-10 items-center justify-center rounded-full bg-accent"
-              onPress={onCreateExercise}
-            >
-              <ClayIcon name="plus" size={20} color={colors.cream} />
-            </Pressable>
-          }
-        />
-
+      <View className="gap-4 px-5 pb-3 pt-3">
         {isSuperset ? (
           <View className="flex-row gap-2.5 rounded-[16px] bg-accent-soft px-4 py-3">
             <ClayIcon name="bolt" size={16} color={colors.accent} />
@@ -84,14 +58,26 @@ export function ExerciseSelectionHeader({
           </View>
         ) : null}
 
-        <SearchInput
-          autoFocus
-          accessibilityLabel={t('library.searchA11y')}
-          height={54}
-          placeholder={t('library.searchPlaceholder')}
-          value={searchQuery}
-          onChangeText={onChangeSearch}
-        />
+        <View className="flex-row items-center gap-3">
+          <View className="flex-1">
+            <SearchInput
+              autoFocus
+              accessibilityLabel={t('library.searchA11y')}
+              height={54}
+              placeholder={t('library.searchPlaceholder')}
+              value={searchQuery}
+              onChangeText={onChangeSearch}
+            />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('library.createA11y')}
+            className="h-11 w-11 items-center justify-center rounded-full bg-accent"
+            onPress={onCreateExercise}
+          >
+            <ClayIcon name="plus" size={20} color={colors.cream} />
+          </Pressable>
+        </View>
 
         {!isSuperset && onCreateSuperset ? (
           <Pressable

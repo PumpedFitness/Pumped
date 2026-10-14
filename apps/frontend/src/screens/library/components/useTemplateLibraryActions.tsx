@@ -8,9 +8,9 @@ import type { UsageMap } from '@/data/local/usageModel';
 import type { WorkoutTemplate } from '@/types/workout';
 
 import {
-  WorkoutOptionsSheet,
-  type WorkoutAction,
-} from '@/components/workout/WorkoutOptionsSheet';
+  ItemOptionsSheet,
+  type ItemAction,
+} from '@/components/layout/ItemOptionsSheet';
 type PendingDelete = {
   template: WorkoutTemplate;
   resolve: (deleted: boolean) => void;
@@ -54,7 +54,7 @@ export function useTemplateLibraryActions({
     pendingDelete?.resolve(false);
     setPendingDelete(null);
   };
-  const chooseAction = (action: WorkoutAction) => {
+  const chooseAction = (action: ItemAction) => {
     if (!menuTemplate) return;
     if (action === 'edit') onEdit(menuTemplate);
     if (action === 'share') {
@@ -73,7 +73,8 @@ export function useTemplateLibraryActions({
 
   const popups = (
     <>
-      <WorkoutOptionsSheet
+      <ItemOptionsSheet
+        description={t('plan.card.optionsBody')}
         open={menuVisible}
         title={menuTemplate?.name ?? ''}
         editLabel={t('plan.card.edit')}

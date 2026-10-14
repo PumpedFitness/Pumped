@@ -64,13 +64,12 @@ export function TrendsScreen() {
 
   return (
     <AppView>
+      <TrendsHeader onBack={() => navigation.goBack()} />
       <ScrollView
         className="flex-1"
         contentContainerClassName="gap-5 px-5 pb-12 pt-4"
         showsVerticalScrollIndicator={false}
       >
-        <TrendsHeader onBack={() => navigation.goBack()} />
-
         <SegmentedControl
           options={options}
           value={metric}

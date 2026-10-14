@@ -14,6 +14,7 @@ import { useSetTypeLibrary } from '@/hooks/useSetTypeLibrary';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { ClayIcon } from '@pumped/ui/icons/ClayIcon';
 import { SetSheetHost } from '@/components/exercise/set-table';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SessionHeader } from './SessionHeader';
 import { SessionExerciseList } from './SessionExerciseList';
 import { CurrentWorkoutFooter } from './CurrentWorkoutFooter';
@@ -37,24 +38,27 @@ function EmptyWorkout({ onBack }: EmptyWorkoutProps) {
   const { t } = useTranslation();
 
   return (
-    <View className="flex-1 items-center justify-center gap-3 px-8">
-      <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-surface-card">
-        <ClayIcon name="dumbbell" size={26} color={colors.muted} />
+    <View className="flex-1">
+      <ScreenHeader title={t('currentWorkout.screenTitle')} onBack={onBack} />
+      <View className="flex-1 items-center justify-center gap-3 px-8">
+        <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-surface-card">
+          <ClayIcon name="dumbbell" size={26} color={colors.muted} />
+        </View>
+        <Text className="t-heading text-center">
+          {t('currentWorkout.empty.title')}
+        </Text>
+        <Text className="t-caption text-center">
+          {t('currentWorkout.empty.body')}
+        </Text>
+        <Button
+          className="mt-2 rounded-full"
+          variant="secondary"
+          feedbackVariant="scale"
+          onPress={onBack}
+        >
+          <Button.Label>{t('currentWorkout.empty.backToPlan')}</Button.Label>
+        </Button>
       </View>
-      <Text className="t-heading text-center">
-        {t('currentWorkout.empty.title')}
-      </Text>
-      <Text className="t-caption text-center">
-        {t('currentWorkout.empty.body')}
-      </Text>
-      <Button
-        className="mt-2 rounded-full"
-        variant="secondary"
-        feedbackVariant="scale"
-        onPress={onBack}
-      >
-        <Button.Label>{t('currentWorkout.empty.backToPlan')}</Button.Label>
-      </Button>
     </View>
   );
 }
